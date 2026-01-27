@@ -10,9 +10,6 @@ import {
     Trophy,
     Check,
     ArrowRight,
-    Play,
-    Sparkles,
-    ChevronRight,
 } from "lucide-react";
 
 // Animated Stat Card Component with Counter

@@ -56,15 +56,15 @@ export function CTASection() {
                             From your first line of code to your first day at a tech giant. We're with you every step of the journey.
                         </p>
 
-                        <div className="flex flex-col sm:flex-row gap-5 justify-center items-center relative z-30">
-                            <button className="relative px-12 py-5 rounded-2xl bg-foreground text-background font-bold text-lg hover:scale-105 active:scale-95 transition-all duration-300 shadow-xl shadow-primary/10">
+                        <div className="flex flex-col sm:flex-row gap-4 justify-center items-center relative z-30">
+                            <button className="relative px-8 py-3.5 rounded-xl bg-foreground text-background font-bold text-base hover:opacity-90 transition-all duration-300 shadow-lg shadow-foreground/5 hover:scale-[1.02] active:scale-[0.98]">
                                 <span className="flex items-center gap-2">
                                     Get Started Now
-                                    <ArrowRight className="w-5 h-5" />
+                                    <ArrowRight className="w-4 h-4" />
                                 </span>
                             </button>
 
-                            <button className="px-12 py-5 rounded-2xl bg-background/50 border border-foreground/10 text-foreground font-semibold text-lg hover:bg-background/80 transition-all backdrop-blur-xl">
+                            <button className="px-8 py-3.5 rounded-xl bg-transparent border border-foreground/10 text-foreground font-semibold text-base hover:bg-foreground/5 transition-all duration-300 hover:border-foreground/20">
                                 Explore Structure
                             </button>
                         </div>
@@ -86,7 +86,7 @@ export function CTASection() {
                         </div>
 
                         <div
-                            className="absolute bottom-16 right-10 xl:right-24 hidden xl:block pointer-events-none animate-float"
+                            className="absolute top-20 right-10 xl:right-24 hidden xl:block pointer-events-none animate-float"
                             style={{ animationDelay: "1s" }}
                         >
                             <div className="p-4 rounded-2xl bg-background/30 backdrop-blur-xl border border-white/20 shadow-xl w-48 rotate-6">
