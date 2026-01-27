@@ -1,17 +1,44 @@
-import Link from "next/link";
 import { Globe } from "lucide-react";
 import { SiGit } from "react-icons/si";
 import { Logo } from "@/components/ui/Logo";
 
 const FOOTER_SECTIONS = [
-    { title: "Platform", links: ["Courses", "Pricing", "Enterprise", "Blog"] },
-    { title: "Company", links: ["About", "Careers", "Press", "Contact"] },
-    { title: "Resources", links: ["Documentation", "Help Center", "Community", "Partners"] },
+    {
+        title: "Platform",
+        links: [
+            { text: "Courses", href: "/courses" },
+            { text: "Pricing", href: "#" },
+            { text: "Enterprise", href: "#" },
+            { text: "Blog", href: "#" }
+        ]
+    },
+    {
+        title: "Company",
+        links: [
+            { text: "About", href: "/about" },
+            { text: "Careers", href: "#" },
+            { text: "Press", href: "#" },
+            { text: "Contact", href: "/contact" }
+        ]
+    },
+    {
+        title: "Resources",
+        links: [
+            { text: "Documentation", href: "#" },
+            { text: "Help Center", href: "#" },
+            { text: "Community", href: "#" },
+            { text: "Partners", href: "#" }
+        ]
+    },
 ] as const;
 
 const SOCIAL_ICONS = [Globe, SiGit] as const;
 
-const LEGAL_LINKS = ["Privacy", "Terms", "Cookies"] as const;
+const LEGAL_LINKS = [
+    { text: "Privacy", href: "/privacy" },
+    { text: "Terms", href: "/terms" },
+    { text: "Cookies", href: "#" }
+] as const;
 
 export function Footer() {
     return (
@@ -46,12 +73,12 @@ export function Footer() {
                             <h4 className="font-semibold mb-4">{section.title}</h4>
                             <ul className="space-y-2">
                                 {section.links.map((link) => (
-                                    <li key={link}>
+                                    <li key={link.text}>
                                         <a
-                                            href="#"
+                                            href={link.href}
                                             className="text-muted-foreground hover:text-foreground text-sm transition-colors"
                                         >
-                                            {link}
+                                            {link.text}
                                         </a>
                                     </li>
                                 ))}
@@ -68,11 +95,11 @@ export function Footer() {
                     <div className="flex items-center gap-6 text-sm text-muted-foreground">
                         {LEGAL_LINKS.map((link) => (
                             <a
-                                key={link}
-                                href="#"
+                                key={link.text}
+                                href={link.href}
                                 className="hover:text-foreground transition-colors"
                             >
-                                {link}
+                                {link.text}
                             </a>
                         ))}
                     </div>

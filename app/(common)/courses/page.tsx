@@ -5,9 +5,8 @@ import Image from "next/image";
 import { useState, useMemo, useEffect } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { ArrowLeft, Star, ArrowRight, Search, SlidersHorizontal, X, ChevronDown, Check, Filter, LayoutGrid, Grip, AlignJustify, FileQuestion, ChevronLeft, ChevronRight } from "lucide-react";
-import { staggerContainer, staggerItem, fadeInUp } from "@/lib/motion";
+import { fadeInUp } from "@/lib/motion";
 import { Navbar } from "@/components/Navbar";
-import { Footer } from "@/components/Footer";
 import { AnimatedCheckbox } from "@/components/ui/AnimatedCheckbox";
 
 // Enhanced Course Data
@@ -458,7 +457,6 @@ export default function CoursesPage() {
                     </div>
                 </div>
             </div>
-            <Footer />
         </div >
     );
 }

@@ -1,5 +1,4 @@
 import { Navbar } from "@/components/Navbar";
-import { Footer } from "@/components/Footer";
 import { FileText, Users, CreditCard, BookOpen, AlertTriangle, Scale } from "lucide-react";
 
 export const metadata = {
@@ -151,8 +150,6 @@ export default function TermsPage() {
                     </div>
                 </div>
             </section>
-
-            <Footer />
         </div>
     );
 }

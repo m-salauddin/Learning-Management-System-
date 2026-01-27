@@ -1,9 +1,3 @@
 // Section components barrel export
-export { HeroSection } from "./HeroSection";
-export { TechStackSection } from "./TechStackSection";
-export { FeaturesSection } from "./FeaturesSection";
-export { CoursesSection } from "./CoursesSection";
-export { TerminalSection } from "./TerminalSection";
-export { PricingSection } from "./PricingSection";
-export { TestimonialsSection } from "./TestimonialsSection";
-export { CTASection } from "./CTASection";
+export * from "./home";
+export * from "./about";

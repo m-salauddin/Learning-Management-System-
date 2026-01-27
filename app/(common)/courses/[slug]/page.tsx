@@ -1,6 +1,5 @@
 "use client";
 
-import * as React from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useParams } from "next/navigation";
@@ -22,7 +21,6 @@ import {
 } from "lucide-react";
 import { fadeInUp } from "@/lib/motion";
 import { Navbar } from "@/components/Navbar";
-import { Footer } from "@/components/Footer";
 
 // Course data - in a real app, this would come from an API
 const courseData: Record<string, {
@@ -418,7 +416,6 @@ export default function CourseDetailPage() {
                     </div>
                 </div>
             </div>
-            <Footer />
         </div>
     );
 }
