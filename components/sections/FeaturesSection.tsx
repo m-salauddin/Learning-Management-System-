@@ -3,6 +3,7 @@
 import { motion } from "motion/react";
 import { Sparkles, BookOpen, Check, Code2, Users, Trophy, Target } from "lucide-react";
 import { staggerContainer, staggerItem } from "@/lib/motion";
+import { Badge } from "@/components/ui/Badge";
 
 const FEATURE_ITEMS = [
     { icon: Code2, title: "Hands-On Projects", description: "Build real applications for your portfolio", color: "secondary" },
@@ -26,10 +27,9 @@ export function FeaturesSection() {
                     viewport={{ once: true }}
                     className="text-center mb-16"
                 >
-                    <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 text-primary text-sm font-medium mb-4">
-                        <Sparkles className="w-4 h-4" />
+                    <Badge icon={Sparkles} className="mb-4">
                         Why Choose Us
-                    </div>
+                    </Badge>
                     <h2 className="text-3xl sm:text-5xl font-bold mb-4 tracking-tight">
                         Everything you need to
                         <br />

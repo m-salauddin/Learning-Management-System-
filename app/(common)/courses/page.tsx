@@ -141,7 +141,7 @@ export default function CoursesPage() {
                         initial={{ opacity: 0, y: 10 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ delay: 0.1 }}
-                        className="flex flex-col xl:flex-row gap-6 justify-between items-start xl:items-center sticky top-24 z-30 bg-background/95 backdrop-blur-xl p-4 -mx-4 rounded-3xl border border-border/40 shadow-sm"
+                        className="flex flex-col xl:flex-row gap-6 justify-between items-start xl:items-center sticky top-24 z-30 bg-background/75 backdrop-blur-3xl backdrop-saturate-200 p-4 -mx-4 rounded-3xl border border-border/40 shadow-sm"
                     >
                         {/* Topic Tabs (Scrollable) */}
                         <div className="w-full xl:w-auto overflow-x-auto pb-2 xl:pb-0 scrollbar-hide">

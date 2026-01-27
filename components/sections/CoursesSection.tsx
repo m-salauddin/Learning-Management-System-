@@ -6,7 +6,7 @@ import { motion } from "motion/react";
 import { Star, ArrowRight, GraduationCap } from "lucide-react";
 import { staggerContainer, staggerItem } from "@/lib/motion";
 import { COURSES, Course } from "@/data/courses";
-
+import { Badge } from "@/components/ui/Badge";
 
 
 function CourseCard({ course }: { course: Course }) {
@@ -35,21 +35,21 @@ function CourseCard({ course }: { course: Course }) {
                         <div className="absolute inset-0 bg-linear-to-t from-card/80 via-transparent to-transparent" />
 
                         {/* Duration badge */}
-                        <div className="absolute top-3 right-3 px-3 py-1 rounded-full bg-background/70 dark:bg-black/50 backdrop-blur-md text-sm font-semibold border border-white/20 shadow-lg">
-                            <span className="text-primary">
+                        <div className="absolute top-3 right-3">
+                            <Badge className="bg-background/70 dark:bg-black/50 backdrop-blur-md border-white/20 shadow-lg px-3 py-1 text-sm font-semibold text-primary">
                                 {course.duration}
-                            </span>
+                            </Badge>
                         </div>
 
                         {/* Rating badge */}
-                        <div className="absolute bottom-3 left-3 flex items-center gap-2 px-3 py-1 rounded-full bg-background/70 dark:bg-black/50 backdrop-blur-md border border-white/20 shadow-lg">
-                            <div className="flex items-center gap-1">
-                                <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
+                        <div className="absolute bottom-3 left-3">
+                            <Badge className="bg-background/70 dark:bg-black/50 backdrop-blur-md border-white/20 shadow-lg px-3 py-1 flex items-center gap-1">
+                                <Star className="w-4 h-4 fill-yellow-400 text-yellow-400 mr-1" />
                                 <span className="font-bold text-foreground">{course.rating}</span>
-                            </div>
-                            <span className="text-muted-foreground text-xs">
-                                ({course.students})
-                            </span>
+                                <span className="text-muted-foreground text-xs ml-1">
+                                    ({course.students})
+                                </span>
+                            </Badge>
                         </div>
                     </div>
                 </div>
@@ -57,12 +57,12 @@ function CourseCard({ course }: { course: Course }) {
                 {/* Content */}
                 <div className="p-6 pt-4 grow flex flex-col">
                     <div className="flex items-center gap-2 mb-2">
-                        <span className="text-[10px] font-bold uppercase tracking-wider text-primary border border-primary/20 bg-primary/5 px-2 py-0.5 rounded-md">
+                        <Badge variant="outline" className="text-[10px] uppercase tracking-wider text-primary border-primary/20 bg-primary/5 px-2 py-0.5 rounded-md h-auto font-bold">
                             {course.level}
-                        </span>
-                        <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground border border-border px-2 py-0.5 rounded-md">
+                        </Badge>
+                        <Badge variant="outline" className="text-[10px] uppercase tracking-wider text-muted-foreground border-border px-2 py-0.5 rounded-md h-auto font-bold">
                             {course.type}
-                        </span>
+                        </Badge>
                     </div>
                     <h3 className="text-xl font-bold mb-2 transition-colors duration-300 group-hover:text-primary">
                         {course.title}
@@ -74,12 +74,13 @@ function CourseCard({ course }: { course: Course }) {
                     {/* Tags */}
                     <div className="flex flex-wrap gap-2 mb-5">
                         {course.tags.map((tag) => (
-                            <span
+                            <Badge
                                 key={tag}
-                                className="px-3 py-1 rounded-full text-xs font-medium bg-muted/80 text-muted-foreground hover:bg-primary/10 hover:text-primary transition-colors duration-300"
+                                variant="outline"
+                                className="text-xs font-medium bg-muted/80 text-muted-foreground hover:bg-primary/10 hover:text-primary border-none"
                             >
                                 {tag}
-                            </span>
+                            </Badge>
                         ))}
                     </div>
 
@@ -116,10 +117,9 @@ export function CoursesSection() {
                     className="flex flex-col md:flex-row md:items-end md:justify-between mb-12"
                 >
                     <div>
-                        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-secondary/10 text-secondary text-sm font-medium mb-4">
-                            <GraduationCap className="w-4 h-4" />
+                        <Badge icon={GraduationCap} className="mb-4 bg-secondary/10 text-secondary border-secondary/20">
                             Popular Courses
-                        </div>
+                        </Badge>
                         <h2 className="text-3xl sm:text-4xl font-bold tracking-tight">
                             Start your learning journey
                         </h2>

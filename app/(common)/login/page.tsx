@@ -9,7 +9,6 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { Eye, EyeOff, Mail, Lock, ArrowRight, Loader2 } from "lucide-react";
 import { Navbar } from "@/components/Navbar";
-import { Footer } from "@/components/Footer";
 import { Logo } from "@/components/ui/Logo";
 import { fadeInUp } from "@/lib/motion";
 import { AnimatedCheckbox } from "@/components/ui/AnimatedCheckbox";
@@ -243,8 +242,6 @@ export default function LoginPage() {
                     </div>
                 </motion.div>
             </main>
-
-            <Footer />
         </div>
     );
 }

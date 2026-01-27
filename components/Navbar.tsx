@@ -6,56 +6,31 @@ import { ArrowRight } from "lucide-react";
 import { Logo } from "@/components/ui/Logo";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
 
-const NAV_LINKS = ["Courses", "Features", "Pricing", "Community"] as const;
+
 
 export function Navbar() {
-    const [mounted, setMounted] = useState(false);
 
-    useEffect(() => {
-        setMounted(true);
-    }, []);
-
-    // Render a placeholder during SSR to avoid hydration mismatch
-    if (!mounted) {
-        return (
-            <nav className="fixed top-4 left-1/2 -translate-x-1/2 z-50 w-[calc(100%-2rem)] max-w-6xl">
-                <div className="backdrop-blur-2xl backdrop-saturate-150 bg-background/85 border border-border/50 rounded-2xl px-8 py-4 shadow-xl shadow-black/10">
-                    <div className="flex items-center justify-between">
-                        <div className="h-8 w-32" />
-                        <div className="hidden md:flex items-center gap-1">
-                            {NAV_LINKS.map((item) => (
-                                <div key={item} className="px-4 py-2 h-9 w-20" />
-                            ))}
-                        </div>
-                        <div className="flex items-center gap-3">
-                            <div className="w-28 h-8" />
-                        </div>
-                    </div>
-                </div>
-            </nav>
-        );
-    }
 
     return (
-        <nav className="fixed top-4 left-1/2 -translate-x-1/2 z-50 w-[calc(100%-2rem)] max-w-6xl animate-fade-in-down">
-            <div className="backdrop-blur-2xl backdrop-saturate-150 bg-background/85 border border-border/50 rounded-2xl px-8 py-4 shadow-xl shadow-black/10">
+        <nav
+            className="fixed top-4 left-1/2 -translate-x-1/2 z-50 w-[95%] max-w-6xl animate-fade-in-down"
+        >
+            <div className="navbar-glass border rounded-2xl px-8 py-4 shadow-2xl shadow-black/10 dark:shadow-black/40">
                 <div className="flex items-center justify-between">
-                    {/* Logo */}
+                    {/* Logo Section */}
                     <Link href="/" aria-label="Home">
+                        {/* If <Logo /> contains an <a> tag internally, remove this <Link> wrapper */}
                         <Logo />
                     </Link>
 
                     {/* Nav Links - Center */}
                     <div className="hidden md:flex items-center gap-1">
-                        {NAV_LINKS.map((item) => (
-                            <a
-                                key={item}
-                                href={`#${item.toLowerCase()}`}
-                                className="px-4 py-2 text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-muted/50 rounded-xl transition-all duration-200"
-                            >
-                                {item}
-                            </a>
-                        ))}
+                        <Link
+                            href="/courses"
+                            className="px-4 py-2 text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-muted/50 rounded-xl transition-all duration-200"
+                        >
+                            Courses
+                        </Link>
                     </div>
 
                     {/* Right Side */}
@@ -80,4 +55,3 @@ export function Navbar() {
         </nav>
     );
 }
-

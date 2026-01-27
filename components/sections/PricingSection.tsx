@@ -4,6 +4,8 @@ import { motion } from "motion/react";
 import { Sparkles, Check } from "lucide-react";
 import { staggerContainer, staggerItem } from "@/lib/motion";
 
+import { Badge } from "@/components/ui/Badge";
+
 interface PricingPlan {
     name: string;
     price: string;
@@ -48,8 +50,10 @@ function PricingCard({ plan }: { plan: PricingPlan }) {
         >
             {/* Popular badge - positioned outside the card */}
             {plan.popular && (
-                <div className="absolute top-0 left-1/2 -translate-x-1/2 z-10 px-5 py-1.5 rounded-full bg-linear-to-r from-primary to-accent dark:from-primary dark:to-secondary text-primary-foreground text-sm font-semibold shadow-lg">
-                    ✨ Most Popular
+                <div className="absolute top-0 left-1/2 -translate-x-1/2 z-10">
+                    <Badge className="bg-linear-to-r from-primary to-accent dark:from-primary dark:to-secondary text-primary-foreground font-semibold shadow-lg px-5 py-1.5 border-none">
+                        ✨ Most Popular
+                    </Badge>
                 </div>
             )}
 
@@ -113,10 +117,9 @@ export function PricingSection() {
                     viewport={{ once: true }}
                     className="text-center mb-16"
                 >
-                    <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-accent/10 text-accent text-sm font-medium mb-4">
-                        <Sparkles className="w-4 h-4" />
+                    <Badge icon={Sparkles} className="mb-4 bg-accent/10 text-accent border-accent/20">
                         Simple Pricing
-                    </div>
+                    </Badge>
                     <h2 className="text-3xl sm:text-5xl font-bold mb-4 tracking-tight">
                         Invest in your future
                     </h2>

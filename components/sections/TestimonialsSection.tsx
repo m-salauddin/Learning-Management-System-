@@ -4,6 +4,8 @@ import { motion } from "motion/react";
 import { Star, Quote } from "lucide-react";
 import { staggerContainer, staggerItem } from "@/lib/motion";
 
+import { Badge } from "@/components/ui/Badge";
+
 interface Testimonial {
     quote: string;
     name: string;
@@ -98,10 +100,9 @@ export function TestimonialsSection() {
                     viewport={{ once: true }}
                     className="text-center mb-20"
                 >
-                    <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-background border border-border shadow-sm mb-6">
-                        <Star className="w-4 h-4 text-yellow-400 fill-yellow-400" />
-                        <span className="text-sm font-medium">Trusted by 50,000+ Developers</span>
-                    </div>
+                    <Badge icon={Star} iconClassName="text-yellow-400 fill-yellow-400" className="mb-6 bg-background border border-border shadow-sm">
+                        Trusted by 50,000+ Developers
+                    </Badge>
                     <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight mb-6">
                         Don't just take our <br />
                         <span className="bg-linear-to-r from-primary via-secondary to-accent bg-clip-text text-transparent">

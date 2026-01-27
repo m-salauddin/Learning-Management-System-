@@ -17,13 +17,13 @@ export const Logo = ({ className = "", showText = true, size = "md" }: LogoProps
     };
 
     const config = sizeConfig[size];
-    const uniqueId = React.useId();
-    const gradId = `premiumGradient-${uniqueId}`;
-    const gradDarkId = `premiumGradientDark-${uniqueId}`;
-    const shineId = `metallicShine-${uniqueId}`;
-    const depthId = `innerDepth-${uniqueId}`;
-    const shadowId = `logoShadow-${uniqueId}`;
-    const clipId = `roundedSquare-${uniqueId}`;
+    // Static IDs to avoid hydration mismatch (useId generates different IDs on server vs client)
+    const gradId = 'logo-premiumGradient';
+    const gradDarkId = 'logo-premiumGradientDark';
+    const shineId = 'logo-metallicShine';
+    const depthId = 'logo-innerDepth';
+    const shadowId = 'logo-shadow';
+    const clipId = 'logo-roundedSquare';
 
     return (
         <div className={`flex items-center ${config.gap} ${className}`}>

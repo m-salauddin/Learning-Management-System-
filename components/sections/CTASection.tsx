@@ -3,6 +3,8 @@
 import { motion } from "motion/react";
 import { ArrowRight, Code2, Check } from "lucide-react";
 
+import { Badge } from "@/components/ui/Badge";
+
 export function CTASection() {
     return (
         <section className="relative py-32 overflow-hidden">
@@ -39,10 +41,11 @@ export function CTASection() {
                             initial={{ opacity: 0, y: 10 }}
                             whileInView={{ opacity: 1, y: 0 }}
                             viewport={{ once: true }}
-                            className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-background/40 border border-white/10 text-foreground font-medium text-sm mb-8 backdrop-blur-md shadow-sm"
                         >
-                            <span className="flex h-2 w-2 rounded-full bg-success animate-pulse" />
-                            <span className="tracking-wide">Admissions Open for Winter 2026</span>
+                            <Badge variant="outline" className="mb-8 bg-background/40 backdrop-blur-md border-white/10 text-foreground">
+                                <span className="flex h-2 w-2 rounded-full bg-success animate-pulse mr-2" />
+                                <span className="tracking-wide">Admissions Open for Winter 2026</span>
+                            </Badge>
                         </motion.div>
 
                         <h2 className="relative text-5xl md:text-7xl lg:text-8xl font-bold tracking-tighter text-foreground mb-8 leading-[0.9]">

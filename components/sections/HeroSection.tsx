@@ -11,6 +11,7 @@ import {
     Check,
     ArrowRight,
 } from "lucide-react";
+import { Badge } from "@/components/ui/Badge";
 
 // Animated Stat Card Component with Counter
 function AnimatedStatCard({
@@ -74,7 +75,7 @@ function AnimatedStatCard({
 
 export function HeroSection() {
     return (
-        <section className="relative min-h-screen overflow-visible pt-32 pb-20">
+        <section id="hero" className="relative min-h-screen overflow-visible pt-32 pb-20">
             {/* Background Layers */}
             <div className="absolute inset-0 overflow-hidden">
                 {/* Gradient Mesh - optimized blur */}
@@ -97,10 +98,10 @@ export function HeroSection() {
                     <div className="text-center lg:text-left animate-fade-in-up">
                         {/* Badge */}
                         <div className="inline-flex mb-8">
-                            <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 border border-primary/20 text-primary text-sm font-medium">
-                                <div className="w-2 h-2 rounded-full bg-primary animate-pulse" />
-                                <span>Admissions Open for Winter 2026</span>
-                            </div>
+                            <Badge variant="default">
+                                <div className="w-2 h-2 rounded-full bg-primary animate-pulse mr-2" />
+                                Admissions Open for Winter 2026
+                            </Badge>
                         </div>
 
                         {/* Headline */}
