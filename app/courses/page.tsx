@@ -20,7 +20,8 @@ const PRICES = ["Paid", "Free"];
 const ITEMS_PER_PAGE = 9;
 
 export default function CoursesPage() {
-    const [searchTerm, setSearchTerm] = useState("");
+    const [searchInput, setSearchInput] = useState(""); // Immediate input value
+    const [searchTerm, setSearchTerm] = useState(""); // Debounced value for filtering
     const [selectedCategory, setSelectedCategory] = useState("All Topics");
     const [selectedLevels, setSelectedLevels] = useState<string[]>([]);
     const [selectedTypes, setSelectedTypes] = useState<string[]>([]);
@@ -35,6 +36,14 @@ export default function CoursesPage() {
         setMounted(true);
     }, []);
 
+    // Debounce search input
+    useEffect(() => {
+        const timer = setTimeout(() => {
+            setSearchTerm(searchInput);
+        }, 300);
+        return () => clearTimeout(timer);
+    }, [searchInput]);
+
     // Toggle filter helper
     const toggleFilter = (item: string, current: string[], setter: (val: string[]) => void) => {
         if (current.includes(item)) {
@@ -46,7 +55,7 @@ export default function CoursesPage() {
     };
 
     // Reset pagination when category or search changes
-    useMemo(() => {
+    useEffect(() => {
         setCurrentPage(1);
     }, [searchTerm, selectedCategory]);
 
@@ -77,12 +86,23 @@ export default function CoursesPage() {
     const activeFilterCount = selectedLevels.length + selectedTypes.length + selectedPrices.length;
 
     const handleClearAll = () => {
+        setSearchInput("");
         setSearchTerm("");
         setSelectedCategory("All Topics");
         setSelectedLevels([]);
         setSelectedTypes([]);
         setSelectedPrices([]);
         setCurrentPage(1);
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    };
+
+    // Check if any filters are active
+    const hasActiveFilters = searchInput !== "" || selectedCategory !== "All Topics" || selectedLevels.length > 0 || selectedTypes.length > 0 || selectedPrices.length > 0;
+
+    // Handle page change with scroll to top
+    const handlePageChange = (page: number) => {
+        setCurrentPage(page);
+        window.scrollTo({ top: 0, behavior: 'smooth' });
     };
 
     // Dynamic grid classes based on selection
@@ -152,8 +172,8 @@ export default function CoursesPage() {
                                 <input
                                     type="text"
                                     placeholder="Search..."
-                                    value={searchTerm}
-                                    onChange={(e) => setSearchTerm(e.target.value)}
+                                    value={searchInput}
+                                    onChange={(e) => setSearchInput(e.target.value)}
                                     className="w-full pl-9 pr-4 py-2 rounded-xl bg-card border border-border/50 focus:border-primary/50 focus:ring-2 focus:ring-primary/10 outline-none transition-all text-sm"
                                 />
                             </div>
@@ -253,9 +273,15 @@ export default function CoursesPage() {
                                 </div>
                             </div>
 
-                            <button onClick={handleClearAll} className="text-xs text-muted-foreground hover:text-primary transition-colors underline">
-                                Reset All Filters
-                            </button>
+                            {hasActiveFilters && (
+                                <button
+                                    onClick={handleClearAll}
+                                    className="inline-flex cursor-pointer items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium bg-primary/10 text-primary hover:bg-primary hover:text-primary-foreground transition-all duration-300 group"
+                                >
+                                    <X className="w-3 h-3 transition-transform duration-200 group-hover:scale-110" />
+                                    Reset All Filters
+                                </button>
+                            )}
                         </div>
                     </motion.aside>
 
@@ -265,18 +291,16 @@ export default function CoursesPage() {
                             {paginatedCourses.length > 0 ? (
                                 <>
                                     <motion.div
-                                        key="grid"
-                                        variants={staggerContainer}
-                                        initial="hidden"
-                                        animate="visible"
+                                        key={`grid-${currentPage}-${selectedCategory}-${searchTerm}-${selectedLevels.join('-')}-${selectedTypes.join('-')}-${selectedPrices.join('-')}`}
+                                        initial={{ opacity: 0 }}
+                                        animate={{ opacity: 1 }}
                                         exit={{ opacity: 0 }}
-                                        className={`grid gap-6 ${getGridClass()}`}
+                                        transition={{ duration: 0.2 }}
+                                        className={`grid gap-6 items-start auto-rows-fr ${getGridClass()}`}
                                     >
                                         {paginatedCourses.map((course) => (
-                                            <motion.div
+                                            <div
                                                 key={course.slug}
-                                                variants={staggerItem}
-                                                layout
                                                 className="group relative h-full"
                                             >
                                                 {/* Restored Original Card Design */}
@@ -294,6 +318,7 @@ export default function CoursesPage() {
                                                                 alt={course.title}
                                                                 fill
                                                                 className="object-cover transition-transform duration-700 group-hover:scale-110"
+
                                                             />
                                                             {/* Gradient overlay */}
                                                             <div className="absolute inset-0 bg-linear-to-t from-card/80 via-transparent to-transparent" />
@@ -365,7 +390,7 @@ export default function CoursesPage() {
                                                         </div>
                                                     </div>
                                                 </div>
-                                            </motion.div>
+                                            </div>
                                         ))}
                                     </motion.div>
 
@@ -373,9 +398,9 @@ export default function CoursesPage() {
                                     {totalPages > 1 && (
                                         <div className="mt-12 flex justify-center items-center gap-2">
                                             <button
-                                                onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                                                onClick={() => handlePageChange(Math.max(1, currentPage - 1))}
                                                 disabled={currentPage === 1}
-                                                className="p-2 rounded-xl border border-border bg-card text-foreground hover:bg-muted disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                                                className="p-2 rounded-xl border border-border bg-card text-foreground hover:bg-muted disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer transition-colors"
                                             >
                                                 <ChevronLeft className="w-5 h-5" />
                                             </button>
@@ -383,9 +408,9 @@ export default function CoursesPage() {
                                             {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
                                                 <button
                                                     key={page}
-                                                    onClick={() => setCurrentPage(page)}
+                                                    onClick={() => handlePageChange(page)}
                                                     className={`
-                                                        w-10 h-10 rounded-xl font-medium transition-all duration-300
+                                                        w-10 h-10 rounded-xl font-medium cursor-pointer transition-all duration-300
                                                         ${currentPage === page
                                                             ? "bg-primary text-primary-foreground shadow-lg shadow-primary/25 scale-110"
                                                             : "bg-card border border-border text-muted-foreground hover:bg-muted hover:text-foreground"
@@ -397,9 +422,9 @@ export default function CoursesPage() {
                                             ))}
 
                                             <button
-                                                onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                                                onClick={() => handlePageChange(Math.min(totalPages, currentPage + 1))}
                                                 disabled={currentPage === totalPages}
-                                                className="p-2 rounded-xl border border-border bg-card text-foreground hover:bg-muted disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                                                className="p-2 rounded-xl border border-border bg-card text-foreground hover:bg-muted disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer transition-colors"
                                             >
                                                 <ChevronRight className="w-5 h-5" />
                                             </button>
@@ -434,6 +459,6 @@ export default function CoursesPage() {
                 </div>
             </div>
             <Footer />
-        </div>
+        </div >
     );
 }
