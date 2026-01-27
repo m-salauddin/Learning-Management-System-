@@ -99,48 +99,35 @@ export function HeroSection() {
                     {/* Left Content */}
                     <div className="text-center lg:text-left animate-fade-in-up">
                         {/* Badge */}
-                        <div className="inline-flex mb-6">
+                        <div className="inline-flex mb-8">
                             <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 border border-primary/20 text-primary text-sm font-medium">
-                                <Sparkles className="w-4 h-4" />
-                                <span>New: Full-Stack Career Path 2026</span>
-                                <ChevronRight className="w-4 h-4" />
+                                <div className="w-2 h-2 rounded-full bg-primary animate-pulse" />
+                                <span>Admissions Open for Winter 2026</span>
                             </div>
                         </div>
 
                         {/* Headline */}
-                        <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold leading-[1.1] tracking-tight mb-6">
-                            Master Tech Skills.
+                        <h1 className="text-5xl sm:text-6xl lg:text-7xl font-bold leading-tight tracking-tight mb-8">
+                            Build What
                             <br />
-                            <span className="relative">
-                                <span className="relative z-10 bg-linear-to-r from-primary via-secondary to-accent bg-clip-text text-transparent">
-                                    Land Your Dream Job.
-                                </span>
-                                <svg className="absolute -bottom-2 left-0 w-full" viewBox="0 0 300 12" fill="none">
-                                    <path d="M2 10C50 4 100 2 150 6C200 10 250 6 298 2" stroke="url(#underline-gradient)" strokeWidth="3" strokeLinecap="round" />
-                                    <defs>
-                                        <linearGradient id="underline-gradient" x1="0%" y1="0%" x2="100%" y2="0%">
-                                            <stop offset="0%" stopColor="var(--primary)" />
-                                            <stop offset="100%" stopColor="var(--accent)" />
-                                        </linearGradient>
-                                    </defs>
-                                </svg>
+                            <span className="bg-linear-to-r from-primary via-secondary to-accent bg-clip-text text-transparent">
+                                Matters.
                             </span>
                         </h1>
 
                         {/* Subheadline */}
-                        <p className="text-lg sm:text-xl text-muted-foreground mb-8 max-w-lg mx-auto lg:mx-0">
-                            Bangladesh's premier learning platform. Industry-aligned curriculum, hands-on projects, and direct pathways to top tech companies.
+                        <p className="text-xl text-muted-foreground mb-10 max-w-2xl mx-auto lg:mx-0 leading-relaxed">
+                            From your first line of code to your first day at a tech giant. We’re with you every step of the journey.
                         </p>
 
                         {/* CTA Buttons */}
-                        <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start mb-10">
-                            <button className="group flex items-center justify-center gap-2 px-8 py-4 rounded-2xl bg-linear-to-r from-primary to-primary/80 text-white font-semibold text-lg shadow-xl shadow-primary/25 hover:shadow-2xl hover:shadow-primary/30 transition-all duration-300 hover:-translate-y-0.5">
-                                Explore Courses
+                        <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start mb-12">
+                            <button className="group flex items-center justify-center gap-2 px-8 py-4 rounded-2xl bg-foreground text-background font-bold text-lg hover:bg-foreground/90 transition-all duration-300 hover:-translate-y-0.5 shadow-xl shadow-foreground/10">
+                                Get Started Now
                                 <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
                             </button>
-                            <button className="flex items-center justify-center gap-2 px-8 py-4 rounded-2xl bg-muted/50 hover:bg-muted font-semibold text-lg border border-border transition-all duration-300">
-                                <Play className="w-5 h-5" />
-                                Watch Demo
+                            <button className="flex items-center justify-center gap-2 px-8 py-4 rounded-2xl bg-card hover:bg-card/80 font-bold text-lg border border-border/50 text-foreground transition-all duration-300">
+                                Explore Structure
                             </button>
                         </div>
 

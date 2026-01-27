@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Space_Grotesk, JetBrains_Mono } from "next/font/google";
 import { ThemeProvider } from "@/components/providers/theme-provider";
+import { CookieConsent } from "@/components/CookieConsent";
 import "./globals.css";
 
 const spaceGrotesk = Space_Grotesk({
@@ -75,8 +76,10 @@ export default function RootLayout({
           disableTransitionOnChange
         >
           {children}
+          <CookieConsent />
         </ThemeProvider>
       </body>
     </html>
   );
 }
+

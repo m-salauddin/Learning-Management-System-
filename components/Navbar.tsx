@@ -1,5 +1,6 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 import { Logo } from "@/components/ui/Logo";
@@ -8,8 +9,35 @@ import { ThemeToggle } from "@/components/ui/theme-toggle";
 const NAV_LINKS = ["Courses", "Features", "Pricing", "Community"] as const;
 
 export function Navbar() {
+    const [mounted, setMounted] = useState(false);
+
+    useEffect(() => {
+        setMounted(true);
+    }, []);
+
+    // Render a placeholder during SSR to avoid hydration mismatch
+    if (!mounted) {
+        return (
+            <nav className="fixed top-4 left-1/2 -translate-x-1/2 z-50 w-[calc(100%-2rem)] max-w-6xl">
+                <div className="backdrop-blur-2xl backdrop-saturate-150 bg-background/85 border border-border/50 rounded-2xl px-8 py-4 shadow-xl shadow-black/10">
+                    <div className="flex items-center justify-between">
+                        <div className="h-8 w-32" />
+                        <div className="hidden md:flex items-center gap-1">
+                            {NAV_LINKS.map((item) => (
+                                <div key={item} className="px-4 py-2 h-9 w-20" />
+                            ))}
+                        </div>
+                        <div className="flex items-center gap-3">
+                            <div className="w-28 h-8" />
+                        </div>
+                    </div>
+                </div>
+            </nav>
+        );
+    }
+
     return (
-        <nav className="fixed top-4 left-1/2 -translate-x-1/2 z-50 w-[calc(100%-2rem)] max-w-6xl animate-fade-in-down" suppressHydrationWarning>
+        <nav className="fixed top-4 left-1/2 -translate-x-1/2 z-50 w-[calc(100%-2rem)] max-w-6xl animate-fade-in-down">
             <div className="backdrop-blur-2xl backdrop-saturate-150 bg-background/85 border border-border/50 rounded-2xl px-8 py-4 shadow-xl shadow-black/10">
                 <div className="flex items-center justify-between">
                     {/* Logo */}
@@ -52,3 +80,4 @@ export function Navbar() {
         </nav>
     );
 }
+
