@@ -17,6 +17,13 @@ export const Logo = ({ className = "", showText = true, size = "md" }: LogoProps
     };
 
     const config = sizeConfig[size];
+    const uniqueId = React.useId();
+    const gradId = `premiumGradient-${uniqueId}`;
+    const gradDarkId = `premiumGradientDark-${uniqueId}`;
+    const shineId = `metallicShine-${uniqueId}`;
+    const depthId = `innerDepth-${uniqueId}`;
+    const shadowId = `logoShadow-${uniqueId}`;
+    const clipId = `roundedSquare-${uniqueId}`;
 
     return (
         <div className={`flex items-center ${config.gap} ${className}`}>
@@ -33,7 +40,7 @@ export const Logo = ({ className = "", showText = true, size = "md" }: LogoProps
                 >
                     <defs>
                         {/* Premium Multi-stop Gradient */}
-                        <linearGradient id="premiumGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <linearGradient id={gradId} x1="0%" y1="0%" x2="100%" y2="100%">
                             <stop offset="0%" stopColor="#0036F9" />
                             <stop offset="35%" stopColor="#4F46E5" />
                             <stop offset="65%" stopColor="#7C3AED" />
@@ -41,7 +48,7 @@ export const Logo = ({ className = "", showText = true, size = "md" }: LogoProps
                         </linearGradient>
 
                         {/* Dark mode gradient */}
-                        <linearGradient id="premiumGradientDark" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <linearGradient id={gradDarkId} x1="0%" y1="0%" x2="100%" y2="100%">
                             <stop offset="0%" stopColor="#FCB900" />
                             <stop offset="40%" stopColor="#F59E0B" />
                             <stop offset="70%" stopColor="#22D3EE" />
@@ -49,43 +56,53 @@ export const Logo = ({ className = "", showText = true, size = "md" }: LogoProps
                         </linearGradient>
 
                         {/* Metallic Shine */}
-                        <linearGradient id="metallicShine" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <linearGradient id={shineId} x1="0%" y1="0%" x2="100%" y2="100%">
                             <stop offset="0%" stopColor="white" stopOpacity="0.4" />
                             <stop offset="50%" stopColor="white" stopOpacity="0" />
                             <stop offset="100%" stopColor="white" stopOpacity="0.15" />
                         </linearGradient>
 
                         {/* Inner depth gradient */}
-                        <radialGradient id="innerDepth" cx="30%" cy="30%" r="70%" fx="20%" fy="20%">
+                        <radialGradient id={depthId} cx="30%" cy="30%" r="70%" fx="20%" fy="20%">
                             <stop offset="0%" stopColor="white" stopOpacity="0.25" />
                             <stop offset="60%" stopColor="white" stopOpacity="0" />
                             <stop offset="100%" stopColor="black" stopOpacity="0.1" />
                         </radialGradient>
 
                         {/* Optimized shadow - single layer */}
-                        <filter id="logoShadow" x="-20%" y="-20%" width="140%" height="140%">
+                        <filter id={shadowId} x="-20%" y="-20%" width="140%" height="140%">
                             <feDropShadow dx="0" dy="2" stdDeviation="4" floodColor="#4F46E5" floodOpacity="0.3" />
                         </filter>
 
-                        <clipPath id="roundedSquare">
+                        <clipPath id={clipId}>
                             <rect x="4" y="4" width="56" height="56" rx="16" />
                         </clipPath>
                     </defs>
 
                     {/* Main Shape */}
-                    <g filter="url(#logoShadow)">
+                    <g filter={`url(#${shadowId})`}>
+                        {/* Light Mode Base */}
                         <rect
                             x="4" y="4"
                             width="56" height="56"
                             rx="16"
-                            className="fill-[url(#premiumGradient)] dark:fill-[url(#premiumGradientDark)]"
+                            fill={`url(#${gradId})`}
+                            className="dark:hidden"
                         />
-                        <rect x="4" y="4" width="56" height="56" rx="16" fill="url(#innerDepth)" />
-                        <rect x="4" y="4" width="56" height="56" rx="16" fill="url(#metallicShine)" />
+                        {/* Dark Mode Base */}
+                        <rect
+                            x="4" y="4"
+                            width="56" height="56"
+                            rx="16"
+                            fill={`url(#${gradDarkId})`}
+                            className="hidden dark:block"
+                        />
+                        <rect x="4" y="4" width="56" height="56" rx="16" fill={`url(#${depthId})`} />
+                        <rect x="4" y="4" width="56" height="56" rx="16" fill={`url(#${shineId})`} />
                     </g>
 
                     {/* S Lettermark */}
-                    <g clipPath="url(#roundedSquare)">
+                    <g clipPath={`url(#${clipId})`}>
                         <path
                             d="M42 22C42 22 38 16 30 16C22 16 18 20 18 25C18 30 23 33 30 34C37 35 46 38 46 44C46 50 40 54 30 54C22 54 18 48 18 48"
                             stroke="white"
