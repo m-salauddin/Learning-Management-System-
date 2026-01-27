@@ -15,6 +15,8 @@ import {
     SiTailwindcss,
     SiGit,
 } from "react-icons/si";
+import { Code2 } from "lucide-react";
+import { Badge } from "@/components/ui/Badge";
 
 const TECH_STACK = [
     { name: "React", icon: SiReact, color: "text-cyan-400" },
@@ -58,9 +60,9 @@ export function TechStackSection() {
             {/* Header */}
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-10">
                 <div className="text-center">
-                    <p className="text-sm font-medium text-primary mb-2 tracking-wider uppercase">
+                    <Badge icon={Code2} className="mb-4 uppercase tracking-wider">
                         Industry-Ready Skills
-                    </p>
+                    </Badge>
                     <h2 className="text-2xl md:text-3xl font-bold mb-4">
                         Master the Technologies That Matter
                     </h2>

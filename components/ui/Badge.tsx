@@ -18,7 +18,7 @@ export function Badge({
     iconClassName,
 }: BadgeProps) {
     const variants = {
-        default: "bg-primary/10 border border-primary/20 text-primary",
+        default: "bg-primary/5 border border-primary/20 text-primary",
         outline: "bg-transparent border border-border text-foreground hover:bg-muted",
         solid: "bg-primary text-primary-foreground hover:bg-primary/90",
     };

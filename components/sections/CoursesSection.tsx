@@ -9,6 +9,32 @@ import { COURSES, Course } from "@/data/courses";
 import { Badge } from "@/components/ui/Badge";
 
 
+const TAG_COLORS = [
+    "!bg-emerald-500/10 !text-emerald-500 !border-emerald-500/20",
+    "!bg-amber-500/10 !text-amber-500 !border-amber-500/20",
+    "!bg-rose-500/10 !text-rose-500 !border-rose-500/20",
+    "!bg-indigo-500/10 !text-indigo-500 !border-indigo-500/20",
+    "!bg-pink-500/10 !text-pink-500 !border-pink-500/20",
+    "!bg-orange-500/10 !text-orange-500 !border-orange-500/20",
+    "!bg-cyan-500/10 !text-cyan-500 !border-cyan-500/20",
+    "!bg-violet-500/10 !text-violet-500 !border-violet-500/20",
+];
+
+function getBadgeColor(text: string) {
+    const index = text.split("").reduce((acc, char) => acc + char.charCodeAt(0), 0);
+    return TAG_COLORS[index % TAG_COLORS.length];
+}
+
+const LEVEL_STYLES = {
+    Beginner: "!bg-emerald-500/10 !text-emerald-500 !border-emerald-500/20",
+    Intermediate: "!bg-violet-500/10 !text-violet-500 !border-violet-500/20",
+    Advanced: "!bg-rose-500/10 !text-rose-500 !border-rose-500/20",
+};
+
+function getLevelStyle(level: string) {
+    return LEVEL_STYLES[level as keyof typeof LEVEL_STYLES] || "!bg-gray-500/10 !text-gray-500 !border-gray-500/20";
+}
+
 function CourseCard({ course }: { course: Course }) {
     return (
         <motion.div
@@ -36,17 +62,17 @@ function CourseCard({ course }: { course: Course }) {
 
                         {/* Duration badge */}
                         <div className="absolute top-3 right-3">
-                            <Badge className="bg-background/70 dark:bg-black/50 backdrop-blur-md border-white/20 shadow-lg px-3 py-1 text-sm font-semibold text-primary">
+                            <Badge className="backdrop-blur-md shadow-lg px-3 py-1 text-sm font-semibold bg-sky-500/20! text-sky-100! border-sky-500/30!">
                                 {course.duration}
                             </Badge>
                         </div>
 
                         {/* Rating badge */}
                         <div className="absolute bottom-3 left-3">
-                            <Badge className="bg-background/70 dark:bg-black/50 backdrop-blur-md border-white/20 shadow-lg px-3 py-1 flex items-center gap-1">
+                            <Badge className="backdrop-blur-md shadow-lg px-3 py-1 flex items-center gap-1 bg-amber-500/20! text-amber-100! border-amber-500/30!">
                                 <Star className="w-4 h-4 fill-yellow-400 text-yellow-400 mr-1" />
-                                <span className="font-bold text-foreground">{course.rating}</span>
-                                <span className="text-muted-foreground text-xs ml-1">
+                                <span className="font-bold">{course.rating}</span>
+                                <span className="text-white/70 text-xs ml-1">
                                     ({course.students})
                                 </span>
                             </Badge>
@@ -57,10 +83,10 @@ function CourseCard({ course }: { course: Course }) {
                 {/* Content */}
                 <div className="p-6 pt-4 grow flex flex-col">
                     <div className="flex items-center gap-2 mb-2">
-                        <Badge variant="outline" className="text-[10px] uppercase tracking-wider text-primary border-primary/20 bg-primary/5 px-2 py-0.5 rounded-md h-auto font-bold">
+                        <Badge className={`text-[10px] uppercase tracking-wider px-2 py-0.5 rounded-md h-auto font-bold ${getLevelStyle(course.level)}`}>
                             {course.level}
                         </Badge>
-                        <Badge variant="outline" className="text-[10px] uppercase tracking-wider text-muted-foreground border-border px-2 py-0.5 rounded-md h-auto font-bold">
+                        <Badge className="text-[10px] uppercase tracking-wider px-2 py-0.5 rounded-md h-auto font-bold bg-blue-500/10! text-blue-500! border-blue-500/20!">
                             {course.type}
                         </Badge>
                     </div>
@@ -76,8 +102,7 @@ function CourseCard({ course }: { course: Course }) {
                         {course.tags.map((tag) => (
                             <Badge
                                 key={tag}
-                                variant="outline"
-                                className="text-xs font-medium bg-muted/80 text-muted-foreground hover:bg-primary/10 hover:text-primary border-none"
+                                className={`text-xs font-medium border ${getBadgeColor(tag)}`}
                             >
                                 {tag}
                             </Badge>
@@ -117,7 +142,7 @@ export function CoursesSection() {
                     className="flex flex-col md:flex-row md:items-end md:justify-between mb-12"
                 >
                     <div>
-                        <Badge icon={GraduationCap} className="mb-4 bg-secondary/10 text-secondary border-secondary/20">
+                        <Badge icon={GraduationCap} className="mb-4">
                             Popular Courses
                         </Badge>
                         <h2 className="text-3xl sm:text-4xl font-bold tracking-tight">

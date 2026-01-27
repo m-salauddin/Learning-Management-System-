@@ -1,7 +1,7 @@
 "use client";
 
 import { motion } from "motion/react";
-import { Star, Quote } from "lucide-react";
+import { MessageCircle, Quote } from "lucide-react";
 import { staggerContainer, staggerItem } from "@/lib/motion";
 
 import { Badge } from "@/components/ui/Badge";
@@ -100,7 +100,7 @@ export function TestimonialsSection() {
                     viewport={{ once: true }}
                     className="text-center mb-20"
                 >
-                    <Badge icon={Star} iconClassName="text-yellow-400 fill-yellow-400" className="mb-6 bg-background border border-border shadow-sm">
+                    <Badge icon={MessageCircle} iconClassName="text-yellow-400" className="mb-6 shadow-sm">
                         Trusted by 50,000+ Developers
                     </Badge>
                     <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight mb-6">

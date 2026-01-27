@@ -42,8 +42,8 @@ export function CTASection() {
                             whileInView={{ opacity: 1, y: 0 }}
                             viewport={{ once: true }}
                         >
-                            <Badge variant="outline" className="mb-8 bg-background/40 backdrop-blur-md border-white/10 text-foreground">
-                                <span className="flex h-2 w-2 rounded-full bg-success animate-pulse mr-2" />
+                            <Badge variant="default" className="mb-8 backdrop-blur-md shadow-sm">
+                                <span className="flex h-2 w-2 rounded-full bg-primary animate-pulse mr-2" />
                                 <span className="tracking-wide">Admissions Open for Winter 2026</span>
                             </Badge>
                         </motion.div>
