@@ -114,10 +114,10 @@ export const Logo = ({ className = "", showText = true, size = "md" }: LogoProps
                 <div className="flex flex-col">
                     <div className={`${config.text} font-bold tracking-tight leading-none flex items-baseline`}>
                         <span className="text-foreground">Skill</span>
-                        <span className="bg-gradient-to-r from-primary via-accent to-secondary bg-clip-text text-transparent dark:from-primary dark:via-secondary dark:to-accent">
+                        <span className="bg-linear-to-r from-primary via-accent to-secondary bg-clip-text text-transparent dark:from-primary dark:via-secondary dark:to-accent">
                             Sync
                         </span>
-                        <span className="ml-1.5 text-[0.5em] font-black tracking-wider text-white bg-gradient-to-r from-primary to-accent dark:from-primary dark:to-secondary px-1.5 py-0.5 rounded-md shadow-sm">
+                        <span className="ml-1.5 text-[0.5em] font-black tracking-wider text-white bg-linear-to-r from-primary to-accent dark:from-primary dark:to-secondary px-1.5 py-0.5 rounded-md shadow-sm">
                             BD
                         </span>
                     </div>

@@ -40,37 +40,43 @@ function TestimonialCard({ testimonial, index }: { testimonial: Testimonial; ind
     return (
         <motion.div
             variants={staggerItem}
-            whileHover={{ y: -5 }}
-            className={`relative p-8 rounded-3xl backdrop-blur-xl border border-white/10 shadow-2xl transition-all duration-300 group
-        ${index === 1 ? "bg-background/60 md:-translate-y-8" : "bg-background/40 hover:bg-background/60"}
-      `}
+            className={`group relative ${index === 1 ? "md:-translate-y-8" : ""}`}
         >
-            {/* Glow Effect on Hover */}
-            <div
-                className={`absolute inset-0 rounded-3xl bg-linear-to-br ${testimonial.gradient} opacity-0 group-hover:opacity-5 transition-opacity duration-500`}
-            />
-
-            <div className="relative z-10">
-                {/* Quote Icon */}
-                <div
-                    className={`w-12 h-12 rounded-2xl bg-linear-to-br ${testimonial.gradient} bg-opacity-10 flex items-center justify-center mb-6`}
-                >
-                    <Quote className="w-6 h-6 text-white" />
+            <div className={`relative h-full p-8 rounded-3xl backdrop-blur-xl border overflow-hidden transition-all duration-500 group-hover:-translate-y-1 group-hover:shadow-2xl
+                ${index === 1
+                    ? "bg-card/70 dark:bg-card/50 border-primary/30"
+                    : "bg-card/50 dark:bg-card/30 border-border/50 dark:border-white/10 group-hover:border-primary/30"
+                }`}
+            >
+                {/* Shine effect */}
+                <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none">
+                    <div className="absolute inset-0 bg-linear-to-r from-transparent via-white/5 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000" />
                 </div>
 
-                <p className="text-lg text-muted-foreground mb-8 leading-relaxed">
-                    "{testimonial.quote}"
-                </p>
-
-                <div className="flex items-center gap-4 border-t border-border/50 pt-6">
-                    <div className={`w-12 h-12 rounded-full bg-linear-to-br ${testimonial.gradient} p-[2px]`}>
-                        <div className="w-full h-full rounded-full bg-background flex items-center justify-center text-sm font-bold">
-                            {testimonial.avatar}
+                <div className="relative z-10">
+                    {/* Quote Icon */}
+                    <div className="relative mb-6">
+                        <div
+                            className={`w-12 h-12 rounded-2xl bg-linear-to-br ${testimonial.gradient} flex items-center justify-center group-hover:scale-110 transition-transform duration-300 shadow-lg`}
+                        >
+                            <Quote className="w-6 h-6 text-white" />
                         </div>
                     </div>
-                    <div>
-                        <h4 className="font-bold text-foreground">{testimonial.name}</h4>
-                        <p className="text-xs text-primary font-medium">{testimonial.role}</p>
+
+                    <p className="text-lg text-muted-foreground mb-8 leading-relaxed group-hover:text-foreground/80 transition-colors duration-300">
+                        "{testimonial.quote}"
+                    </p>
+
+                    <div className="flex items-center gap-4 border-t border-border/50 dark:border-white/10 pt-6">
+                        <div className={`w-12 h-12 rounded-full bg-linear-to-br ${testimonial.gradient} p-[2px] group-hover:shadow-lg group-hover:shadow-primary/20 transition-shadow duration-300`}>
+                            <div className="w-full h-full rounded-full bg-card flex items-center justify-center text-sm font-bold">
+                                {testimonial.avatar}
+                            </div>
+                        </div>
+                        <div>
+                            <h4 className="font-bold text-foreground group-hover:text-primary transition-colors duration-300">{testimonial.name}</h4>
+                            <p className="text-xs text-primary font-medium">{testimonial.role}</p>
+                        </div>
                     </div>
                 </div>
             </div>

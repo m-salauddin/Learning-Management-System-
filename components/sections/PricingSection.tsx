@@ -44,37 +44,59 @@ function PricingCard({ plan }: { plan: PricingPlan }) {
     return (
         <motion.div
             variants={staggerItem}
-            className={`relative p-8 rounded-3xl border ${plan.popular
-                    ? "bg-linear-to-b from-primary/10 to-card border-primary/50 shadow-xl shadow-primary/10"
-                    : "bg-card border-border"
-                }`}
+            className={`group relative ${plan.popular ? "pt-4" : ""}`}
         >
+            {/* Popular badge - positioned outside the card */}
             {plan.popular && (
-                <div className="absolute -top-4 left-1/2 -translate-x-1/2 px-4 py-1 rounded-full bg-primary text-primary-foreground text-sm font-medium">
-                    Most Popular
+                <div className="absolute top-0 left-1/2 -translate-x-1/2 z-10 px-5 py-1.5 rounded-full bg-linear-to-r from-primary to-accent dark:from-primary dark:to-secondary text-primary-foreground text-sm font-semibold shadow-lg">
+                    ✨ Most Popular
                 </div>
             )}
-            <div className="text-center mb-6">
-                <h3 className="text-xl font-bold mb-2">{plan.name}</h3>
-                <p className="text-muted-foreground text-sm mb-4">{plan.description}</p>
-                <div className="text-4xl font-bold">{plan.price}</div>
-            </div>
-            <ul className="space-y-3 mb-8">
-                {plan.features.map((feature) => (
-                    <li key={feature} className="flex items-center gap-3 text-sm">
-                        <Check className={`w-5 h-5 ${plan.popular ? "text-primary" : "text-muted-foreground"}`} />
-                        <span>{feature}</span>
-                    </li>
-                ))}
-            </ul>
-            <button
-                className={`w-full py-3 rounded-xl font-medium transition-all ${plan.popular
-                        ? "bg-primary text-primary-foreground hover:bg-primary/90"
-                        : "bg-muted hover:bg-muted/80"
-                    }`}
+
+            <div className={`relative h-full p-8 rounded-3xl backdrop-blur-xl border overflow-hidden transition-all duration-500 group-hover:-translate-y-1 ${plan.popular
+                ? "bg-linear-to-b from-primary/10 via-card/90 to-card/90 dark:from-primary/20 dark:via-card/80 dark:to-card/80 border-primary/50 shadow-xl"
+                : "bg-card/80 dark:bg-card/50 border-border/50 dark:border-white/10 group-hover:border-primary/30 group-hover:shadow-xl"
+                }`}
             >
-                {plan.cta}
-            </button>
+                {/* Shine effect */}
+                <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none">
+                    <div className="absolute inset-0 bg-linear-to-r from-transparent via-white/5 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000" />
+                </div>
+
+                <div className="relative z-10 text-center mb-8">
+                    <h3 className="text-xl font-bold mb-2 group-hover:text-primary transition-colors duration-300">{plan.name}</h3>
+                    <p className="text-muted-foreground text-sm mb-6">{plan.description}</p>
+                    <div className={`text-4xl font-black ${plan.popular
+                        ? "bg-linear-to-r from-primary to-accent bg-clip-text text-transparent dark:from-primary dark:to-secondary"
+                        : ""}`}
+                    >
+                        {plan.price}
+                    </div>
+                </div>
+
+                <ul className="relative z-10 space-y-4 mb-8">
+                    {plan.features.map((feature) => (
+                        <li key={feature} className="flex items-center gap-3 text-sm group/item">
+                            <div className={`w-5 h-5 rounded-full flex items-center justify-center ${plan.popular
+                                ? "bg-primary/20 group-hover/item:bg-primary/30"
+                                : "bg-muted group-hover/item:bg-primary/20"} transition-colors duration-300`}
+                            >
+                                <Check className={`w-3 h-3 ${plan.popular ? "text-primary" : "text-muted-foreground group-hover/item:text-primary"} transition-colors duration-300`} />
+                            </div>
+                            <span className="group-hover/item:text-foreground transition-colors duration-300">{feature}</span>
+                        </li>
+                    ))}
+                </ul>
+
+                <button
+                    className={`w-full py-3.5 rounded-xl font-semibold transition-all duration-300 ${plan.popular
+                        ? "bg-primary text-primary-foreground hover:bg-primary/90"
+                        : "bg-muted hover:bg-primary/10 hover:text-primary"
+                        }`}
+                >
+                    {plan.cta}
+                </button>
+            </div>
         </motion.div>
     );
 }
