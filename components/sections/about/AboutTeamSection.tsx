@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { motion } from "motion/react";
+import { motion, useMotionTemplate, useMotionValue } from "motion/react";
 import { Users } from "lucide-react";
 import { staggerContainer, staggerItem } from "@/lib/motion";
 import { Badge } from "@/components/ui/Badge";
@@ -82,38 +82,76 @@ export function AboutTeamSection() {
                     className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6"
                 >
                     {TEAM.map((member, index) => (
-                        <motion.div
-                            key={index}
-                            variants={staggerItem}
-                            className="group relative"
-                        >
-                            <div className="relative h-full p-6 rounded-3xl bg-card/80 dark:bg-card/60 backdrop-blur-xl border border-border/50 dark:border-white/10 hover:border-primary/30 transition-all duration-500 group-hover:-translate-y-2 group-hover:shadow-2xl overflow-hidden text-center">
-                                {/* Shine effect */}
-                                <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none">
-                                    <div className="absolute inset-0 bg-linear-to-r from-transparent via-white/5 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000" />
-                                </div>
-
-                                {/* Avatar */}
-                                <div className={`w-20 h-20 rounded-full bg-linear-to-br ${member.gradient} p-[3px] mx-auto mb-5 group-hover:scale-110 transition-transform duration-300 shadow-xl`}>
-                                    <div className="w-full h-full rounded-full bg-card flex items-center justify-center text-xl font-bold">
-                                        {member.avatar}
-                                    </div>
-                                </div>
-
-                                <h3 className="text-lg font-bold mb-1 group-hover:text-primary transition-colors duration-300">
-                                    {member.name}
-                                </h3>
-                                <p className="text-sm text-primary font-medium mb-3">
-                                    {member.role}
-                                </p>
-                                <p className="text-sm text-muted-foreground">
-                                    {member.bio}
-                                </p>
-                            </div>
-                        </motion.div>
+                        <TeamCard key={index} member={member} index={index} />
                     ))}
                 </motion.div>
             </div>
         </section>
+    );
+}
+
+function TeamCard({ member, index }: { member: TeamMember; index: number }) {
+    const mouseX = useMotionValue(0);
+    const mouseY = useMotionValue(0);
+
+    function handleMouseMove({ currentTarget, clientX, clientY }: React.MouseEvent) {
+        const { left, top } = currentTarget.getBoundingClientRect();
+        mouseX.set(clientX - left);
+        mouseY.set(clientY - top);
+    }
+
+    return (
+        <motion.div
+            variants={staggerItem}
+            className="group relative rounded-3xl"
+            onMouseMove={handleMouseMove}
+        >
+            {/* Dynamic Border Glow (Behind) */}
+            <motion.div
+                className="absolute -inset-px rounded-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+                style={{
+                    background: useMotionTemplate`
+                        radial-gradient(
+                            300px circle at ${mouseX}px ${mouseY}px,
+                            var(--primary),
+                            transparent 40%
+                        )
+                    `,
+                }}
+            />
+
+            <div className="relative h-full p-6 rounded-3xl bg-card border border-border/50 dark:border-white/10 overflow-hidden text-center transition-colors duration-300">
+                {/* Cursor Follow Glow - Inner (Smaller Size) */}
+                <motion.div
+                    className="pointer-events-none absolute -inset-px opacity-0 group-hover:opacity-100 transition duration-300"
+                    style={{
+                        background: useMotionTemplate`
+                            radial-gradient(
+                                250px circle at ${mouseX}px ${mouseY}px,
+                                color-mix(in srgb, var(--primary), transparent 90%),
+                                transparent 80%
+                            )
+                        `,
+                    }}
+                />
+
+                {/* Avatar */}
+                <div className={`relative w-20 h-20 rounded-full bg-linear-to-br ${member.gradient} p-[3px] mx-auto mb-5 shadow-xl`}>
+                    <div className="w-full h-full rounded-full bg-card flex items-center justify-center text-xl font-bold relative z-10">
+                        {member.avatar}
+                    </div>
+                </div>
+
+                <h3 className="relative z-10 text-lg font-bold mb-1 group-hover:text-primary transition-colors duration-300">
+                    {member.name}
+                </h3>
+                <p className="relative z-10 text-sm text-primary font-medium mb-3">
+                    {member.role}
+                </p>
+                <p className="relative z-10 text-sm text-muted-foreground">
+                    {member.bio}
+                </p>
+            </div>
+        </motion.div>
     );
 }

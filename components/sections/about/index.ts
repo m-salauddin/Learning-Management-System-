@@ -7,4 +7,4 @@ export { AboutMissionSection } from "./AboutMissionSection";
 export { AboutValuesSection } from "./AboutValuesSection";
 export { AboutTimelineSection } from "./AboutTimelineSection";
 export { AboutTeamSection } from "./AboutTeamSection";
-export { AboutCTASection } from "./AboutCTASection";
+export { AboutCommunitySection } from "./AboutCommunitySection";

@@ -7,7 +7,7 @@ import {
     AboutValuesSection,
     AboutTimelineSection,
     AboutTeamSection,
-    AboutCTASection,
+    AboutCommunitySection,
 } from "@/components/sections/about";
 
 export default function AboutPage() {
@@ -19,7 +19,8 @@ export default function AboutPage() {
             <AboutValuesSection />
             <AboutTimelineSection />
             <AboutTeamSection />
-            <AboutCTASection />
+            {/* <AboutCTASection /> Replaced with Community Network */}
+            <AboutCommunitySection />
         </>
     );
 }

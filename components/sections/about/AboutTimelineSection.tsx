@@ -80,14 +80,13 @@ function TimelineContainer() {
     });
 
     return (
-
         <div ref={containerRef} className="relative">
             {/* Timeline Line Base */}
-            <div className="absolute left-1/2 top-0 bottom-0 w-px bg-border/50 hidden lg:block" />
+            <div className="absolute left-4 lg:left-1/2 top-0 bottom-0 w-px bg-border/50 block" />
 
             {/* Scroll Progress Line */}
             <motion.div
-                className="absolute left-1/2 top-0 w-px bg-linear-to-b from-primary via-secondary to-primary hidden lg:block origin-top"
+                className="absolute left-4 lg:left-1/2 top-0 w-px bg-linear-to-b from-primary via-secondary to-primary block origin-top"
                 style={{ height: "100%", scaleY: scrollYProgress, willChange: "transform" }}
             />
 
@@ -103,7 +102,7 @@ function TimelineContainer() {
                     <motion.div
                         key={index}
                         variants={staggerItem}
-                        className={`relative lg:grid lg:grid-cols-2 lg:gap-8 ${index !== TIMELINE.length - 1 ? 'lg:pb-16' : ''}`}
+                        className={`relative pl-12 lg:pl-0 lg:grid lg:grid-cols-2 lg:gap-8 ${index !== TIMELINE.length - 1 ? 'lg:pb-16' : ''}`}
                     >
                         {/* Content */}
                         <div className={`${index % 2 === 0 ? 'lg:pr-12 lg:text-right' : 'lg:col-start-2 lg:pl-12'}`}>
@@ -198,7 +197,7 @@ function TimelineDot({ index, total, scrollYProgress }: { index: number; total: 
     return (
         <motion.div
             style={{ scale }}
-            className="absolute left-1/2 top-6 -translate-x-1/2 w-4 h-4 rounded-full bg-background border-4 border-border hidden lg:block z-10 transition-colors duration-300"
+            className="absolute left-4 lg:left-1/2 top-6 -translate-x-1/2 w-4 h-4 rounded-full bg-background border-4 border-border block z-10 transition-colors duration-300"
         >
             <motion.div
                 style={{ opacity: activeOpacity }}
