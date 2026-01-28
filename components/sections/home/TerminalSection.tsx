@@ -56,7 +56,7 @@ const TerminalCursor = () => (
 );
 
 // Oh My Posh Prompt - Pill-shaped segments with gaps
-const OmpPrompt = ({ showTime = true }: { showTime?: boolean }) => {
+const OmpPrompt = ({ showTime = true, className }: { showTime?: boolean; className?: string }) => {
     const [time, setTime] = React.useState("");
 
     React.useEffect(() => {
@@ -70,7 +70,7 @@ const OmpPrompt = ({ showTime = true }: { showTime?: boolean }) => {
     }, []);
 
     return (
-        <div className="flex items-center text-[13px] font-medium leading-none mr-3 select-none shrink-0 gap-1">
+        <div className={`flex items-center text-[13px] font-medium leading-none select-none shrink-0 gap-1 ${className ?? "mr-3"}`}>
             {/* Segment 1: User - Gold */}
             <div className="bg-[#FCB900] text-[#1a1a1a] px-3 py-[5px] rounded-full flex items-center font-semibold">
                 <span>dev</span>
@@ -273,7 +273,7 @@ export function TerminalSection() {
                         {/* Terminal Content */}
                         <div
                             ref={containerRef}
-                            className="p-5 h-[480px] overflow-hidden font-mono text-sm leading-relaxed bg-[#030712] selection:bg-[#FCB900]/30 selection:text-white"
+                            className="px-8 py-6 pb-12 h-[480px] overflow-hidden font-mono text-sm leading-relaxed bg-[#030712] selection:bg-[#FCB900]/30 selection:text-white"
                             style={{
                                 backgroundImage: `
                                     radial-gradient(ellipse at top, rgba(252, 185, 0, 0.04) 0%, transparent 50%),
@@ -367,10 +367,10 @@ export function TerminalSection() {
                                     <motion.div
                                         initial={{ opacity: 0 }}
                                         animate={{ opacity: 1 }}
-                                        className="flex items-center gap-2 text-[#34D399]"
+                                        className="w-full flex items-center text-[#34D399] py-2 mt-2"
                                     >
-                                        <OmpPrompt showTime={true} />
-                                        <span className="text-muted-foreground">Session complete. Restarting...</span>
+                                        <OmpPrompt showTime={true} className="mr-0" />
+                                        <span className="text-muted-foreground pl-8">Session complete. Restarting...</span>
                                     </motion.div>
                                 )}
                             </div>
