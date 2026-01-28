@@ -58,7 +58,7 @@ export function Footer() {
                                 <a
                                     key={i}
                                     href="#"
-                                    className="w-10 h-10 rounded-xl bg-white/5 border border-white/5 flex items-center justify-center text-slate-400 hover:bg-primary hover:text-white hover:border-primary transition-all duration-300"
+                                    className="w-10 h-10 rounded-xl bg-white/5 border border-white/5 flex items-center justify-center text-slate-400 hover:bg-primary hover:text-white hover:border-primary transition-all duration-300 cursor-pointer"
                                     aria-label={`Social link ${i + 1}`}
                                 >
                                     <Icon className="w-5 h-5" />
@@ -76,7 +76,7 @@ export function Footer() {
                                     <li key={link.text}>
                                         <a
                                             href={link.href}
-                                            className="group inline-flex items-center relative text-slate-400 hover:text-primary text-sm font-medium transition-colors"
+                                            className="group inline-flex items-center relative text-slate-400 hover:text-primary text-sm font-medium transition-colors cursor-pointer"
                                         >
                                             <ChevronRight className="absolute -left-3 top-1/2 -translate-y-1/2 w-4 h-4 opacity-0 -translate-x-2 group-hover:opacity-100 group-hover:translate-x-0 transition-all duration-300" />
                                             <span className="group-hover:translate-x-2 transition-transform duration-300">
@@ -100,7 +100,7 @@ export function Footer() {
                             <a
                                 key={link.text}
                                 href={link.href}
-                                className="hover:text-slate-300 transition-colors"
+                                className="hover:text-slate-300 transition-colors cursor-pointer"
                             >
                                 {link.text}
                             </a>

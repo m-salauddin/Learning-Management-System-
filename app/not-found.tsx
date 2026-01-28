@@ -24,6 +24,7 @@ export default function NotFound() {
         register,
         handleSubmit,
         reset,
+        watch,
         formState: { errors, isSubmitting },
     } = useForm<FeedbackFormValues>({
         resolver: zodResolver(feedbackSchema),
@@ -125,7 +126,7 @@ export default function NotFound() {
 
                     <button
                         onClick={() => window.history.back()}
-                        className="w-full sm:w-auto flex items-center justify-center gap-2 px-8 py-3.5 rounded-xl border border-input bg-background hover:bg-muted/50 text-foreground font-medium text-sm transition-all focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
+                        className="w-full sm:w-auto flex items-center justify-center gap-2 px-8 py-3.5 rounded-xl border border-input bg-background hover:bg-muted/50 text-foreground font-medium text-sm transition-all focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 cursor-pointer"
                     >
                         <ArrowLeft className="w-4 h-4" />
                         Go Back
@@ -141,7 +142,7 @@ export default function NotFound() {
                 >
                     <button
                         onClick={() => setIsModalOpen(true)}
-                        className="text-sm text-muted-foreground/80 hover:text-primary transition-colors border-b border-transparent hover:border-primary/50 pb-0.5 outline-none focus-visible:text-primary"
+                        className="text-sm text-muted-foreground/80 hover:text-primary transition-colors border-b border-transparent hover:border-primary/50 pb-0.5 outline-none focus-visible:text-primary cursor-pointer"
                     >
                         Report a broken link
                     </button>
@@ -168,88 +169,99 @@ export default function NotFound() {
                             exit={{ opacity: 0, scale: 0.95, y: 20 }}
                             className="fixed z-50 left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-md p-6"
                         >
-                            <div className="bg-card border border-border rounded-2xl shadow-2xl p-6 relative overflow-hidden text-card-foreground">
-                                {/* Close Button */}
-                                <button
-                                    onClick={() => setIsModalOpen(false)}
-                                    className="absolute right-4 top-4 text-muted-foreground hover:text-foreground transition-colors p-2 hover:bg-muted rounded-full"
-                                >
-                                    <X className="w-5 h-5" />
-                                </button>
-
-                                {isSubmitted ? (
-                                    <motion.div
-                                        initial={{ opacity: 0, scale: 0.9 }}
-                                        animate={{ opacity: 1, scale: 1 }}
-                                        className="py-12 flex flex-col items-center text-center space-y-4"
+                            <div className="bg-[#020617] border border-white/10 rounded-2xl shadow-2xl p-0 relative overflow-hidden text-slate-200 w-full">
+                                {/* Header with Border */}
+                                <div className="px-6 py-5 border-b border-white/5 flex items-center justify-between bg-white/2">
+                                    <div className="flex items-center gap-3">
+                                        <div className="w-10 h-10 rounded-lg bg-orange-500/10 border border-orange-500/20 flex items-center justify-center text-orange-500 shadow-inner">
+                                            <AlertCircle className="w-5 h-5" />
+                                        </div>
+                                        <div>
+                                            <h3 className="text-lg font-bold text-white tracking-tight">Report Issue</h3>
+                                            <p className="text-xs text-slate-500 font-medium">Help us fix broken links</p>
+                                        </div>
+                                    </div>
+                                    <button
+                                        onClick={() => setIsModalOpen(false)}
+                                        className="text-slate-500 hover:text-white transition-colors p-2 hover:bg-white/5 rounded-lg cursor-pointer"
                                     >
-                                        <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center text-primary mb-2">
-                                            <Send className="w-8 h-8" />
-                                        </div>
-                                        <h3 className="text-xl font-bold">Thank You!</h3>
-                                        <p className="text-muted-foreground">
-                                            We've received your report and will look into it shortly.
-                                        </p>
-                                    </motion.div>
-                                ) : (
-                                    <>
-                                        <div className="mb-6">
-                                            <div className="flex items-center gap-3 mb-2">
-                                                <div className="p-2 rounded-lg bg-orange-500/10 text-orange-500">
-                                                    <AlertCircle className="w-5 h-5" />
-                                                </div>
-                                                <h3 className="text-xl font-bold">Broken Link Report</h3>
-                                            </div>
-                                            <p className="text-muted-foreground text-sm">
-                                                Tell us what went wrong so we can fix it.
-                                            </p>
-                                        </div>
+                                        <X className="w-5 h-5" />
+                                    </button>
+                                </div>
 
-                                        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-                                            <div className="space-y-2">
-                                                <label htmlFor="message" className="text-sm font-medium text-foreground">
-                                                    Describe the issue
-                                                </label>
-                                                <textarea
-                                                    {...register("message")}
-                                                    id="message"
-                                                    rows={4}
-                                                    className="w-full bg-muted/50 border border-input rounded-xl p-3 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary/50 transition-all resize-none"
-                                                    placeholder="I was trying to access... when I saw this error."
-                                                />
+                                <div className="p-6">
+                                    {isSubmitted ? (
+                                        <motion.div
+                                            initial={{ opacity: 0, scale: 0.9 }}
+                                            animate={{ opacity: 1, scale: 1 }}
+                                            className="py-8 flex flex-col items-center text-center space-y-4"
+                                        >
+                                            <div className="w-16 h-16 rounded-full bg-[#FBBC05]/10 flex items-center justify-center text-[#FBBC05] mb-2 ring-1 ring-[#FBBC05]/20">
+                                                <Send className="w-7 h-7" />
+                                            </div>
+                                            <div>
+                                                <h3 className="text-xl font-bold text-white mb-1">Feedback Sent</h3>
+                                                <p className="text-sm text-slate-400 max-w-[240px] mx-auto leading-relaxed">
+                                                    Thanks for identifying this issue. Our specialized team will resolve it shortly.
+                                                </p>
+                                            </div>
+                                        </motion.div>
+                                    ) : (
+                                        <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+                                            <div className="space-y-3">
+                                                <div className="flex justify-between items-baseline">
+                                                    <label htmlFor="message" className="text-sm font-semibold text-slate-300">
+                                                        Description
+                                                    </label>
+                                                    <span className="text-[10px] text-slate-500 uppercase tracking-widest font-semibold">Max 100</span>
+                                                </div>
+                                                <div className="relative group">
+                                                    <textarea
+                                                        {...register("message")}
+                                                        id="message"
+                                                        rows={4}
+                                                        className="w-full bg-black/20 border border-white/10 rounded-lg p-4 text-sm text-slate-200 placeholder:text-slate-600 focus:outline-none focus:border-[#FBBC05]/50 focus:ring-1 focus:ring-[#FBBC05]/50 transition-all resize-none shadow-inner"
+                                                        placeholder="Please describe what happened..."
+                                                        maxLength={100}
+                                                    />
+                                                    <div className="absolute bottom-3 right-3 text-[10px] text-slate-600 font-mono">
+                                                        {watch("message")?.length || 0}/100
+                                                    </div>
+                                                </div>
                                                 {errors.message && (
-                                                    <p className="text-destructive text-xs">{errors.message.message}</p>
+                                                    <p className="text-red-400 text-xs font-medium flex items-center gap-1.5">
+                                                        <span className="w-1 h-1 rounded-full bg-red-400" />
+                                                        {errors.message.message}
+                                                    </p>
                                                 )}
                                             </div>
 
-                                            <div className="flex gap-3 pt-2">
+                                            <div className="grid grid-cols-2 gap-3 pt-2">
                                                 <button
                                                     type="button"
                                                     onClick={() => setIsModalOpen(false)}
-                                                    className="flex-1 px-4 py-2.5 rounded-xl border border-input bg-background hover:bg-muted text-foreground text-sm font-medium transition-colors"
+                                                    className="px-4 py-2.5 rounded-lg border border-white/10 hover:bg-white/5 text-slate-300 text-sm font-medium transition-colors cursor-pointer"
                                                 >
                                                     Cancel
                                                 </button>
                                                 <button
                                                     type="submit"
                                                     disabled={isSubmitting}
-                                                    className="flex-1 px-4 py-2.5 rounded-xl bg-primary hover:bg-primary/90 text-primary-foreground text-sm font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                                                    className="px-4 py-2.5 rounded-lg bg-[#FBBC05] hover:bg-[#F59E0B] text-[#020617] text-sm font-bold transition-all shadow-lg shadow-[#FBBC05]/10 disabled:opacity-50 disabled:shadow-none flex items-center justify-center gap-2 cursor-pointer"
                                                 >
                                                     {isSubmitting ? (
                                                         <>
-                                                            <span className="w-4 h-4 border-2 border-primary-foreground/30 border-t-primary-foreground rounded-full animate-spin" />
-                                                            Sending...
+                                                            <span className="w-3.5 h-3.5 border-2 border-[#020617]/30 border-t-[#020617] rounded-full animate-spin" />
+                                                            Processing
                                                         </>
                                                     ) : (
-                                                        <>
-                                                            Submit Report
-                                                        </>
+                                                        "Submit Report"
                                                     )}
                                                 </button>
                                             </div>
                                         </form>
-                                    </>
-                                )}
+                                    )}
+                                </div>
                             </div>
                         </motion.div>
                     </>
