@@ -13,13 +13,12 @@ export function Navbar() {
     return (
         <nav
             suppressHydrationWarning
-            className="fixed top-4 left-1/2 -translate-x-1/2 z-50 w-[95%] max-w-6xl animate-fade-in-down"
+            className="fixed top-4 left-1/2 -translate-x-1/2 z-50 w-[95%] max-w-6xl"
         >
-            <div className="navbar-glass border rounded-2xl px-8 py-4 shadow-2xl shadow-black/10 dark:shadow-black/40">
+            <div className="isolate bg-white/60 dark:bg-slate-950/50 backdrop-blur-3xl border border-white/20 dark:border-white/10 rounded-2xl px-8 py-4 shadow-xl shadow-black/5 dark:shadow-black/40">
                 <div className="flex items-center justify-between">
                     {/* Logo Section */}
                     <Link href="/" aria-label="Home">
-                        {/* If <Logo /> contains an <a> tag internally, remove this <Link> wrapper */}
                         <Logo />
                     </Link>
 

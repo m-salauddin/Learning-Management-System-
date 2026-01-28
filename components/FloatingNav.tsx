@@ -53,7 +53,8 @@ export function FloatingNav() {
 
     return (
         <div className="fixed right-4 top-1/2 -translate-y-1/2 z-50 hidden lg:flex flex-col gap-6">
-            <div className="flex flex-col gap-3 p-3 rounded-full bg-background/50 backdrop-blur-md border border-white/10 shadow-xl shadow-black/5">
+
+            <div className="flex flex-col gap-3 p-3 rounded-full bg-white/60 dark:bg-slate-950/50 backdrop-blur-2xl border border-white/20 dark:border-white/10 shadow-xl shadow-black/5 dark:shadow-black/20">
                 {SECTIONS.map(({ id, label, icon: Icon }) => (
                     <a
                         key={id}
