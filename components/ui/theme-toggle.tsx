@@ -85,8 +85,8 @@ export function ThemeToggleCompact() {
         <button
             onClick={cycleTheme}
             className={cn(
-                "flex items-center justify-center w-9 h-9 rounded-lg",
-                "bg-muted hover:bg-muted/80 transition-colors",
+                "flex items-center justify-center w-10 h-10 rounded-xl border border-border/50 cursor-pointer",
+                "bg-muted/50 hover:bg-muted/80 transition-colors text-muted-foreground hover:text-foreground",
                 "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
             )}
             aria-label={`Current theme: ${theme}. Click to cycle.`}
@@ -100,9 +100,9 @@ export function ThemeToggleCompact() {
                     transition={{ duration: 0.2 }}
                 >
                     {resolvedTheme === "dark" ? (
-                        <Moon className="w-4 h-4" />
+                        <Moon className="w-5 h-5" />
                     ) : (
-                        <Sun className="w-4 h-4" />
+                        <Sun className="w-5 h-5" />
                     )}
                 </motion.div>
             </AnimatePresence>

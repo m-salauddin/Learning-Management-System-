@@ -223,10 +223,24 @@
 
   html {
     @apply scroll-smooth;
+    scrollbar-gutter: stable;
+    /* Keeps scrollbar space reserved to prevent shifts */
   }
 
   body {
     @apply bg-background text-foreground font-sans antialiased;
+  }
+
+  /* Mobile Menu Scroll Lock */
+  body.nav-open {
+    overflow: hidden;
+  }
+
+  /* Force transparent thumb if visible during lock */
+  body.nav-open::-webkit-scrollbar-thumb {
+    background-color: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
   }
 
   /* Code blocks use mono font */
@@ -243,8 +257,8 @@
 
   /* Default / Light Mode */
   ::-webkit-scrollbar {
-    width: 10px;
-    height: 10px;
+    width: 5px;
+    height: 5px;
   }
 
   ::-webkit-scrollbar-track {
@@ -255,8 +269,6 @@
     background: linear-gradient(transparent, var(--primary));
     border-radius: 6px;
   }
-
-
 }
 
 /* ============================================
