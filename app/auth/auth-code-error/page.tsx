@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import React, { useEffect, useRef, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { AlertCircle, RefreshCw, Home } from "lucide-react";
@@ -9,7 +9,8 @@ import { motion } from "motion/react";
 import { useToast } from "@/components/ui/toast";
 import { fadeInUp } from "@/lib/motion";
 
-export default function AuthCodeError() {
+
+function AuthCodeErrorContent() {
     const searchParams = useSearchParams();
     const toast = useToast();
     const error = searchParams.get("error");
@@ -88,5 +89,13 @@ export default function AuthCodeError() {
                 </motion.div>
             </main>
         </div>
+    );
+}
+
+export default function AuthCodeError() {
+    return (
+        <React.Suspense fallback={<div className="min-h-screen bg-background flex items-center justify-center"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div></div>}>
+            <AuthCodeErrorContent />
+        </React.Suspense>
     );
 }

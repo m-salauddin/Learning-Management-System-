@@ -79,25 +79,12 @@ function CoursesContent() {
     useEffect(() => {
         const timer = setTimeout(() => {
             if (searchInput !== searchTerm) {
-                // Only update if changed prevents loop with above effect? 
-                // Wait, above effect sets searchTerm = q. 
-                // If user types, setSearchInput -> wait -> here.
-                // We update URL. URL changes -> above effect sets States.
-                // Loop? If URL q matches UI, effect sets state to same value. React bails out. Safe.
                 updateUrl(searchInput, selectedCategory, selectedLevels, selectedTypes, selectedPrices, 1); // Reset page on search
             }
         }, 300);
         return () => clearTimeout(timer);
     }, [searchInput, selectedCategory, selectedLevels, selectedTypes, selectedPrices]);
-    // Note: Dependencies here are tricky. If category changes, we want to update URL.
-    // Ideally we update URL immediately on Filter Change, and Debounce search.
 
-    // Better strategy:
-    // User interactions update State.
-    // useEffect(() => { updateUrl(...) }, [states])
-    // But we need to distinguish User Search vs URL Search.
-
-    // Let's rely on simple state change triggering URL update.
     useEffect(() => {
         if (!mounted) return;
         const timer = setTimeout(() => {
@@ -105,22 +92,6 @@ function CoursesContent() {
         }, 100); // Small delay to batch? Or just immediate?
         return () => clearTimeout(timer);
     }, [searchTerm, selectedCategory, selectedLevels, selectedTypes, selectedPrices, currentPage]);
-
-    // Wait, searchTerm is updated via debounce effect of searchInput.
-    // So: Input -> (300ms) -> SearchTerm -> (100ms) -> URL.
-    // Valid.
-
-    // BUT we also have URL -> State effect.
-    // If URL changes, State updates.
-    // State updates -> URL updates. 
-    // To prevent loop: Check if URL already matches?
-    // updateUrl impl calls router.push. Next.js router handles this efficiently, but redundant pushes can be bad.
-
-    // Let's refine the Logic to be simpler.
-    // "State is source". URL reflects state.
-    // "Init from URL".
-
-    // Actually, I will revert to the separate effects logic I drafted in Thought Trace, merging it here.
 
     // Toggle filter helper
     const toggleFilter = (item: string, current: string[], setter: (val: string[]) => void) => {
