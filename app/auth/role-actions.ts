@@ -16,7 +16,7 @@ export async function requestRoleChange(role: UserRole) {
         .from('role_requests')
         .insert({
             user_id: user.id,
-            requested_role: role,
+            requested_role: role as "teacher" | "moderator" | "admin",
         })
 
     if (error) {

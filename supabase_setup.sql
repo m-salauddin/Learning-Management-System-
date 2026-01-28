@@ -24,25 +24,27 @@ create table profiles (
 alter table profiles enable row level security;
 
 -- 3. Create policies
+-- 3. Create policies
+-- Best Practice: Explicitly define roles (TO public/authenticated)
 create policy "Public profiles are viewable by everyone." on profiles
-  for select using (true);
+  for select to public using (true);
 
 create policy "Users can insert their own profile." on profiles
-  for insert with check ((select auth.uid()) = id);
+  for insert to authenticated with check ((select auth.uid()) = id);
 
 create policy "Users can update own profile." on profiles
-  for update using ((select auth.uid()) = id);
+  for update to authenticated using ((select auth.uid()) = id);
 
 -- 4. Create a trigger to automatically create a profile entry when a new user signs up
--- This is optional but recommended if you want to sync auth.users metadata to a public table
-create function public.handle_new_user()
+-- Best Practice: Set search_path for SECURITY DEFINER functions
+create or replace function public.handle_new_user()
 returns trigger as $$
 begin
   insert into public.profiles (id, full_name, role)
   values (new.id, new.raw_user_meta_data->>'full_name', coalesce(new.raw_user_meta_data->>'role', 'student'));
   return new;
 end;
-$$ language plpgsql security definer;
+$$ language plpgsql security definer set search_path = public;
 
 create trigger on_auth_user_created
   after insert on auth.users
@@ -64,10 +66,10 @@ alter table role_requests enable row level security;
 
 -- Policies for role_requests
 create policy "Users can create their own requests" on role_requests
-  for insert with check ((select auth.uid()) = user_id);
+  for insert to authenticated with check ((select auth.uid()) = user_id);
 
 create policy "Users can view their own requests" on role_requests
-  for select using ((select auth.uid()) = user_id);
+  for select to authenticated using ((select auth.uid()) = user_id);
 
 -- Admins should be able to view and update all requests (implementation depends on how you handle admin checks)
 -- keeping it simple for now
