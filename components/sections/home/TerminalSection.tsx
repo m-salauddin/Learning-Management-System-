@@ -240,9 +240,9 @@ export function TerminalSection() {
                     {/* Glow effect behind terminal - Brand gradient */}
                     <div className="absolute -inset-1 bg-linear-to-r from-[#FCB900]/40 via-[#22D3EE]/30 to-[#A78BFA]/40 rounded-2xl blur-xl opacity-60 group-hover:opacity-90 transition-opacity duration-500" />
 
-                    <div className="relative rounded-xl overflow-hidden border border-white/10 shadow-2xl shadow-black/60 bg-[#0F172A]">
+                    <div className="relative rounded-xl overflow-hidden border border-indigo-200 dark:border-white/10 shadow-2xl shadow-indigo-200/50 dark:shadow-black/60 bg-white dark:bg-[#0F172A]">
                         {/* Premium macOS-style Header */}
-                        <div className="bg-linear-to-b from-[#0F172A] to-[#1E293B] px-4 py-3 flex items-center justify-between border-b border-white/10">
+                        <div className="bg-indigo-50/50 dark:bg-transparent dark:bg-linear-to-b dark:from-[#0F172A] dark:to-[#1E293B] px-4 py-3 flex items-center justify-between border-b border-indigo-100 dark:border-white/10">
                             <div className="flex items-center gap-2">
                                 <div className="w-3 h-3 rounded-full bg-[#EF4444] hover:bg-[#EF4444]/80 transition-colors cursor-pointer shadow-lg shadow-[#EF4444]/40" />
                                 <div className="w-3 h-3 rounded-full bg-[#FCB900] hover:bg-[#FCB900]/80 transition-colors cursor-pointer shadow-lg shadow-[#FCB900]/40" />
@@ -252,20 +252,20 @@ export function TerminalSection() {
                             {/* Center title with icon */}
                             <div className="absolute left-1/2 -translate-x-1/2 flex items-center gap-2">
                                 <div className="p-1 rounded bg-linear-to-br from-[#FCB900]/20 to-[#22D3EE]/20">
-                                    <Terminal className="w-3.5 h-3.5 text-[#FCB900]" />
+                                    <Terminal className="w-3.5 h-3.5 text-[#FCB900] dark:text-[#FCB900]" />
                                 </div>
-                                <span className="text-xs font-medium text-muted-foreground">skill-sync-bd</span>
+                                <span className="text-xs font-medium text-slate-600 dark:text-muted-foreground">skill-sync-bd</span>
                             </div>
 
                             {/* Right side status */}
-                            <div className="flex items-center gap-3 text-muted-foreground">
+                            <div className="flex items-center gap-3 text-slate-400 dark:text-muted-foreground">
                                 <div className="flex items-center gap-1.5 text-xs">
-                                    <Cpu className="w-3 h-3 text-[#34D399]" />
+                                    <Cpu className="w-3 h-3 text-emerald-600 dark:text-[#34D399]" />
                                     <span>2.4%</span>
                                 </div>
-                                <div className="w-px h-3 bg-white/10" />
+                                <div className="w-px h-3 bg-slate-200 dark:bg-white/10" />
                                 <div className="flex items-center gap-1.5 text-xs">
-                                    <CheckCircle2 className="w-3 h-3 text-[#34D399]" />
+                                    <CheckCircle2 className="w-3 h-3 text-emerald-600 dark:text-[#34D399]" />
                                 </div>
                             </div>
                         </div>
@@ -273,7 +273,7 @@ export function TerminalSection() {
                         {/* Terminal Content */}
                         <div
                             ref={containerRef}
-                            className="px-8 py-6 pb-12 h-[480px] overflow-hidden font-mono text-sm leading-relaxed bg-[#030712] selection:bg-[#FCB900]/30 selection:text-white"
+                            className="px-8 py-6 pb-12 h-[480px] overflow-hidden font-mono text-sm leading-relaxed bg-white dark:bg-[#030712] selection:bg-[#FCB900]/30 selection:text-white"
                             style={{
                                 backgroundImage: `
                                     radial-gradient(ellipse at top, rgba(252, 185, 0, 0.04) 0%, transparent 50%),
@@ -286,13 +286,13 @@ export function TerminalSection() {
                                 <motion.div
                                     initial={{ opacity: 0 }}
                                     animate={{ opacity: 1 }}
-                                    className="mb-4 text-muted-foreground text-xs border-b border-white/10 pb-3"
+                                    className="mb-4 text-slate-500 dark:text-muted-foreground text-xs border-b border-slate-200 dark:border-white/10 pb-3"
                                 >
-                                    <span className="text-[#22D3EE]">●</span> Welcome to SkillSync Terminal{" "}
-                                    <span className="text-muted-foreground">|</span>{" "}
-                                    <span className="text-[#34D399]">v2.0.0</span>{" "}
-                                    <span className="text-muted-foreground">|</span>{" "}
-                                    <span className="text-[#FCB900]">Oh My Posh</span>
+                                    <span className="text-cyan-600 dark:text-[#22D3EE]">●</span> Welcome to SkillSync Terminal{" "}
+                                    <span className="text-slate-300 dark:text-muted-foreground">|</span>{" "}
+                                    <span className="text-emerald-600 dark:text-[#34D399]">v2.0.0</span>{" "}
+                                    <span className="text-slate-300 dark:text-muted-foreground">|</span>{" "}
+                                    <span className="text-amber-600 dark:text-[#FCB900]">Oh My Posh</span>
                                 </motion.div>
                             )}
 
@@ -307,40 +307,40 @@ export function TerminalSection() {
                                     {line.type === "command" && (
                                         <div className="flex items-center flex-wrap gap-1 mb-3 mt-4 first:mt-0">
                                             <OmpPromptCompact />
-                                            <span className="text-white font-semibold tracking-wide">{line.text}</span>
+                                            <span className="text-slate-900 dark:text-white font-semibold tracking-wide">{line.text}</span>
                                         </div>
                                     )}
 
                                     {line.type === "success" && (
-                                        <div className="flex items-center gap-2 text-[#34D399] font-medium pl-2 py-0.5">
+                                        <div className="flex items-center gap-2 text-emerald-600 dark:text-[#34D399] font-medium pl-2 py-0.5">
                                             <CheckCircle2 className="w-3.5 h-3.5 shrink-0" />
                                             <span>{line.text}</span>
                                         </div>
                                     )}
 
                                     {line.type === "info" && (
-                                        <div className="text-muted-foreground pl-2 py-0.5 flex items-center gap-2">
-                                            <span className="text-[#22D3EE]">│</span>
+                                        <div className="text-slate-600 dark:text-muted-foreground pl-2 py-0.5 flex items-center gap-2">
+                                            <span className="text-cyan-600 dark:text-[#22D3EE]">│</span>
                                             <span>{line.text}</span>
                                         </div>
                                     )}
 
                                     {line.type === "warning" && (
-                                        <div className="flex items-center gap-2 text-[#FCB900] pl-2 py-0.5">
+                                        <div className="flex items-center gap-2 text-amber-600 dark:text-[#FCB900] pl-2 py-0.5">
                                             <Loader2 className="w-3.5 h-3.5 animate-spin shrink-0" />
                                             <span>{line.text}</span>
                                         </div>
                                     )}
 
                                     {line.type === "output" && (
-                                        <div className="text-[#22D3EE] pl-2 py-0.5 font-medium flex items-center gap-2">
-                                            <span className="text-[#A78BFA]">→</span>
+                                        <div className="text-cyan-700 dark:text-[#22D3EE] pl-2 py-0.5 font-medium flex items-center gap-2">
+                                            <span className="text-purple-600 dark:text-[#A78BFA]">→</span>
                                             <span>{line.text}</span>
                                         </div>
                                     )}
 
                                     {line.type === "error" && (
-                                        <div className="text-[#EF4444] pl-2 py-0.5 flex items-center gap-2">
+                                        <div className="text-red-600 dark:text-[#EF4444] pl-2 py-0.5 flex items-center gap-2">
                                             <span>✗</span>
                                             <span>{line.text}</span>
                                         </div>
@@ -353,7 +353,7 @@ export function TerminalSection() {
                                 {isTyping && (
                                     <>
                                         <OmpPrompt />
-                                        <span className="text-white font-semibold">{currentText}</span>
+                                        <span className="text-slate-900 dark:text-white font-semibold">{currentText}</span>
                                         <TerminalCursor />
                                     </>
                                 )}
@@ -367,20 +367,20 @@ export function TerminalSection() {
                                     <motion.div
                                         initial={{ opacity: 0 }}
                                         animate={{ opacity: 1 }}
-                                        className="w-full flex items-center text-[#34D399] py-2 mt-2"
+                                        className="w-full flex items-center text-emerald-600 dark:text-[#34D399] py-2 mt-2"
                                     >
                                         <OmpPrompt showTime={true} className="mr-0" />
-                                        <span className="text-muted-foreground pl-8">Session complete. Restarting...</span>
+                                        <span className="text-slate-500 dark:text-muted-foreground pl-8">Session complete. Restarting...</span>
                                     </motion.div>
                                 )}
                             </div>
                         </div>
 
                         {/* Bottom status bar */}
-                        <div className="bg-linear-to-r from-[#0F172A] to-[#1E293B] px-4 py-1.5 flex items-center justify-between border-t border-white/10 text-[10px] text-muted-foreground">
+                        <div className="bg-indigo-50/50 dark:bg-transparent dark:bg-linear-to-r dark:from-[#0F172A] dark:to-[#1E293B] px-4 py-1.5 flex items-center justify-between border-t border-indigo-100 dark:border-white/10 text-[10px] text-slate-500 dark:text-muted-foreground">
                             <div className="flex items-center gap-4">
                                 <span className="flex items-center gap-1">
-                                    <span className="w-1.5 h-1.5 rounded-full bg-[#34D399] animate-pulse shadow-sm shadow-[#34D399]/50" />
+                                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 dark:bg-[#34D399] animate-pulse shadow-sm shadow-emerald-500/50 dark:shadow-[#34D399]/50" />
                                     NORMAL
                                 </span>
                                 <span>UTF-8</span>
@@ -389,7 +389,7 @@ export function TerminalSection() {
                             <div className="flex items-center gap-4">
                                 <span>zsh 5.9</span>
                                 <span>node v20.11.0</span>
-                                <span className="text-[#22D3EE]">bun 1.0.25</span>
+                                <span className="text-cyan-600 dark:text-[#22D3EE]">bun 1.0.25</span>
                             </div>
                         </div>
                     </div>
