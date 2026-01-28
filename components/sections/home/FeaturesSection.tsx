@@ -55,30 +55,30 @@ export function FeaturesSection() {
                         variants={staggerItem}
                         className="lg:col-span-2 lg:row-span-2 group relative"
                     >
-                        <div className="relative h-full p-8 rounded-3xl bg-linear-to-br from-primary/5 via-card/80 to-card/80 dark:from-primary/10 dark:via-card/60 dark:to-card/60 backdrop-blur-xl border border-border/50 dark:border-white/10 overflow-hidden group-hover:border-primary/30 transition-all duration-500">
-                            {/* Animated background orb */}
-                            <div className="absolute top-0 right-0 w-64 h-64 bg-primary/20 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2 group-hover:bg-primary/30 group-hover:scale-110 transition-all duration-700" />
+                        <div className="relative h-full flex flex-col p-8 bg-card/80 dark:bg-card/60 backdrop-blur-xl border border-border/50 dark:border-white/10 rounded-3xl overflow-hidden transition-all duration-500 group-hover:border-primary/30 group-hover:shadow-2xl group-hover:-translate-y-2">
+                            {/* Animated background orb - Reduced opacity */}
+                            <div className="absolute top-0 right-0 w-64 h-64 bg-primary/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2 group-hover:bg-primary/20 group-hover:scale-110 transition-all duration-700" />
 
                             {/* Shine effect */}
                             <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none">
                                 <div className="absolute inset-0 bg-linear-to-r from-transparent via-white/5 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000" />
                             </div>
 
-                            <div className="relative z-10">
-                                <div className="w-16 h-16 rounded-2xl bg-primary/20 flex items-center justify-center mb-6 group-hover:scale-110 transition-all duration-300">
+                            <div className="relative z-10 flex flex-col h-full">
+                                <div className="w-16 h-16 rounded-2xl bg-primary/10 flex items-center justify-center mb-6 group-hover:scale-110 transition-all duration-300 border border-primary/10">
                                     <BookOpen className="w-8 h-8 text-primary" />
                                 </div>
                                 <h3 className="text-2xl font-bold mb-3 group-hover:text-primary transition-colors duration-300">Expert-Led Courses</h3>
-                                <p className="text-muted-foreground text-lg mb-6 max-w-md">
+                                <p className="text-muted-foreground text-lg mb-8 max-w-md">
                                     Learn from industry professionals with real-world experience at Google, Meta, Amazon, and local tech giants.
                                 </p>
-                                <div className="grid grid-cols-2 gap-4">
+                                <div className="grid grid-cols-2 gap-4 mt-auto">
                                     {COURSE_FEATURES.map((item) => (
                                         <div key={item} className="flex items-center gap-2 text-sm group/item">
-                                            <div className="w-5 h-5 rounded-full bg-primary/20 flex items-center justify-center group-hover/item:bg-primary/30 transition-colors">
-                                                <Check className="w-3 h-3 text-primary" />
+                                            <div className="w-6 h-6 rounded-full bg-primary/10 flex items-center justify-center group-hover/item:bg-primary/20 transition-colors border border-primary/10">
+                                                <Check className="w-3.5 h-3.5 text-primary" />
                                             </div>
-                                            <span className="group-hover/item:text-foreground transition-colors">{item}</span>
+                                            <span className="font-medium text-muted-foreground group-hover/item:text-foreground transition-colors">{item}</span>
                                         </div>
                                     ))}
                                 </div>
@@ -93,7 +93,7 @@ export function FeaturesSection() {
                             variants={staggerItem}
                             className="group relative h-full"
                         >
-                            <div className="relative h-full p-6 rounded-3xl bg-card/80 dark:bg-card/60 backdrop-blur-xl border border-border/50 dark:border-white/10 hover:border-primary/30 transition-all duration-500 group-hover:shadow-2xl group-hover:-translate-y-2 overflow-hidden">
+                            <div className="relative h-full flex flex-col p-6 bg-card/80 dark:bg-card/60 backdrop-blur-xl border border-border/50 dark:border-white/10 rounded-3xl overflow-hidden transition-all duration-500 group-hover:border-primary/30 group-hover:shadow-2xl group-hover:-translate-y-2">
                                 {/* Shine effect */}
                                 <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none">
                                     <div className="absolute inset-0 bg-linear-to-r from-transparent via-white/5 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000" />
@@ -101,13 +101,13 @@ export function FeaturesSection() {
 
                                 {/* Icon */}
                                 <div
-                                    className={`w-12 h-12 rounded-xl bg-${feature.color}/10 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300 text-${feature.color}`}
+                                    className={`w-14 h-14 rounded-2xl bg-${feature.color}/10 flex items-center justify-center mb-5 group-hover:scale-110 transition-transform duration-300 text-${feature.color} border border-${feature.color}/10`}
                                 >
-                                    <feature.icon className="w-6 h-6" />
+                                    <feature.icon className="w-7 h-7" />
                                 </div>
 
-                                <h3 className="text-lg font-semibold mb-2 group-hover:text-primary transition-colors duration-300">{feature.title}</h3>
-                                <p className="text-muted-foreground text-sm">{feature.description}</p>
+                                <h3 className="text-xl font-bold mb-3 group-hover:text-primary transition-colors duration-300">{feature.title}</h3>
+                                <p className="text-muted-foreground text-sm leading-relaxed">{feature.description}</p>
                             </div>
                         </motion.div>
                     ))}
