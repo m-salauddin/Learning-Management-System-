@@ -1,7 +1,7 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { UserRole } from '@/types/user';
 
-// Define a serializable user type
+
 export interface AuthUser {
     id: string;
     email: string | undefined;
@@ -50,7 +50,7 @@ const authSlice = createSlice({
     },
 });
 
-// Selectors
+
 export const selectCurrentUser = (state: { auth: AuthState }) => state.auth.user;
 export const selectIsAuthenticated = (state: { auth: AuthState }) => state.auth.isAuthenticated;
 export const selectAuthLoading = (state: { auth: AuthState }) => state.auth.isLoading;

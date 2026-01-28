@@ -72,12 +72,12 @@ export function Navbar() {
         return () => window.removeEventListener("keydown", handleKeyDown);
     }, []);
 
-    // Close mobile menu when route changes
+
     useEffect(() => {
         setIsMobileMenuOpen(false);
     }, [pathname]);
 
-    // Lock body scroll when mobile menu or search is open
+
     useEffect(() => {
         if (isMobileMenuOpen || isSearchOpen) {
             document.body.classList.add("nav-open");
@@ -97,12 +97,12 @@ export function Navbar() {
         >
             <div className="isolate bg-white/60 dark:bg-slate-950/50 backdrop-blur-3xl border border-white/20 dark:border-white/10 rounded-2xl px-4 xl:px-8 py-3 xl:py-4 shadow-xl shadow-black/5 dark:shadow-black/40">
                 <div className="flex items-center justify-between">
-                    {/* Logo Section */}
+
                     <Link href="/" aria-label="Home" className="shrink-0">
                         <Logo className="scale-[0.8] origin-left sm:scale-100" textClassName="hidden sm:flex" />
                     </Link>
 
-                    {/* Nav Links - Center (Desktop) */}
+
                     <div className="hidden xl:flex items-center gap-1">
                         {navItems.map((item) => {
                             const isActive = pathname === item.href;
@@ -128,9 +128,9 @@ export function Navbar() {
                         })}
                     </div>
 
-                    {/* Right Side */}
+
                     <div className="flex items-center gap-3">
-                        {/* Search Trigger (Desktop) */}
+
                         <button
                             onClick={() => setIsSearchOpen(true)}
                             className="hidden xl:flex items-center gap-3 px-4 py-2.5 rounded-2xl bg-muted/50 border border-border/50 hover:bg-muted/80 transition-all duration-200 group min-w-[240px] cursor-pointer"
@@ -142,7 +142,7 @@ export function Navbar() {
                             </kbd>
                         </button>
 
-                        {/* Search Trigger (Mobile) */}
+
                         <button
                             onClick={() => setIsSearchOpen(true)}
                             className="flex xl:hidden items-center justify-center w-10 h-10 text-muted-foreground hover:text-foreground transition-colors rounded-xl bg-muted/50 border border-border/50 hover:bg-muted/80 cursor-pointer"
@@ -157,7 +157,7 @@ export function Navbar() {
                             <ThemeToggleCompact />
                         </div>
 
-                        {/* Desktop Auth Buttons / User Dropdown */}
+
                         {isLoading ? (
                             <AuthSkeleton />
                         ) : user ? (
@@ -171,7 +171,7 @@ export function Navbar() {
                             </div>
                         )}
 
-                        {/* Mobile Menu Toggle */}
+
                         <button
                             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
                             className="xl:hidden flex items-center justify-center w-10 h-10 text-muted-foreground hover:text-foreground transition-colors rounded-xl bg-muted/50 border border-border/50 hover:bg-muted/80 cursor-pointer"
@@ -182,7 +182,7 @@ export function Navbar() {
                 </div>
             </div>
 
-            {/* Mobile Menu Overlay */}
+
             <AnimatePresence>
                 {isMobileMenuOpen && (
                     <>
@@ -201,7 +201,7 @@ export function Navbar() {
                             transition={{ type: "spring", stiffness: 300, damping: 30 }}
                             className="absolute top-full right-0 mt-2 w-72 p-4 bg-white/80 dark:bg-slate-950/90 backdrop-blur-xl border border-white/20 dark:border-white/10 rounded-3xl shadow-2xl origin-top-right flex flex-col gap-4 overflow-hidden"
                         >
-                            {/* Mobile Nav Links */}
+
                             <div className="flex flex-col gap-2">
 
 
@@ -223,7 +223,7 @@ export function Navbar() {
                                 })}
                             </div>
 
-                            {/* Mobile Auth Buttons (Only for logged out users) */}
+
                             {!user && (
                                 <div className="flex cursor-pointer min-[730px]:hidden flex-col gap-3 pt-4 border-t border-border/50">
                                     <AuthButtons isMobile />

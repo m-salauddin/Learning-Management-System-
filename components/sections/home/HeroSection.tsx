@@ -15,7 +15,7 @@ import {
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 
-// Animated Stat Card Component with Counter
+
 function AnimatedStatCard({
     icon: Icon,
     end,
@@ -48,7 +48,7 @@ function AnimatedStatCard({
             const elapsed = currentTime - startTime;
             const progress = Math.min(elapsed / duration, 1);
 
-            // Easing function for smooth animation
+
             const easeOutQuart = 1 - Math.pow(1 - progress, 4);
             const current = start + (end - start) * easeOutQuart;
 
@@ -78,13 +78,13 @@ function AnimatedStatCard({
 export function HeroSection() {
     return (
         <section id="hero" className="relative min-h-screen overflow-visible pt-32 pb-20">
-            {/* Background Layers */}
+
             <div className="absolute inset-0 overflow-hidden">
-                {/* Gradient Mesh - optimized blur */}
+
                 <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-linear-to-br from-primary/15 via-accent/10 to-transparent rounded-full blur-2xl translate-x-1/4 -translate-y-1/4" />
                 <div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-linear-to-tr from-secondary/15 via-primary/10 to-transparent rounded-full blur-2xl -translate-x-1/4 translate-y-1/4" />
 
-                {/* Grid Pattern */}
+
                 <div
                     className="absolute inset-0 opacity-[0.02]"
                     style={{
@@ -96,16 +96,16 @@ export function HeroSection() {
 
             <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 <div className="grid lg:grid-cols-2 gap-12 lg:gap-20 items-center">
-                    {/* Left Content */}
+
                     <div className="text-center lg:text-left animate-fade-in-up">
-                        {/* Badge */}
+
                         <div className="inline-flex mb-8">
                             <Badge icon={Rocket}>
                                 Start Your Learning Journey on 2026
                             </Badge>
                         </div>
 
-                        {/* Headline */}
+
                         <h1 className="text-5xl sm:text-6xl lg:text-7xl font-bold leading-tight tracking-tight mb-8">
                             Build What
                             <br />
@@ -114,12 +114,12 @@ export function HeroSection() {
                             </span>
                         </h1>
 
-                        {/* Subheadline */}
+
                         <p className="text-xl text-muted-foreground mb-10 max-w-2xl mx-auto lg:mx-0 leading-relaxed">
                             From your first line of code to your first day at a tech giant. We’re with you every step of the journey.
                         </p>
 
-                        {/* CTA Buttons */}
+
                         <div className="flex flex-row flex-wrap gap-4 justify-center lg:justify-start mb-12">
                             <Button size="responsive" className="group">
                                 Get Started Now
@@ -130,7 +130,7 @@ export function HeroSection() {
                             </Button>
                         </div>
 
-                        {/* Social Proof */}
+
                         <div className="flex items-center gap-6 justify-center lg:justify-start">
                             <div className="flex -space-x-3">
                                 {[1, 2, 3, 4, 5].map((i) => (
@@ -155,9 +155,9 @@ export function HeroSection() {
                         </div>
                     </div>
 
-                    {/* Right - Stats Cards */}
+
                     <div className="relative mt-12 lg:mt-0 animate-fade-in-up" style={{ animationDelay: '0.2s' }}>
-                        {/* Top Badge */}
+
                         <div className="flex justify-end mb-4">
                             <div className="inline-flex items-center gap-3 px-5 py-3 rounded-2xl bg-linear-to-r from-primary via-accent to-secondary dark:from-primary dark:via-secondary dark:to-accent text-white dark:text-slate-950 shadow-lg shadow-primary/20">
                                 <div className="w-10 h-10 rounded-xl bg-white/20 dark:bg-black/5 flex items-center justify-center">
@@ -170,8 +170,8 @@ export function HeroSection() {
                             </div>
                         </div>
 
-                        {/* Main Stats Card */}
-                        {/* Main Stats Card */}
+
+
                         <div className="lg:p-5 lg:rounded-3xl lg:bg-card/80 lg:border lg:border-border lg:shadow-2xl">
                             <div className="grid grid-cols-2 gap-3 lg:gap-0">
                                 <div className="bg-card/50 lg:bg-transparent border border-border/50 lg:border-0 rounded-2xl lg:rounded-none p-4 lg:border-r lg:border-b lg:border-border/50">
@@ -218,7 +218,7 @@ export function HeroSection() {
                             </div>
                         </div>
 
-                        {/* Bottom Badge */}
+
                         <div className="flex justify-start mt-4">
                             <div className="inline-flex items-center gap-3 px-5 py-3 rounded-2xl bg-card border border-border shadow-xl">
                                 <div className="w-10 h-10 rounded-full bg-success/20 flex items-center justify-center">

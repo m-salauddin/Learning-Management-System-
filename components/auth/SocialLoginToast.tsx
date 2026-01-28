@@ -17,12 +17,12 @@ export function SocialLoginToast() {
     useEffect(() => {
         const checkLogin = async () => {
             const isSocialLogin = searchParams?.get("social_login") === "success";
-            const isGoogleLogin = searchParams?.get("google_login") === "success"; // Backward compatibility
+            const isGoogleLogin = searchParams?.get("google_login") === "success";
 
             if ((isSocialLogin || isGoogleLogin) && !hasToasted.current) {
                 hasToasted.current = true;
 
-                // Fetch user data to show personalized message
+
                 const supabase = createClient();
                 const { data: { user } } = await supabase.auth.getUser();
 
@@ -32,7 +32,7 @@ export function SocialLoginToast() {
                     toast.success("Welcome back!", "Successfully signed in with social account.");
                 }
 
-                // Remove the query param
+
                 const params = new URLSearchParams(searchParams.toString());
                 params.delete("social_login");
                 params.delete("google_login");

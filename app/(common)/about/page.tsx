@@ -19,7 +19,7 @@ export default function AboutPage() {
             <AboutValuesSection />
             <AboutTimelineSection />
             <AboutTeamSection />
-            {/* <AboutCTASection /> Replaced with Community Network */}
+
             <AboutCommunitySection />
         </>
     );

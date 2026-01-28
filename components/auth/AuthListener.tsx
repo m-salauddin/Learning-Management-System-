@@ -11,7 +11,7 @@ export function AuthListener() {
     useEffect(() => {
         const supabase = createClient();
 
-        // Check initial session
+
         const initSession = async () => {
             const { data: { session } } = await supabase.auth.getSession();
             if (session?.user) {
@@ -29,7 +29,7 @@ export function AuthListener() {
 
         initSession();
 
-        // Listen for auth changes
+
         const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
             if (session?.user) {
                 dispatch(setUser({

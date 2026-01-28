@@ -36,7 +36,7 @@ export async function signup(data: { email: string; password: string; fullName: 
         options: {
             data: {
                 full_name: fullName,
-                role: 'student', // Default role
+                role: 'student',
             },
         },
     })

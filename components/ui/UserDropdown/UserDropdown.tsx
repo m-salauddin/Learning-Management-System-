@@ -31,7 +31,7 @@ export function UserDropdown({ user, onOpen }: UserDropdownProps) {
     const dispatch = useAppDispatch();
     const toast = useToast();
 
-    // Close dropdown when clicking outside
+
     useEffect(() => {
         function handleClickOutside(event: MouseEvent) {
             if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
@@ -64,7 +64,7 @@ export function UserDropdown({ user, onOpen }: UserDropdownProps) {
 
         dispatch(logout());
 
-        // Check if current path is a protected route
+
         const protectedRoutes = ['/dashboard', '/profile', '/settings'];
         const isProtectedRoute = protectedRoutes.some(route => pathname?.startsWith(route));
 
@@ -145,13 +145,13 @@ export function UserDropdown({ user, onOpen }: UserDropdownProps) {
                         transition={{ type: "spring", stiffness: 300, damping: 30 }}
                         className="absolute top-full right-0 mt-5 w-64 bg-white dark:bg-slate-950 border border-white/20 dark:border-white/10 rounded-2xl shadow-xl overflow-hidden z-50 p-2"
                     >
-                        {/* User Info Header */}
+
                         <div className="px-4 py-3 mb-2 bg-muted/30 rounded-xl">
                             <p className="font-semibold text-sm truncate">{displayName}</p>
                             <p className="text-xs text-muted-foreground truncate">{user.email}</p>
                         </div>
 
-                        {/* Menu Items */}
+
                         <div className="flex flex-col gap-1">
                             <Link
                                 href="/dashboard"
@@ -181,7 +181,7 @@ export function UserDropdown({ user, onOpen }: UserDropdownProps) {
 
                         <div className="h-px bg-border/50 my-2" />
 
-                        {/* Sign Out */}
+
                         <button
                             onClick={handleSignOutClick}
                             className="w-full flex items-center gap-3 px-4 py-2.5 text-sm font-medium text-destructive hover:bg-destructive/10 rounded-xl transition-colors cursor-pointer"
@@ -193,7 +193,7 @@ export function UserDropdown({ user, onOpen }: UserDropdownProps) {
                 )}
             </AnimatePresence>
 
-            {/* Logout Confirmation Modal */}
+
             <Modal
                 isOpen={showLogoutConfirm}
                 onClose={() => setShowLogoutConfirm(false)}
