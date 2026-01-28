@@ -12,6 +12,7 @@ import { Navbar } from "@/components/Navbar";
 import { Logo } from "@/components/ui/Logo";
 import { fadeInUp } from "@/lib/motion";
 import { AnimatedCheckbox } from "@/components/ui/AnimatedCheckbox";
+import { login, signInWithGoogle } from "@/app/auth/actions";
 
 // Validation schema
 const loginSchema = z.object({
@@ -37,6 +38,7 @@ export default function LoginPage() {
         register,
         handleSubmit,
         control,
+        setError,
         formState: { errors },
     } = useForm<LoginFormData>({
         resolver: zodResolver(loginSchema),
@@ -49,12 +51,22 @@ export default function LoginPage() {
 
     const onSubmit = async (data: LoginFormData) => {
         setIsLoading(true);
-        // Simulate API call
-        console.log("Login data:", data);
-        await new Promise((resolve) => setTimeout(resolve, 1500));
-        setIsLoading(false);
-        // TODO: Implement actual login logic
-        router.push("/");
+        try {
+            const result = await login(data);
+            if (result?.error) {
+                setError("root", {
+                    type: "manual",
+                    message: result.error
+                });
+            }
+        } catch (error) {
+            setError("root", {
+                type: "manual",
+                message: "Something went wrong. Please try again."
+            });
+        } finally {
+            setIsLoading(false);
+        }
     };
 
     return (
@@ -169,6 +181,13 @@ export default function LoginPage() {
                                 />
                             </div>
 
+                            {/* Root Error */}
+                            {errors.root && (
+                                <div className="p-3 rounded-lg bg-destructive/10 border border-destructive/20 text-destructive text-sm text-center">
+                                    {errors.root.message}
+                                </div>
+                            )}
+
                             {/* Submit Button */}
                             <button
                                 type="submit"
@@ -203,7 +222,11 @@ export default function LoginPage() {
 
                         {/* Social Login */}
                         <div className="grid grid-cols-2 gap-3">
-                            <button className="flex items-center justify-center gap-2 py-2.5 rounded-xl border border-border/50 hover:bg-muted/50 transition-colors">
+                            <button
+                                onClick={() => signInWithGoogle()}
+                                type="button"
+                                className="flex items-center justify-center gap-2 py-2.5 rounded-xl border border-border/50 hover:bg-muted/50 transition-colors"
+                            >
                                 <svg className="w-5 h-5" viewBox="0 0 24 24">
                                     <path
                                         fill="currentColor"

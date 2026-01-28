@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Space_Grotesk, JetBrains_Mono } from "next/font/google";
 import { ThemeProvider } from "@/components/providers/theme-provider";
+import { ReduxProvider } from "@/components/providers/ReduxProvider";
 import { CookieConsent } from "@/components/CookieConsent";
 import "./globals.css";
 
@@ -75,8 +76,10 @@ export default function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
-          {children}
-          <CookieConsent />
+          <ReduxProvider>
+            {children}
+            <CookieConsent />
+          </ReduxProvider>
         </ThemeProvider>
       </body>
     </html>

@@ -9,8 +9,11 @@ import { SearchCommand } from "@/components/ui/SearchCommand";
 import { Logo } from "@/components/ui/Logo";
 import { ThemeToggle, ThemeToggleCompact } from "@/components/ui/theme-toggle";
 import { cn } from "@/lib/utils";
+import { UserDropdown } from "@/components/ui/UserDropdown/UserDropdown";
+import { useAppSelector } from "@/lib/store/hooks";
 
 
+import { selectCurrentUser, selectAuthLoading } from "@/lib/store/features/auth/authSlice";
 
 const navItems = [
     { name: "Home", href: "/" },
@@ -46,6 +49,11 @@ export function Navbar() {
     const pathname = usePathname();
     const [isSearchOpen, setIsSearchOpen] = useState(false);
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+
+    // Use Redux state
+    const { user, isLoading } = useAppSelector((state) => state.auth);
+
+    // Initial check handled by ReduxProvider, but we can verify load state if needed
 
     useEffect(() => {
         const handleKeyDown = (e: KeyboardEvent) => {
@@ -142,9 +150,13 @@ export function Navbar() {
                             <ThemeToggleCompact />
                         </div>
 
-                        {/* Desktop Auth Buttons */}
+                        {/* Desktop Auth Buttons / User Dropdown */}
                         <div className="hidden min-[711px]:flex items-center gap-3">
-                            <AuthButtons />
+                            {user ? (
+                                <UserDropdown user={user} />
+                            ) : (
+                                <AuthButtons />
+                            )}
                         </div>
 
                         {/* Mobile Menu Toggle */}
@@ -210,7 +222,37 @@ export function Navbar() {
 
                             {/* Mobile Auth Buttons */}
                             <div className="flex flex-col gap-3 pt-4 border-t border-border/50">
-                                <AuthButtons isMobile />
+                                {user ? (
+                                    <div className="flex flex-col gap-2">
+                                        <div className="px-4 py-2 bg-muted/30 rounded-xl">
+                                            <p className="font-semibold text-sm truncate">{user.fullName || "User"}</p>
+                                            <p className="text-xs text-muted-foreground truncate">{user.email}</p>
+                                        </div>
+                                        <Link
+                                            href="/dashboard"
+                                            className="flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-bold text-muted-foreground hover:text-foreground hover:bg-muted/50"
+                                        >
+                                            Dashboard
+                                        </Link>
+                                        <Link
+                                            href="/profile"
+                                            className="flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-bold text-muted-foreground hover:text-foreground hover:bg-muted/50"
+                                        >
+                                            Profile
+                                        </Link>
+                                        <button
+                                            onClick={async () => {
+                                                const { signOut } = await import("@/app/auth/actions");
+                                                await signOut();
+                                            }}
+                                            className="flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-bold text-destructive hover:bg-destructive/10 text-left"
+                                        >
+                                            Sign Out
+                                        </button>
+                                    </div>
+                                ) : (
+                                    <AuthButtons isMobile />
+                                )}
                             </div>
                         </motion.div>
                     </>
