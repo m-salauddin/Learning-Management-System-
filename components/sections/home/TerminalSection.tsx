@@ -200,7 +200,6 @@ export function TerminalSection() {
 
     return (
         <section className="py-24 bg-background relative overflow-hidden">
-            {/* Premium background effects - Brand Colors */}
             <div className="absolute inset-0 pointer-events-none">
                 <div className="absolute top-1/3 left-1/4 w-[500px] h-[500px] bg-[#FCB900]/10 rounded-full blur-[150px]" />
                 <div className="absolute bottom-1/3 right-1/4 w-[400px] h-[400px] bg-[#22D3EE]/10 rounded-full blur-[120px]" />
@@ -219,7 +218,7 @@ export function TerminalSection() {
                     </Badge>
                     <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold mb-4">
                         Build{" "}
-                        <span className="bg-gradient-to-r from-[#FCB900] via-[#22D3EE] to-[#A78BFA] bg-clip-text text-transparent">
+                        <span className="bg-linear-to-r from-[#FCB900] via-[#22D3EE] to-[#A78BFA] bg-clip-text text-transparent">
                             Production-Ready
                         </span>{" "}
                         Software
@@ -239,11 +238,11 @@ export function TerminalSection() {
                     className="relative group"
                 >
                     {/* Glow effect behind terminal - Brand gradient */}
-                    <div className="absolute -inset-1 bg-gradient-to-r from-[#FCB900]/40 via-[#22D3EE]/30 to-[#A78BFA]/40 rounded-2xl blur-xl opacity-60 group-hover:opacity-90 transition-opacity duration-500" />
+                    <div className="absolute -inset-1 bg-linear-to-r from-[#FCB900]/40 via-[#22D3EE]/30 to-[#A78BFA]/40 rounded-2xl blur-xl opacity-60 group-hover:opacity-90 transition-opacity duration-500" />
 
                     <div className="relative rounded-xl overflow-hidden border border-white/10 shadow-2xl shadow-black/60 bg-[#0F172A]">
                         {/* Premium macOS-style Header */}
-                        <div className="bg-gradient-to-b from-[#0F172A] to-[#1E293B] px-4 py-3 flex items-center justify-between border-b border-white/10">
+                        <div className="bg-linear-to-b from-[#0F172A] to-[#1E293B] px-4 py-3 flex items-center justify-between border-b border-white/10">
                             <div className="flex items-center gap-2">
                                 <div className="w-3 h-3 rounded-full bg-[#EF4444] hover:bg-[#EF4444]/80 transition-colors cursor-pointer shadow-lg shadow-[#EF4444]/40" />
                                 <div className="w-3 h-3 rounded-full bg-[#FCB900] hover:bg-[#FCB900]/80 transition-colors cursor-pointer shadow-lg shadow-[#FCB900]/40" />
@@ -252,10 +251,10 @@ export function TerminalSection() {
 
                             {/* Center title with icon */}
                             <div className="absolute left-1/2 -translate-x-1/2 flex items-center gap-2">
-                                <div className="p-1 rounded bg-gradient-to-br from-[#FCB900]/20 to-[#22D3EE]/20">
+                                <div className="p-1 rounded bg-linear-to-br from-[#FCB900]/20 to-[#22D3EE]/20">
                                     <Terminal className="w-3.5 h-3.5 text-[#FCB900]" />
                                 </div>
-                                <span className="text-xs font-medium text-muted-foreground">skill-sync — zsh — 120×40</span>
+                                <span className="text-xs font-medium text-muted-foreground">skill-sync</span>
                             </div>
 
                             {/* Right side status */}
@@ -314,7 +313,7 @@ export function TerminalSection() {
 
                                     {line.type === "success" && (
                                         <div className="flex items-center gap-2 text-[#34D399] font-medium pl-2 py-0.5">
-                                            <CheckCircle2 className="w-3.5 h-3.5 flex-shrink-0" />
+                                            <CheckCircle2 className="w-3.5 h-3.5 shrink-0" />
                                             <span>{line.text}</span>
                                         </div>
                                     )}
@@ -328,7 +327,7 @@ export function TerminalSection() {
 
                                     {line.type === "warning" && (
                                         <div className="flex items-center gap-2 text-[#FCB900] pl-2 py-0.5">
-                                            <Loader2 className="w-3.5 h-3.5 animate-spin flex-shrink-0" />
+                                            <Loader2 className="w-3.5 h-3.5 animate-spin shrink-0" />
                                             <span>{line.text}</span>
                                         </div>
                                     )}
@@ -378,7 +377,7 @@ export function TerminalSection() {
                         </div>
 
                         {/* Bottom status bar */}
-                        <div className="bg-gradient-to-r from-[#0F172A] to-[#1E293B] px-4 py-1.5 flex items-center justify-between border-t border-white/10 text-[10px] text-muted-foreground">
+                        <div className="bg-linear-to-r from-[#0F172A] to-[#1E293B] px-4 py-1.5 flex items-center justify-between border-t border-white/10 text-[10px] text-muted-foreground">
                             <div className="flex items-center gap-4">
                                 <span className="flex items-center gap-1">
                                     <span className="w-1.5 h-1.5 rounded-full bg-[#34D399] animate-pulse shadow-sm shadow-[#34D399]/50" />

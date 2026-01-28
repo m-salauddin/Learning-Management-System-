@@ -12,6 +12,7 @@ export function Navbar() {
 
     return (
         <nav
+            suppressHydrationWarning
             className="fixed top-4 left-1/2 -translate-x-1/2 z-50 w-[95%] max-w-6xl animate-fade-in-down"
         >
             <div className="navbar-glass border rounded-2xl px-8 py-4 shadow-2xl shadow-black/10 dark:shadow-black/40">
