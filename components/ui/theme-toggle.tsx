@@ -31,22 +31,22 @@ export function ThemeToggle() {
     ]
 
     return (
-        <div className="flex items-center gap-1 p-1 rounded-full bg-muted">
+        <div className="flex items-center gap-1 p-1 rounded-full bg-muted/50 border border-border/50">
             {themes.map(({ value, icon: Icon, label }) => (
                 <button
                     key={value}
                     onClick={() => setTheme(value)}
                     className={cn(
-                        "relative flex items-center justify-center w-8 h-8 rounded-full transition-colors",
-                        "hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
-                        theme === value ? "text-foreground" : "text-muted-foreground"
+                        "relative flex cursor-pointer items-center justify-center w-8 h-8 rounded-full transition-colors",
+                        "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+                        theme === value ? "text-primary-foreground" : "text-muted-foreground"
                     )}
                     aria-label={`Switch to ${label} theme`}
                 >
                     {theme === value && (
                         <motion.div
                             layoutId="theme-toggle-bg"
-                            className="absolute inset-0 bg-background rounded-full shadow-sm"
+                            className="absolute inset-0 bg-primary rounded-full shadow-sm"
                             transition={{ type: "spring", stiffness: 400, damping: 30 }}
                         />
                     )}

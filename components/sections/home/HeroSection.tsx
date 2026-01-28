@@ -10,8 +10,10 @@ import {
     Trophy,
     Check,
     ArrowRight,
+    Rocket,
 } from "lucide-react";
 import { Badge } from "@/components/ui/Badge";
+import { Button } from "@/components/ui/Button";
 
 // Animated Stat Card Component with Counter
 function AnimatedStatCard({
@@ -98,9 +100,8 @@ export function HeroSection() {
                     <div className="text-center lg:text-left animate-fade-in-up">
                         {/* Badge */}
                         <div className="inline-flex mb-8">
-                            <Badge variant="default">
-                                <div className="w-2 h-2 rounded-full bg-primary animate-pulse mr-2" />
-                                Admissions Open for Winter 2026
+                            <Badge icon={Rocket}>
+                                Start Your Learning Journey on 2026
                             </Badge>
                         </div>
 
@@ -119,14 +120,14 @@ export function HeroSection() {
                         </p>
 
                         {/* CTA Buttons */}
-                        <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start mb-12">
-                            <button className="group flex items-center justify-center gap-2 px-8 py-4 rounded-2xl bg-foreground text-background font-bold text-lg hover:bg-foreground/90 transition-all duration-300 hover:-translate-y-0.5 shadow-xl shadow-foreground/10">
+                        <div className="flex flex-row flex-wrap gap-4 justify-center lg:justify-start mb-12">
+                            <Button size="responsive" className="group">
                                 Get Started Now
-                                <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
-                            </button>
-                            <button className="flex items-center justify-center gap-2 px-8 py-4 rounded-2xl bg-card hover:bg-card/80 font-bold text-lg border border-border/50 text-foreground transition-all duration-300">
+                                <ArrowRight className="w-4 h-4 sm:w-5 sm:h-5 group-hover:translate-x-1 transition-transform ml-2" />
+                            </Button>
+                            <Button variant="premium" size="responsive">
                                 Explore Structure
-                            </button>
+                            </Button>
                         </div>
 
                         {/* Social Proof */}
