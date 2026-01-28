@@ -16,10 +16,10 @@ export function ThemeToggle() {
 
     if (!mounted) {
         return (
-            <div className="flex items-center gap-1 p-1 rounded-full bg-muted">
-                <div className="w-8 h-8 rounded-full" />
-                <div className="w-8 h-8 rounded-full" />
-                <div className="w-8 h-8 rounded-full" />
+            <div className="flex items-center gap-1 p-1 rounded-full bg-muted/50 border border-border/50 animate-pulse">
+                <div className="w-8 h-8 rounded-full bg-muted-foreground/20" />
+                <div className="w-8 h-8 rounded-full bg-muted-foreground/20" />
+                <div className="w-8 h-8 rounded-full bg-muted-foreground/20" />
             </div>
         )
     }
@@ -75,9 +75,9 @@ export function ThemeToggleCompact() {
 
     if (!mounted) {
         return (
-            <button className="flex items-center justify-center w-9 h-9 rounded-lg bg-muted">
-                <div className="w-4 h-4" />
-            </button>
+            <div className="flex items-center justify-center w-10 h-10 rounded-xl border border-border/50 bg-muted/50 animate-pulse">
+                <div className="w-5 h-5 rounded-full bg-muted-foreground/20" />
+            </div>
         )
     }
 
@@ -93,13 +93,15 @@ export function ThemeToggleCompact() {
         >
             <AnimatePresence mode="wait">
                 <motion.div
-                    key={resolvedTheme}
+                    key={theme}
                     initial={{ opacity: 0, rotate: -90, scale: 0.5 }}
                     animate={{ opacity: 1, rotate: 0, scale: 1 }}
                     exit={{ opacity: 0, rotate: 90, scale: 0.5 }}
                     transition={{ duration: 0.2 }}
                 >
-                    {resolvedTheme === "dark" ? (
+                    {theme === "system" ? (
+                        <Monitor className="w-5 h-5" />
+                    ) : theme === "dark" ? (
                         <Moon className="w-5 h-5" />
                     ) : (
                         <Sun className="w-5 h-5" />

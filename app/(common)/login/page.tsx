@@ -13,6 +13,8 @@ import { Logo } from "@/components/ui/Logo";
 import { fadeInUp } from "@/lib/motion";
 import { AnimatedCheckbox } from "@/components/ui/AnimatedCheckbox";
 import { login, signInWithGoogle } from "@/app/auth/actions";
+import { useAppDispatch } from "@/lib/store/hooks";
+import { setUser } from "@/lib/store/features/auth/authSlice";
 
 // Validation schema
 const loginSchema = z.object({
@@ -31,6 +33,7 @@ type LoginFormData = z.infer<typeof loginSchema>;
 
 export default function LoginPage() {
     const router = useRouter();
+    const dispatch = useAppDispatch();
     const [showPassword, setShowPassword] = React.useState(false);
     const [isLoading, setIsLoading] = React.useState(false);
 
@@ -58,6 +61,17 @@ export default function LoginPage() {
                     type: "manual",
                     message: result.error
                 });
+            } else if (result?.session && result?.user) {
+                // Optimistically update Redux state
+                dispatch(setUser({
+                    id: result.user.id,
+                    email: result.user.email,
+                    fullName: result.user.user_metadata?.full_name,
+                    role: result.user.user_metadata?.role || 'student',
+                    avatarUrl: result.user.user_metadata?.avatar_url
+                }));
+                router.push('/');
+                router.refresh();
             }
         } catch (error) {
             setError("root", {

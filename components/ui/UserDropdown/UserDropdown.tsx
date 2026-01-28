@@ -2,6 +2,7 @@
 
 import { useState, useRef, useEffect } from "react";
 import Link from "next/link";
+import { useRouter, usePathname } from "next/navigation";
 import { motion, AnimatePresence } from "motion/react";
 import {
     User,
@@ -9,19 +10,30 @@ import {
     LogOut,
     ChevronDown,
     LayoutDashboard,
-    Bell
+    CheckCircle2
 } from "lucide-react";
 import { signOut } from "@/app/auth/actions";
-import { createClient } from "@/lib/supabase/client";
-import { AuthUser } from "@/lib/store/features/auth/authSlice";
+import { AuthUser, logout } from "@/lib/store/features/auth/authSlice";
+import { useAppDispatch } from "@/lib/store/hooks";
+import { Modal } from "@/components/ui/Modal";
 
 interface UserDropdownProps {
     user: AuthUser;
+    onOpen?: () => void;
 }
 
-export function UserDropdown({ user }: UserDropdownProps) {
+export function UserDropdown({ user, onOpen }: UserDropdownProps) {
     const [isOpen, setIsOpen] = useState(false);
+    const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
+    const [resultModal, setResultModal] = useState<{
+        isOpen: boolean;
+        type: "success" | "error";
+        message: string;
+    }>({ isOpen: false, type: "success", message: "" });
     const dropdownRef = useRef<HTMLDivElement>(null);
+    const router = useRouter();
+    const pathname = usePathname();
+    const dispatch = useAppDispatch();
 
     // Close dropdown when clicking outside
     useEffect(() => {
@@ -34,9 +46,48 @@ export function UserDropdown({ user }: UserDropdownProps) {
         return () => document.removeEventListener("mousedown", handleClickOutside);
     }, []);
 
-    const handleSignOut = async () => {
-        await signOut();
+    const handleSignOutClick = () => {
+        setIsOpen(false);
+        setShowLogoutConfirm(true);
     };
+
+    const confirmLogout = async () => {
+        setShowLogoutConfirm(false);
+        const result = await signOut();
+
+        if (result?.error) {
+            setResultModal({
+                isOpen: true,
+                type: "error",
+                message: result.error
+            });
+            return;
+        }
+
+        // Show success modal briefly before redirecting
+        setResultModal({
+            isOpen: true,
+            type: "success",
+            message: "You have been logged out successfully."
+        });
+
+        // Wait a moment so user can see the message
+        setTimeout(() => {
+            dispatch(logout());
+            setResultModal(prev => ({ ...prev, isOpen: false }));
+
+            // Check if current path is a protected route
+            const protectedRoutes = ['/dashboard', '/profile', '/settings'];
+            const isProtectedRoute = protectedRoutes.some(route => pathname?.startsWith(route));
+
+            if (isProtectedRoute) {
+                router.push('/login');
+            } else {
+                router.refresh();
+            }
+        }, 1500);
+    };
+
 
     const getInitials = (name: string) => {
         return name
@@ -53,17 +104,26 @@ export function UserDropdown({ user }: UserDropdownProps) {
     return (
         <div className="relative" ref={dropdownRef}>
             <button
-                onClick={() => setIsOpen(!isOpen)}
-                className="flex items-center gap-3 pl-2 pr-4 py-2 rounded-full border border-border/50 bg-background/50 hover:bg-muted/50 transition-all duration-200 group"
+                onClick={() => {
+                    if (!isOpen && onOpen) {
+                        onOpen();
+                    }
+                    setIsOpen(!isOpen);
+                }}
+                className="flex cursor-pointer items-center gap-2 sm:gap-3 pl-1 pr-1 sm:pl-1 sm:pr-4 py-1 rounded-full border border-border/50 bg-muted/50 hover:bg-muted/80 transition-all duration-200 group"
             >
-                <div className="w-8 h-8 rounded-full bg-primary/10 text-primary flex items-center justify-center text-xs font-bold ring-2 ring-transparent group-hover:ring-primary/20 transition-all">
-                    {getInitials(displayName)}
+                <div className="w-8 h-8 rounded-full bg-primary/10 text-primary flex items-center justify-center text-xs font-bold ring-2 ring-transparent group-hover:ring-primary/20 transition-all overflow-hidden">
+                    {user.avatarUrl ? (
+                        <img src={user.avatarUrl} alt={displayName} className="w-full h-full object-cover" />
+                    ) : (
+                        getInitials(displayName)
+                    )}
                 </div>
-                <div className="flex-col items-start text-xs hidden sm:flex">
+                <div className="flex-col items-start text-xs hidden min-[775px]:flex">
                     <span className="font-semibold max-w-[100px] truncate">{displayName}</span>
                     <span className="text-muted-foreground capitalize">{userRole}</span>
                 </div>
-                <ChevronDown className={`w-4 h-4 text-muted-foreground transition-transform duration-200 ${isOpen ? "rotate-180" : ""}`} />
+                <ChevronDown className={`w-4 h-4 text-muted-foreground group-hover:text-foreground transition-all duration-200 hidden sm:block ${isOpen ? "rotate-180" : ""}`} />
             </button>
 
             <AnimatePresence>
@@ -73,7 +133,7 @@ export function UserDropdown({ user }: UserDropdownProps) {
                         animate={{ opacity: 1, y: 0, scale: 1 }}
                         exit={{ opacity: 0, y: 10, scale: 0.95 }}
                         transition={{ type: "spring", stiffness: 300, damping: 30 }}
-                        className="absolute top-full right-0 mt-2 w-64 bg-card/95 backdrop-blur-xl border border-border/50 rounded-2xl shadow-xl overflow-hidden z-50 p-2"
+                        className="absolute top-full right-0 mt-5 w-64 bg-white dark:bg-slate-950 border border-white/20 dark:border-white/10 rounded-2xl shadow-xl overflow-hidden z-50 p-2"
                     >
                         {/* User Info Header */}
                         <div className="px-4 py-3 mb-2 bg-muted/30 rounded-xl">
@@ -86,7 +146,7 @@ export function UserDropdown({ user }: UserDropdownProps) {
                             <Link
                                 href="/dashboard"
                                 onClick={() => setIsOpen(false)}
-                                className="flex items-center gap-3 px-4 py-2.5 text-sm font-medium text-foreground/80 hover:text-foreground hover:bg-muted/50 rounded-xl transition-colors"
+                                className="flex items-center gap-3 px-4 py-2.5 text-sm font-medium text-foreground/80 hover:text-foreground hover:bg-muted/50 rounded-xl transition-colors cursor-pointer"
                             >
                                 <LayoutDashboard className="w-4 h-4" />
                                 Dashboard
@@ -94,7 +154,7 @@ export function UserDropdown({ user }: UserDropdownProps) {
                             <Link
                                 href="/profile"
                                 onClick={() => setIsOpen(false)}
-                                className="flex items-center gap-3 px-4 py-2.5 text-sm font-medium text-foreground/80 hover:text-foreground hover:bg-muted/50 rounded-xl transition-colors"
+                                className="flex items-center gap-3 px-4 py-2.5 text-sm font-medium text-foreground/80 hover:text-foreground hover:bg-muted/50 rounded-xl transition-colors cursor-pointer"
                             >
                                 <User className="w-4 h-4" />
                                 Profile
@@ -102,7 +162,7 @@ export function UserDropdown({ user }: UserDropdownProps) {
                             <Link
                                 href="/settings"
                                 onClick={() => setIsOpen(false)}
-                                className="flex items-center gap-3 px-4 py-2.5 text-sm font-medium text-foreground/80 hover:text-foreground hover:bg-muted/50 rounded-xl transition-colors"
+                                className="flex items-center gap-3 px-4 py-2.5 text-sm font-medium text-foreground/80 hover:text-foreground hover:bg-muted/50 rounded-xl transition-colors cursor-pointer"
                             >
                                 <Settings className="w-4 h-4" />
                                 Settings
@@ -113,8 +173,8 @@ export function UserDropdown({ user }: UserDropdownProps) {
 
                         {/* Sign Out */}
                         <button
-                            onClick={handleSignOut}
-                            className="w-full flex items-center gap-3 px-4 py-2.5 text-sm font-medium text-destructive hover:bg-destructive/10 rounded-xl transition-colors"
+                            onClick={handleSignOutClick}
+                            className="w-full flex items-center gap-3 px-4 py-2.5 text-sm font-medium text-destructive hover:bg-destructive/10 rounded-xl transition-colors cursor-pointer"
                         >
                             <LogOut className="w-4 h-4" />
                             Sign Out
@@ -122,6 +182,29 @@ export function UserDropdown({ user }: UserDropdownProps) {
                     </motion.div>
                 )}
             </AnimatePresence>
+
+            {/* Logout Confirmation Modal */}
+            <Modal
+                isOpen={showLogoutConfirm}
+                onClose={() => setShowLogoutConfirm(false)}
+                onConfirm={confirmLogout}
+                title="Sign out?"
+                description="Are you sure you want to sign out of your account?"
+                confirmText="Sign Out"
+                variant="danger"
+                icon={LogOut}
+            />
+
+            {/* Success/Error Result Modal */}
+            <Modal
+                isOpen={resultModal.isOpen}
+                onClose={() => setResultModal(prev => ({ ...prev, isOpen: false }))}
+                title={resultModal.type === "success" ? "Logged Out" : "Error"}
+                description={resultModal.message}
+                variant={resultModal.type === "success" ? "info" : "danger"}
+                icon={resultModal.type === "success" ? CheckCircle2 : LogOut}
+                showFooter={false}
+            />
         </div>
     );
 }

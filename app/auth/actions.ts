@@ -8,7 +8,7 @@ export async function login(data: { email: string; password: string }) {
     const supabase = await createClient()
     const { email, password } = data
 
-    const { error } = await supabase.auth.signInWithPassword({
+    const { data: authData, error } = await supabase.auth.signInWithPassword({
         email,
         password,
     })
@@ -18,14 +18,19 @@ export async function login(data: { email: string; password: string }) {
     }
 
     revalidatePath('/', 'layout')
-    redirect('/')
+
+    if (authData.session) {
+        return { success: true, user: authData.user, session: authData.session }
+    }
+
+    return { success: true }
 }
 
 export async function signup(data: { email: string; password: string; fullName: string }) {
     const supabase = await createClient()
     const { email, password, fullName } = data
 
-    const { error } = await supabase.auth.signUp({
+    const { data: authData, error } = await supabase.auth.signUp({
         email,
         password,
         options: {
@@ -40,16 +45,23 @@ export async function signup(data: { email: string; password: string; fullName: 
         return { error: error.message }
     }
 
-    // If email confirmation is enabled, we might want to return that info
-    // But for now, we'll just redirect or return success
+    if (authData.session) {
+        return { success: true, user: authData.user, session: authData.session }
+    }
+
     return { success: true }
 }
 
 export async function signOut() {
     const supabase = await createClient()
-    await supabase.auth.signOut()
+    const { error } = await supabase.auth.signOut()
     revalidatePath('/', 'layout')
-    redirect('/login')
+
+    if (error) {
+        return { error: error.message }
+    }
+
+    return { success: true }
 }
 
 export async function signInWithGoogle() {

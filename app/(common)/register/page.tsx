@@ -13,6 +13,8 @@ import { Logo } from "@/components/ui/Logo";
 import { fadeInUp } from "@/lib/motion";
 import { AnimatedCheckbox } from "@/components/ui/AnimatedCheckbox";
 import { signup, signInWithGoogle } from "@/app/auth/actions";
+import { useAppDispatch } from "@/lib/store/hooks";
+import { setUser } from "@/lib/store/features/auth/authSlice";
 
 // Validation schema
 const registerSchema = z.object({
@@ -60,6 +62,7 @@ function getPasswordStrength(password: string): { strength: number; label: strin
 
 export default function RegisterPage() {
     const router = useRouter();
+    const dispatch = useAppDispatch();
     const [showPassword, setShowPassword] = React.useState(false);
     const [showConfirmPassword, setShowConfirmPassword] = React.useState(false);
     const [isLoading, setIsLoading] = React.useState(false);
@@ -95,6 +98,17 @@ export default function RegisterPage() {
                     type: "manual",
                     message: result.error
                 });
+            } else if (result?.session && result?.user) {
+                // Optimistically update Redux state (Navbar will update immediately)
+                dispatch(setUser({
+                    id: result.user.id,
+                    email: result.user.email,
+                    fullName: result.user.user_metadata?.full_name,
+                    role: result.user.user_metadata?.role || 'student',
+                    avatarUrl: result.user.user_metadata?.avatar_url
+                }));
+                router.push('/');
+                router.refresh();
             } else {
                 setIsSuccess(true);
             }

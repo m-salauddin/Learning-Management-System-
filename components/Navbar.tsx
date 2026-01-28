@@ -13,8 +13,6 @@ import { UserDropdown } from "@/components/ui/UserDropdown/UserDropdown";
 import { useAppSelector } from "@/lib/store/hooks";
 
 
-import { selectCurrentUser, selectAuthLoading } from "@/lib/store/features/auth/authSlice";
-
 const navItems = [
     { name: "Home", href: "/" },
     { name: "Courses", href: "/courses" },
@@ -26,7 +24,7 @@ const AuthButtons = ({ isMobile = false }: { isMobile?: boolean }) => (
         <Link
             href="/login"
             className={cn(
-                "flex items-center px-5 py-2.5 rounded-2xl text-sm font-bold text-foreground border border-border/50 bg-muted/50 hover:bg-muted/80 transition-all duration-200",
+                "flex items-center px-5 py-2.5 rounded-2xl text-sm font-bold text-foreground border border-border/50 bg-muted/50 hover:bg-muted/80 transition-all duration-200 cursor-pointer",
                 isMobile ? "justify-center py-3" : ""
             )}
         >
@@ -35,7 +33,7 @@ const AuthButtons = ({ isMobile = false }: { isMobile?: boolean }) => (
         <Link
             href="/register"
             className={cn(
-                "flex items-center gap-2 px-5 py-2.5 rounded-xl bg-primary text-primary-foreground font-medium text-sm hover:bg-primary/90 transition-all duration-200 shadow-lg",
+                "flex items-center gap-2 px-5 py-2.5 rounded-xl bg-primary text-primary-foreground font-medium text-sm hover:bg-primary/90 transition-all duration-200 shadow-lg cursor-pointer",
                 isMobile && "justify-center py-3"
             )}
         >
@@ -45,15 +43,23 @@ const AuthButtons = ({ isMobile = false }: { isMobile?: boolean }) => (
     </>
 );
 
+const AuthSkeleton = () => (
+    <div className="flex items-center gap-2 sm:gap-3 pl-1 pr-2 sm:pl-1 sm:pr-4 py-1 rounded-full border border-border/50 bg-muted/50 animate-pulse">
+        <div className="w-8 h-8 rounded-full bg-muted-foreground/20" />
+        <div className="hidden min-[775px]:flex flex-col gap-1">
+            <div className="h-3 w-20 bg-muted-foreground/20 rounded-md" />
+            <div className="h-2 w-12 bg-muted-foreground/20 rounded-md" />
+        </div>
+        <div className="w-4 h-4 rounded-full bg-muted-foreground/20 hidden sm:block" />
+    </div>
+);
+
 export function Navbar() {
     const pathname = usePathname();
     const [isSearchOpen, setIsSearchOpen] = useState(false);
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-
-    // Use Redux state
     const { user, isLoading } = useAppSelector((state) => state.auth);
 
-    // Initial check handled by ReduxProvider, but we can verify load state if needed
 
     useEffect(() => {
         const handleKeyDown = (e: KeyboardEvent) => {
@@ -87,13 +93,13 @@ export function Navbar() {
     return (
         <nav
             suppressHydrationWarning
-            className="fixed top-4 left-0 right-0 mx-auto z-50 w-[95%] max-w-7xl"
+            className="fixed top-4 left-0 right-0 mx-auto z-100 w-[95%] max-w-7xl"
         >
-            <div className="isolate bg-white/60 dark:bg-slate-950/50 backdrop-blur-3xl border border-white/20 dark:border-white/10 rounded-2xl px-3 sm:px-4 xl:px-8 py-3 xl:py-4 shadow-xl shadow-black/5 dark:shadow-black/40">
+            <div className="isolate bg-white/60 dark:bg-slate-950/50 backdrop-blur-3xl border border-white/20 dark:border-white/10 rounded-2xl px-4 xl:px-8 py-3 xl:py-4 shadow-xl shadow-black/5 dark:shadow-black/40">
                 <div className="flex items-center justify-between">
                     {/* Logo Section */}
                     <Link href="/" aria-label="Home" className="shrink-0">
-                        <Logo className="scale-90 origin-left sm:scale-100" />
+                        <Logo className="scale-[0.8] origin-left sm:scale-100" textClassName="hidden sm:flex" />
                     </Link>
 
                     {/* Nav Links - Center (Desktop) */}
@@ -104,7 +110,8 @@ export function Navbar() {
                                 <Link
                                     key={item.name}
                                     href={item.href}
-                                    className="relative px-4 py-2 text-sm font-bold transition-colors duration-200"
+                                    onClick={(e) => isActive && e.preventDefault()}
+                                    className="relative px-4 py-2 text-sm font-bold transition-colors duration-200 cursor-pointer"
                                 >
                                     {isActive && (
                                         <motion.div
@@ -122,11 +129,11 @@ export function Navbar() {
                     </div>
 
                     {/* Right Side */}
-                    <div className="flex items-center gap-2 xl:gap-3">
+                    <div className="flex items-center gap-3">
                         {/* Search Trigger (Desktop) */}
                         <button
                             onClick={() => setIsSearchOpen(true)}
-                            className="hidden xl:flex items-center gap-3 px-4 py-2.5 rounded-2xl bg-muted/50 border border-border/50 hover:bg-muted/80 transition-all duration-200 group min-w-[240px]"
+                            className="hidden xl:flex items-center gap-3 px-4 py-2.5 rounded-2xl bg-muted/50 border border-border/50 hover:bg-muted/80 transition-all duration-200 group min-w-[240px] cursor-pointer"
                         >
                             <Search className="w-5 h-5 text-muted-foreground group-hover:text-primary transition-colors" />
                             <span className="text-muted-foreground text-sm">Search...</span>
@@ -138,7 +145,7 @@ export function Navbar() {
                         {/* Search Trigger (Mobile) */}
                         <button
                             onClick={() => setIsSearchOpen(true)}
-                            className="hidden min-[376px]:flex xl:hidden items-center justify-center w-10 h-10 text-muted-foreground hover:text-foreground transition-colors rounded-xl bg-muted/50 border border-border/50 hover:bg-muted/80 cursor-pointer"
+                            className="flex xl:hidden items-center justify-center w-10 h-10 text-muted-foreground hover:text-foreground transition-colors rounded-xl bg-muted/50 border border-border/50 hover:bg-muted/80 cursor-pointer"
                         >
                             <Search className="w-5 h-5" />
                         </button>
@@ -151,13 +158,18 @@ export function Navbar() {
                         </div>
 
                         {/* Desktop Auth Buttons / User Dropdown */}
-                        <div className="hidden min-[711px]:flex items-center gap-3">
-                            {user ? (
-                                <UserDropdown user={user} />
-                            ) : (
+                        {isLoading ? (
+                            <AuthSkeleton />
+                        ) : user ? (
+                            <UserDropdown
+                                user={user}
+                                onOpen={() => setIsMobileMenuOpen(false)}
+                            />
+                        ) : (
+                            <div className="hidden min-[730px]:flex items-center gap-3">
                                 <AuthButtons />
-                            )}
-                        </div>
+                            </div>
+                        )}
 
                         {/* Mobile Menu Toggle */}
                         <button
@@ -191,17 +203,7 @@ export function Navbar() {
                         >
                             {/* Mobile Nav Links */}
                             <div className="flex flex-col gap-2">
-                                {/* Mobile Search for small screens */}
-                                <button
-                                    onClick={() => {
-                                        setIsSearchOpen(true);
-                                        setIsMobileMenuOpen(false);
-                                    }}
-                                    className="max-[375px]:flex hidden items-center gap-3 w-full px-4 py-3 mb-2 rounded-xl text-sm font-bold text-muted-foreground border border-border/50 bg-muted/50 hover:bg-muted/80 transition-all"
-                                >
-                                    <Search className="w-5 h-5" />
-                                    <span>Search...</span>
-                                </button>
+
 
                                 {navItems.map((item) => {
                                     const isActive = pathname === item.href;
@@ -209,7 +211,8 @@ export function Navbar() {
                                         <Link
                                             key={item.name}
                                             href={item.href}
-                                            className={`px-4 py-3 rounded-xl text-sm font-bold transition-all ${isActive
+                                            onClick={(e) => isActive && e.preventDefault()}
+                                            className={`px-4 py-3 rounded-xl text-sm font-bold transition-all cursor-pointer ${isActive
                                                 ? "bg-primary/10 text-primary"
                                                 : "text-muted-foreground hover:bg-muted/50 hover:text-foreground"
                                                 }`}
@@ -220,40 +223,12 @@ export function Navbar() {
                                 })}
                             </div>
 
-                            {/* Mobile Auth Buttons */}
-                            <div className="flex flex-col gap-3 pt-4 border-t border-border/50">
-                                {user ? (
-                                    <div className="flex flex-col gap-2">
-                                        <div className="px-4 py-2 bg-muted/30 rounded-xl">
-                                            <p className="font-semibold text-sm truncate">{user.fullName || "User"}</p>
-                                            <p className="text-xs text-muted-foreground truncate">{user.email}</p>
-                                        </div>
-                                        <Link
-                                            href="/dashboard"
-                                            className="flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-bold text-muted-foreground hover:text-foreground hover:bg-muted/50"
-                                        >
-                                            Dashboard
-                                        </Link>
-                                        <Link
-                                            href="/profile"
-                                            className="flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-bold text-muted-foreground hover:text-foreground hover:bg-muted/50"
-                                        >
-                                            Profile
-                                        </Link>
-                                        <button
-                                            onClick={async () => {
-                                                const { signOut } = await import("@/app/auth/actions");
-                                                await signOut();
-                                            }}
-                                            className="flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-bold text-destructive hover:bg-destructive/10 text-left"
-                                        >
-                                            Sign Out
-                                        </button>
-                                    </div>
-                                ) : (
+                            {/* Mobile Auth Buttons (Only for logged out users) */}
+                            {!user && (
+                                <div className="flex cursor-pointer min-[730px]:hidden flex-col gap-3 pt-4 border-t border-border/50">
                                     <AuthButtons isMobile />
-                                )}
-                            </div>
+                                </div>
+                            )}
                         </motion.div>
                     </>
                 )}

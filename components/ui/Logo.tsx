@@ -6,9 +6,10 @@ interface LogoProps {
     className?: string;
     showText?: boolean;
     size?: "sm" | "md" | "lg" | "xl";
+    textClassName?: string;
 }
 
-export const Logo = ({ className = "", showText = true, size = "md" }: LogoProps) => {
+export const Logo = ({ className = "", showText = true, size = "md", textClassName = "" }: LogoProps) => {
     const sizeConfig = {
         sm: { icon: 36, text: "text-lg", gap: "gap-2" },
         md: { icon: 44, text: "text-xl", gap: "gap-2.5" },
@@ -128,7 +129,7 @@ export const Logo = ({ className = "", showText = true, size = "md" }: LogoProps
 
             {/* Typography */}
             {showText && (
-                <div className="flex flex-col">
+                <div className={`flex flex-col ${textClassName}`}>
                     <div className={`${config.text} font-bold tracking-tight leading-none flex items-baseline`}>
                         <span className="text-foreground">Skill</span>
                         <span className="bg-linear-to-r from-primary via-accent to-secondary bg-clip-text text-transparent dark:from-primary dark:via-secondary dark:to-accent">
