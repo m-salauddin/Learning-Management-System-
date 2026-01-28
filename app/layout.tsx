@@ -3,6 +3,10 @@ import { Space_Grotesk, JetBrains_Mono } from "next/font/google";
 import { ThemeProvider } from "@/components/providers/theme-provider";
 import { ReduxProvider } from "@/components/providers/ReduxProvider";
 import { CookieConsent } from "@/components/CookieConsent";
+import { ToastProvider } from "@/components/ui/toast";
+import { SocialLoginToast } from "@/components/auth/SocialLoginToast";
+import { AuthListener } from "@/components/auth/AuthListener";
+import { Suspense } from "react";
 import "./globals.css";
 
 const spaceGrotesk = Space_Grotesk({
@@ -77,12 +81,18 @@ export default function RootLayout({
           disableTransitionOnChange
         >
           <ReduxProvider>
-            {children}
-            <CookieConsent />
+            <ToastProvider>
+              <AuthListener />
+              <Suspense fallback={<div />}>
+                <SocialLoginToast />
+              </Suspense>
+              {children}
+              <CookieConsent />
+            </ToastProvider>
           </ReduxProvider>
         </ThemeProvider>
       </body>
-    </html>
+    </html >
   );
 }
 

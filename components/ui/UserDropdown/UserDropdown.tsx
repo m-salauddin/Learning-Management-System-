@@ -10,8 +10,8 @@ import {
     LogOut,
     ChevronDown,
     LayoutDashboard,
-    CheckCircle2
 } from "lucide-react";
+import { useToast } from "@/components/ui/toast";
 import { signOut } from "@/app/auth/actions";
 import { AuthUser, logout } from "@/lib/store/features/auth/authSlice";
 import { useAppDispatch } from "@/lib/store/hooks";
@@ -25,15 +25,11 @@ interface UserDropdownProps {
 export function UserDropdown({ user, onOpen }: UserDropdownProps) {
     const [isOpen, setIsOpen] = useState(false);
     const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
-    const [resultModal, setResultModal] = useState<{
-        isOpen: boolean;
-        type: "success" | "error";
-        message: string;
-    }>({ isOpen: false, type: "success", message: "" });
     const dropdownRef = useRef<HTMLDivElement>(null);
     const router = useRouter();
     const pathname = usePathname();
     const dispatch = useAppDispatch();
+    const toast = useToast();
 
     // Close dropdown when clicking outside
     useEffect(() => {
@@ -53,39 +49,30 @@ export function UserDropdown({ user, onOpen }: UserDropdownProps) {
 
     const confirmLogout = async () => {
         setShowLogoutConfirm(false);
+        const loadingToastId = toast.loading("Logging out...", "Please wait while we sign you out.");
+
         const result = await signOut();
 
         if (result?.error) {
-            setResultModal({
-                isOpen: true,
-                type: "error",
-                message: result.error
-            });
+            toast.dismiss(loadingToastId);
+            toast.error("Logout Failed", result.error);
             return;
         }
 
-        // Show success modal briefly before redirecting
-        setResultModal({
-            isOpen: true,
-            type: "success",
-            message: "You have been logged out successfully."
-        });
+        toast.dismiss(loadingToastId);
+        toast.success("Logged Out", "You have been logged out successfully.");
 
-        // Wait a moment so user can see the message
-        setTimeout(() => {
-            dispatch(logout());
-            setResultModal(prev => ({ ...prev, isOpen: false }));
+        dispatch(logout());
 
-            // Check if current path is a protected route
-            const protectedRoutes = ['/dashboard', '/profile', '/settings'];
-            const isProtectedRoute = protectedRoutes.some(route => pathname?.startsWith(route));
+        // Check if current path is a protected route
+        const protectedRoutes = ['/dashboard', '/profile', '/settings'];
+        const isProtectedRoute = protectedRoutes.some(route => pathname?.startsWith(route));
 
-            if (isProtectedRoute) {
-                router.push('/login');
-            } else {
-                router.refresh();
-            }
-        }, 1500);
+        if (isProtectedRoute) {
+            router.push('/login');
+        } else {
+            router.refresh();
+        }
     };
 
 
@@ -101,6 +88,14 @@ export function UserDropdown({ user, onOpen }: UserDropdownProps) {
     const displayName = user.fullName || user.email?.split("@")[0] || "User";
     const userRole = user.role;
 
+    const [imageError, setImageError] = useState(false);
+    const [imageLoaded, setImageLoaded] = useState(false);
+
+    useEffect(() => {
+        setImageError(false);
+        setImageLoaded(false);
+    }, [user.avatarUrl]);
+
     return (
         <div className="relative" ref={dropdownRef}>
             <button
@@ -112,9 +107,24 @@ export function UserDropdown({ user, onOpen }: UserDropdownProps) {
                 }}
                 className="flex cursor-pointer items-center gap-2 sm:gap-3 pl-1 pr-1 sm:pl-1 sm:pr-4 py-1 rounded-full border border-border/50 bg-muted/50 hover:bg-muted/80 transition-all duration-200 group"
             >
-                <div className="w-8 h-8 rounded-full bg-primary/10 text-primary flex items-center justify-center text-xs font-bold ring-2 ring-transparent group-hover:ring-primary/20 transition-all overflow-hidden">
-                    {user.avatarUrl ? (
-                        <img src={user.avatarUrl} alt={displayName} className="w-full h-full object-cover" />
+                <div className="w-8 h-8 rounded-full bg-primary/10 text-primary flex items-center justify-center text-xs font-bold ring-2 ring-transparent group-hover:ring-primary/20 transition-all overflow-hidden relative">
+                    {user.avatarUrl && !imageError ? (
+                        <>
+                            {!imageLoaded && (
+                                <div className="absolute inset-0 bg-muted animate-pulse" />
+                            )}
+                            <img
+                                src={user.avatarUrl}
+                                alt={displayName}
+                                referrerPolicy="no-referrer"
+                                className={`w-full h-full object-cover transition-opacity duration-300 ${imageLoaded ? 'opacity-100' : 'opacity-0'}`}
+                                onLoad={() => setImageLoaded(true)}
+                                onError={() => {
+                                    setImageLoaded(true);
+                                    setImageError(true);
+                                }}
+                            />
+                        </>
                     ) : (
                         getInitials(displayName)
                     )}
@@ -193,17 +203,6 @@ export function UserDropdown({ user, onOpen }: UserDropdownProps) {
                 confirmText="Sign Out"
                 variant="danger"
                 icon={LogOut}
-            />
-
-            {/* Success/Error Result Modal */}
-            <Modal
-                isOpen={resultModal.isOpen}
-                onClose={() => setResultModal(prev => ({ ...prev, isOpen: false }))}
-                title={resultModal.type === "success" ? "Logged Out" : "Error"}
-                description={resultModal.message}
-                variant={resultModal.type === "success" ? "info" : "danger"}
-                icon={resultModal.type === "success" ? CheckCircle2 : LogOut}
-                showFooter={false}
             />
         </div>
     );

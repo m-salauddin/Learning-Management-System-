@@ -86,6 +86,25 @@ export async function signInWithGoogle() {
     }
 }
 
+export async function signInWithGithub() {
+    const supabase = await createClient()
+    const { data, error } = await supabase.auth.signInWithOAuth({
+        provider: 'github',
+        options: {
+            redirectTo: `${process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'}/auth/callback`,
+            scopes: 'read:user user:email',
+        },
+    })
+
+    if (error) {
+        return { error: error.message }
+    }
+
+    if (data.url) {
+        redirect(data.url)
+    }
+}
+
 export async function forgotPassword(email: string) {
     const supabase = await createClient()
 

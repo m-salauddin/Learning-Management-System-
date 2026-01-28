@@ -8,7 +8,6 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { Lock, ArrowRight, Loader2, Eye, EyeOff, CheckCircle2 } from "lucide-react";
-import { Logo } from "@/components/ui/Logo";
 import { fadeInUp } from "@/lib/motion";
 import { updatePassword } from "@/app/auth/actions";
 
@@ -101,9 +100,6 @@ export default function ResetPasswordPage() {
                     <div className="bg-card/80 dark:bg-card/60 backdrop-blur-xl border border-border/50 dark:border-white/10 rounded-3xl p-8 shadow-2xl">
                         {/* Header */}
                         <div className="text-center mb-8">
-                            <div className="flex justify-center mb-4">
-                                <Logo />
-                            </div>
                             <h1 className="text-2xl font-bold mb-2">Set New Password</h1>
                             <p className="text-muted-foreground text-sm">
                                 Create a strong password for your account

@@ -7,9 +7,9 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { Mail, ArrowRight, Loader2, ArrowLeft } from "lucide-react";
-import { Logo } from "@/components/ui/Logo";
 import { fadeInUp } from "@/lib/motion";
 import { forgotPassword } from "@/app/auth/actions";
+import { useToast } from "@/components/ui/toast";
 
 // Validation schema
 const forgotPasswordSchema = z.object({
@@ -24,6 +24,7 @@ type ForgotPasswordFormData = z.infer<typeof forgotPasswordSchema>;
 export default function ForgotPasswordPage() {
     const [isLoading, setIsLoading] = React.useState(false);
     const [isSuccess, setIsSuccess] = React.useState(false);
+    const toast = useToast();
 
     const {
         register,
@@ -42,18 +43,29 @@ export default function ForgotPasswordPage() {
         try {
             const result = await forgotPassword(data.email);
             if (result?.error) {
+                let errorMessage = result.error;
+
+                // Map technical errors to user-friendly messages
+                if (errorMessage.toLowerCase().includes("rate limit")) {
+                    errorMessage = "Too many attempts. Please wait a minute before trying again.";
+                }
+
                 setError("root", {
                     type: "manual",
-                    message: result.error
+                    message: errorMessage
                 });
+                toast.error("Request Failed", errorMessage);
             } else {
                 setIsSuccess(true);
+                toast.success("Email Sent", "Check your inbox for the reset link.");
             }
         } catch (error) {
+            const fallbackError = "Something went wrong. Please try again.";
             setError("root", {
                 type: "manual",
-                message: "Something went wrong. Please try again."
+                message: fallbackError
             });
+            toast.error("Error", fallbackError);
         } finally {
             setIsLoading(false);
         }
@@ -73,9 +85,6 @@ export default function ForgotPasswordPage() {
                     <div className="bg-card/80 dark:bg-card/60 backdrop-blur-xl border border-border/50 dark:border-white/10 rounded-3xl p-8 shadow-2xl">
                         {/* Header */}
                         <div className="text-center mb-8">
-                            <div className="flex justify-center mb-4">
-                                <Logo />
-                            </div>
                             <h1 className="text-2xl font-bold mb-2">Forgot Password</h1>
                             <p className="text-muted-foreground text-sm">
                                 Enter your email to reset your password
