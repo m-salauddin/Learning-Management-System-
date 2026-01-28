@@ -105,19 +105,19 @@ export const Logo = ({ className = "", showText = true, size = "md" }: LogoProps
                     <g clipPath={`url(#${clipId})`}>
                         <path
                             d="M42 22C42 22 38 16 30 16C22 16 18 20 18 25C18 30 23 33 30 34C37 35 46 38 46 44C46 50 40 54 30 54C22 54 18 48 18 48"
-                            stroke="white"
                             strokeWidth="5"
                             strokeLinecap="round"
                             fill="none"
+                            className="stroke-white dark:stroke-slate-950"
                         />
 
                         {/* Sync indicators */}
                         <g>
-                            <circle cx="46" cy="18" r="6" fill="white" fillOpacity="0.2" />
-                            <path d="M44 18L48 14M48 14L48 18M48 14L44 14" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                            <circle cx="46" cy="18" r="6" fillOpacity="0.2" className="fill-white dark:fill-slate-950" />
+                            <path d="M44 18L48 14M48 14L48 18M48 14L44 14" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="stroke-white dark:stroke-slate-950" />
 
-                            <circle cx="18" cy="52" r="6" fill="white" fillOpacity="0.2" />
-                            <path d="M20 52L16 56M16 56L16 52M16 56L20 56" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                            <circle cx="18" cy="52" r="6" fillOpacity="0.2" className="fill-white dark:fill-slate-950" />
+                            <path d="M20 52L16 56M16 56L16 52M16 56L20 56" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="stroke-white dark:stroke-slate-950" />
                         </g>
                     </g>
                 </svg>
@@ -134,7 +134,7 @@ export const Logo = ({ className = "", showText = true, size = "md" }: LogoProps
                         <span className="bg-linear-to-r from-primary via-accent to-secondary bg-clip-text text-transparent dark:from-primary dark:via-secondary dark:to-accent">
                             Sync
                         </span>
-                        <span className="ml-1.5 text-[0.5em] font-black tracking-wider text-white bg-linear-to-r from-primary to-accent dark:from-primary dark:to-secondary px-1.5 py-0.5 rounded-md shadow-sm">
+                        <span className="ml-1.5 text-[0.5em] font-black tracking-wider text-white dark:text-slate-950 bg-linear-to-r from-primary to-accent dark:from-primary dark:to-secondary px-1.5 py-0.5 rounded-md shadow-sm">
                             BD
                         </span>
                     </div>
@@ -189,17 +189,17 @@ export const LogoIcon = ({ size = 40, className = "" }: { size?: number; classNa
 
             <path
                 d="M42 22C42 22 38 16 30 16C22 16 18 20 18 25C18 30 23 33 30 34C37 35 46 38 46 44C46 50 40 54 30 54C22 54 18 48 18 48"
-                stroke="white"
                 strokeWidth="5"
                 strokeLinecap="round"
                 fill="none"
+                className="stroke-white dark:stroke-slate-950"
             />
 
-            <circle cx="46" cy="18" r="5" fill="white" fillOpacity="0.25" />
-            <path d="M44 18L48 14M48 14V18M48 14H44" stroke="white" strokeWidth="1.5" strokeLinecap="round" />
+            <circle cx="46" cy="18" r="5" fillOpacity="0.25" className="fill-white dark:fill-slate-950" />
+            <path d="M44 18L48 14M48 14V18M48 14H44" strokeWidth="1.5" strokeLinecap="round" className="stroke-white dark:stroke-slate-950" />
 
-            <circle cx="18" cy="52" r="5" fill="white" fillOpacity="0.25" />
-            <path d="M20 52L16 56M16 56V52M16 56H20" stroke="white" strokeWidth="1.5" strokeLinecap="round" />
+            <circle cx="18" cy="52" r="5" fillOpacity="0.25" className="fill-white dark:fill-slate-950" />
+            <path d="M20 52L16 56M16 56V52M16 56H20" strokeWidth="1.5" strokeLinecap="round" className="stroke-white dark:stroke-slate-950" />
         </svg>
     );
 };

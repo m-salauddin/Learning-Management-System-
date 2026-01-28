@@ -13,14 +13,14 @@ interface TerminalLine {
 
 const TERMINAL_SEQUENCE = [
     {
-        cmd: "npx create-next-app@latest skill-sync", output: [
-            { type: "info", text: "◐ Creating a new app in ~/projects/skill-sync..." },
+        cmd: "npx create-next-app@latest skill-sync-bd", output: [
+            { type: "info", text: "◐ Creating a new app in ~/projects/skill-sync-bd..." },
             { type: "warning", text: "◐ Installing dependencies: react, react-dom, next..." },
-            { type: "success", text: "✓ Success! Created skill-sync" }
+            { type: "success", text: "✓ Success! Created skill-sync-bd" }
         ]
     },
     {
-        cmd: "cd skill-sync && bun run dev", output: [
+        cmd: "cd skill-sync-bd && bun run dev", output: [
             { type: "info", text: "◐ Starting development server..." },
             { type: "success", text: "✓ Ready in 847ms" },
             { type: "output", text: "➜ Local:   http://localhost:3000" },
@@ -79,7 +79,7 @@ const OmpPrompt = ({ showTime = true, className }: { showTime?: boolean; classNa
             {/* Segment 2: Directory - Cyan */}
             <div className="bg-[#22D3EE] text-[#0a2540] px-3 py-[5px] rounded-full flex items-center gap-1.5 font-semibold">
                 <Folder className="w-3.5 h-3.5" />
-                <span>skill-sync</span>
+                <span>skill-sync-bd</span>
             </div>
 
             {/* Segment 3: Git Branch - Purple */}
@@ -114,7 +114,7 @@ const OmpPromptCompact = () => (
         {/* Directory - Cyan */}
         <div className="bg-[#22D3EE] text-[#0a2540] px-2 py-[3px] rounded-full flex items-center gap-1 font-semibold">
             <Folder className="w-2.5 h-2.5" />
-            <span>skill-sync</span>
+            <span>skill-sync-bd</span>
         </div>
 
         {/* Git Branch - Purple */}
@@ -254,7 +254,7 @@ export function TerminalSection() {
                                 <div className="p-1 rounded bg-linear-to-br from-[#FCB900]/20 to-[#22D3EE]/20">
                                     <Terminal className="w-3.5 h-3.5 text-[#FCB900]" />
                                 </div>
-                                <span className="text-xs font-medium text-muted-foreground">skill-sync</span>
+                                <span className="text-xs font-medium text-muted-foreground">skill-sync-bd</span>
                             </div>
 
                             {/* Right side status */}

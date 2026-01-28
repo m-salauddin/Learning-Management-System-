@@ -159,13 +159,13 @@ export function HeroSection() {
                     <div className="relative mt-12 lg:mt-0 animate-fade-in-up" style={{ animationDelay: '0.2s' }}>
                         {/* Top Badge */}
                         <div className="flex justify-end mb-4">
-                            <div className="inline-flex items-center gap-3 px-5 py-3 rounded-2xl bg-linear-to-r from-orange-500 to-rose-600 text-white shadow-lg shadow-orange-500/20">
-                                <div className="w-10 h-10 rounded-xl bg-white/20 flex items-center justify-center">
-                                    <Trophy className="w-5 h-5 text-white" />
+                            <div className="inline-flex items-center gap-3 px-5 py-3 rounded-2xl bg-linear-to-r from-primary via-accent to-secondary dark:from-primary dark:via-secondary dark:to-accent text-white dark:text-slate-950 shadow-lg shadow-primary/20">
+                                <div className="w-10 h-10 rounded-xl bg-white/20 dark:bg-black/5 flex items-center justify-center">
+                                    <Trophy className="w-5 h-5 text-white dark:text-slate-950" />
                                 </div>
                                 <div>
                                     <p className="font-bold">Top Rated</p>
-                                    <p className="text-white/90 text-sm">BD Platform</p>
+                                    <p className="text-white/90 dark:text-slate-950/80 font-medium text-sm">BD Platform</p>
                                 </div>
                             </div>
                         </div>
