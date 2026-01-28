@@ -1,7 +1,7 @@
 "use client";
 
 import { motion } from "motion/react";
-import { Sparkles, BookOpen, Check, Code2, Users, Trophy, Target } from "lucide-react";
+import { Sparkles, BookOpen, Check, Code2, Users, Trophy, Target, Award } from "lucide-react";
 import { staggerContainer, staggerItem } from "@/lib/motion";
 import { Badge } from "@/components/ui/Badge";
 
@@ -10,6 +10,7 @@ const FEATURE_ITEMS = [
     { icon: Users, title: "Community Support", description: "Join 50,000+ active learners", color: "accent" },
     { icon: Trophy, title: "Job Placement", description: "95% placement rate within 6 months", color: "success" },
     { icon: Target, title: "Skill Tracking", description: "GitHub-style learning streaks", color: "warning" },
+    { icon: Award, title: "Verified Certificates", description: "Earn industry-recognized credentials", color: "primary" },
 ] as const;
 
 const COURSE_FEATURES = ["Video Lessons", "Live Sessions", "Projects", "Mentorship"] as const;

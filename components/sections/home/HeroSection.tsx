@@ -64,13 +64,13 @@ function AnimatedStatCard({
 
     return (
         <div ref={ref} className="text-center">
-            <div className={`w-14 h-14 rounded-2xl ${bgColor} flex items-center justify-center mx-auto mb-4`}>
-                <Icon className={`w-7 h-7 ${color}`} />
+            <div className={`w-10 h-10 rounded-xl ${bgColor} flex items-center justify-center mx-auto mb-2`}>
+                <Icon className={`w-5 h-5 ${color}`} />
             </div>
-            <p className="text-3xl font-bold tracking-tight">
+            <p className="text-2xl font-bold tracking-tight">
                 {count.toLocaleString()}{suffix}
             </p>
-            <p className="text-muted-foreground text-sm mt-1">{label}</p>
+            <p className="text-muted-foreground text-xs mt-1">{label}</p>
         </div>
     );
 }
@@ -156,7 +156,7 @@ export function HeroSection() {
                     </div>
 
                     {/* Right - Stats Cards */}
-                    <div className="relative hidden lg:block animate-fade-in-up" style={{ animationDelay: '0.2s' }}>
+                    <div className="relative mt-12 lg:mt-0 animate-fade-in-up" style={{ animationDelay: '0.2s' }}>
                         {/* Top Badge */}
                         <div className="flex justify-end mb-4">
                             <div className="inline-flex items-center gap-3 px-5 py-3 rounded-2xl bg-linear-to-r from-orange-500 to-rose-600 text-white shadow-lg shadow-orange-500/20">
@@ -171,10 +171,10 @@ export function HeroSection() {
                         </div>
 
                         {/* Main Stats Card */}
-                        <div className="p-8 rounded-3xl bg-card/80 border border-border shadow-2xl">
-                            {/* Top Row */}
-                            <div className="grid grid-cols-2 gap-0">
-                                <div className="p-6 border-r border-b border-border/50">
+                        {/* Main Stats Card */}
+                        <div className="lg:p-5 lg:rounded-3xl lg:bg-card/80 lg:border lg:border-border lg:shadow-2xl">
+                            <div className="grid grid-cols-2 gap-3 lg:gap-0">
+                                <div className="bg-card/50 lg:bg-transparent border border-border/50 lg:border-0 rounded-2xl lg:rounded-none p-4 lg:border-r lg:border-b lg:border-border/50">
                                     <AnimatedStatCard
                                         icon={GraduationCap}
                                         end={200}
@@ -184,7 +184,7 @@ export function HeroSection() {
                                         bgColor="bg-primary/10"
                                     />
                                 </div>
-                                <div className="p-6 border-b border-border/50">
+                                <div className="bg-card/50 lg:bg-transparent border border-border/50 lg:border-0 rounded-2xl lg:rounded-none p-4 lg:border-b lg:border-border/50">
                                     <AnimatedStatCard
                                         icon={Users}
                                         end={50}
@@ -194,10 +194,7 @@ export function HeroSection() {
                                         bgColor="bg-secondary/10"
                                     />
                                 </div>
-                            </div>
-                            {/* Bottom Row */}
-                            <div className="grid grid-cols-2 gap-0">
-                                <div className="p-6 border-r border-border/50">
+                                <div className="bg-card/50 lg:bg-transparent border border-border/50 lg:border-0 rounded-2xl lg:rounded-none p-4 lg:border-r lg:border-border/50">
                                     <AnimatedStatCard
                                         icon={Briefcase}
                                         end={95}
@@ -207,7 +204,7 @@ export function HeroSection() {
                                         bgColor="bg-success/10"
                                     />
                                 </div>
-                                <div className="p-6">
+                                <div className="bg-card/50 lg:bg-transparent border border-border/50 lg:border-0 rounded-2xl lg:rounded-none p-4">
                                     <AnimatedStatCard
                                         icon={Star}
                                         end={4.9}

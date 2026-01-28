@@ -42,7 +42,7 @@ function TestimonialCard({ testimonial, index }: { testimonial: Testimonial; ind
     return (
         <motion.div
             variants={staggerItem}
-            className={`group relative ${index === 1 ? "md:-translate-y-8" : ""}`}
+            className={`group relative ${index === 1 ? "lg:-translate-y-8" : ""}`}
         >
             <div className={`relative h-full p-8 rounded-3xl backdrop-blur-xl border overflow-hidden transition-all duration-500 group-hover:-translate-y-1 group-hover:shadow-2xl
                 ${index === 1
@@ -120,7 +120,7 @@ export function TestimonialsSection() {
                     initial="hidden"
                     whileInView="visible"
                     viewport={{ once: true }}
-                    className="grid grid-cols-1 md:grid-cols-3 gap-6 lg:gap-8"
+                    className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8"
                 >
                     {TESTIMONIALS.map((testimonial, index) => (
                         <TestimonialCard key={index} testimonial={testimonial} index={index} />

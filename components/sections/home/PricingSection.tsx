@@ -51,7 +51,7 @@ function PricingCard({ plan }: { plan: PricingPlan }) {
             {/* Popular badge - positioned outside the card */}
             {plan.popular && (
                 <div className="absolute top-0 left-1/2 -translate-x-1/2 z-10">
-                    <Badge icon={Crown} className="bg-linear-to-r from-primary to-accent dark:from-primary dark:to-secondary text-primary-foreground font-semibold shadow-lg px-5 py-1.5 border-none">
+                    <Badge icon={Crown} className="bg-linear-to-r from-primary to-accent dark:from-primary dark:to-secondary text-primary-foreground font-semibold shadow-lg px-5 py-1.5 border-none whitespace-nowrap">
                         Most Popular
                     </Badge>
                 </div>
@@ -133,7 +133,7 @@ export function PricingSection() {
                     initial="hidden"
                     whileInView="visible"
                     viewport={{ once: true }}
-                    className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-5xl mx-auto"
+                    className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-5xl mx-auto"
                 >
                     {PRICING_PLANS.map((plan, index) => (
                         <PricingCard key={index} plan={plan} />
