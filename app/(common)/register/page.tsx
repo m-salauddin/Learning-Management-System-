@@ -16,7 +16,7 @@ import { useAppDispatch } from "@/lib/store/hooks";
 import { setUser } from "@/lib/store/features/auth/authSlice";
 import { useToast } from "@/components/ui/toast";
 
-// Validation schema
+
 const registerSchema = z.object({
     fullName: z
         .string()
@@ -45,7 +45,7 @@ const registerSchema = z.object({
 
 type RegisterFormData = z.infer<typeof registerSchema>;
 
-// Password strength checker
+
 function getPasswordStrength(password: string): { strength: number; label: string; color: string } {
     let strength = 0;
     if (password.length >= 8) strength++;
@@ -105,7 +105,7 @@ export default function RegisterPage() {
             } else if (result?.session && result?.user) {
                 toast.dismiss(loadingToastId);
                 toast.success("Welcome to SkillSyncBD!", `Account created for ${result.user.user_metadata?.full_name || result.user.email}`);
-                // Optimistically update Redux state (Navbar will update immediately)
+
                 dispatch(setUser({
                     id: result.user.id,
                     email: result.user.email,
@@ -131,7 +131,7 @@ export default function RegisterPage() {
         <div className="min-h-screen bg-background flex flex-col" suppressHydrationWarning>
 
 
-            {/* Main Content */}
+
             <main className="flex-1 flex items-center justify-center px-4 py-28">
                 <motion.div
                     initial="hidden"
@@ -139,9 +139,9 @@ export default function RegisterPage() {
                     variants={fadeInUp}
                     className="w-full max-w-md"
                 >
-                    {/* Card */}
+
                     <div className="bg-card/80 dark:bg-card/60 backdrop-blur-xl border border-border/50 dark:border-white/10 rounded-3xl p-8 shadow-2xl">
-                        {/* Header */}
+
                         <div className="text-center mb-8">
                             <div className="flex justify-center mb-4">
                                 <Logo />
@@ -152,7 +152,7 @@ export default function RegisterPage() {
                             </p>
                         </div>
 
-                        {/* Form or Success Message */}
+
                         {isSuccess ? (
                             <div className="text-center py-8 space-y-4">
                                 <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto text-primary">
@@ -172,7 +172,7 @@ export default function RegisterPage() {
                         ) : (
                             <>
                                 <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-                                    {/* Full Name Field */}
+
                                     <div className="space-y-2">
                                         <label htmlFor="fullName" className="block text-sm font-medium">
                                             Full Name
@@ -197,7 +197,7 @@ export default function RegisterPage() {
                                         )}
                                     </div>
 
-                                    {/* Email Field */}
+
                                     <div className="space-y-2">
                                         <label htmlFor="email" className="block text-sm font-medium">
                                             Email Address
@@ -222,7 +222,7 @@ export default function RegisterPage() {
                                         )}
                                     </div>
 
-                                    {/* Password Field */}
+
                                     <div className="space-y-2">
                                         <label htmlFor="password" className="block text-sm font-medium">
                                             Password
@@ -251,7 +251,6 @@ export default function RegisterPage() {
                                                 )}
                                             </button>
                                         </div>
-                                        {/* Password Strength Indicator */}
                                         {password && (
                                             <div className="space-y-1">
                                                 <div className="flex gap-1">
@@ -277,7 +276,7 @@ export default function RegisterPage() {
                                         )}
                                     </div>
 
-                                    {/* Confirm Password Field */}
+
                                     <div className="space-y-2">
                                         <label htmlFor="confirmPassword" className="block text-sm font-medium">
                                             Confirm Password
@@ -313,7 +312,7 @@ export default function RegisterPage() {
                                         )}
                                     </div>
 
-                                    {/* Password Requirements */}
+
                                     <div className="bg-muted/30 rounded-xl p-3 space-y-1">
                                         <p className="text-xs font-medium text-muted-foreground mb-2">Password must contain:</p>
                                         <div className="grid grid-cols-2 gap-1">
@@ -336,7 +335,7 @@ export default function RegisterPage() {
                                         </div>
                                     </div>
 
-                                    {/* Terms and Conditions */}
+
                                     <div className="space-y-1">
                                         <Controller
                                             name="agreeToTerms"
@@ -370,7 +369,7 @@ export default function RegisterPage() {
 
 
 
-                                    {/* Submit Button */}
+
                                     <button
                                         type="submit"
                                         disabled={isLoading}
@@ -390,7 +389,7 @@ export default function RegisterPage() {
                                     </button>
                                 </form>
 
-                                {/* Divider */}
+
                                 <div className="relative my-6">
                                     <div className="absolute inset-0 flex items-center">
                                         <div className="w-full border-t border-border/50" />
@@ -402,7 +401,7 @@ export default function RegisterPage() {
                                     </div>
                                 </div>
 
-                                {/* Social Login */}
+
                                 <div className="grid grid-cols-2 gap-3">
                                     <button
                                         onClick={async () => {
@@ -455,7 +454,7 @@ export default function RegisterPage() {
                                     </button>
                                 </div>
 
-                                {/* Sign In Link */}
+
                                 <p className="text-center text-sm text-muted-foreground mt-6">
                                     Already have an account?{" "}
                                     <Link href="/login" className="text-primary font-medium hover:underline">

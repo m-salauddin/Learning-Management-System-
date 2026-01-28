@@ -17,7 +17,7 @@ import { useAppDispatch } from "@/lib/store/hooks";
 import { setUser } from "@/lib/store/features/auth/authSlice";
 import { useToast } from "@/components/ui/toast";
 
-// Validation schema
+
 const loginSchema = z.object({
     email: z
         .string()
@@ -65,7 +65,7 @@ export default function LoginPage() {
             } else if (result?.session && result?.user) {
                 toast.dismiss(loadingToastId);
                 toast.success("Welcome back!", `Signed in as ${result.user.user_metadata?.full_name || result.user.email}`);
-                // Optimistically update Redux state
+
                 dispatch(setUser({
                     id: result.user.id,
                     email: result.user.email,
@@ -88,7 +88,7 @@ export default function LoginPage() {
         <div className="min-h-screen bg-background flex flex-col" suppressHydrationWarning>
 
 
-            {/* Main Content */}
+
             <main className="flex-1 flex items-center justify-center px-4 py-28">
                 <motion.div
                     initial="hidden"
@@ -96,9 +96,9 @@ export default function LoginPage() {
                     variants={fadeInUp}
                     className="w-full max-w-md"
                 >
-                    {/* Card */}
+
                     <div className="bg-card/80 dark:bg-card/60 backdrop-blur-xl border border-border/50 dark:border-white/10 rounded-3xl p-8 shadow-2xl">
-                        {/* Header */}
+
                         <div className="text-center mb-8">
                             <div className="flex justify-center mb-4">
                                 <Logo />
@@ -109,9 +109,9 @@ export default function LoginPage() {
                             </p>
                         </div>
 
-                        {/* Form */}
+
                         <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
-                            {/* Email Field */}
+
                             <div className="space-y-2">
                                 <label htmlFor="email" className="block text-sm font-medium">
                                     Email Address
@@ -136,7 +136,7 @@ export default function LoginPage() {
                                 )}
                             </div>
 
-                            {/* Password Field */}
+
                             <div className="space-y-2">
                                 <div className="flex items-center justify-between">
                                     <label htmlFor="password" className="block text-sm font-medium">
@@ -180,7 +180,7 @@ export default function LoginPage() {
                                 )}
                             </div>
 
-                            {/* Remember Me */}
+
                             <div className="flex items-center gap-2">
                                 <Controller
                                     name="rememberMe"
@@ -198,7 +198,7 @@ export default function LoginPage() {
 
 
 
-                            {/* Submit Button */}
+
                             <button
                                 type="submit"
                                 disabled={isLoading}
@@ -218,7 +218,7 @@ export default function LoginPage() {
                             </button>
                         </form>
 
-                        {/* Divider */}
+
                         <div className="relative my-6">
                             <div className="absolute inset-0 flex items-center">
                                 <div className="w-full border-t border-border/50" />
@@ -230,7 +230,7 @@ export default function LoginPage() {
                             </div>
                         </div>
 
-                        {/* Social Login */}
+
                         <div className="grid grid-cols-2 gap-3">
                             <button
                                 onClick={async () => {
@@ -283,7 +283,7 @@ export default function LoginPage() {
                             </button>
                         </div>
 
-                        {/* Sign Up Link */}
+
                         <p className="text-center text-sm text-muted-foreground mt-6">
                             Don't have an account?{" "}
                             <Link href="/register" className="text-primary font-medium hover:underline">

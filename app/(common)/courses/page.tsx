@@ -24,7 +24,7 @@ function CoursesContent() {
     const pathname = usePathname();
     const searchParams = useSearchParams();
 
-    // Initial load states
+
     const [searchInput, setSearchInput] = useState("");
     const [searchTerm, setSearchTerm] = useState("");
     const [selectedCategory, setSelectedCategory] = useState("All Topics");
@@ -36,7 +36,7 @@ function CoursesContent() {
     const [currentPage, setCurrentPage] = useState(1);
     const [mounted, setMounted] = useState(false);
 
-    // Initialize state from URL on mount and update on URL change
+
     useEffect(() => {
         const q = searchParams.get("q") || "";
         const category = searchParams.get("category") || "All Topics";
@@ -55,7 +55,7 @@ function CoursesContent() {
         setMounted(true);
     }, [searchParams]);
 
-    // Update URL when filters change
+
     const updateUrl = (
         term: string,
         category: string,
@@ -75,11 +75,11 @@ function CoursesContent() {
         router.push(`${pathname}?${params.toString()}`, { scroll: false });
     };
 
-    // Debounce search input and update URL
+
     useEffect(() => {
         const timer = setTimeout(() => {
             if (searchInput !== searchTerm) {
-                updateUrl(searchInput, selectedCategory, selectedLevels, selectedTypes, selectedPrices, 1); // Reset page on search
+                updateUrl(searchInput, selectedCategory, selectedLevels, selectedTypes, selectedPrices, 1);
             }
         }, 300);
         return () => clearTimeout(timer);
@@ -93,7 +93,7 @@ function CoursesContent() {
         return () => clearTimeout(timer);
     }, [searchTerm, selectedCategory, selectedLevels, selectedTypes, selectedPrices, currentPage]);
 
-    // Toggle filter helper
+
     const toggleFilter = (item: string, current: string[], setter: (val: string[]) => void) => {
         const newSelection = current.includes(item)
             ? current.filter(i => i !== item)
@@ -128,7 +128,6 @@ function CoursesContent() {
         });
     }, [searchTerm, selectedCategory, selectedLevels, selectedTypes, selectedPrices]);
 
-    // Pagination
     const totalPages = Math.ceil(filteredCourses.length / ITEMS_PER_PAGE);
     const paginatedCourses = filteredCourses.slice(
         (currentPage - 1) * ITEMS_PER_PAGE,
@@ -158,7 +157,6 @@ function CoursesContent() {
         <div className="min-h-screen bg-background selection:bg-primary/20">
 
             <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 pt-28 pb-20">
-                {/* Header Section */}
                 <div className="mb-8 space-y-6">
                     <motion.div initial="hidden" animate="visible" variants={fadeInUp}>
                         <Link href="/" className="inline-flex items-center gap-2 text-muted-foreground hover:text-primary transition-colors mb-4 text-sm font-medium">
@@ -172,14 +170,12 @@ function CoursesContent() {
                         </p>
                     </motion.div>
 
-                    {/* Top Section: Category Tabs + Search + Controls */}
                     <motion.div
                         initial={{ opacity: 0, y: 10 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ delay: 0.1 }}
                         className="flex flex-col xl:flex-row gap-6 justify-between items-start xl:items-center sticky top-24 z-30 bg-background/75 backdrop-blur-3xl backdrop-saturate-200 p-4 -mx-4 rounded-3xl border border-border/40 shadow-sm"
                     >
-                        {/* Topic Tabs (Scrollable) */}
                         <div className="w-full xl:w-auto overflow-x-auto pb-2 xl:pb-0 scrollbar-hide">
                             <div className="flex gap-2">
                                 {CATEGORIES.map((category) => (
@@ -200,9 +196,7 @@ function CoursesContent() {
                             </div>
                         </div>
 
-                        {/* Right Side: Search + Grid Toggle */}
                         <div className="flex items-center gap-3 w-full xl:w-auto">
-                            {/* Search */}
                             <div className="relative grow xl:grow-0 min-w-[240px]">
                                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                                 <input
@@ -214,7 +208,6 @@ function CoursesContent() {
                                 />
                             </div>
 
-                            {/* View Toggle (Desktop Only) */}
                             <div className="hidden lg:flex bg-muted/30 p-1 rounded-xl border border-border/50">
                                 <button
                                     onClick={() => setGridCols(1)}
@@ -239,7 +232,6 @@ function CoursesContent() {
                                 </button>
                             </div>
 
-                            {/* Mobile Filter Toggle */}
                             <button
                                 onClick={() => setShowMobileFilters(!showMobileFilters)}
                                 className="lg:hidden p-2.5 rounded-xl border border-border bg-card text-foreground relative"
@@ -255,7 +247,6 @@ function CoursesContent() {
 
                 <div className="flex flex-col lg:flex-row gap-8 items-start">
 
-                    {/* Sidebar Filters (Level, Type, Price) */}
                     <motion.aside
                         className={`
                             ${showMobileFilters ? 'fixed inset-0 z-50 bg-background p-6 overflow-y-auto' : 'hidden'}
@@ -270,7 +261,6 @@ function CoursesContent() {
                         )}
 
                         <div className="space-y-8 pr-4">
-                            {/* Section: Levels */}
                             <div>
                                 <h3 className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-3">Level</h3>
                                 <div className="space-y-3">
@@ -283,7 +273,6 @@ function CoursesContent() {
                                 </div>
                             </div>
 
-                            {/* Section: Types */}
                             <div>
                                 <h3 className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-3">Type</h3>
                                 <div className="space-y-3">
@@ -296,7 +285,6 @@ function CoursesContent() {
                                 </div>
                             </div>
 
-                            {/* Section: Price */}
                             <div>
                                 <h3 className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-3">Price</h3>
                                 <div className="space-y-3">
@@ -321,7 +309,6 @@ function CoursesContent() {
                         </div>
                     </motion.aside>
 
-                    {/* Main Content Grid */}
                     <div className="grow w-full">
                         <AnimatePresence mode="wait">
                             {paginatedCourses.length > 0 ? (
@@ -339,7 +326,6 @@ function CoursesContent() {
                                         ))}
                                     </motion.div>
 
-                                    {/* Pagination Controls */}
                                     {totalPages > 1 && (
                                         <div className="mt-12 flex justify-center items-center gap-2">
                                             <button

@@ -11,7 +11,7 @@ import { fadeInUp } from "@/lib/motion";
 import { forgotPassword } from "@/app/auth/actions";
 import { useToast } from "@/components/ui/toast";
 
-// Validation schema
+
 const forgotPasswordSchema = z.object({
     email: z
         .string()
@@ -45,7 +45,7 @@ export default function ForgotPasswordPage() {
             if (result?.error) {
                 let errorMessage = result.error;
 
-                // Map technical errors to user-friendly messages
+
                 if (errorMessage.toLowerCase().includes("rate limit")) {
                     errorMessage = "Too many attempts. Please wait a minute before trying again.";
                 }
@@ -73,7 +73,7 @@ export default function ForgotPasswordPage() {
 
     return (
         <div className="min-h-screen bg-background flex flex-col" suppressHydrationWarning>
-            {/* Main Content */}
+
             <main className="flex-1 flex items-center justify-center px-4 py-28">
                 <motion.div
                     initial="hidden"
@@ -81,9 +81,9 @@ export default function ForgotPasswordPage() {
                     variants={fadeInUp}
                     className="w-full max-w-md"
                 >
-                    {/* Card */}
+
                     <div className="bg-card/80 dark:bg-card/60 backdrop-blur-xl border border-border/50 dark:border-white/10 rounded-3xl p-8 shadow-2xl">
-                        {/* Header */}
+
                         <div className="text-center mb-8">
                             <h1 className="text-2xl font-bold mb-2">Forgot Password</h1>
                             <p className="text-muted-foreground text-sm">
@@ -91,7 +91,7 @@ export default function ForgotPasswordPage() {
                             </p>
                         </div>
 
-                        {/* Success State */}
+
                         {isSuccess ? (
                             <div className="text-center py-8 space-y-4">
                                 <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto text-primary">
@@ -109,9 +109,9 @@ export default function ForgotPasswordPage() {
                                 </Link>
                             </div>
                         ) : (
-                            /* Form */
+
                             <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
-                                {/* Email Field */}
+
                                 <div className="space-y-2">
                                     <label htmlFor="email" className="block text-sm font-medium">
                                         Email Address
@@ -136,14 +136,14 @@ export default function ForgotPasswordPage() {
                                     )}
                                 </div>
 
-                                {/* Root Error */}
+
                                 {errors.root && (
                                     <div className="p-3 rounded-lg bg-destructive/10 border border-destructive/20 text-destructive text-sm text-center">
                                         {errors.root.message}
                                     </div>
                                 )}
 
-                                {/* Submit Button */}
+
                                 <button
                                     type="submit"
                                     disabled={isLoading}
@@ -162,7 +162,7 @@ export default function ForgotPasswordPage() {
                                     )}
                                 </button>
 
-                                {/* Back to Login */}
+
                                 <div className="text-center mt-6">
                                     <Link href="/login" className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors">
                                         <ArrowLeft className="w-4 h-4" />
