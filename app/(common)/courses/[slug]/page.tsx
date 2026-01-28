@@ -178,7 +178,7 @@ export default function CourseDetailPage() {
 
     return (
         <div className="min-h-screen bg-background">
-            <Navbar />
+
             {/* Hero Section */}
             <div className="relative bg-muted/30 pt-28 pb-16 overflow-hidden">
                 {/* Background decoration */}

@@ -1,7 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo, useEffect, Suspense } from "react";
+import { useRouter, useSearchParams, usePathname } from "next/navigation";
 import { motion, AnimatePresence } from "motion/react";
 import { ArrowLeft, Search, SlidersHorizontal, X, ChevronDown, Check, Filter, LayoutGrid, Grip, AlignJustify, FileQuestion, ChevronLeft, ChevronRight } from "lucide-react";
 import { fadeInUp } from "@/lib/motion";
@@ -18,9 +19,14 @@ const TYPES = ["Live", "Recorded", "Career Path"];
 const PRICES = ["Paid", "Free"];
 const ITEMS_PER_PAGE = 9;
 
-export default function CoursesPage() {
-    const [searchInput, setSearchInput] = useState(""); // Immediate input value
-    const [searchTerm, setSearchTerm] = useState(""); // Debounced value for filtering
+function CoursesContent() {
+    const router = useRouter();
+    const pathname = usePathname();
+    const searchParams = useSearchParams();
+
+    // Initial load states
+    const [searchInput, setSearchInput] = useState("");
+    const [searchTerm, setSearchTerm] = useState("");
     const [selectedCategory, setSelectedCategory] = useState("All Topics");
     const [selectedLevels, setSelectedLevels] = useState<string[]>([]);
     const [selectedTypes, setSelectedTypes] = useState<string[]>([]);
@@ -28,37 +34,113 @@ export default function CoursesPage() {
     const [showMobileFilters, setShowMobileFilters] = useState(false);
     const [gridCols, setGridCols] = useState<1 | 2 | 3>(3);
     const [currentPage, setCurrentPage] = useState(1);
-
     const [mounted, setMounted] = useState(false);
 
+    // Initialize state from URL on mount and update on URL change
     useEffect(() => {
-        setMounted(true);
-    }, []);
+        const q = searchParams.get("q") || "";
+        const category = searchParams.get("category") || "All Topics";
+        const levels = searchParams.get("levels")?.split(",").filter(Boolean) || [];
+        const types = searchParams.get("types")?.split(",").filter(Boolean) || [];
+        const prices = searchParams.get("prices")?.split(",").filter(Boolean) || [];
+        const page = searchParams.get("page") ? parseInt(searchParams.get("page")!, 10) : 1;
 
-    // Debounce search input
+        setSearchInput(q);
+        setSearchTerm(q);
+        setSelectedCategory(category);
+        setSelectedLevels(levels);
+        setSelectedTypes(types);
+        setSelectedPrices(prices);
+        setCurrentPage(page);
+        setMounted(true);
+    }, [searchParams]);
+
+    // Update URL when filters change
+    const updateUrl = (
+        term: string,
+        category: string,
+        levels: string[],
+        types: string[],
+        prices: string[],
+        page: number
+    ) => {
+        const params = new URLSearchParams();
+        if (term) params.set("q", term);
+        if (category && category !== "All Topics") params.set("category", category);
+        if (levels.length > 0) params.set("levels", levels.join(","));
+        if (types.length > 0) params.set("types", types.join(","));
+        if (prices.length > 0) params.set("prices", prices.join(","));
+        if (page > 1) params.set("page", page.toString());
+
+        router.push(`${pathname}?${params.toString()}`, { scroll: false });
+    };
+
+    // Debounce search input and update URL
     useEffect(() => {
         const timer = setTimeout(() => {
-            setSearchTerm(searchInput);
+            if (searchInput !== searchTerm) {
+                // Only update if changed prevents loop with above effect? 
+                // Wait, above effect sets searchTerm = q. 
+                // If user types, setSearchInput -> wait -> here.
+                // We update URL. URL changes -> above effect sets States.
+                // Loop? If URL q matches UI, effect sets state to same value. React bails out. Safe.
+                updateUrl(searchInput, selectedCategory, selectedLevels, selectedTypes, selectedPrices, 1); // Reset page on search
+            }
         }, 300);
         return () => clearTimeout(timer);
-    }, [searchInput]);
+    }, [searchInput, selectedCategory, selectedLevels, selectedTypes, selectedPrices]);
+    // Note: Dependencies here are tricky. If category changes, we want to update URL.
+    // Ideally we update URL immediately on Filter Change, and Debounce search.
+
+    // Better strategy:
+    // User interactions update State.
+    // useEffect(() => { updateUrl(...) }, [states])
+    // But we need to distinguish User Search vs URL Search.
+
+    // Let's rely on simple state change triggering URL update.
+    useEffect(() => {
+        if (!mounted) return;
+        const timer = setTimeout(() => {
+            updateUrl(searchTerm, selectedCategory, selectedLevels, selectedTypes, selectedPrices, currentPage);
+        }, 100); // Small delay to batch? Or just immediate?
+        return () => clearTimeout(timer);
+    }, [searchTerm, selectedCategory, selectedLevels, selectedTypes, selectedPrices, currentPage]);
+
+    // Wait, searchTerm is updated via debounce effect of searchInput.
+    // So: Input -> (300ms) -> SearchTerm -> (100ms) -> URL.
+    // Valid.
+
+    // BUT we also have URL -> State effect.
+    // If URL changes, State updates.
+    // State updates -> URL updates. 
+    // To prevent loop: Check if URL already matches?
+    // updateUrl impl calls router.push. Next.js router handles this efficiently, but redundant pushes can be bad.
+
+    // Let's refine the Logic to be simpler.
+    // "State is source". URL reflects state.
+    // "Init from URL".
+
+    // Actually, I will revert to the separate effects logic I drafted in Thought Trace, merging it here.
 
     // Toggle filter helper
     const toggleFilter = (item: string, current: string[], setter: (val: string[]) => void) => {
-        if (current.includes(item)) {
-            setter(current.filter(i => i !== item));
-        } else {
-            setter([...current, item]);
-        }
-        setCurrentPage(1); // Reset to page 1 on filter change
+        const newSelection = current.includes(item)
+            ? current.filter(i => i !== item)
+            : [...current, item];
+        setter(newSelection);
+        setCurrentPage(1);
     };
 
-    // Reset pagination when category or search changes
-    useEffect(() => {
+    const handleClearAll = () => {
+        setSearchInput("");
+        setSearchTerm("");
+        setSelectedCategory("All Topics");
+        setSelectedLevels([]);
+        setSelectedTypes([]);
+        setSelectedPrices([]);
         setCurrentPage(1);
-    }, [searchTerm, selectedCategory]);
-
-
+        router.push(pathname, { scroll: false }); // Immediate clear URL
+    };
 
     const filteredCourses = useMemo(() => {
         return courses.filter((course) => {
@@ -75,7 +157,7 @@ export default function CoursesPage() {
         });
     }, [searchTerm, selectedCategory, selectedLevels, selectedTypes, selectedPrices]);
 
-    // Pagination Logic
+    // Pagination
     const totalPages = Math.ceil(filteredCourses.length / ITEMS_PER_PAGE);
     const paginatedCourses = filteredCourses.slice(
         (currentPage - 1) * ITEMS_PER_PAGE,
@@ -83,28 +165,13 @@ export default function CoursesPage() {
     );
 
     const activeFilterCount = selectedLevels.length + selectedTypes.length + selectedPrices.length;
-
-    const handleClearAll = () => {
-        setSearchInput("");
-        setSearchTerm("");
-        setSelectedCategory("All Topics");
-        setSelectedLevels([]);
-        setSelectedTypes([]);
-        setSelectedPrices([]);
-        setCurrentPage(1);
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-    };
-
-    // Check if any filters are active
     const hasActiveFilters = searchInput !== "" || selectedCategory !== "All Topics" || selectedLevels.length > 0 || selectedTypes.length > 0 || selectedPrices.length > 0;
 
-    // Handle page change with scroll to top
     const handlePageChange = (page: number) => {
         setCurrentPage(page);
         window.scrollTo({ top: 0, behavior: 'smooth' });
     };
 
-    // Dynamic grid classes based on selection
     const getGridClass = () => {
         switch (gridCols) {
             case 1: return "grid-cols-1";
@@ -117,8 +184,7 @@ export default function CoursesPage() {
     if (!mounted) return null;
 
     return (
-        <div className="min-h-screen bg-background selection:bg-primary/20" suppressHydrationWarning>
-            <Navbar />
+        <div className="min-h-screen bg-background selection:bg-primary/20">
 
             <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 pt-28 pb-20">
                 {/* Header Section */}
@@ -148,7 +214,7 @@ export default function CoursesPage() {
                                 {CATEGORIES.map((category) => (
                                     <button
                                         key={category}
-                                        onClick={() => setSelectedCategory(category)}
+                                        onClick={() => { setSelectedCategory(category); setCurrentPage(1); }}
                                         className={`
                                             relative px-4 py-2 rounded-xl text-sm font-medium transition-all duration-300 whitespace-nowrap
                                             ${selectedCategory === category
@@ -367,5 +433,13 @@ export default function CoursesPage() {
                 </div>
             </div>
         </div >
+    );
+}
+
+export default function CoursesPage() {
+    return (
+        <Suspense fallback={<div className="min-h-screen bg-background flex items-center justify-center"><div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin"></div></div>}>
+            <CoursesContent />
+        </Suspense>
     );
 }

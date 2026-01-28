@@ -87,7 +87,7 @@ const sections = [
 export default function TermsPage() {
     return (
         <div className="min-h-screen bg-background">
-            <Navbar />
+
 
             {/* Hero Section */}
             <section className="pt-32 pb-16 px-4">
