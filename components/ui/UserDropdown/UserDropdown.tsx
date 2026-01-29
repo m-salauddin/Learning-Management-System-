@@ -162,7 +162,7 @@ export function UserDropdown({ user, onOpen }: UserDropdownProps) {
                                 Dashboard
                             </Link>
                             <Link
-                                href="/profile"
+                                href="/dashboard/settings"
                                 onClick={() => setIsOpen(false)}
                                 className="flex items-center gap-3 px-4 py-2.5 text-sm font-medium text-foreground/80 hover:text-foreground hover:bg-muted/50 rounded-xl transition-colors cursor-pointer"
                             >
@@ -170,7 +170,7 @@ export function UserDropdown({ user, onOpen }: UserDropdownProps) {
                                 Profile
                             </Link>
                             <Link
-                                href="/settings"
+                                href="/dashboard/settings"
                                 onClick={() => setIsOpen(false)}
                                 className="flex items-center gap-3 px-4 py-2.5 text-sm font-medium text-foreground/80 hover:text-foreground hover:bg-muted/50 rounded-xl transition-colors cursor-pointer"
                             >
