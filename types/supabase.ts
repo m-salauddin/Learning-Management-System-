@@ -9,34 +9,43 @@ export type Json =
 export interface Database {
     public: {
         Tables: {
-            profiles: {
+            users: {
                 Row: {
                     id: string
-                    updated_at: string | null
-                    username: string | null
-                    full_name: string | null
-                    avatar_url: string | null
-                    role: 'student' | 'teacher' | 'moderator' | 'admin'
+                    name: string
+                    email: string
+                    avatar_url: string
+                    courses_enrolled: string[]
+                    role: Database['public']['Enums']['user_role']
+                    providers: Database['public']['Enums']['auth_provider'][]
+                    created_at: string
+                    updated_at: string
                 }
                 Insert: {
                     id: string
-                    updated_at?: string | null
-                    username?: string | null
-                    full_name?: string | null
-                    avatar_url?: string | null
-                    role?: 'student' | 'teacher' | 'moderator' | 'admin'
+                    name?: string
+                    email: string
+                    avatar_url?: string
+                    courses_enrolled?: string[]
+                    role?: Database['public']['Enums']['user_role']
+                    providers?: Database['public']['Enums']['auth_provider'][]
+                    created_at?: string
+                    updated_at?: string
                 }
                 Update: {
                     id?: string
-                    updated_at?: string | null
-                    username?: string | null
-                    full_name?: string | null
-                    avatar_url?: string | null
-                    role?: 'student' | 'teacher' | 'moderator' | 'admin'
+                    name?: string
+                    email?: string
+                    avatar_url?: string
+                    courses_enrolled?: string[]
+                    role?: Database['public']['Enums']['user_role']
+                    providers?: Database['public']['Enums']['auth_provider'][]
+                    created_at?: string
+                    updated_at?: string
                 }
                 Relationships: [
                     {
-                        foreignKeyName: "profiles_id_fkey"
+                        foreignKeyName: "users_id_fkey"
                         columns: ["id"]
                         referencedRelation: "users"
                         referencedColumns: ["id"]
@@ -47,7 +56,7 @@ export interface Database {
                 Row: {
                     id: string
                     user_id: string
-                    requested_role: 'teacher' | 'moderator' | 'admin'
+                    requested_role: Database['public']['Enums']['user_role']
                     status: 'pending' | 'approved' | 'rejected'
                     created_at: string
                     updated_at: string
@@ -55,7 +64,7 @@ export interface Database {
                 Insert: {
                     id?: string
                     user_id: string
-                    requested_role: 'teacher' | 'moderator' | 'admin'
+                    requested_role: Database['public']['Enums']['user_role']
                     status?: 'pending' | 'approved' | 'rejected'
                     created_at?: string
                     updated_at?: string
@@ -63,7 +72,7 @@ export interface Database {
                 Update: {
                     id?: string
                     user_id?: string
-                    requested_role?: 'teacher' | 'moderator' | 'admin'
+                    requested_role?: Database['public']['Enums']['user_role']
                     status?: 'pending' | 'approved' | 'rejected'
                     created_at?: string
                     updated_at?: string
@@ -85,7 +94,8 @@ export interface Database {
             [_ in never]: never
         }
         Enums: {
-            [_ in never]: never
+            user_role: 'student' | 'teacher' | 'moderator' | 'admin'
+            auth_provider: 'google' | 'github' | 'password'
         }
         CompositeTypes: {
             [_ in never]: never

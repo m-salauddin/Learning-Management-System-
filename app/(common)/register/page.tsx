@@ -106,13 +106,7 @@ export default function RegisterPage() {
                 toast.dismiss(loadingToastId);
                 toast.success("Welcome to SkillSyncBD!", `Account created for ${result.user.user_metadata?.full_name || result.user.email}`);
 
-                dispatch(setUser({
-                    id: result.user.id,
-                    email: result.user.email,
-                    fullName: result.user.user_metadata?.full_name,
-                    role: result.user.user_metadata?.role || 'student',
-                    avatarUrl: result.user.user_metadata?.avatar_url
-                }));
+                // Removed manual dispatch to rely on AuthListener
                 router.push('/');
                 router.refresh();
             } else {

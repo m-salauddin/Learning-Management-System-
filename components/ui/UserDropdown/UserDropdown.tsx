@@ -143,7 +143,7 @@ export function UserDropdown({ user, onOpen }: UserDropdownProps) {
                         animate={{ opacity: 1, y: 0, scale: 1 }}
                         exit={{ opacity: 0, y: 10, scale: 0.95 }}
                         transition={{ type: "spring", stiffness: 300, damping: 30 }}
-                        className="absolute top-full right-0 mt-5 w-64 bg-white dark:bg-slate-950 border border-white/20 dark:border-white/10 rounded-2xl shadow-xl overflow-hidden z-50 p-2"
+                        className="absolute top-full right-0 lg:mt-6.5 mt-5 w-64 bg-white dark:bg-slate-950 border border-white/20 dark:border-white/10 rounded-2xl shadow-xl overflow-hidden z-50 p-2"
                     >
 
                         <div className="px-4 py-3 mb-2 bg-muted/30 rounded-xl">

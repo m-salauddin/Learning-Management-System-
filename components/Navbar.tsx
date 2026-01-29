@@ -61,6 +61,7 @@ export function Navbar() {
     const { user, isLoading } = useAppSelector((state) => state.auth);
 
 
+
     useEffect(() => {
         const handleKeyDown = (e: KeyboardEvent) => {
             if (e.key === "k" && (e.metaKey || e.ctrlKey)) {

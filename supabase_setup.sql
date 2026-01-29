@@ -1,75 +1,216 @@
-/*
-  # Database Schema needed for Supabase
+-- 1. Create the enums
+DO $$ BEGIN
+    CREATE TYPE user_role AS ENUM ('admin', 'moderator', 'teacher', 'student');
+EXCEPTION
+    WHEN duplicate_object THEN null;
+END $$;
 
-  1. Create a `profiles` table that syncs with `auth.users`
-  2. Create a `role_requests` table for role upgrade requests
+DO $$ BEGIN
+    CREATE TYPE auth_provider AS ENUM ('google', 'github', 'password');
+EXCEPTION
+    WHEN duplicate_object THEN null;
+END $$;
 
-  Instructions:
-  Run these SQL commands in your Supabase SQL Editor.
-*/
 
--- 1. Create a table for public profiles
-create table profiles (
-  id uuid references auth.users on delete cascade not null primary key,
-  updated_at timestamp with time zone,
-  username text unique,
-  full_name text,
-  avatar_url text,
-  role text default 'student' check (role in ('student', 'teacher', 'moderator', 'admin')),
-
-  constraint username_length check (char_length(username) >= 3)
+-- 2. Create the users table in public schema
+-- This table syncs with auth.users but contains our custom application data
+CREATE TABLE IF NOT EXISTS public.users (
+  id UUID NOT NULL PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
+  name TEXT NOT NULL DEFAULT '',
+  email TEXT NOT NULL,
+  avatar_url TEXT NOT NULL DEFAULT '',
+  courses_enrolled TEXT[] DEFAULT ARRAY[]::TEXT[],
+  role user_role DEFAULT 'student'::user_role,
+  providers auth_provider[] DEFAULT ARRAY[]::auth_provider[],
+  created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 
--- 2. Enable Row Level Security (RLS)
-alter table profiles enable row level security;
 
--- 3. Create policies
--- 3. Create policies
--- Best Practice: Explicitly define roles (TO public/authenticated)
-create policy "Public profiles are viewable by everyone." on profiles
-  for select to public using (true);
-
-create policy "Users can insert their own profile." on profiles
-  for insert to authenticated with check ((select auth.uid()) = id);
-
-create policy "Users can update own profile." on profiles
-  for update to authenticated using ((select auth.uid()) = id);
-
--- 4. Create a trigger to automatically create a profile entry when a new user signs up
--- Best Practice: Set search_path for SECURITY DEFINER functions
-create or replace function public.handle_new_user()
-returns trigger as $$
-begin
-  insert into public.profiles (id, full_name, role)
-  values (new.id, new.raw_user_meta_data->>'full_name', coalesce(new.raw_user_meta_data->>'role', 'student'));
-  return new;
-end;
-$$ language plpgsql security definer set search_path = public;
-
-create trigger on_auth_user_created
-  after insert on auth.users
-  for each row execute procedure public.handle_new_user();
+-- 3. Enable Row Level Security
+ALTER TABLE public.users ENABLE ROW LEVEL SECURITY;
 
 
--- 5. Create a table for role requests
-create table role_requests (
-  id uuid default gen_random_uuid() primary key,
-  user_id uuid references auth.users not null,
-  requested_role text not null check (requested_role in ('teacher', 'moderator', 'admin')),
-  status text default 'pending' check (status in ('pending', 'approved', 'rejected')),
-  created_at timestamp with time zone default timezone('utc'::text, now()) not null,
-  updated_at timestamp with time zone default timezone('utc'::text, now()) not null
-);
+-- 4. Set up RLS Policies
+-- Allow users to view their own profile
+DROP POLICY IF EXISTS "Users can view own profile" ON public.users;
+CREATE POLICY "Users can view own profile" 
+  ON public.users 
+  FOR SELECT 
+  USING (auth.uid() = id);
 
--- Enable RLS
-alter table role_requests enable row level security;
+-- Allow users to update their own profile (e.g., name, avatar)
+DROP POLICY IF EXISTS "Users can update own profile" ON public.users;
+CREATE POLICY "Users can update own profile" 
+  ON public.users 
+  FOR UPDATE 
+  USING (auth.uid() = id);
 
--- Policies for role_requests
-create policy "Users can create their own requests" on role_requests
-  for insert to authenticated with check ((select auth.uid()) = user_id);
+-- Helper function to safely check admin role (bypassing RLS recursion)
+CREATE OR REPLACE FUNCTION public.is_admin() 
+RETURNS BOOLEAN AS $$
+BEGIN
+  RETURN EXISTS (
+    SELECT 1 FROM public.users WHERE id = auth.uid() AND role = 'admin'
+  );
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER SET search_path = public;
 
-create policy "Users can view their own requests" on role_requests
-  for select to authenticated using ((select auth.uid()) = user_id);
+-- Allow admins to view all users
+DROP POLICY IF EXISTS "Admins can view all profiles" ON public.users;
+CREATE POLICY "Admins can view all profiles"
+  ON public.users
+  FOR SELECT
+  USING (public.is_admin());
 
--- Admins should be able to view and update all requests (implementation depends on how you handle admin checks)
--- keeping it simple for now
+
+-- 5. Helper function for updated_at
+CREATE OR REPLACE FUNCTION update_updated_at_column()
+RETURNS TRIGGER AS $$
+BEGIN
+    NEW.updated_at = now();
+    RETURN NEW;
+END;
+$$ language 'plpgsql';
+
+
+-- 6. Trigger for updated_at
+DROP TRIGGER IF EXISTS update_users_updated_at ON public.users;
+CREATE TRIGGER update_users_updated_at
+  BEFORE UPDATE ON public.users
+  FOR EACH ROW
+  EXECUTE PROCEDURE update_updated_at_column();
+
+
+-- 7. Helper function to sync providers from auth.identities
+CREATE OR REPLACE FUNCTION public.sync_user_providers()
+RETURNS TRIGGER AS $$
+DECLARE
+  v_user_id UUID;
+  v_providers public.auth_provider[];
+BEGIN
+  -- Determine user_id based on trigger context
+  IF TG_OP = 'DELETE' THEN
+    v_user_id := OLD.user_id;
+  ELSE
+    v_user_id := NEW.user_id;
+  END IF;
+
+  -- fetch providers from auth.identities
+  SELECT array_agg(DISTINCT 
+      CASE 
+        WHEN provider = 'email' THEN 'password'::public.auth_provider 
+        WHEN provider = 'google' THEN 'google'::public.auth_provider 
+        WHEN provider = 'github' THEN 'github'::public.auth_provider 
+        ELSE 'password'::public.auth_provider -- Fallback for others
+      END
+  )
+  INTO v_providers
+  FROM auth.identities
+  WHERE user_id = v_user_id;
+
+  -- Ensure we don't have nulls
+  IF v_providers IS NULL THEN
+     v_providers := ARRAY[]::public.auth_provider[];
+  END IF;
+
+  -- Update public.users
+  UPDATE public.users
+  SET 
+    providers = v_providers,
+    updated_at = now()
+  WHERE id = v_user_id;
+
+  RETURN NULL;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER SET search_path = public;
+
+-- Trigger to sync providers on identity changes
+DROP TRIGGER IF EXISTS on_auth_identity_change ON auth.identities;
+CREATE TRIGGER on_auth_identity_change
+  AFTER INSERT OR UPDATE OR DELETE ON auth.identities
+  FOR EACH ROW EXECUTE PROCEDURE public.sync_user_providers();
+
+
+-- Function to automatically sync auth.users to public.users
+CREATE OR REPLACE FUNCTION public.handle_new_user()
+RETURNS TRIGGER AS $$
+DECLARE
+  v_name text;
+  v_avatar_url text;
+BEGIN
+  -- Extract name
+  v_name := COALESCE(new.raw_user_meta_data->>'full_name', new.raw_user_meta_data->>'name', '');
+  
+  -- Extract avatar
+  v_avatar_url := COALESCE(new.raw_user_meta_data->>'avatar_url', '');
+
+  INSERT INTO public.users (id, email, name, avatar_url, role, providers)
+  VALUES (
+    new.id,
+    new.email,
+    v_name,
+    v_avatar_url,
+    'student',
+    ARRAY[]::public.auth_provider[] -- Will be synced by on_auth_identity_change trigger
+  )
+  ON CONFLICT (id) DO UPDATE
+  SET
+    email = EXCLUDED.email,
+    name = CASE WHEN public.users.name = '' THEN EXCLUDED.name ELSE public.users.name END,
+    avatar_url = CASE WHEN public.users.avatar_url = '' THEN EXCLUDED.avatar_url ELSE public.users.avatar_url END,
+    updated_at = now();
+
+  RETURN new;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER SET search_path = public;
+
+
+-- 8. Trigger to call the function on signup
+DROP TRIGGER IF EXISTS on_auth_user_created ON auth.users;
+CREATE TRIGGER on_auth_user_created
+  AFTER INSERT ON auth.users
+  FOR EACH ROW EXECUTE PROCEDURE public.handle_new_user();
+
+
+-- 9. (Optional) Backfill existing users
+-- Run this once if you already have users in auth.users
+-- Note: This backfill script is minimal. For accurate providers, you might want to run the sync function logic manually.
+INSERT INTO public.users (id, email, name, avatar_url, role, providers)
+SELECT 
+  id, 
+  email, 
+  COALESCE(raw_user_meta_data->>'full_name', raw_user_meta_data->>'name', ''),
+  COALESCE(raw_user_meta_data->>'avatar_url', ''),
+  'student',
+  ARRAY[
+    CASE 
+      WHEN COALESCE(raw_app_meta_data->>'provider', 'email') = 'email' THEN 'password'::auth_provider
+      ELSE COALESCE(raw_app_meta_data->>'provider', 'password')::auth_provider
+    END
+  ]
+FROM auth.users
+ON CONFLICT (id) DO NOTHING;
+
+-- Trigger a provider sync for all existing users (Optional fix-up)
+DO $$
+DECLARE
+  r RECORD;
+BEGIN
+  FOR r IN SELECT id FROM public.users LOOP
+    UPDATE public.users 
+    SET providers = (
+      SELECT array_agg(DISTINCT 
+          CASE 
+            WHEN provider = 'email' THEN 'password'::public.auth_provider 
+            WHEN provider = 'google' THEN 'google'::public.auth_provider 
+            WHEN provider = 'github' THEN 'github'::public.auth_provider 
+            ELSE 'password'::public.auth_provider 
+          END
+      )
+      FROM auth.identities
+      WHERE user_id = r.id
+    )
+    WHERE id = r.id;
+  END LOOP;
+END $$;

@@ -8,13 +8,10 @@ import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { Eye, EyeOff, Mail, Lock, ArrowRight, Loader2 } from "lucide-react";
-import { Navbar } from "@/components/Navbar";
 import { Logo } from "@/components/ui/Logo";
 import { fadeInUp } from "@/lib/motion";
 import { AnimatedCheckbox } from "@/components/ui/AnimatedCheckbox";
 import { login, signInWithGoogle, signInWithGithub } from "@/app/auth/actions";
-import { useAppDispatch } from "@/lib/store/hooks";
-import { setUser } from "@/lib/store/features/auth/authSlice";
 import { useToast } from "@/components/ui/toast";
 
 
@@ -34,7 +31,6 @@ type LoginFormData = z.infer<typeof loginSchema>;
 
 export default function LoginPage() {
     const router = useRouter();
-    const dispatch = useAppDispatch();
     const [showPassword, setShowPassword] = React.useState(false);
     const [isLoading, setIsLoading] = React.useState(false);
     const toast = useToast();
@@ -43,7 +39,6 @@ export default function LoginPage() {
         register,
         handleSubmit,
         control,
-        setError,
         formState: { errors },
     } = useForm<LoginFormData>({
         resolver: zodResolver(loginSchema),
@@ -66,13 +61,7 @@ export default function LoginPage() {
                 toast.dismiss(loadingToastId);
                 toast.success("Welcome back!", `Signed in as ${result.user.user_metadata?.full_name || result.user.email}`);
 
-                dispatch(setUser({
-                    id: result.user.id,
-                    email: result.user.email,
-                    fullName: result.user.user_metadata?.full_name,
-                    role: result.user.user_metadata?.role || 'student',
-                    avatarUrl: result.user.user_metadata?.avatar_url
-                }));
+                // Removed manual dispatch to rely on AuthListener for consistent DB state
                 router.push('/');
                 router.refresh();
             }

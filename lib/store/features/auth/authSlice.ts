@@ -1,5 +1,5 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
-import { UserRole } from '@/types/user';
+import { UserRole, AuthProvider } from '@/types/user';
 
 
 export interface AuthUser {
@@ -8,6 +8,8 @@ export interface AuthUser {
     fullName: string | undefined;
     role: UserRole;
     avatarUrl?: string;
+    coursesEnrolled: string[];
+    providers: AuthProvider[];
 }
 
 interface AuthState {
