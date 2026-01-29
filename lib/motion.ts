@@ -1,9 +1,8 @@
-// Motion animation presets and utilities
-// Usage: import { fadeIn, slideUp, staggerContainer } from "@/lib/motion"
+
 
 import { Variants } from "motion/react"
 
-// Fade animations
+
 export const fadeIn: Variants = {
     hidden: { opacity: 0 },
     visible: {
@@ -48,7 +47,7 @@ export const fadeInRight: Variants = {
     }
 }
 
-// Scale animations
+
 export const scaleIn: Variants = {
     hidden: { opacity: 0, scale: 0.9 },
     visible: {
@@ -67,7 +66,7 @@ export const scaleUp: Variants = {
     }
 }
 
-// Slide animations
+
 export const slideUp: Variants = {
     hidden: { y: "100%" },
     visible: {
@@ -100,7 +99,7 @@ export const slideRight: Variants = {
     }
 }
 
-// Stagger container for children animations
+
 export const staggerContainer: Variants = {
     hidden: { opacity: 0 },
     visible: {
@@ -123,7 +122,7 @@ export const staggerContainerFast: Variants = {
     }
 }
 
-// Stagger item (use with staggerContainer)
+
 export const staggerItem: Variants = {
     hidden: { opacity: 0, y: 20 },
     visible: {
@@ -133,7 +132,7 @@ export const staggerItem: Variants = {
     }
 }
 
-// Hover and tap animations (for use with whileHover/whileTap)
+
 export const hoverScale = {
     scale: 1.05,
     transition: { duration: 0.2 }
@@ -148,7 +147,7 @@ export const hoverLift = {
     transition: { duration: 0.2 }
 }
 
-// Spring configurations
+
 export const springConfig = {
     gentle: { type: "spring", stiffness: 120, damping: 14 },
     bouncy: { type: "spring", stiffness: 300, damping: 10 },
@@ -156,7 +155,7 @@ export const springConfig = {
     slow: { type: "spring", stiffness: 50, damping: 20 }
 } as const
 
-// Page transition variants
+
 export const pageTransition: Variants = {
     initial: { opacity: 0, y: 20 },
     animate: {
@@ -171,7 +170,7 @@ export const pageTransition: Variants = {
     }
 }
 
-// Blur fade animation
+
 export const blurFade: Variants = {
     hidden: { opacity: 0, filter: "blur(10px)" },
     visible: {
