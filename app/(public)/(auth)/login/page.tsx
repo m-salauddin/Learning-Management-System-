@@ -11,7 +11,7 @@ import { Eye, EyeOff, Mail, Lock, ArrowRight, Loader2 } from "lucide-react";
 import { Logo } from "@/components/ui/Logo";
 import { fadeInUp } from "@/lib/motion";
 import { AnimatedCheckbox } from "@/components/ui/AnimatedCheckbox";
-import { login, signInWithGoogle, signInWithGithub } from "@/app/auth/actions";
+import { login, signInWithGoogle, signInWithGithub } from "@/lib/actions/auth";
 import { useToast } from "@/components/ui/toast";
 
 

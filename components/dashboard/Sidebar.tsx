@@ -8,19 +8,64 @@ import {
     BookOpen,
     Award,
     Settings,
+    ShieldCheck,
+    Users,
+    DollarSign,
+    FileText,
+    Flag,
+    Ticket,
+    Tags,
+    BarChart3,
 } from "lucide-react";
 import { Logo } from "@/components/ui/Logo";
 import { cn } from "@/lib/utils";
+import type { UserRole } from "@/types/dashboard";
+import type { LucideIcon } from "lucide-react";
 
-const sidebarItems = [
-    { icon: LayoutDashboard, label: "Overview", href: "/dashboard" },
-    { icon: BookOpen, label: "My Courses", href: "/dashboard/courses" },
-    { icon: Award, label: "Certificates", href: "/dashboard/certificates" },
-    { icon: Settings, label: "Settings", href: "/dashboard/settings" },
-];
+interface SidebarItem {
+    icon: LucideIcon;
+    label: string;
+    href: string;
+}
 
-export function Sidebar() {
+const NAV_ITEMS: Record<UserRole, SidebarItem[]> = {
+    student: [
+        { icon: LayoutDashboard, label: "Overview", href: "/dashboard" },
+        { icon: BookOpen, label: "My Courses", href: "/dashboard/my-courses" },
+        { icon: Award, label: "Certificates", href: "/dashboard/certificates" },
+        { icon: Settings, label: "Settings", href: "/dashboard/settings" },
+    ],
+    teacher: [
+        { icon: LayoutDashboard, label: "Overview", href: "/dashboard" },
+        { icon: BookOpen, label: "Instructor Courses", href: "/dashboard/instructor-courses" },
+        { icon: DollarSign, label: "Earnings", href: "/dashboard/earnings" },
+        { icon: Settings, label: "Settings", href: "/dashboard/settings" },
+    ],
+    moderator: [
+        { icon: LayoutDashboard, label: "Overview", href: "/dashboard" },
+        { icon: Flag, label: "Reports", href: "/dashboard/reports" },
+        { icon: FileText, label: "Reviews", href: "/dashboard/reviews" },
+        { icon: Settings, label: "Settings", href: "/dashboard/settings" },
+    ],
+    admin: [
+        { icon: LayoutDashboard, label: "Overview", href: "/dashboard" },
+        { icon: Users, label: "User Management", href: "/dashboard/users" },
+        { icon: BookOpen, label: "Courses", href: "/dashboard/courses" },
+        { icon: Tags, label: "Discounts", href: "/dashboard/discounts" },
+        { icon: Ticket, label: "Coupons", href: "/dashboard/coupons" },
+        { icon: BarChart3, label: "Analytics", href: "/dashboard/analytics" },
+        { icon: Settings, label: "Settings", href: "/dashboard/settings" },
+    ],
+};
+
+interface SidebarProps {
+    role: UserRole;
+}
+
+export function Sidebar({ role }: SidebarProps) {
     const pathname = usePathname();
+
+    const navItems = NAV_ITEMS[role] || NAV_ITEMS.student;
 
     return (
         <aside className="hidden lg:flex flex-col w-64 h-screen sticky top-0 border-r border-border/50 bg-background/30 backdrop-blur-2xl z-40">
@@ -29,8 +74,9 @@ export function Sidebar() {
             </div>
 
             <nav className="flex-1 px-4 space-y-2 mt-4">
-                {sidebarItems.map((item) => {
-                    const isActive = pathname === item.href;
+                {navItems.map((item) => {
+                    const isActive = pathname === item.href || (item.href !== "/dashboard" && pathname.startsWith(item.href));
+
                     return (
                         <Link
                             key={item.href}

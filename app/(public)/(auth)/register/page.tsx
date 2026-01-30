@@ -11,7 +11,7 @@ import { Eye, EyeOff, Mail, Lock, User, ArrowRight, Loader2, CheckCircle2 } from
 import { Logo } from "@/components/ui/Logo";
 import { fadeInUp } from "@/lib/motion";
 import { AnimatedCheckbox } from "@/components/ui/AnimatedCheckbox";
-import { signup, signInWithGoogle, signInWithGithub } from "@/app/auth/actions";
+import { signup, signInWithGoogle, signInWithGithub } from "@/lib/actions/auth";
 import { useAppDispatch } from "@/lib/store/hooks";
 import { setUser } from "@/lib/store/features/auth/authSlice";
 import { useToast } from "@/components/ui/toast";

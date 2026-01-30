@@ -9,7 +9,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { Lock, ArrowRight, Loader2, Eye, EyeOff, CheckCircle2 } from "lucide-react";
 import { fadeInUp } from "@/lib/motion";
-import { updatePassword } from "@/app/auth/actions";
+import { updatePassword } from "@/lib/actions/auth";
 
 
 const resetPasswordSchema = z.object({

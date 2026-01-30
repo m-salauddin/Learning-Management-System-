@@ -67,7 +67,7 @@ export default function UserManagementPage() {
                                 >
                                     <td className="px-6 py-4">
                                         <div className="flex items-center gap-3">
-                                            <div className="w-10 h-10 rounded-full bg-gradient-to-br from-primary/20 to-primary/5 flex items-center justify-center text-primary font-bold border border-primary/10">
+                                            <div className="w-10 h-10 rounded-full bg-linear-to-br from-primary/20 to-primary/5 flex items-center justify-center text-primary font-bold border border-primary/10">
                                                 {user.name.charAt(0)}
                                             </div>
                                             <div>

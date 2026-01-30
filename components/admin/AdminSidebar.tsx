@@ -9,7 +9,9 @@ import {
     BookOpen,
     Settings,
     BarChart3,
-    Shield
+    Shield,
+    Tags,
+    Ticket
 } from "lucide-react";
 import { Logo } from "@/components/ui/Logo";
 import { cn } from "@/lib/utils";
@@ -18,6 +20,8 @@ const sidebarItems = [
     { icon: LayoutDashboard, label: "Overview", href: "/admin" },
     { icon: Users, label: "User Management", href: "/admin/users" },
     { icon: BookOpen, label: "Courses", href: "/admin/courses" },
+    { icon: Tags, label: "Discounts", href: "/admin/discounts" },
+    { icon: Ticket, label: "Coupons", href: "/admin/coupons" },
     { icon: BarChart3, label: "Analytics", href: "/admin/analytics" },
     { icon: Settings, label: "Settings", href: "/admin/settings" },
 ];

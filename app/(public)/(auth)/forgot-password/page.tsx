@@ -8,7 +8,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { Mail, ArrowRight, Loader2, ArrowLeft } from "lucide-react";
 import { fadeInUp } from "@/lib/motion";
-import { forgotPassword } from "@/app/auth/actions";
+import { forgotPassword } from "@/lib/actions/auth";
 import { useToast } from "@/components/ui/toast";
 
 
