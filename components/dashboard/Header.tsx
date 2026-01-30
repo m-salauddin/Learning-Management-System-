@@ -4,10 +4,24 @@ import { usePathname } from "next/navigation";
 import { Bell, Menu, Search } from "lucide-react";
 import { UserDropdown } from "@/components/ui/UserDropdown/UserDropdown";
 import { useAppSelector } from "@/lib/store/hooks";
+import { ThemeToggleCompact } from "@/components/ui/theme-toggle";
+import { NotificationPanel } from "./NotificationPanel";
+import { Skeleton } from "@/components/ui/skeleton";
+
+const AuthSkeleton = () => (
+    <Skeleton className="flex items-center gap-2 sm:gap-3 pl-1 pr-2 sm:pl-1 sm:pr-4 py-1.5 rounded-full">
+        <div className="w-8 h-8 rounded-full bg-muted-foreground/20" />
+        <div className="hidden md:flex flex-col gap-1">
+            <div className="h-3 w-20 bg-muted-foreground/20 rounded-md" />
+            <div className="h-2 w-12 bg-muted-foreground/20 rounded-md" />
+        </div>
+        <div className="w-4 h-4 rounded-full bg-muted-foreground/20 hidden sm:block" />
+    </Skeleton>
+);
 
 export function Header({ onMobileMenuOpen }: { onMobileMenuOpen: () => void }) {
     const pathname = usePathname();
-    const { user } = useAppSelector((state) => state.auth);
+    const { user, isLoading } = useAppSelector((state) => state.auth);
 
     // Parse breadcrumb
     const pathSegments = pathname?.split("/").filter(Boolean) || [];
@@ -30,24 +44,50 @@ export function Header({ onMobileMenuOpen }: { onMobileMenuOpen: () => void }) {
             </div>
 
             <div className="flex items-center gap-2 sm:gap-4">
-                <div className="hidden md:flex items-center px-3 py-2 rounded-xl bg-muted/30 border border-white/5 focus-within:ring-2 focus-within:ring-primary/20 transition-all w-64">
-                    <Search className="w-4 h-4 text-muted-foreground" />
-                    <input
-                        type="text"
-                        placeholder="Search courses..."
-                        className="bg-transparent border-none outline-none text-sm ml-2 w-full text-foreground placeholder:text-muted-foreground"
-                    />
-                </div>
+                {isLoading ? (
+                    <>
+                        {/* Search Skeleton */}
+                        <Skeleton className="hidden md:flex h-10 w-64 rounded-xl items-center px-4">
+                            <div className="h-4 w-4 rounded-full bg-muted-foreground/20 mr-3" />
+                            <div className="h-3 w-24 bg-muted-foreground/20 rounded-md" />
+                        </Skeleton>
 
-                <div className="h-8 w-px bg-border/50 mx-1 hidden sm:block" />
+                        <div className="h-8 w-px bg-border/50 mx-1 hidden sm:block" />
 
-                <button className="relative p-2 text-muted-foreground hover:text-foreground rounded-full hover:bg-muted/50 transition-colors cursor-pointer">
-                    <Bell className="w-5 h-5" />
-                    <span className="absolute top-2 right-2 w-2 h-2 bg-red-500 rounded-full border border-background animate-pulse" />
-                </button>
+                        {/* Theme Toggle Skeleton */}
+                        <Skeleton className="w-10 h-10 rounded-xl flex items-center justify-center">
+                            <div className="w-5 h-5 rounded-md bg-muted-foreground/20" />
+                        </Skeleton>
 
-                {user && <UserDropdown user={user} />}
+                        {/* Notification Skeleton */}
+                        <Skeleton className="w-10 h-10 rounded-xl flex items-center justify-center">
+                            <div className="w-5 h-5 rounded-md bg-muted-foreground/20" />
+                        </Skeleton>
+
+                        <AuthSkeleton />
+                    </>
+                ) : (
+                    <>
+                        <div className="hidden md:flex items-center px-3 py-2 rounded-xl bg-muted/30 border border-white/5 focus-within:ring-2 focus-within:ring-primary/20 transition-all w-64">
+                            <Search className="w-4 h-4 text-muted-foreground" />
+                            <input
+                                type="text"
+                                placeholder="Search courses..."
+                                className="bg-transparent border-none outline-none text-sm ml-2 w-full text-foreground placeholder:text-muted-foreground"
+                            />
+                        </div>
+
+                        <div className="h-8 w-px bg-border/50 mx-1 hidden sm:block" />
+
+                        <ThemeToggleCompact />
+
+                        <NotificationPanel />
+
+                        {user && <UserDropdown user={user} />}
+                    </>
+                )}
             </div>
         </header>
     );
 }
+

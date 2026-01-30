@@ -2,7 +2,7 @@
 
 import React, { createContext, useContext, useState, useCallback, ReactNode } from "react";
 import { AnimatePresence, motion } from "motion/react";
-import { ToastItem, ToastType } from "@/components/ui/toast/toast-item";
+import { ToastItem } from "@/components/ui/toast/toast-item";
 
 // Toast Types
 export type ToastVariant = "success" | "error" | "warning" | "info" | "loading";
@@ -65,7 +65,7 @@ export const ToastProvider = ({ children }: { children: ReactNode }) => {
         <ToastContext.Provider value={{ toast: addToast, dismiss, success, error, warning, info, loading }}>
             {children}
             <div
-                className="fixed bottom-6 right-6 z-100 flex flex-col items-end pointer-events-auto w-[420px]"
+                className="fixed bottom-6 right-6 z-100 flex flex-col items-end pointer-events-auto w-105"
                 onMouseEnter={() => setIsHovered(true)}
                 onMouseLeave={() => setIsHovered(false)}
             >
@@ -88,14 +88,23 @@ export const ToastProvider = ({ children }: { children: ReactNode }) => {
                             <motion.div
                                 key={t.id}
                                 layout
-                                initial={{ opacity: 0, y: 50, scale: 0.9 }}
+                                drag="x"
+                                dragConstraints={{ left: 0, right: 0 }}
+                                dragElastic={0.7}
+                                onDragEnd={(e, { offset, velocity }) => {
+                                    if (offset.x > 50 || velocity.x > 200) {
+                                        dismiss(t.id);
+                                    }
+                                }}
+                                initial={{ opacity: 0, y: 50, scale: 0.9, x: 0 }}
                                 animate={{
                                     opacity: 1,
                                     y,
+                                    x: 0,
                                     scale: isHovered ? 1 : scale,
                                     zIndex: toasts.length - reverseIndex,
                                 }}
-                                exit={{ opacity: 0, scale: 0.9, transition: { duration: 0.2 } }}
+                                exit={{ opacity: 0, x: 100, scale: 0.9, transition: { duration: 0.2 } }}
                                 transition={{ type: "spring", stiffness: 400, damping: 30 }}
                                 className="absolute bottom-0 right-0 w-full"
                                 style={{ transformOrigin: "bottom center" }}

@@ -74,7 +74,7 @@ export function DashboardLayoutClient({ children, role: serverRole }: DashboardL
             <div className="flex-1 flex flex-col min-w-0">
                 <Header onMobileMenuOpen={() => setIsMobileMenuOpen(true)} />
 
-                <main className="flex-1 p-4 sm:p-6 lg:p-8 overflow-y-auto">
+                <main className="flex-1 p-4 sm:p-6 lg:p-8 overflow-y-auto dashboard-scrollbar">
                     {children}
                 </main>
             </div>
@@ -107,7 +107,7 @@ export function DashboardLayoutClient({ children, role: serverRole }: DashboardL
                             <nav className="flex-1 px-4 space-y-2 mt-4">
                                 {sidebarItems.map((item) => {
                                     const isActive = pathname === item.href || (item.href !== "/dashboard" && pathname.startsWith(item.href));
-                                    
+
                                     return (
                                         <Link
                                             key={item.href}

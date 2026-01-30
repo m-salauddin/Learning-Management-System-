@@ -2,7 +2,8 @@
 
 import { useState, useRef, useEffect } from "react";
 import Link from "next/link";
-import { useRouter, usePathname } from "next/navigation";
+import Image from "next/image";
+import { useRouter} from "next/navigation";
 import { motion, AnimatePresence } from "motion/react";
 import {
     User,
@@ -28,7 +29,6 @@ export function UserDropdown({ user, onOpen }: UserDropdownProps) {
     const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
     const dropdownRef = useRef<HTMLDivElement>(null);
     const router = useRouter();
-    const pathname = usePathname();
     const dispatch = useAppDispatch();
     const toast = useToast();
 
@@ -96,11 +96,6 @@ export function UserDropdown({ user, onOpen }: UserDropdownProps) {
     const [imageError, setImageError] = useState(false);
     const [imageLoaded, setImageLoaded] = useState(false);
 
-    useEffect(() => {
-        setImageError(false);
-        setImageLoaded(false);
-    }, [user.avatarUrl]);
-
     return (
         <div className="relative" ref={dropdownRef}>
             <button
@@ -116,13 +111,15 @@ export function UserDropdown({ user, onOpen }: UserDropdownProps) {
                     {user.avatarUrl && !imageError ? (
                         <>
                             {!imageLoaded && (
-                                <div className="absolute inset-0 bg-muted animate-pulse" />
+                                <div className="absolute inset-0 bg-muted-foreground/20 animate-pulse" />
                             )}
-                            <img
+                            <Image
+                                key={user.avatarUrl}
                                 src={user.avatarUrl}
                                 alt={displayName}
-                                referrerPolicy="no-referrer"
-                                className={`w-full h-full object-cover transition-opacity duration-300 ${imageLoaded ? 'opacity-100' : 'opacity-0'}`}
+                                fill
+                                sizes="32px"
+                                className={`object-cover transition-opacity duration-300 ${imageLoaded ? 'opacity-100' : 'opacity-0'}`}
                                 onLoad={() => setImageLoaded(true)}
                                 onError={() => {
                                     setImageLoaded(true);
@@ -135,7 +132,7 @@ export function UserDropdown({ user, onOpen }: UserDropdownProps) {
                     )}
                 </div>
                 <div className="flex-col items-start text-xs hidden min-[775px]:flex">
-                    <span className="font-semibold max-w-[100px] truncate">{displayName}</span>
+                    <span className="font-semibold max-w-25 truncate">{displayName}</span>
                     <span className="text-muted-foreground capitalize">{userRole}</span>
                 </div>
                 <ChevronDown className={`w-4 h-4 text-muted-foreground group-hover:text-foreground transition-all duration-200 hidden sm:block ${isOpen ? "rotate-180" : ""}`} />
