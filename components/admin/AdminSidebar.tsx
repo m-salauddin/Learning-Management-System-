@@ -68,7 +68,7 @@ export function AdminSidebar() {
             </nav>
 
             <div className="p-4 border-t border-border/50">
-                <div className="bg-gradient-to-br from-red-500/5 to-transparent p-4 rounded-2xl border border-red-500/10 relative overflow-hidden group hover:border-red-500/20 transition-colors">
+                <div className="bg-linear-to-br from-red-500/5 to-transparent p-4 rounded-2xl border border-red-500/10 relative overflow-hidden group hover:border-red-500/20 transition-colors">
                     <div className="absolute top-0 right-0 w-20 h-20 bg-red-500/10 blur-2xl rounded-full -mr-10 -mt-10 pointer-events-none group-hover:bg-red-500/20 transition-all" />
                     <h4 className="text-sm font-semibold text-red-500 mb-1 relative z-10 flex items-center gap-2">
                         <Shield className="w-4 h-4" />

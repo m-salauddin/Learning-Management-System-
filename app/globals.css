@@ -4,7 +4,7 @@
 @custom-variant dark (&:is(.dark *));
 
 /* ============================================
-   SKILLSYNCBD - ADAPTIVE AURA DESIGN SYSTEM
+   DOKKHOTAIT - ADAPTIVE AURA DESIGN SYSTEM
    ============================================ */
 
 @theme inline {
@@ -87,7 +87,7 @@
   --popover: #FFFFFF;
   --popover-foreground: #0F172A;
 
-  /* Primary - SkillSync Blue */
+  /* Primary - Dokkhota Blue */
   --primary: #0036F9;
   --primary-foreground: #FFFFFF;
 

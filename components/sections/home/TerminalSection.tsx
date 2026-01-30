@@ -13,14 +13,14 @@ interface TerminalLine {
 
 const TERMINAL_SEQUENCE = [
     {
-        cmd: "npx create-next-app@latest skill-sync-bd", output: [
-            { type: "info", text: "◐ Creating a new app in ~/projects/skill-sync-bd..." },
+        cmd: "npx create-next-app@latest dokkhota-it", output: [
+            { type: "info", text: "◐ Creating a new app in ~/projects/dokkhota-it..." },
             { type: "warning", text: "◐ Installing dependencies: react, react-dom, next..." },
-            { type: "success", text: "✓ Success! Created skill-sync-bd" }
+            { type: "success", text: "✓ Success! Created dokkhota-it" }
         ]
     },
     {
-        cmd: "cd skill-sync-bd && bun run dev", output: [
+        cmd: "cd dokkhota-it && bun run dev", output: [
             { type: "info", text: "◐ Starting development server..." },
             { type: "success", text: "✓ Ready in 847ms" },
             { type: "output", text: "➜ Local:   http://localhost:3000" },
@@ -40,7 +40,7 @@ const TERMINAL_SEQUENCE = [
             { type: "info", text: "◐ Compiling TypeScript..." },
             { type: "info", text: "◐ Optimizing assets..." },
             { type: "success", text: "✓ Build completed in 12.4s" },
-            { type: "success", text: "✓ Deployed to https://skillsync.app" },
+            { type: "success", text: "✓ Deployed to https://dokkhota-it.com" },
             { type: "output", text: "🚀 Your journey has officially begun!" }
         ]
     }
@@ -79,7 +79,7 @@ const OmpPrompt = ({ showTime = true, className }: { showTime?: boolean; classNa
 
             <div className="bg-[#22D3EE] text-[#0a2540] px-3 py-[5px] rounded-full flex items-center gap-1.5 font-semibold">
                 <Folder className="w-3.5 h-3.5" />
-                <span>skill-sync-bd</span>
+                <span>dokkhota-it</span>
             </div>
 
 
@@ -114,7 +114,7 @@ const OmpPromptCompact = () => (
 
         <div className="bg-[#22D3EE] text-[#0a2540] px-2 py-[3px] rounded-full flex items-center gap-1 font-semibold">
             <Folder className="w-2.5 h-2.5" />
-            <span>skill-sync-bd</span>
+            <span>dokkhota-it</span>
         </div>
 
 
@@ -254,7 +254,7 @@ export function TerminalSection() {
                                 <div className="p-1 rounded bg-linear-to-br from-[#FCB900]/20 to-[#22D3EE]/20">
                                     <Terminal className="w-3.5 h-3.5 text-[#FCB900] dark:text-[#FCB900]" />
                                 </div>
-                                <span className="text-xs font-medium text-slate-600 dark:text-muted-foreground">skill-sync-bd</span>
+                                <span className="text-xs font-medium text-slate-600 dark:text-muted-foreground">dokkhota-it</span>
                             </div>
 
 
@@ -288,7 +288,7 @@ export function TerminalSection() {
                                     animate={{ opacity: 1 }}
                                     className="mb-4 text-slate-500 dark:text-muted-foreground text-xs border-b border-slate-200 dark:border-white/10 pb-3"
                                 >
-                                    <span className="text-cyan-600 dark:text-[#22D3EE]">●</span> Welcome to SkillSync Terminal{" "}
+                                    <span className="text-cyan-600 dark:text-[#22D3EE]">●</span> Welcome to DokkhotaIT Terminal{" "}
                                     <span className="text-slate-300 dark:text-muted-foreground">|</span>{" "}
                                     <span className="text-emerald-600 dark:text-[#34D399]">v2.0.0</span>{" "}
                                     <span className="text-slate-300 dark:text-muted-foreground">|</span>{" "}

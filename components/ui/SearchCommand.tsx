@@ -41,7 +41,7 @@ export function SearchCommand({ isOpen, onClose }: SearchCommandProps) {
     // Initialize recent searches and mounting
     React.useEffect(() => {
         setMounted(true);
-        const saved = localStorage.getItem("skillsync-recent-searches");
+        const saved = localStorage.getItem("dokkhotait-recent-searches");
         if (saved) {
             setRecentSearches(JSON.parse(saved));
         }
@@ -111,7 +111,7 @@ export function SearchCommand({ isOpen, onClose }: SearchCommandProps) {
         if (!recentSearches.includes(item.label) && item.type !== "recent") {
             const newRecent = [item.label, ...recentSearches].slice(0, 5);
             setRecentSearches(newRecent);
-            localStorage.setItem("skillsync-recent-searches", JSON.stringify(newRecent));
+            localStorage.setItem("dokkhotait-recent-searches", JSON.stringify(newRecent));
         }
 
         // Navigate

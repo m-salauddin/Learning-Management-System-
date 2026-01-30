@@ -3,7 +3,7 @@ import { Shield, Lock, Eye, Database, UserCheck, Mail } from "lucide-react";
 
 export const metadata = {
     title: "Privacy Policy",
-    description: "Learn how SkillSyncBD collects, uses, and protects your personal information.",
+    description: "Learn how DokkhotaIT collects, uses, and protects your personal information.",
 };
 
 const sections = [
@@ -70,7 +70,7 @@ You can control cookies through your browser settings. However, disabling cookie
         title: "Contact Us",
         content: `If you have any questions about this Privacy Policy or our data practices, please contact us:
 
-• **Email**: privacy@skillsyncbd.com
+• **Email**: privacy@dokkhotait.com
 • **Address**: House 42, Road 11, Banani, Dhaka 1213, Bangladesh
 • **Phone**: +880 1700-000000
 
@@ -94,7 +94,7 @@ export default function PrivacyPage() {
                         Privacy Policy
                     </h1>
                     <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-                        At SkillSyncBD, we are committed to protecting your privacy and ensuring the security of your personal information.
+                        At DokkhotaIT, we are committed to protecting your privacy and ensuring the security of your personal information.
                     </p>
                     <p className="text-sm text-muted-foreground mt-4">
                         Last updated: January 27, 2026
