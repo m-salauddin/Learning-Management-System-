@@ -48,7 +48,6 @@ const itemVariants: Variants = {
 function CoursesContent() {
     const router = useRouter();
     const pathname = usePathname();
-    const searchParams = useSearchParams();
 
 
     const [searchInput, setSearchInput] = useState("");
@@ -105,39 +104,36 @@ function CoursesContent() {
     };
 
 
+    // Initialize state from URL once on mount
     useEffect(() => {
-        const q = searchParams.get("q") || "";
-        const category = searchParams.get("category") || "All Topics";
-        const levels = searchParams.get("levels")?.split(",").filter(Boolean) || [];
-        const types = searchParams.get("types")?.split(",").filter(Boolean) || [];
-        const prices = searchParams.get("prices")?.split(",").filter(Boolean) || [];
-        const page = searchParams.get("page") ? parseInt(searchParams.get("page")!, 10) : 1;
+        // Use window.location.search to avoid Next.js router/suspense triggering on updates
+        const params = new URLSearchParams(window.location.search);
 
-        if (q !== lastPushedSearch.current) {
-            setSearchInput(q);
-        }
+        const q = params.get("q") || "";
+        const category = params.get("category") || "All Topics";
+        const levels = params.get("levels")?.split(",").filter(Boolean) || [];
+        const types = params.get("types")?.split(",").filter(Boolean) || [];
+        const prices = params.get("prices")?.split(",").filter(Boolean) || [];
+        const page = params.get("page") ? parseInt(params.get("page")!, 10) : 1;
 
-        lastPushedSearch.current = q;
-
+        setSearchInput(q);
         setSelectedCategory(category);
         setSelectedLevels(levels);
         setSelectedTypes(types);
         setSelectedPrices(prices);
         setCurrentPage(page);
         setMounted(true);
-    }, [searchParams]); // eslint-disable-line react-hooks/exhaustive-deps
+    }, []);
 
-
-    const updateUrl = (
+    // Silent URL update helper
+    const updateUrlSilently = (
         term: string,
         category: string,
         levels: string[],
         types: string[],
         prices: string[],
-        page: number,
-        replace: boolean = false
+        page: number
     ) => {
-        lastPushedSearch.current = term;
         const params = new URLSearchParams();
         if (term) params.set("q", term);
         if (category && category !== "All Topics") params.set("category", category);
@@ -146,32 +142,22 @@ function CoursesContent() {
         if (prices.length > 0) params.set("prices", prices.join(","));
         if (page > 1) params.set("page", page.toString());
 
-        const url = `${pathname}?${params.toString()}`;
-        if (replace) {
-            router.replace(url, { scroll: false });
-        } else {
-            router.push(url, { scroll: false });
-        }
+        const newUrl = `${pathname}?${params.toString()}`;
+
+        // Update URL without triggering Next.js navigation/suspense
+        window.history.replaceState(null, '', newUrl);
     };
 
-
-    // Effect for Debounced Search URL Update
+    // Effect to update URL when state changes (Debounced for search, immediate for filters)
     useEffect(() => {
         if (!mounted) return;
 
         const timer = setTimeout(() => {
-            const currentQ = searchParams.get("q") || "";
-            if (searchInput !== currentQ) {
-                updateUrl(searchInput, selectedCategory, selectedLevels, selectedTypes, selectedPrices, 1, true);
-            }
+            updateUrlSilently(searchInput, selectedCategory, selectedLevels, selectedTypes, selectedPrices, currentPage);
         }, 300);
-        return () => clearTimeout(timer);
-    }, [searchInput]);
 
-    useEffect(() => {
-        if (!mounted) return;
-        updateUrl(searchInput, selectedCategory, selectedLevels, selectedTypes, selectedPrices, currentPage, false);
-    }, [selectedCategory, selectedLevels, selectedTypes, selectedPrices, currentPage]);
+        return () => clearTimeout(timer);
+    }, [searchInput, selectedCategory, selectedLevels, selectedTypes, selectedPrices, currentPage, mounted]);
 
 
     const toggleFilter = (item: string, current: string[], setter: (val: string[]) => void) => {
@@ -189,7 +175,7 @@ function CoursesContent() {
         setSelectedTypes([]);
         setSelectedPrices([]);
         setCurrentPage(1);
-        router.push(pathname, { scroll: false });
+        // URL will update automatically via key effect
     };
 
     const filteredCourses = useMemo(() => {
@@ -389,9 +375,17 @@ function CoursesContent() {
                                 <h3 className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-3">Level</h3>
                                 <div className="space-y-3">
                                     {LEVELS.map(level => (
-                                        <div key={level} className="flex items-center gap-3 group cursor-pointer select-none" onClick={() => toggleFilter(level, selectedLevels, setSelectedLevels)}>
-                                            <AnimatedCheckbox id={level} checked={selectedLevels.includes(level)} />
-                                            <span className={`text-sm ${selectedLevels.includes(level) ? 'text-foreground font-medium' : 'text-muted-foreground group-hover:text-foreground transition-colors'}`}>{level}</span>
+                                        <div key={level} className="group">
+                                            <AnimatedCheckbox
+                                                id={level}
+                                                checked={selectedLevels.includes(level)}
+                                                onChange={() => toggleFilter(level, selectedLevels, setSelectedLevels)}
+                                                label={
+                                                    <span className={`text-sm transition-colors ${selectedLevels.includes(level) ? 'text-foreground font-medium' : 'text-muted-foreground group-hover:text-foreground'}`}>
+                                                        {level}
+                                                    </span>
+                                                }
+                                            />
                                         </div>
                                     ))}
                                 </div>
@@ -401,9 +395,17 @@ function CoursesContent() {
                                 <h3 className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-3">Type</h3>
                                 <div className="space-y-3">
                                     {TYPES.map(type => (
-                                        <div key={type} className="flex items-center gap-3 group cursor-pointer select-none" onClick={() => toggleFilter(type, selectedTypes, setSelectedTypes)}>
-                                            <AnimatedCheckbox id={type} checked={selectedTypes.includes(type)} />
-                                            <span className={`text-sm ${selectedTypes.includes(type) ? 'text-foreground font-medium' : 'text-muted-foreground group-hover:text-foreground transition-colors'}`}>{type}</span>
+                                        <div key={type} className="group">
+                                            <AnimatedCheckbox
+                                                id={type}
+                                                checked={selectedTypes.includes(type)}
+                                                onChange={() => toggleFilter(type, selectedTypes, setSelectedTypes)}
+                                                label={
+                                                    <span className={`text-sm transition-colors ${selectedTypes.includes(type) ? 'text-foreground font-medium' : 'text-muted-foreground group-hover:text-foreground'}`}>
+                                                        {type}
+                                                    </span>
+                                                }
+                                            />
                                         </div>
                                     ))}
                                 </div>
@@ -413,9 +415,17 @@ function CoursesContent() {
                                 <h3 className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-3">Price</h3>
                                 <div className="space-y-3">
                                     {PRICES.map(price => (
-                                        <div key={price} className="flex items-center gap-3 group cursor-pointer select-none" onClick={() => toggleFilter(price, selectedPrices, setSelectedPrices)}>
-                                            <AnimatedCheckbox id={price} checked={selectedPrices.includes(price)} />
-                                            <span className={`text-sm ${selectedPrices.includes(price) ? 'text-foreground font-medium' : 'text-muted-foreground group-hover:text-foreground transition-colors'}`}>{price}</span>
+                                        <div key={price} className="group">
+                                            <AnimatedCheckbox
+                                                id={price}
+                                                checked={selectedPrices.includes(price)}
+                                                onChange={() => toggleFilter(price, selectedPrices, setSelectedPrices)}
+                                                label={
+                                                    <span className={`text-sm transition-colors ${selectedPrices.includes(price) ? 'text-foreground font-medium' : 'text-muted-foreground group-hover:text-foreground'}`}>
+                                                        {price}
+                                                    </span>
+                                                }
+                                            />
                                         </div>
                                     ))}
                                 </div>

@@ -48,10 +48,10 @@ export function AnimatedCheckbox({
                 aria-checked={isChecked}
                 id={id}
                 onClick={handleToggle}
-                className="relative shrink-0 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background rounded-md"
+                className="relative shrink-0 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background rounded-md cursor-pointer"
             >
                 <motion.div
-                    className={`w-5 h-5 rounded-md border-2 flex items-center justify-center transition-colors duration-200 ${isChecked
+                    className={`w-5 h-5 rounded-md border-2 flex items-center justify-center transition-colors duration-200 pointer-events-none ${isChecked
                         ? "bg-primary border-primary"
                         : "bg-transparent border-muted-foreground/40 hover:border-primary/60"
                         }`}
@@ -78,7 +78,7 @@ export function AnimatedCheckbox({
 
                 {/* Ripple effect on click */}
                 <motion.div
-                    className="absolute inset-0 rounded-md bg-primary/20"
+                    className="absolute inset-0 rounded-md bg-primary/20 pointer-events-none"
                     initial={{ scale: 0, opacity: 0.5 }}
                     animate={{ scale: 0, opacity: 0 }}
                     whileTap={{ scale: 2.5, opacity: 0 }}
