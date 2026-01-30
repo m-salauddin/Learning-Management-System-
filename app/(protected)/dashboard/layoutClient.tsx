@@ -4,28 +4,71 @@ import { useState } from "react";
 import { Sidebar } from "@/components/dashboard/Sidebar";
 import { Header } from "@/components/dashboard/Header";
 import { motion, AnimatePresence } from "motion/react";
-import { X } from "lucide-react";
+import { X, LayoutDashboard, BookOpen, Award, Settings, ShieldCheck, Users, DollarSign, FileText, Flag, Ticket, Tags, BarChart3 } from "lucide-react";
 import { Logo } from "@/components/ui/Logo";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
-import { LayoutDashboard, BookOpen, Award, Settings } from "lucide-react";
+import type { UserRole } from "@/types/dashboard";
+import type { LucideIcon } from "lucide-react";
 
-const sidebarItems = [
-    { icon: LayoutDashboard, label: "Overview", href: "/dashboard" },
-    { icon: BookOpen, label: "My Courses", href: "/dashboard/courses" },
-    { icon: Award, label: "Certificates", href: "/dashboard/certificates" },
-    { icon: Settings, label: "Settings", href: "/dashboard/settings" },
-];
+interface SidebarItem {
+    icon: LucideIcon;
+    label: string;
+    href: string;
+}
 
-export default function DashboardLayout({ children }: { children: React.ReactNode }) {
+const NAV_ITEMS: Record<UserRole, SidebarItem[]> = {
+    student: [
+        { icon: LayoutDashboard, label: "Overview", href: "/dashboard" },
+        { icon: BookOpen, label: "My Courses", href: "/dashboard/my-courses" },
+        { icon: Award, label: "Certificates", href: "/dashboard/certificates" },
+        { icon: Settings, label: "Settings", href: "/dashboard/settings" },
+    ],
+    teacher: [
+        { icon: LayoutDashboard, label: "Overview", href: "/dashboard" },
+        { icon: BookOpen, label: "Instructor Courses", href: "/dashboard/instructor-courses" },
+        { icon: DollarSign, label: "Earnings", href: "/dashboard/earnings" },
+        { icon: Settings, label: "Settings", href: "/dashboard/settings" },
+    ],
+    moderator: [
+        { icon: LayoutDashboard, label: "Overview", href: "/dashboard" },
+        { icon: Flag, label: "Reports", href: "/dashboard/reports" },
+        { icon: FileText, label: "Reviews", href: "/dashboard/reviews" },
+        { icon: Settings, label: "Settings", href: "/dashboard/settings" },
+    ],
+    admin: [
+        { icon: LayoutDashboard, label: "Overview", href: "/dashboard" },
+        { icon: Users, label: "User Management", href: "/dashboard/users" },
+        { icon: BookOpen, label: "Courses", href: "/dashboard/courses" },
+        { icon: Tags, label: "Discounts", href: "/dashboard/discounts" },
+        { icon: Ticket, label: "Coupons", href: "/dashboard/coupons" },
+        { icon: BarChart3, label: "Analytics", href: "/dashboard/analytics" },
+        { icon: Settings, label: "Settings", href: "/dashboard/settings" },
+    ],
+};
+
+interface DashboardLayoutClientProps {
+    children: React.ReactNode;
+    role: UserRole;
+}
+
+import { useAppSelector } from "@/lib/store/hooks";
+
+export function DashboardLayoutClient({ children, role: serverRole }: DashboardLayoutClientProps) {
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
     const pathname = usePathname();
+    const { user } = useAppSelector((state) => state.auth);
+
+    // Prefer Redux role if available (client state), fallback to server role
+    const role = user?.role || serverRole;
+
+    const sidebarItems = NAV_ITEMS[role] || NAV_ITEMS.student;
 
     return (
         <div className="flex min-h-screen bg-background">
             {/* Desktop Sidebar */}
-            <Sidebar />
+            <Sidebar role={role} />
 
             {/* Main Content */}
             <div className="flex-1 flex flex-col min-w-0">
@@ -63,7 +106,8 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
                             <nav className="flex-1 px-4 space-y-2 mt-4">
                                 {sidebarItems.map((item) => {
-                                    const isActive = pathname === item.href;
+                                    const isActive = pathname === item.href || (item.href !== "/dashboard" && pathname.startsWith(item.href));
+                                    
                                     return (
                                         <Link
                                             key={item.href}

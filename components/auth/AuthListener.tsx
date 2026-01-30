@@ -29,13 +29,23 @@ export function AuthListener() {
                         id: session.user.id,
                         email: session.user.email!,
                         fullName: profile.name,
-                        role: profile.role,
+                        role: (session.user.app_metadata?.role || profile.role || 'student'),
                         avatarUrl: profile.avatar_url,
                         coursesEnrolled: profile.courses_enrolled || [],
                         providers: profile.providers || []
                     }));
                 } else {
-                    console.warn("User profile not found in database yet. Waiting for trigger...");
+                    console.warn("User profile not found in database. Using session data.");
+                    // Fallback to session data if DB profile missing
+                    dispatch(setUser({
+                        id: session.user.id,
+                        email: session.user.email!,
+                        fullName: session.user.user_metadata?.full_name || session.user.email?.split('@')[0],
+                        role: (session.user.app_metadata?.role || 'student'),
+                        avatarUrl: session.user.user_metadata?.avatar_url,
+                        coursesEnrolled: [],
+                        providers: (session.user.app_metadata?.providers as any) || []
+                    }));
                 }
             } catch (err) {
                 console.error('Unexpected error in AuthListener:', err);

@@ -38,15 +38,77 @@ export async function updateSession(request: NextRequest) {
         data: { user },
     } = await supabase.auth.getUser()
 
-    if (
-        !user &&
-        !request.nextUrl.pathname.startsWith('/login') &&
-        !request.nextUrl.pathname.startsWith('/auth')
-    ) {
-        // no user, potentially redirect to login
-        // const url = request.nextUrl.clone()
-        // url.pathname = '/login'
-        // return NextResponse.redirect(url)
+    // Redirect logged-in users away from login/register pages
+    if (request.nextUrl.pathname.startsWith('/login') || request.nextUrl.pathname.startsWith('/register')) {
+        if (user) {
+            const url = request.nextUrl.clone()
+            url.pathname = '/dashboard'
+            return NextResponse.redirect(url)
+        }
+        return supabaseResponse
+    }
+
+    // Protect Admin Routes (both /admin and /dashboard admin routes)
+    const adminRoutes = [
+        '/admin',
+        '/dashboard/users',
+        '/dashboard/courses',
+        '/dashboard/discounts',
+        '/dashboard/coupons',
+        '/dashboard/analytics'
+    ];
+    
+    const isAdminRoute = adminRoutes.some(route => request.nextUrl.pathname.startsWith(route));
+    
+    if (isAdminRoute) {
+        console.log(`[Middleware] Admin route detected: ${request.nextUrl.pathname}`);
+        
+        if (!user) {
+            console.log('[Middleware] No user, redirecting to login');
+            const url = request.nextUrl.clone()
+            url.pathname = '/login'
+            return NextResponse.redirect(url)
+        }
+
+        // Check role: app_metadata (secure) first, then database
+        const appRole = user.app_metadata?.role;
+        let userRole = appRole;
+        
+        console.log(`[Middleware] User: ${user.email}, app_metadata role: ${appRole}`);
+        
+        if (!userRole) {
+            // Only query database if app_metadata doesn't have role
+            const { data: profile, error } = await supabase
+                .from('users')
+                .select('role')
+                .eq('id', user.id)
+                .single()
+            
+            if (error) {
+                console.error('[Middleware] Database role fetch error:', error.message);
+            }
+            
+            userRole = profile?.role;
+            console.log(`[Middleware] Database role: ${userRole}`);
+        }
+
+        console.log(`[Middleware] Final role: ${userRole}, isAdmin: ${userRole === 'admin'}`);
+
+        if (userRole !== 'admin') {
+            console.log('[Middleware] Not admin, redirecting to dashboard');
+            const url = request.nextUrl.clone()
+            url.pathname = '/dashboard'
+            return NextResponse.redirect(url)
+        }
+        
+        console.log('[Middleware] Admin access granted');
+    }
+
+    // Protect Dashboard Routes (Optional but recommended)
+    if (request.nextUrl.pathname.startsWith('/dashboard') && !user) {
+        const url = request.nextUrl.clone()
+        url.pathname = '/login'
+        return NextResponse.redirect(url)
     }
 
     // IMPORTANT: You *must* return the supabaseResponse object as it is. If you're

@@ -13,6 +13,7 @@ import {
 } from "lucide-react";
 import { useToast } from "@/components/ui/toast";
 import { signOut } from "@/app/auth/actions";
+import { createClient } from "@/lib/supabase/client";
 import { AuthUser, logout } from "@/lib/store/features/auth/authSlice";
 import { useAppDispatch } from "@/lib/store/hooks";
 import { Modal } from "@/components/ui/Modal";
@@ -51,27 +52,31 @@ export function UserDropdown({ user, onOpen }: UserDropdownProps) {
         setShowLogoutConfirm(false);
         const loadingToastId = toast.loading("Logging out...", "Please wait while we sign you out.");
 
-        const result = await signOut();
+        try {
+            // Client-side sign out
+            const supabase = createClient();
+            await supabase.auth.signOut();
 
-        if (result?.error) {
+            // Server-side sign out
+            await signOut();
+
+            // Clear local state
+            dispatch(logout());
+
             toast.dismiss(loadingToastId);
-            toast.error("Logout Failed", result.error);
-            return;
-        }
+            toast.success("Logged Out", "You have been logged out successfully.");
 
-        toast.dismiss(loadingToastId);
-        toast.success("Logged Out", "You have been logged out successfully.");
-
-        dispatch(logout());
-
-
-        const protectedRoutes = ['/dashboard', '/profile', '/settings'];
-        const isProtectedRoute = protectedRoutes.some(route => pathname?.startsWith(route));
-
-        if (isProtectedRoute) {
-            router.push('/login');
-        } else {
+            // Force refresh and redirect
             router.refresh();
+            router.push('/login');
+
+        } catch (error) {
+            console.error("Logout error:", error);
+            toast.dismiss(loadingToastId);
+            // Even if api fails, we should clear local state
+            dispatch(logout());
+            router.refresh();
+            router.push('/login');
         }
     };
 
