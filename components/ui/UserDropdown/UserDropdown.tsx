@@ -116,7 +116,7 @@ export function UserDropdown({ user, onOpen }: UserDropdownProps) {
                     {user.avatarUrl && !imageError ? (
                         <>
                             {!imageLoaded && (
-                                <div className="absolute inset-0 bg-muted animate-pulse" />
+                                <div className="absolute inset-0 bg-muted-foreground/20 animate-pulse" />
                             )}
                             <img
                                 src={user.avatarUrl}

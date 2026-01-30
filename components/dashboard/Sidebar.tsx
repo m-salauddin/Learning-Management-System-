@@ -53,7 +53,6 @@ const NAV_ITEMS: Record<UserRole, SidebarItem[]> = {
         { icon: BookOpen, label: "Courses", href: "/dashboard/courses" },
         { icon: Tags, label: "Discounts", href: "/dashboard/discounts" },
         { icon: Ticket, label: "Coupons", href: "/dashboard/coupons" },
-        { icon: BarChart3, label: "Analytics", href: "/dashboard/analytics" },
         { icon: Settings, label: "Settings", href: "/dashboard/settings" },
     ],
 };
@@ -104,14 +103,28 @@ export function Sidebar({ role }: SidebarProps) {
             </nav>
 
             <div className="p-4 border-t border-border/50">
-                <div className="bg-linear-to-br from-primary/10 to-transparent p-4 rounded-2xl border border-primary/10 relative overflow-hidden">
-                    <div className="absolute top-0 right-0 w-20 h-20 bg-primary/10 blur-2xl rounded-full -mr-10 -mt-10 pointer-events-none" />
-                    <h4 className="text-sm font-semibold text-primary mb-1 relative z-10">Upgrade Plan</h4>
-                    <p className="text-xs text-muted-foreground mb-3 relative z-10">Get access to premium courses</p>
-                    <button className="w-full py-2 text-xs font-semibold bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors shadow-lg shadow-primary/20 relative z-10 cursor-pointer">
-                        Go Pro
-                    </button>
-                </div>
+                {role === 'admin' ? (
+                    <div className="bg-linear-to-br from-emerald-500/10 to-transparent p-4 rounded-2xl border border-emerald-500/10 relative overflow-hidden">
+                        <div className="absolute top-0 right-0 w-20 h-20 bg-emerald-500/10 blur-2xl rounded-full -mr-10 -mt-10 pointer-events-none" />
+                        <div className="flex items-center gap-2 mb-2">
+                            <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse relative z-10" />
+                            <h4 className="text-sm font-semibold text-emerald-500 relative z-10">System Normal</h4>
+                        </div>
+                        <p className="text-xs text-muted-foreground mb-3 relative z-10">All services operational</p>
+                        <button className="w-full py-2 text-xs font-semibold bg-emerald-500/10 text-emerald-500 rounded-lg hover:bg-emerald-500/20 transition-colors border border-emerald-500/20 relative z-10 cursor-pointer">
+                            View Logs
+                        </button>
+                    </div>
+                ) : (
+                    <div className="bg-linear-to-br from-primary/10 to-transparent p-4 rounded-2xl border border-primary/10 relative overflow-hidden">
+                        <div className="absolute top-0 right-0 w-20 h-20 bg-primary/10 blur-2xl rounded-full -mr-10 -mt-10 pointer-events-none" />
+                        <h4 className="text-sm font-semibold text-primary mb-1 relative z-10">Upgrade Plan</h4>
+                        <p className="text-xs text-muted-foreground mb-3 relative z-10">Get access to premium courses</p>
+                        <button className="w-full py-2 text-xs font-semibold bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors shadow-lg shadow-primary/20 relative z-10 cursor-pointer">
+                            Go Pro
+                        </button>
+                    </div>
+                )}
             </div>
         </aside>
     );
