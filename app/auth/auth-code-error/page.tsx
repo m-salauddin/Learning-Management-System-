@@ -42,7 +42,7 @@ function AuthCodeErrorContent() {
                     className="w-full max-w-md"
                 >
                     {/* Card */}
-                    <div className="bg-card/80 dark:bg-card/60 backdrop-blur-xl border border-border/50 dark:border-white/10 rounded-3xl p-8 shadow-2xl">
+                    <div className="bg-card/80 dark:bg-card/60 backdrop-blur-xl border border-border rounded-3xl p-8 shadow-2xl">
                         {/* Header */}
                         <div className="text-center mb-8">
                             <h1 className="text-2xl font-bold mb-2">Authentication Failed</h1>

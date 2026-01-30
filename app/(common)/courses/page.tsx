@@ -1,9 +1,9 @@
 "use client";
 
 import Link from "next/link";
-import { useState, useMemo, useEffect, Suspense } from "react";
+import { useState, useMemo, useEffect, Suspense, useRef } from "react";
 import { useRouter, useSearchParams, usePathname } from "next/navigation";
-import { motion, AnimatePresence } from "motion/react";
+import { motion, AnimatePresence, Variants } from "motion/react";
 import { ArrowLeft, Search, SlidersHorizontal, X, ChevronDown, Check, Filter, LayoutGrid, Grip, AlignJustify, FileQuestion, ChevronLeft, ChevronRight } from "lucide-react";
 import { fadeInUp } from "@/lib/motion";
 import { Navbar } from "@/components/Navbar";
@@ -19,6 +19,32 @@ const TYPES = ["Live", "Recorded", "Career Path"];
 const PRICES = ["Paid", "Free"];
 const ITEMS_PER_PAGE = 9;
 
+const itemVariants: Variants = {
+    hidden: { opacity: 0, y: 20, scale: 0.95, filter: "blur(10px)" },
+    visible: {
+        opacity: 1,
+        y: 0,
+        scale: 1,
+        filter: "blur(0px)",
+        transition: {
+            type: "spring",
+            stiffness: 180,
+            damping: 20,
+            mass: 0.8,
+        }
+    },
+    exit: {
+        opacity: 0,
+        y: 20,
+        scale: 0.9,
+        filter: "blur(10px)",
+        transition: {
+            duration: 0.2,
+            ease: "easeIn"
+        }
+    }
+};
+
 function CoursesContent() {
     const router = useRouter();
     const pathname = usePathname();
@@ -26,7 +52,7 @@ function CoursesContent() {
 
 
     const [searchInput, setSearchInput] = useState("");
-    const [searchTerm, setSearchTerm] = useState("");
+
     const [selectedCategory, setSelectedCategory] = useState("All Topics");
     const [selectedLevels, setSelectedLevels] = useState<string[]>([]);
     const [selectedTypes, setSelectedTypes] = useState<string[]>([]);
@@ -34,7 +60,49 @@ function CoursesContent() {
     const [showMobileFilters, setShowMobileFilters] = useState(false);
     const [gridCols, setGridCols] = useState<1 | 2 | 3>(3);
     const [currentPage, setCurrentPage] = useState(1);
+    const lastPushedSearch = useRef("");
     const [mounted, setMounted] = useState(false);
+    const categoryContainerRef = useRef<HTMLDivElement>(null);
+    const [canScrollLeft, setCanScrollLeft] = useState(false);
+    const [canScrollRight, setCanScrollRight] = useState(false);
+
+    useEffect(() => {
+        const checkScroll = () => {
+            if (categoryContainerRef.current) {
+                const { scrollLeft, scrollWidth, clientWidth } = categoryContainerRef.current;
+                setCanScrollLeft(scrollLeft > 0);
+                // Use a small buffer (1px) to avoid precision issues
+                setCanScrollRight(Math.ceil(scrollLeft + clientWidth) < scrollWidth - 1);
+            }
+        };
+
+        checkScroll();
+
+        const container = categoryContainerRef.current;
+        if (container) {
+            const observer = new ResizeObserver(() => checkScroll());
+            observer.observe(container);
+            container.addEventListener('scroll', checkScroll);
+            return () => {
+                observer.disconnect();
+                container.removeEventListener('scroll', checkScroll);
+            };
+        }
+    }, [mounted]);
+
+    const scroll = (direction: 'left' | 'right') => {
+        if (categoryContainerRef.current) {
+            const scrollAmount = 300;
+            const newScrollLeft = direction === 'left'
+                ? categoryContainerRef.current.scrollLeft - scrollAmount
+                : categoryContainerRef.current.scrollLeft + scrollAmount;
+
+            categoryContainerRef.current.scrollTo({
+                left: newScrollLeft,
+                behavior: 'smooth'
+            });
+        }
+    };
 
 
     useEffect(() => {
@@ -45,15 +113,19 @@ function CoursesContent() {
         const prices = searchParams.get("prices")?.split(",").filter(Boolean) || [];
         const page = searchParams.get("page") ? parseInt(searchParams.get("page")!, 10) : 1;
 
-        setSearchInput(q);
-        setSearchTerm(q);
+        if (q !== lastPushedSearch.current) {
+            setSearchInput(q);
+        }
+
+        lastPushedSearch.current = q;
+
         setSelectedCategory(category);
         setSelectedLevels(levels);
         setSelectedTypes(types);
         setSelectedPrices(prices);
         setCurrentPage(page);
         setMounted(true);
-    }, [searchParams]);
+    }, [searchParams]); // eslint-disable-line react-hooks/exhaustive-deps
 
 
     const updateUrl = (
@@ -62,8 +134,10 @@ function CoursesContent() {
         levels: string[],
         types: string[],
         prices: string[],
-        page: number
+        page: number,
+        replace: boolean = false
     ) => {
+        lastPushedSearch.current = term;
         const params = new URLSearchParams();
         if (term) params.set("q", term);
         if (category && category !== "All Topics") params.set("category", category);
@@ -72,26 +146,32 @@ function CoursesContent() {
         if (prices.length > 0) params.set("prices", prices.join(","));
         if (page > 1) params.set("page", page.toString());
 
-        router.push(`${pathname}?${params.toString()}`, { scroll: false });
+        const url = `${pathname}?${params.toString()}`;
+        if (replace) {
+            router.replace(url, { scroll: false });
+        } else {
+            router.push(url, { scroll: false });
+        }
     };
 
 
+    // Effect for Debounced Search URL Update
     useEffect(() => {
+        if (!mounted) return;
+
         const timer = setTimeout(() => {
-            if (searchInput !== searchTerm) {
-                updateUrl(searchInput, selectedCategory, selectedLevels, selectedTypes, selectedPrices, 1);
+            const currentQ = searchParams.get("q") || "";
+            if (searchInput !== currentQ) {
+                updateUrl(searchInput, selectedCategory, selectedLevels, selectedTypes, selectedPrices, 1, true);
             }
         }, 300);
         return () => clearTimeout(timer);
-    }, [searchInput, selectedCategory, selectedLevels, selectedTypes, selectedPrices]);
+    }, [searchInput]);
 
     useEffect(() => {
         if (!mounted) return;
-        const timer = setTimeout(() => {
-            updateUrl(searchTerm, selectedCategory, selectedLevels, selectedTypes, selectedPrices, currentPage);
-        }, 100); // Small delay to batch? Or just immediate?
-        return () => clearTimeout(timer);
-    }, [searchTerm, selectedCategory, selectedLevels, selectedTypes, selectedPrices, currentPage]);
+        updateUrl(searchInput, selectedCategory, selectedLevels, selectedTypes, selectedPrices, currentPage, false);
+    }, [selectedCategory, selectedLevels, selectedTypes, selectedPrices, currentPage]);
 
 
     const toggleFilter = (item: string, current: string[], setter: (val: string[]) => void) => {
@@ -104,20 +184,20 @@ function CoursesContent() {
 
     const handleClearAll = () => {
         setSearchInput("");
-        setSearchTerm("");
         setSelectedCategory("All Topics");
         setSelectedLevels([]);
         setSelectedTypes([]);
         setSelectedPrices([]);
         setCurrentPage(1);
-        router.push(pathname, { scroll: false }); // Immediate clear URL
+        router.push(pathname, { scroll: false });
     };
 
     const filteredCourses = useMemo(() => {
         return courses.filter((course) => {
-            const matchesSearch = course.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                course.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                course.tags.some(tag => tag.toLowerCase().includes(searchTerm.toLowerCase()));
+            // Use searchInput directly for instant feedback (client-side filtering best practice)
+            const matchesSearch = course.title.toLowerCase().includes(searchInput.toLowerCase()) ||
+                course.description.toLowerCase().includes(searchInput.toLowerCase()) ||
+                course.tags.some(tag => tag.toLowerCase().includes(searchInput.toLowerCase()));
 
             const matchesCategory = selectedCategory === "All Topics" || course.category === selectedCategory;
             const matchesLevel = selectedLevels.length === 0 || selectedLevels.includes(course.level);
@@ -126,7 +206,7 @@ function CoursesContent() {
 
             return matchesSearch && matchesCategory && matchesLevel && matchesType && matchesPrice;
         });
-    }, [searchTerm, selectedCategory, selectedLevels, selectedTypes, selectedPrices]);
+    }, [searchInput, selectedCategory, selectedLevels, selectedTypes, selectedPrices]);
 
     const totalPages = Math.ceil(filteredCourses.length / ITEMS_PER_PAGE);
     const paginatedCourses = filteredCourses.slice(
@@ -171,76 +251,120 @@ function CoursesContent() {
                     </motion.div>
 
                     <motion.div
-                        initial={{ opacity: 0, y: 10 }}
+                        initial={{ opacity: 0, y: -10 }}
                         animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: 0.1 }}
-                        className="flex flex-col xl:flex-row gap-6 justify-between items-start xl:items-center sticky top-24 z-30 bg-background/75 backdrop-blur-3xl backdrop-saturate-200 p-4 -mx-4 rounded-3xl border border-border/40 shadow-sm"
+                        className="sticky top-24 z-30 mb-8"
                     >
-                        <div className="w-full xl:w-auto overflow-x-auto pb-2 xl:pb-0 scrollbar-hide">
-                            <div className="flex gap-2">
-                                {CATEGORIES.map((category) => (
-                                    <button
-                                        key={category}
-                                        onClick={() => { setSelectedCategory(category); setCurrentPage(1); }}
-                                        className={`
-                                            relative px-4 py-2 rounded-xl text-sm font-medium transition-all duration-300 whitespace-nowrap
-                                            ${selectedCategory === category
-                                                ? "bg-primary text-primary-foreground shadow-md shadow-primary/25 ring-2 ring-primary/20"
-                                                : "bg-muted/50 text-muted-foreground hover:bg-muted hover:text-foreground border border-transparent"
-                                            }
-                                        `}
+                        <div className="bg-card dark:bg-[#030712] border border-border p-2 rounded-2xl shadow-2xl shadow-black/5 dark:shadow-black/50 flex flex-col xl:flex-row gap-4 items-center max-w-full overflow-hidden">
+
+                            {/* Categories - Scrollable Area */}
+                            <div className="w-full xl:w-auto flex-1 min-w-0 relative group/categories">
+                                {/* Left Scroll Button */}
+                                {canScrollLeft && (
+                                    <motion.button
+                                        initial={{ opacity: 0, x: -10 }}
+                                        animate={{ opacity: 1, x: 0 }}
+                                        onClick={() => scroll('left')}
+                                        className="absolute left-0 top-1/2 -translate-y-1/2 z-40 p-2 rounded-full bg-background/80 backdrop-blur-sm border border-border shadow-md text-foreground hover:bg-background hover:text-primary transition-colors flex items-center justify-center h-8 w-8 ml-1"
                                     >
-                                        {category}
-                                    </button>
-                                ))}
-                            </div>
-                        </div>
-
-                        <div className="flex items-center gap-3 w-full xl:w-auto">
-                            <div className="relative grow xl:grow-0 min-w-[240px]">
-                                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                                <input
-                                    type="text"
-                                    placeholder="Search..."
-                                    value={searchInput}
-                                    onChange={(e) => setSearchInput(e.target.value)}
-                                    className="w-full pl-9 pr-4 py-2 rounded-xl bg-card border border-border/50 focus:border-primary/50 focus:ring-2 focus:ring-primary/10 outline-none transition-all text-sm"
-                                />
-                            </div>
-
-                            <div className="hidden lg:flex bg-muted/30 p-1 rounded-xl border border-border/50">
-                                <button
-                                    onClick={() => setGridCols(1)}
-                                    className={`p-2 rounded-lg transition-all ${gridCols === 1 ? 'bg-background shadow-sm text-primary' : 'text-muted-foreground hover:text-foreground'}`}
-                                    title="List View"
-                                >
-                                    <AlignJustify className="w-4 h-4" />
-                                </button>
-                                <button
-                                    onClick={() => setGridCols(2)}
-                                    className={`p-2 rounded-lg transition-all ${gridCols === 2 ? 'bg-background shadow-sm text-primary' : 'text-muted-foreground hover:text-foreground'}`}
-                                    title="Grid View (2)"
-                                >
-                                    <LayoutGrid className="w-4 h-4" />
-                                </button>
-                                <button
-                                    onClick={() => setGridCols(3)}
-                                    className={`p-2 rounded-lg transition-all ${gridCols === 3 ? 'bg-background shadow-sm text-primary' : 'text-muted-foreground hover:text-foreground'}`}
-                                    title="Compact View (3)"
-                                >
-                                    <Grip className="w-4 h-4" />
-                                </button>
-                            </div>
-
-                            <button
-                                onClick={() => setShowMobileFilters(!showMobileFilters)}
-                                className="lg:hidden p-2.5 rounded-xl border border-border bg-card text-foreground relative"
-                            >
-                                <Filter className="w-4 h-4" />
-                                {activeFilterCount > 0 && (
-                                    <span className="absolute -top-1 -right-1 w-3 h-3 rounded-full bg-primary" />
+                                        <ChevronLeft className="w-4 h-4" />
+                                    </motion.button>
                                 )}
-                            </button>
+
+                                {/* Gradient Masks */}
+                                {canScrollLeft && <div className="absolute left-0 top-0 bottom-0 w-12 bg-linear-to-r from-card dark:from-[#030712] to-transparent z-30 pointer-events-none" />}
+                                {canScrollRight && <div className="absolute right-0 top-0 bottom-0 w-12 bg-linear-to-l from-card dark:from-[#030712] to-transparent z-30 pointer-events-none" />}
+
+                                <div
+                                    ref={categoryContainerRef}
+                                    className="overflow-x-auto scrollbar-hide flex gap-1.5 p-1 px-2"
+                                >
+                                    {CATEGORIES.map((category) => (
+                                        <button
+                                            key={category}
+                                            onClick={() => { setSelectedCategory(category); setCurrentPage(1); }}
+                                            className={`
+                                                relative px-5 py-2.5 rounded-xl text-sm font-semibold transition-all duration-300 whitespace-nowrap cursor-pointer shrink-0
+                                                ${selectedCategory === category
+                                                    ? "text-white dark:text-black z-10"
+                                                    : "bg-black/5 dark:bg-white/5 text-muted-foreground hover:bg-black/10 dark:hover:bg-white/10 hover:text-foreground"
+                                                }
+                                            `}
+                                        >
+                                            {selectedCategory === category && (
+                                                <motion.div
+                                                    layoutId="activeCategory"
+                                                    className="absolute inset-0 bg-primary rounded-xl z-[-1]"
+                                                    transition={{ type: "spring", stiffness: 400, damping: 30 }}
+                                                />
+                                            )}
+                                            {category}
+                                        </button>
+                                    ))}
+                                </div>
+
+                                {/* Right Scroll Button */}
+                                {canScrollRight && (
+                                    <motion.button
+                                        initial={{ opacity: 0, x: 10 }}
+                                        animate={{ opacity: 1, x: 0 }}
+                                        onClick={() => scroll('right')}
+                                        className="absolute right-0 top-1/2 -translate-y-1/2 z-40 p-2 rounded-full bg-background/80 backdrop-blur-sm border border-border shadow-md text-foreground hover:bg-background hover:text-primary transition-colors flex items-center justify-center h-8 w-8 mr-1"
+                                    >
+                                        <ChevronRight className="w-4 h-4" />
+                                    </motion.button>
+                                )}
+                            </div>
+
+                            {/* Separator for desktop */}
+                            <div className="hidden xl:block w-px h-8 bg-border mx-2" />
+
+                            {/* Right Actions: Search & Toggles */}
+                            <div className="flex items-center gap-3 w-full xl:w-auto shrink-0">
+                                <div className="relative grow sm:grow-0">
+                                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                                    <input
+                                        type="text"
+                                        placeholder="Search..."
+                                        value={searchInput}
+                                        onChange={(e) => setSearchInput(e.target.value)}
+                                        className="w-full sm:w-64 pl-10 pr-4 py-2.5 rounded-xl bg-black/5 dark:bg-white/5 border border-transparent focus:border-primary/50 focus:bg-background focus:ring-0 outline-none transition-all text-sm text-foreground placeholder:text-muted-foreground"
+                                    />
+                                </div>
+
+                                <div className="hidden lg:flex bg-black/5 dark:bg-white/5 p-1 rounded-xl border border-border">
+                                    <button
+                                        onClick={() => setGridCols(1)}
+                                        className={`p-2 rounded-lg transition-all ${gridCols === 1 ? 'bg-primary text-white dark:text-black shadow-sm' : 'text-muted-foreground hover:text-foreground'}`}
+
+                                    >
+                                        <AlignJustify className="w-4 h-4" />
+                                    </button>
+                                    <button
+                                        onClick={() => setGridCols(2)}
+                                        className={`p-2 rounded-lg transition-all ${gridCols === 2 ? 'bg-primary text-white dark:text-black shadow-sm' : 'text-muted-foreground hover:text-foreground'}`}
+
+                                    >
+                                        <LayoutGrid className="w-4 h-4" />
+                                    </button>
+                                    <button
+                                        onClick={() => setGridCols(3)}
+                                        className={`p-2 rounded-lg transition-all ${gridCols === 3 ? 'bg-primary text-white dark:text-black shadow-sm' : 'text-muted-foreground hover:text-foreground'}`}
+                                    >
+                                        <Grip className="w-4 h-4" />
+                                    </button>
+                                </div>
+
+                                <button
+                                    onClick={() => setShowMobileFilters(!showMobileFilters)}
+                                    className={`lg:hidden p-2.5 rounded-xl border border-border bg-black/5 dark:bg-white/5 text-foreground relative hover:bg-black/10 dark:hover:bg-white/10 transition-colors ${activeFilterCount > 0 ? 'text-primary' : ''}`}
+                                >
+                                    <Filter className="w-4 h-4" />
+                                    {activeFilterCount > 0 && (
+                                        <span className="absolute top-2 right-2 w-2 h-2 rounded-full bg-primary shadow-[0_0_8px_rgba(var(--primary),0.8)]" />
+                                    )}
+                                </button>
+                            </div>
                         </div>
                     </motion.div>
                 </div>
@@ -310,21 +434,23 @@ function CoursesContent() {
                     </motion.aside>
 
                     <div className="grow w-full">
-                        <AnimatePresence mode="wait">
+                        <AnimatePresence mode="popLayout">
                             {paginatedCourses.length > 0 ? (
                                 <>
-                                    <motion.div
-                                        key={`grid-${currentPage}-${selectedCategory}-${searchTerm}-${selectedLevels.join('-')}-${selectedTypes.join('-')}-${selectedPrices.join('-')}`}
-                                        initial={{ opacity: 0 }}
-                                        animate={{ opacity: 1 }}
-                                        exit={{ opacity: 0 }}
-                                        transition={{ duration: 0.2 }}
-                                        className={`grid gap-6 items-start auto-rows-fr ${getGridClass()}`}
-                                    >
+                                    <div className={`grid gap-6 items-start auto-rows-fr ${getGridClass()}`}>
                                         {paginatedCourses.map((course) => (
-                                            <CourseCard key={course.slug} course={course} />
+                                            <motion.div
+                                                key={course.slug}
+                                                layout
+                                                variants={itemVariants}
+                                                initial="hidden"
+                                                animate="visible"
+                                                exit="exit"
+                                            >
+                                                <CourseCard course={course} />
+                                            </motion.div>
                                         ))}
-                                    </motion.div>
+                                    </div>
 
                                     {totalPages > 1 && (
                                         <div className="mt-12 flex justify-center items-center gap-2">
