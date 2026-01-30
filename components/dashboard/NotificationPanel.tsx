@@ -88,13 +88,14 @@ export function NotificationPanel() {
     const [isLoading, setIsLoading] = useState(false);
     const wrapperRef = useRef<HTMLDivElement>(null);
 
-    useEffect(() => {
-        if (isOpen) {
+    const handleToggleOpen = () => {
+        const newOpenState = !isOpen;
+        setIsOpen(newOpenState);
+        if (newOpenState) {
             setIsLoading(true);
-            const timer = setTimeout(() => setIsLoading(false), 1500); // Simulate network latency
-            return () => clearTimeout(timer);
+            setTimeout(() => setIsLoading(false), 1500); // Simulate network latency
         }
-    }, [isOpen]);
+    };
 
     useEffect(() => {
         const handleClickOutside = (event: MouseEvent) => {
@@ -151,7 +152,7 @@ export function NotificationPanel() {
         <div className="relative" ref={wrapperRef}>
             {/* Bell Button */}
             <motion.button
-                onClick={() => setIsOpen(!isOpen)}
+                onClick={handleToggleOpen}
                 className={cn(
                     "relative flex items-center justify-center w-10 h-10 rounded-xl border border-border/50 cursor-pointer",
                     "bg-muted/50 hover:bg-muted/80 transition-colors text-muted-foreground hover:text-foreground",
