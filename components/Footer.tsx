@@ -93,7 +93,7 @@ export function Footer() {
                 {/* Bottom Bar */}
                 <div className="pt-8 border-t border-slate-200 dark:border-white/5 flex flex-col md:flex-row items-center justify-between gap-6">
                     <p className="text-slate-500 text-sm font-medium">
-                        © {new Date().getFullYear()} SkillSyncBD. All rights reserved.
+                        © {new Date().getFullYear()} DokkhotaIT. All rights reserved.
                     </p>
                     <div className="flex items-center gap-8 text-sm font-medium text-slate-500">
                         {LEGAL_LINKS.map((link) => (

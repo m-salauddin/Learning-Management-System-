@@ -23,13 +23,13 @@ const jetbrainsMono = JetBrains_Mono({
 
 export const metadata: Metadata = {
   title: {
-    default: "SkillSyncBD - Learn. Build. Succeed.",
-    template: "%s | SkillSyncBD",
+    default: "DokkhotaIT - Empowering Future",
+    template: "%s | DokkhotaIT",
   },
   description:
-    "Bangladesh's premier EdTech platform. Master in-demand skills with expert-led courses, real-world projects, and job placement support.",
+    "Bangladesh's premier IT skills platform. Master in-demand skills with expert-led courses, real-world projects, and job placement support.",
   keywords: [
-    "SkillSyncBD",
+    "DokkhotaIT",
     "Bangladesh",
     "EdTech",
     "Online Courses",
@@ -40,22 +40,22 @@ export const metadata: Metadata = {
     "Spring Boot",
     "Job Placement",
   ],
-  authors: [{ name: "SkillSyncBD Team" }],
-  creator: "SkillSyncBD",
+  authors: [{ name: "DokkhotaIT Team" }],
+  creator: "DokkhotaIT",
   openGraph: {
     type: "website",
     locale: "en_BD",
-    url: "https://skillsyncbd.com",
-    siteName: "SkillSyncBD",
-    title: "SkillSyncBD - Learn. Build. Succeed.",
+    url: "https://dokkhotait.com",
+    siteName: "DokkhotaIT",
+    title: "DokkhotaIT - Empowering Future",
     description:
-      "Bangladesh's premier EdTech platform. Master in-demand skills with expert-led courses.",
+      "Bangladesh's premier IT skills platform. Master in-demand skills with expert-led courses.",
   },
   twitter: {
     card: "summary_large_image",
-    title: "SkillSyncBD - Learn. Build. Succeed.",
+    title: "DokkhotaIT - Empowering Future",
     description:
-      "Bangladesh's premier EdTech platform. Master in-demand skills with expert-led courses.",
+      "Bangladesh's premier IT skills platform. Master in-demand skills with expert-led courses.",
   },
   robots: {
     index: true,

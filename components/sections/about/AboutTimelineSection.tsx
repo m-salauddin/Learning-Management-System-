@@ -17,7 +17,7 @@ const TIMELINE: TimelineItem[] = [
     {
         year: "2026",
         title: "The Beginning",
-        description: "SkillSyncBD was founded with a vision to transform tech education in Bangladesh.",
+        description: "DokkhotaIT was founded with a vision to transform tech education in Bangladesh.",
         icon: Rocket,
     },
     {

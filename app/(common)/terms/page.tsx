@@ -3,14 +3,14 @@ import { FileText, Users, CreditCard, BookOpen, AlertTriangle, Scale } from "luc
 
 export const metadata = {
     title: "Terms of Service",
-    description: "Read the terms and conditions for using SkillSyncBD's platform and services.",
+    description: "Read the terms and conditions for using DokkhotaIT's platform and services.",
 };
 
 const sections = [
     {
         icon: Users,
         title: "Account Terms",
-        content: `By creating an account on SkillSyncBD, you agree to the following:
+        content: `By creating an account on DokkhotaIT, you agree to the following:
 
 • You must be at least 16 years old to use our services
 • You are responsible for maintaining the security of your account credentials
@@ -48,11 +48,11 @@ const sections = [
         title: "Intellectual Property",
         content: `Regarding content and intellectual property:
 
-• All course content, materials, and platform design are owned by SkillSyncBD or our instructors
+• All course content, materials, and platform design are owned by DokkhotaIT or our instructors
 • You may not copy, modify, distribute, or create derivative works from our content
 • Trademarks, logos, and brand elements are protected intellectual property
 • User-generated content (comments, reviews) remains your property, but you grant us license to display it
-• Reporting copyright infringement: contact legal@skillsyncbd.com`,
+• Reporting copyright infringement: contact legal@dokkhotait.com`,
     },
     {
         icon: AlertTriangle,
@@ -100,7 +100,7 @@ export default function TermsPage() {
                         Terms of Service
                     </h1>
                     <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-                        Please read these terms carefully before using SkillSyncBD. By accessing our platform, you agree to be bound by these terms.
+                        Please read these terms carefully before using DokkhotaIT. By accessing our platform, you agree to be bound by these terms.
                     </p>
                     <p className="text-sm text-muted-foreground mt-4">
                         Last updated: January 27, 2026
@@ -142,7 +142,7 @@ export default function TermsPage() {
                             If you have any questions about these Terms of Service, please contact us.
                         </p>
                         <a
-                            href="mailto:legal@skillsyncbd.com"
+                            href="mailto:legal@dokkhotait.com"
                             className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-primary text-primary-foreground font-medium hover:bg-primary/90 transition-colors"
                         >
                             Contact Legal Team

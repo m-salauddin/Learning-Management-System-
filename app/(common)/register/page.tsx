@@ -104,7 +104,7 @@ export default function RegisterPage() {
                 toast.error("Registration Failed", errorMessage);
             } else if (result?.session && result?.user) {
                 toast.dismiss(loadingToastId);
-                toast.success("Welcome to SkillSyncBD!", `Account created for ${result.user.user_metadata?.full_name || result.user.email}`);
+                toast.success("Welcome to DokkhotaIT!", `Account created for ${result.user.user_metadata?.full_name || result.user.email}`);
 
                 // Removed manual dispatch to rely on AuthListener
                 router.push('/');
