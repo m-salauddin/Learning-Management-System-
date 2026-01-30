@@ -1,1 +1,0 @@
-# redux-state-management Guide
