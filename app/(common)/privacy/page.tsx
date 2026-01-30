@@ -80,7 +80,7 @@ We will respond to your inquiry within 30 business days.`,
 
 export default function PrivacyPage() {
     return (
-        <div className="min-h-screen bg-background">
+        <main className="min-h-screen bg-background">
 
 
             {/* Hero Section */}
@@ -130,6 +130,6 @@ export default function PrivacyPage() {
                     })}
                 </div>
             </section>
-        </div>
+        </main>
     );
 }
