@@ -55,90 +55,101 @@ export function Pagination({
     };
 
     return (
-        <div className={cn("flex flex-col sm:flex-row items-center justify-between gap-4 text-sm", className)}>
-            {/* Info & Page Size */}
-            <div className="flex items-center gap-6">
-                <div className="text-muted-foreground">
-                    Showing <span className="font-semibold text-foreground">{startItem}</span> to{" "}
-                    <span className="font-semibold text-foreground">{endItem}</span> of{" "}
-                    <span className="font-semibold text-foreground">{totalItems}</span> results
-                </div>
-                
-                <div className="flex items-center gap-2">
-                    <span className="text-muted-foreground">Rows per page:</span>
-                    <select
-                        value={pageSize}
-                        onChange={(e) => onPageSizeChange(Number(e.target.value))}
-                        className="px-3 py-1.5 rounded-lg border border-border/50 bg-background/50 text-sm font-medium focus:ring-2 focus:ring-primary/20 outline-none cursor-pointer"
-                    >
-                        <option value={10}>10</option>
-                        <option value={25}>25</option>
-                        <option value={50}>50</option>
-                        <option value={100}>100</option>
-                    </select>
-                </div>
+        <div className={cn("flex flex-col-reverse md:flex-row items-center justify-between gap-4 text-sm select-none", className)}>
+            {/* Info */}
+            <div className="text-muted-foreground text-center md:text-left">
+                Showing <span className="font-semibold text-foreground">{startItem}</span> to{" "}
+                <span className="font-semibold text-foreground">{endItem}</span> of{" "}
+                <span className="font-semibold text-foreground">{totalItems}</span> results
             </div>
 
-            {/* Pagination Controls */}
-            <div className="flex items-center gap-2">
-                <button
-                    onClick={() => onPageChange(1)}
-                    disabled={currentPage === 1}
-                    className="p-2 rounded-lg border border-border/50 hover:bg-muted/50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
-                    title="First page"
-                >
-                    <ChevronsLeft className="w-4 h-4" />
-                </button>
-                
-                <button
-                    onClick={() => onPageChange(currentPage - 1)}
-                    disabled={currentPage === 1}
-                    className="p-2 rounded-lg border border-border/50 hover:bg-muted/50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
-                    title="Previous page"
-                >
-                    <ChevronLeft className="w-4 h-4" />
-                </button>
+            {/* Controls Container */}
+            <div className="flex flex-col sm:flex-row items-center gap-4 sm:gap-6 w-full md:w-auto">
 
-                <div className="flex items-center gap-1">
-                    {getPageNumbers().map((page, idx) => (
-                        page === '...' ? (
-                            <span key={`ellipsis-${idx}`} className="px-3 py-2 text-muted-foreground">
-                                ...
-                            </span>
-                        ) : (
-                            <button
-                                key={page}
-                                onClick={() => onPageChange(page as number)}
-                                className={cn(
-                                    "min-w-10 px-3 py-2 rounded-lg font-medium transition-all",
-                                    currentPage === page
-                                        ? "bg-primary text-primary-foreground shadow-sm"
-                                        : "hover:bg-muted/50 border border-transparent hover:border-border/50"
-                                )}
-                            >
-                                {page}
-                            </button>
-                        )
-                    ))}
+                {/* Rows Per Page */}
+                <div className="flex items-center gap-2">
+                    <span className="text-muted-foreground whitespace-nowrap">Rows per page</span>
+                    <div className="relative">
+                        <select
+                            value={pageSize}
+                            onChange={(e) => onPageSizeChange(Number(e.target.value))}
+                            className="h-8 w-16 appearance-none rounded-lg border border-border/50 bg-background/50 pl-2 pr-6 text-sm font-medium focus:ring-2 focus:ring-primary/20 focus:border-primary/50 outline-none cursor-pointer transition-all hover:bg-muted/50"
+                        >
+                            {[10, 25, 50, 100].map((size) => (
+                                <option key={size} value={size}>
+                                    {size}
+                                </option>
+                            ))}
+                        </select>
+                        <div className="absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none text-muted-foreground">
+                            <svg width="10" height="6" viewBox="0 0 10 6" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M1 1L5 5L9 1" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                            </svg>
+                        </div>
+                    </div>
                 </div>
 
-                <button
-                    onClick={() => onPageChange(currentPage + 1)}
-                    disabled={currentPage === totalPages}
-                    className="p-2 rounded-lg border border-border/50 hover:bg-muted/50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
-                    title="Next page"
-                >
-                    <ChevronRight className="w-4 h-4" />
-                </button>
-                
-                <button
-                    onClick={() => onPageChange(totalPages)}
-                    disabled={currentPage === totalPages}
-                    className="p-2 rounded-lg border border-border/50 hover:bg-muted/50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
-                    title="Last page"
-                >
-                    <ChevronsRight className="w-4 h-4" />
-                </button>
+                {/* Pagination Buttons */}
+                <div className="flex items-center gap-1">
+                    <button
+                        onClick={() => onPageChange(1)}
+                        disabled={currentPage === 1}
+                        className="w-8 h-8 flex items-center justify-center rounded-lg border border-border/50 hover:bg-muted/50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors text-muted-foreground hover:text-foreground"
+                        title="First page"
+                    >
+                        <ChevronsLeft className="w-4 h-4" />
+                    </button>
+
+                    <button
+                        onClick={() => onPageChange(currentPage - 1)}
+                        disabled={currentPage === 1}
+                        className="w-8 h-8 flex items-center justify-center rounded-lg border border-border/50 hover:bg-muted/50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors text-muted-foreground hover:text-foreground"
+                        title="Previous page"
+                    >
+                        <ChevronLeft className="w-4 h-4" />
+                    </button>
+
+                    <div className="flex items-center gap-1 mx-1">
+                        {getPageNumbers().map((page, idx) => (
+                            page === '...' ? (
+                                <span key={`ellipsis-${idx}`} className="w-8 h-8 flex items-center justify-center text-muted-foreground">
+                                    ...
+                                </span>
+                            ) : (
+                                <button
+                                    key={page}
+                                    onClick={() => onPageChange(page as number)}
+                                    className={cn(
+                                        "w-8 h-8 flex items-center justify-center rounded-lg text-sm font-medium transition-all",
+                                        currentPage === page
+                                            ? "bg-primary text-primary-foreground shadow-sm ring-1 ring-primary"
+                                            : "text-muted-foreground hover:text-foreground hover:bg-muted/50 border border-transparent hover:border-border/50"
+                                    )}
+                                >
+                                    {page}
+                                </button>
+                            )
+                        ))}
+                    </div>
+
+                    <button
+                        onClick={() => onPageChange(currentPage + 1)}
+                        disabled={currentPage === totalPages}
+                        className="w-8 h-8 flex items-center justify-center rounded-lg border border-border/50 hover:bg-muted/50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors text-muted-foreground hover:text-foreground"
+                        title="Next page"
+                    >
+                        <ChevronRight className="w-4 h-4" />
+                    </button>
+
+                    <button
+                        onClick={() => onPageChange(totalPages)}
+                        disabled={currentPage === totalPages}
+                        className="w-8 h-8 flex items-center justify-center rounded-lg border border-border/50 hover:bg-muted/50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors text-muted-foreground hover:text-foreground"
+                        title="Last page"
+                    >
+                        <ChevronsRight className="w-4 h-4" />
+                    </button>
+                </div>
             </div>
         </div>
     );
