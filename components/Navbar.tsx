@@ -16,6 +16,7 @@ import { useAppSelector } from "@/lib/store/hooks";
 const navItems = [
     { name: "Home", href: "/" },
     { name: "Courses", href: "/courses" },
+    { name: "Instructors", href: "/instructors" },
     { name: "About", href: "/about" },
 ];
 

@@ -3,7 +3,7 @@
   "configVersion": 1,
   "workspaces": {
     "": {
-      "name": "skillsyncbd-frontend",
+      "name": "dokkhoit-frontend",
       "dependencies": {
         "@hookform/resolvers": "^5.2.2",
         "@reduxjs/toolkit": "^2.11.2",

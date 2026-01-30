@@ -193,3 +193,127 @@ SELECT
   ]
 FROM auth.users
 ON CONFLICT (id) DO NOTHING;
+
+
+-- 10. Instructor Profiles Table
+CREATE TABLE IF NOT EXISTS public.instructor_profiles (
+  id UUID PRIMARY KEY
+    REFERENCES public.users(id)
+    ON DELETE CASCADE,
+
+  bio TEXT NOT NULL DEFAULT '',
+  expertise TEXT[] DEFAULT ARRAY[]::TEXT[],
+
+  social_links JSONB DEFAULT '{}'::jsonb,
+
+  total_courses INT DEFAULT 0,
+  total_students INT DEFAULT 0,
+  rating NUMERIC(2,1) DEFAULT 0.0,
+
+  created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
+-- 11. Enable RLS for Instructor Profiles
+ALTER TABLE public.instructor_profiles ENABLE ROW LEVEL SECURITY;
+
+-- 12. RLS Policies for Instructor Profiles
+
+-- 3.1 Public Read (for course pages)
+CREATE POLICY "Public can read instructor profiles"
+ON public.instructor_profiles
+FOR SELECT
+USING (true);
+
+-- 3.2 Instructor Can Update Own Profile
+CREATE POLICY "Instructor can update own profile"
+ON public.instructor_profiles
+FOR UPDATE
+USING (auth.uid() = id);
+
+-- 3.3 Only Teachers Can Create Instructor Profile
+CREATE POLICY "Only teachers can create instructor profile"
+ON public.instructor_profiles
+FOR INSERT
+WITH CHECK (
+  auth.uid() = id
+  AND EXISTS (
+    SELECT 1 FROM public.users
+    WHERE users.id = auth.uid()
+    AND users.role = 'teacher'
+  )
+);
+
+-- 13. Trigger for updated_at on instructor_profiles
+DROP TRIGGER IF EXISTS update_instructor_profiles_updated_at ON public.instructor_profiles;
+CREATE TRIGGER update_instructor_profiles_updated_at
+BEFORE UPDATE ON public.instructor_profiles
+FOR EACH ROW
+EXECUTE PROCEDURE update_updated_at_column();
+
+
+-- 14. Courses Table
+CREATE TABLE IF NOT EXISTS public.courses (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+
+  title TEXT NOT NULL,
+  description TEXT DEFAULT '',
+  price INT NOT NULL,
+
+  instructor_id UUID NOT NULL
+    REFERENCES public.instructor_profiles(id)
+    ON DELETE RESTRICT,
+
+  published BOOLEAN DEFAULT false,
+
+  created_at TIMESTAMPTZ DEFAULT now(),
+  updated_at TIMESTAMPTZ DEFAULT now()
+);
+
+-- 15. Enable RLS for Courses
+ALTER TABLE public.courses ENABLE ROW LEVEL SECURITY;
+
+-- 16. RLS Policies for Courses
+
+-- 7.1 Public can read published courses
+CREATE POLICY "Public can read published courses"
+ON public.courses
+FOR SELECT
+USING (published = true);
+
+-- 7.2 Instructor can manage own courses
+CREATE POLICY "Instructor can manage own courses"
+ON public.courses
+FOR ALL
+USING (
+  instructor_id = auth.uid()
+)
+WITH CHECK (
+  instructor_id = auth.uid()
+);
+
+-- 17. Trigger for updated_at on courses (Consistency)
+DROP TRIGGER IF EXISTS update_courses_updated_at ON public.courses;
+CREATE TRIGGER update_courses_updated_at
+BEFORE UPDATE ON public.courses
+FOR EACH ROW
+EXECUTE PROCEDURE update_updated_at_column();
+
+
+-- 18. Function to Become Instructor (Transaction)
+-- This function handles the role upgrade and profile creation safely
+CREATE OR REPLACE FUNCTION public.become_instructor()
+RETURNS void AS $$
+BEGIN
+  -- 1. atomic update of user role
+  UPDATE public.users
+  SET role = 'teacher'
+  WHERE id = auth.uid();
+
+  -- 2. create instructor profile (idempotent)
+  INSERT INTO public.instructor_profiles (id)
+  VALUES (auth.uid())
+  ON CONFLICT (id) DO NOTHING;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER SET search_path = public;
+

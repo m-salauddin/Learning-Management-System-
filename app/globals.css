@@ -112,7 +112,7 @@
   --warning-foreground: #FFFFFF;
 
   /* Borders & Inputs */
-  --border: #E2E8F0;
+  --border: #94A3B8;
   --input: #E2E8F0;
   --ring: #0036F9;
 
@@ -251,6 +251,17 @@
     @apply font-mono;
   }
 
+  /* Force pointer cursor on interactive elements */
+  button,
+  a,
+  [role="button"],
+  input[type="submit"],
+  input[type="reset"],
+  input[type="button"],
+  label {
+    @apply cursor-pointer;
+  }
+
   /* ============================================
      CUSTOM SCROLLBAR DESIGN
      ============================================ */
@@ -337,6 +348,12 @@
 
   .scrollbar-hide::-webkit-scrollbar {
     display: none;
+  }
+
+  /* Mask gradient for scrolling containers */
+  .mask-gradient-r {
+    mask-image: linear-gradient(to right, black 85%, transparent 100%);
+    -webkit-mask-image: linear-gradient(to right, black 85%, transparent 100%);
   }
 }
 

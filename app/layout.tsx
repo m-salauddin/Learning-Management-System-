@@ -23,44 +23,66 @@ const jetbrainsMono = JetBrains_Mono({
 
 export const metadata: Metadata = {
   title: {
-    default: "DokkhotaIT - Empowering Future",
-    template: "%s | DokkhotaIT",
+    default: "Dokkhota IT - Best IT Training Platform in Bangladesh",
+    template: "%s | Dokkhota IT",
   },
   description:
-    "Bangladesh's premier IT skills platform. Master in-demand skills with expert-led courses, real-world projects, and job placement support.",
+    "Master in-demand tech skills with Dokkhota IT. Bangladesh's premier platform for Web Development, App Development, and AI courses with expert mentorship and job placement support.",
   keywords: [
+    "Dokkhota IT",
     "DokkhotaIT",
-    "Bangladesh",
-    "EdTech",
-    "Online Courses",
-    "Web Development",
+    "IT Training Bangladesh",
+    "Best IT Coaching BD",
+    "Web Development Course",
+    "App Development",
     "Programming",
     "React",
     "Next.js",
-    "Spring Boot",
+    "MERN Stack",
     "Job Placement",
+    "Skill Development",
+    "Online Courses BD"
   ],
-  authors: [{ name: "DokkhotaIT Team" }],
-  creator: "DokkhotaIT",
+  authors: [{ name: "Dokkhota IT Team" }],
+  creator: "Dokkhota IT",
+  publisher: "Dokkhota IT",
   openGraph: {
     type: "website",
     locale: "en_BD",
     url: "https://dokkhotait.com",
-    siteName: "DokkhotaIT",
-    title: "DokkhotaIT - Empowering Future",
+    siteName: "Dokkhota IT",
+    title: "Dokkhota IT - Best IT Training Platform in Bangladesh",
     description:
-      "Bangladesh's premier IT skills platform. Master in-demand skills with expert-led courses.",
+      "Master in-demand tech skills with Dokkhota IT. Bangladesh's premier platform for Web Development, App Development, and AI courses.",
+    images: [
+      {
+        url: "/og-image.jpg",
+        width: 1200,
+        height: 630,
+        alt: "Dokkhota IT - Empowering Future",
+      },
+    ],
   },
   twitter: {
     card: "summary_large_image",
-    title: "DokkhotaIT - Empowering Future",
+    title: "Dokkhota IT - Best IT Training Platform in Bangladesh",
     description:
-      "Bangladesh's premier IT skills platform. Master in-demand skills with expert-led courses.",
+      "Master in-demand tech skills with Dokkhota IT. Bangladesh's premier platform for Web Development, App Development, and AI courses.",
+    creator: "@DokkhotaIT",
+    images: ["/og-image.jpg"],
   },
   robots: {
     index: true,
     follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      "max-video-preview": -1,
+      "max-image-preview": "large",
+      "max-snippet": -1,
+    },
   },
+  metadataBase: new URL("https://dokkhotait.com"),
 };
 
 export default function RootLayout({
@@ -76,8 +98,8 @@ export default function RootLayout({
       >
         <ThemeProvider
           attribute="class"
-          defaultTheme="system"
-          enableSystem
+          defaultTheme="dark"
+          enableSystem={false}
           disableTransitionOnChange
         >
           <ReduxProvider>

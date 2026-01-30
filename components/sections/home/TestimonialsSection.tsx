@@ -16,7 +16,7 @@ interface Testimonial {
 
 const TESTIMONIALS: Testimonial[] = [
     {
-        quote: "I was stuck in tutorials for years. SkillSyncBD gave me the roadmap and mentorship I needed to actually build things. I landed my first remote job in 3 months!",
+        quote: "I was stuck in tutorials for years. Dokkhota IT gave me the roadmap and mentorship I needed to actually build things. I landed my first remote job in 3 months!",
         name: "Rafiq Ahmed",
         role: "Software Engineer @ Pathao",
         avatar: "RA",

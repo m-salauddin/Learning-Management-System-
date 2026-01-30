@@ -86,7 +86,7 @@ const sections = [
 
 export default function TermsPage() {
     return (
-        <div className="min-h-screen bg-background">
+        <main className="min-h-screen bg-background">
 
 
             {/* Hero Section */}
@@ -150,6 +150,6 @@ export default function TermsPage() {
                     </div>
                 </div>
             </section>
-        </div>
+        </main>
     );
 }

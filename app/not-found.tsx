@@ -67,7 +67,7 @@ export default function NotFound() {
             >
                 {/* Header/Logo Area */}
                 <div className="flex justify-center mb-12">
-                    <div className="relative p-6 pr-10 rounded-3xl bg-white/10 dark:bg-black/20 border border-white/10 backdrop-blur-2xl shadow-2xl dark:shadow-black/50 overflow-hidden group">
+                    <div className="relative p-6 pr-10 rounded-3xl bg-white/10 dark:bg-black/20 border border-border backdrop-blur-2xl shadow-2xl dark:shadow-black/50 overflow-hidden group">
                         <div className="absolute inset-0 bg-linear-to-br from-white/20 via-transparent to-transparent opacity-50 pointer-events-none" />
                         <Logo />
                     </div>
@@ -169,9 +169,9 @@ export default function NotFound() {
                             exit={{ opacity: 0, scale: 0.95, y: 20 }}
                             className="fixed z-50 left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-md p-6"
                         >
-                            <div className="bg-[#020617] border border-white/10 rounded-2xl shadow-2xl p-0 relative overflow-hidden text-slate-200 w-full">
+                            <div className="bg-[#020617] border border-border rounded-2xl shadow-2xl p-0 relative overflow-hidden text-slate-200 w-full">
                                 {/* Header with Border */}
-                                <div className="px-6 py-5 border-b border-white/5 flex items-center justify-between bg-white/2">
+                                <div className="px-6 py-5 border-b border-border flex items-center justify-between bg-white/2">
                                     <div className="flex items-center gap-3">
                                         <div className="w-10 h-10 rounded-lg bg-orange-500/10 border border-orange-500/20 flex items-center justify-center text-orange-500 shadow-inner">
                                             <AlertCircle className="w-5 h-5" />
@@ -220,7 +220,7 @@ export default function NotFound() {
                                                         {...register("message")}
                                                         id="message"
                                                         rows={4}
-                                                        className="w-full bg-black/20 border border-white/10 rounded-lg p-4 text-sm text-slate-200 placeholder:text-slate-600 focus:outline-none focus:border-[#FBBC05]/50 focus:ring-1 focus:ring-[#FBBC05]/50 transition-all resize-none shadow-inner"
+                                                        className="w-full bg-black/20 border border-border rounded-lg p-4 text-sm text-slate-200 placeholder:text-slate-600 focus:outline-none focus:border-[#FBBC05]/50 focus:ring-1 focus:ring-[#FBBC05]/50 transition-all resize-none shadow-inner"
                                                         placeholder="Please describe what happened..."
                                                         maxLength={100}
                                                     />
@@ -240,7 +240,7 @@ export default function NotFound() {
                                                 <button
                                                     type="button"
                                                     onClick={() => setIsModalOpen(false)}
-                                                    className="px-4 py-2.5 rounded-lg border border-white/10 hover:bg-white/5 text-slate-300 text-sm font-medium transition-colors cursor-pointer"
+                                                    className="px-4 py-2.5 rounded-lg border border-border hover:bg-white/5 text-slate-300 text-sm font-medium transition-colors cursor-pointer"
                                                 >
                                                     Cancel
                                                 </button>

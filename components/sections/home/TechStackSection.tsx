@@ -1,6 +1,5 @@
 "use client";
 
-import * as React from "react";
 import {
     SiReact,
     SiNextdotjs,
@@ -60,7 +59,7 @@ export function TechStackSection() {
             {/* Header */}
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-10">
                 <div className="text-center">
-                    <Badge icon={Code2} className="mb-4 uppercase tracking-wider">
+                    <Badge icon={Code2} className="mb-4 tracking-wider">
                         Industry-Ready Skills
                     </Badge>
                     <h2 className="text-2xl md:text-3xl font-bold mb-4">
