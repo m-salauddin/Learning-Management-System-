@@ -39,5 +39,9 @@ export interface MappedCourse {
     type: string;
     priceType: string;
     isEnrolled?: boolean;
-    category?: string; // Added category
+    category?: string;
+    discountPrice?: string;
+    discountExpiresAt?: string;
+    totalLessons?: number;
+    batchNo?: number;
 }
