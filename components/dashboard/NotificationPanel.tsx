@@ -336,13 +336,8 @@ export function NotificationPanel() {
                                                         </div>
                                                     </div>
 
-                                                    {/* Unread Indicator - only shows when NOT hovering */}
-                                                    {notification.unread && (
-                                                        <div className="absolute top-3.5 right-3 w-2 h-2 rounded-full bg-primary group-hover:opacity-0 transition-opacity duration-150" />
-                                                    )}
-
-                                                    {/* Action Buttons - only shows on hover */}
-                                                    <div className="absolute top-2 right-2 flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity duration-150">
+                                                    {/* Action Buttons - Always visible */}
+                                                    <div className="absolute top-2 right-2 flex items-center gap-0.5">
                                                         {notification.unread && (
                                                             <motion.button
                                                                 onClick={(e) => {

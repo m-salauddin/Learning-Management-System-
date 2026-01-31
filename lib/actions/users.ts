@@ -447,3 +447,35 @@ export async function exportUsersToCSV(filters?: {
         return { csv: null, error: error instanceof Error ? error.message : 'Unknown error' };
     }
 }
+
+// Export users to JSON
+export async function exportUsersToJSON(filters?: {
+    search?: string;
+    role?: string;
+}) {
+    try {
+        const supabase = await createClient();
+
+        let query = supabase
+            .from('users')
+            .select('*');
+
+        if (filters?.search) {
+            query = query.or(`name.ilike.%${filters.search}%,email.ilike.%${filters.search}%`);
+        }
+
+        if (filters?.role && filters.role !== 'all') {
+            query = query.eq('role', filters.role);
+        }
+
+        const { data, error } = await query;
+
+        if (error || !data) {
+            return { json: null, error: error?.message || 'Failed to export' };
+        }
+
+        return { json: JSON.stringify(data, null, 2), error: null };
+    } catch (error: unknown) {
+        return { json: null, error: error instanceof Error ? error.message : 'Unknown error' };
+    }
+}

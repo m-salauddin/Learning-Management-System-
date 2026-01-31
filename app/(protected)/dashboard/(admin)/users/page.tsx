@@ -4,8 +4,10 @@ import {
     Search, Shield, User, Trash2, Edit, MoreHorizontal, Filter, ChevronDown,
     UserPlus, Download, Mail, Phone, MapPin, Calendar, Activity, Award,
     CheckCircle2, XCircle, AlertCircle, Users, TrendingUp, TrendingDown,
-    Eye, Lock, Unlock, RotateCcw, Settings, Loader2
+    Eye, Lock, Unlock, RotateCcw, Settings, Loader2, X, FileText, FileCode, File, FileSpreadsheet
 } from "lucide-react";
+import { jsPDF } from "jspdf";
+import autoTable from "jspdf-autotable";
 import { motion, AnimatePresence } from "motion/react";
 import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
@@ -15,7 +17,7 @@ import {
 } from "@/types/user";
 import {
     getUsers, getUserStats, updateUserRole, deleteUser,
-    bulkDeleteUsers, bulkUpdateRoles, exportUsersToCSV, createUser
+    bulkDeleteUsers, bulkUpdateRoles, exportUsersToCSV, exportUsersToJSON, createUser
 } from "@/lib/actions/users";
 import { Dialog, DialogHeader, DialogTitle, DialogDescription, DialogBody, DialogFooter, DialogClose } from "@/components/ui/Dialog";
 import { Select, SelectOption } from "@/components/ui/Select";
@@ -39,6 +41,7 @@ export default function UserManagementPage() {
     // Filters & Pagination
     const [searchTerm, setSearchTerm] = useState("");
     const [roleFilter, setRoleFilter] = useState("all");
+    const [statusFilter, setStatusFilter] = useState("all");
     const [currentPage, setCurrentPage] = useState(1);
     const [pageSize, setPageSize] = useState(10);
     const [totalUsers, setTotalUsers] = useState(0);
@@ -49,6 +52,7 @@ export default function UserManagementPage() {
     const [deleteConfirmModal, setDeleteConfirmModal] = useState<string | null>(null);
     const [bulkActionModal, setBulkActionModal] = useState<'delete' | 'role' | null>(null);
     const [selectedRole, setSelectedRole] = useState<UserRole>('student');
+    const [exportModal, setExportModal] = useState(false);
 
     // Add User State
     const [addUserModal, setAddUserModal] = useState(false);
@@ -66,6 +70,7 @@ export default function UserManagementPage() {
         const result = await getUsers({
             search: searchTerm,
             role: roleFilter,
+            status: statusFilter,
             page: currentPage,
             pageSize
         });
@@ -89,7 +94,7 @@ export default function UserManagementPage() {
 
     useEffect(() => {
         fetchUsers();
-    }, [searchTerm, roleFilter, currentPage, pageSize]);
+    }, [searchTerm, roleFilter, statusFilter, currentPage, pageSize]);
 
     useEffect(() => {
         fetchStats();
@@ -112,6 +117,14 @@ export default function UserManagementPage() {
             newSelected.add(userId);
         }
         setSelectedUsers(newSelected);
+    };
+
+    // Filters Handler
+    const clearFilters = () => {
+        setSearchTerm("");
+        setRoleFilter("all");
+        setStatusFilter("all");
+        setCurrentPage(1);
     };
 
     // Action Handlers
@@ -164,7 +177,7 @@ export default function UserManagementPage() {
         }
     };
 
-    const handleExport = async () => {
+    const handleExportCSV = async () => {
         const result = await exportUsersToCSV({ search: searchTerm, role: roleFilter });
         if (result.csv) {
             const blob = new Blob([result.csv], { type: 'text/csv' });
@@ -174,10 +187,135 @@ export default function UserManagementPage() {
             a.download = `users-export-${new Date().toISOString().split('T')[0]}.csv`;
             a.click();
             window.URL.revokeObjectURL(url);
-            toast.success('Users exported successfully');
+            toast.success('Users exported to CSV');
+            setExportModal(false);
         } else {
             toast.error('Failed to export users', result.error || 'An error occurred');
         }
+    };
+
+    const handleExportJSON = async () => {
+        const result = await exportUsersToJSON({ search: searchTerm, role: roleFilter });
+        if (result.json) {
+            const blob = new Blob([result.json], { type: 'application/json' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `users-export-${new Date().toISOString().split('T')[0]}.json`;
+            a.click();
+            window.URL.revokeObjectURL(url);
+            toast.success('Users exported to JSON');
+            setExportModal(false);
+        } else {
+            toast.error('Failed to export users', result.error || 'An error occurred');
+        }
+    };
+
+    const handleExportPDF = async () => {
+        setIsLoading(true);
+        try {
+            // Fetch all users for export (re-using existing list if possible, but better to fetch all if paginated)
+            // For now, we'll fetch using the store helper to get pure data without pagination limit if possible,
+            // or just use current list? The CSV export function fetches ALL. We should probably do the same here.
+            // But we don't have a "fetch all" client side readily available without making a new request.
+            // Actually, exportUsersToCSV fetches all server side.
+            // We should ideally have a server-side PDF generation or fetch all data here.
+            // Let's use the JSON export to get all data first, then generate PDF.
+
+            const result = await exportUsersToJSON({ search: searchTerm, role: roleFilter });
+
+            if (result.json) {
+                const usersData = JSON.parse(result.json);
+                const doc = new jsPDF();
+
+                // Add Header
+                doc.setFillColor(63, 81, 181); // Primary Blue Color (Indigo 500 equivalent)
+                doc.rect(0, 0, 210, 40, 'F');
+
+                doc.setTextColor(255, 255, 255);
+                doc.setFontSize(22);
+                doc.setFont("helvetica", "bold");
+                doc.text("Dokkhota IT LMS", 14, 25);
+
+                doc.setFontSize(12);
+                doc.setFont("helvetica", "normal");
+                doc.text("User Management Report", 14, 33);
+
+                // Add Report Meta Info
+                doc.setTextColor(100, 100, 100);
+                doc.setFontSize(10);
+                doc.text(`Generated on: ${new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' })}`, 14, 50);
+                doc.text(`Total Users: ${usersData.length}`, 14, 56);
+
+                const tableColumn = ["Name", "Email", "Role", "Joined Date", "Status"];
+                const tableRows = usersData.map((user: any) => [
+                    user.name || "N/A",
+                    user.email || "N/A",
+                    (user.role || "student").toUpperCase(),
+                    new Date(user.created_at).toLocaleDateString(),
+                    "Active"
+                ]);
+
+                autoTable(doc, {
+                    head: [tableColumn],
+                    body: tableRows,
+                    startY: 65,
+                    theme: 'grid',
+                    styles: {
+                        fontSize: 9,
+                        cellPadding: 4,
+                        font: "helvetica",
+                        lineColor: [230, 230, 230],
+                        lineWidth: 0.1
+                    },
+                    headStyles: {
+                        fillColor: [245, 247, 250],
+                        textColor: [60, 60, 60],
+                        fontStyle: 'bold',
+                        halign: 'left'
+                    },
+                    bodyStyles: {
+                        textColor: [80, 80, 80]
+                    },
+                    alternateRowStyles: {
+                        fillColor: [252, 252, 252]
+                    },
+                    columnStyles: {
+                        0: { fontStyle: 'bold', cellWidth: 40 }, // Name
+                        1: { cellWidth: 60 }, // Email
+                        2: { cellWidth: 30 }, // Role
+                        3: { cellWidth: 30 }, // Joined
+                        4: { cellWidth: 20, halign: 'center' }  // Status
+                    },
+                    didDrawPage: (data) => {
+                        // Footer
+                        const pageCount = doc.getNumberOfPages();
+                        doc.setFontSize(8);
+                        doc.setTextColor(150, 150, 150);
+                        doc.text(
+                            `Page ${data.pageNumber} of ${pageCount}`,
+                            data.settings.margin.left,
+                            doc.internal.pageSize.height - 10
+                        );
+                        doc.text(
+                            `© ${new Date().getFullYear()} Dokkhota IT. Confidential Report.`,
+                            doc.internal.pageSize.width - 70,
+                            doc.internal.pageSize.height - 10
+                        );
+                    }
+                });
+
+                doc.save(`users-export-${new Date().toISOString().split('T')[0]}.pdf`);
+                toast.success('Users exported to PDF');
+                setExportModal(false);
+            } else {
+                toast.error('Failed to fetch data for PDF', result.error || undefined);
+            }
+        } catch (error) {
+            console.error("PDF Export Error:", error);
+            toast.error('Failed to generate PDF');
+        }
+        setIsLoading(false);
     };
 
     const handleCreateUser = async () => {
@@ -256,7 +394,7 @@ export default function UserManagementPage() {
                         animate={{ opacity: 1, scale: 1 }}
                         whileHover={{ scale: 1.02 }}
                         whileTap={{ scale: 0.98 }}
-                        onClick={handleExport}
+                        onClick={() => setExportModal(true)}
                         className="px-4 py-2.5 rounded-xl border border-border/50 bg-background/50 hover:bg-background text-sm font-semibold transition-all flex items-center gap-2"
                     >
                         <Download className="w-4 h-4" />
@@ -278,9 +416,23 @@ export default function UserManagementPage() {
             </div>
 
             {/* Stats Cards */}
-            {stats && (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                    {[
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                {!stats ? (
+                    // Skeletons
+                    [...Array(4)].map((_, i) => (
+                        <div key={`stat-skeleton-${i}`} className="p-6 rounded-2xl border border-border/40 bg-card/30 backdrop-blur-xl">
+                            <div className="flex items-center justify-between">
+                                <div>
+                                    <div className="h-4 w-24 bg-muted/40 rounded animate-pulse mb-3" />
+                                    <div className="h-8 w-16 bg-muted/40 rounded animate-pulse" />
+                                </div>
+                                <div className="w-12 h-12 rounded-xl bg-muted/40 animate-pulse" />
+                            </div>
+                        </div>
+                    ))
+                ) : (
+                    // Actual Stats
+                    [
                         { label: 'Total Users', value: stats.total, icon: Users, color: 'blue' },
                         { label: 'Active Users', value: stats.active, icon: CheckCircle2, color: 'emerald' },
                         { label: 'New This Month', value: stats.newThisMonth, icon: TrendingUp, color: 'violet' },
@@ -309,9 +461,9 @@ export default function UserManagementPage() {
                                 </div>
                             </div>
                         </motion.div>
-                    ))}
-                </div>
-            )}
+                    ))
+                )}
+            </div>
 
             {/* Main Table Container */}
             <div className="rounded-3xl border border-border/40 bg-card/30 backdrop-blur-xl overflow-hidden shadow-2xl shadow-black/5">
@@ -343,7 +495,7 @@ export default function UserManagementPage() {
                                     setCurrentPage(1);
                                 }}
                                 icon={<Filter className="w-4 h-4" />}
-                                className="w-full sm:w-40"
+                                className="w-full sm:w-36"
                             >
                                 <SelectOption value="all">All Roles</SelectOption>
                                 <SelectOption value="student">Student</SelectOption>
@@ -351,6 +503,46 @@ export default function UserManagementPage() {
                                 <SelectOption value="moderator">Moderator</SelectOption>
                                 <SelectOption value="admin">Admin</SelectOption>
                             </Select>
+
+                            {/* Status Filter */}
+                            <Select
+                                value={statusFilter}
+                                onChange={(val) => {
+                                    setStatusFilter(val);
+                                    setCurrentPage(1);
+                                }}
+                                icon={<Activity className="w-4 h-4" />}
+                                className="w-full sm:w-36"
+                            >
+                                <SelectOption value="all">All Status</SelectOption>
+                                <SelectOption value="active">Active</SelectOption>
+                                <SelectOption value="inactive">Inactive</SelectOption>
+                                <SelectOption value="suspended">Suspended</SelectOption>
+                                <SelectOption value="pending">Pending</SelectOption>
+                            </Select>
+
+                            {/* Clear Filters */}
+                            {(searchTerm || roleFilter !== 'all' || statusFilter !== 'all') && (
+                                <button
+                                    onClick={clearFilters}
+                                    className="p-2.5 rounded-xl border border-border/50 bg-background/50 hover:bg-background hover:text-red-500 transition-colors text-muted-foreground"
+                                    title="Clear filters"
+                                >
+                                    <X className="w-4 h-4" />
+                                </button>
+                            )}
+
+                            {/* Refresh Button */}
+                            <button
+                                onClick={() => {
+                                    fetchUsers();
+                                    toast.success("Users list refreshed");
+                                }}
+                                className="p-2.5 rounded-xl border border-border/50 bg-background/50 hover:bg-background hover:text-primary transition-colors text-muted-foreground"
+                                title="Refresh list"
+                            >
+                                <RotateCcw className={cn("w-4 h-4", isLoading && "animate-spin")} />
+                            </button>
 
                             {/* Bulk Actions */}
                             {selectedUsers.size > 0 && (
@@ -407,21 +599,31 @@ export default function UserManagementPage() {
                             {isLoading ? (
                                 // Loading Skeletons
                                 [...Array(pageSize)].map((_, i) => (
-                                    <tr key={`skeleton-${i}`} className="bg-card/20">
-                                        <td className="px-6 py-4"><div className="w-4 h-4 bg-muted/40 rounded animate-pulse" /></td>
+                                    <tr key={`skeleton-${i}`} className="border-b border-border/40 hover:bg-muted/5 transition-colors">
                                         <td className="px-6 py-4">
-                                            <div className="flex items-center gap-3">
+                                            <div className="w-5 h-5 bg-muted/40 rounded-md animate-pulse" />
+                                        </td>
+                                        <td className="px-6 py-4">
+                                            <div className="flex items-center gap-4">
                                                 <div className="w-10 h-10 rounded-full bg-muted/40 animate-pulse" />
                                                 <div className="space-y-2">
-                                                    <div className="h-4 w-24 bg-muted/40 rounded animate-pulse" />
-                                                    <div className="h-3 w-32 bg-muted/30 rounded animate-pulse" />
+                                                    <div className="h-4 w-32 bg-muted/40 rounded-md animate-pulse" />
+                                                    <div className="h-3 w-40 bg-muted/40 rounded-md animate-pulse" />
                                                 </div>
                                             </div>
                                         </td>
-                                        <td className="px-6 py-4"><div className="h-6 w-20 bg-muted/30 rounded-full animate-pulse" /></td>
-                                        <td className="px-6 py-4"><div className="h-6 w-16 bg-muted/30 rounded-full animate-pulse" /></td>
-                                        <td className="px-6 py-4"><div className="h-4 w-20 bg-muted/30 rounded animate-pulse" /></td>
-                                        <td className="px-6 py-4"><div className="h-8 w-8 bg-muted/30 rounded ml-auto animate-pulse" /></td>
+                                        <td className="px-6 py-4">
+                                            <div className="h-7 w-24 bg-muted/40 rounded-full animate-pulse" />
+                                        </td>
+                                        <td className="px-6 py-4">
+                                            <div className="h-7 w-20 bg-muted/40 rounded-full animate-pulse" />
+                                        </td>
+                                        <td className="px-6 py-4">
+                                            <div className="h-4 w-24 bg-muted/40 rounded-md animate-pulse" />
+                                        </td>
+                                        <td className="px-6 py-4">
+                                            <div className="h-8 w-8 bg-muted/40 rounded-lg ml-auto animate-pulse" />
+                                        </td>
                                     </tr>
                                 ))
                             ) : users.length === 0 ? (
@@ -493,7 +695,7 @@ export default function UserManagementPage() {
                                         <td className="px-6 py-4 text-right">
                                             <Dropdown
                                                 trigger={
-                                                    <button className="p-2 rounded-lg hover:bg-muted/50 transition-colors opacity-0 group-hover:opacity-100">
+                                                    <button className="p-2 rounded-lg hover:bg-muted/50 transition-colors">
                                                         <MoreHorizontal className="w-4 h-4" />
                                                     </button>
                                                 }
@@ -502,7 +704,7 @@ export default function UserManagementPage() {
                                                     icon={<Eye className="w-4 h-4" />}
                                                     onClick={() => setViewUserModal(user)}
                                                 >
-                                                    View Details
+                                                    View Profile
                                                 </DropdownItem>
                                                 <DropdownItem
                                                     icon={<Edit className="w-4 h-4" />}
@@ -510,17 +712,6 @@ export default function UserManagementPage() {
                                                 >
                                                     Edit User
                                                 </DropdownItem>
-                                                <DropdownSeparator />
-                                                <DropdownLabel>Change Role</DropdownLabel>
-                                                {(['student', 'teacher', 'moderator', 'admin'] as UserRole[]).map(role => (
-                                                    <DropdownItem
-                                                        key={role}
-                                                        onClick={() => handleRoleUpdate(user.id, role)}
-                                                    >
-                                                        <span className="capitalize">{role}</span>
-                                                    </DropdownItem>
-                                                ))}
-                                                <DropdownSeparator />
                                                 <DropdownItem
                                                     icon={<Trash2 className="w-4 h-4" />}
                                                     onClick={() => setDeleteConfirmModal(user.id)}
@@ -775,6 +966,48 @@ export default function UserManagementPage() {
                         Update {selectedUsers.size} Users
                     </button>
                 </DialogFooter>
+            </Dialog>
+
+            {/* Export Modal */}
+            <Dialog open={exportModal} onClose={() => setExportModal(false)}>
+                <DialogClose onClose={() => setExportModal(false)} />
+                <DialogHeader>
+                    <DialogTitle>Export Users</DialogTitle>
+                    <DialogDescription>
+                        Choose a format to export the user list.
+                    </DialogDescription>
+                </DialogHeader>
+                <DialogBody className="grid grid-cols-1 md:grid-cols-3 gap-4 py-4">
+                    <button
+                        onClick={handleExportCSV}
+                        className="flex flex-col items-center justify-center gap-3 p-6 rounded-2xl border border-border/50 bg-card/50 hover:bg-primary/5 hover:border-primary/50 transition-all group"
+                    >
+                        <div className="p-4 rounded-full bg-green-500/10 text-green-600 group-hover:bg-green-500 group-hover:text-white transition-colors">
+                            <FileSpreadsheet className="w-8 h-8" />
+                        </div>
+                        <span className="font-semibold">CSV</span>
+                    </button>
+
+                    <button
+                        onClick={handleExportJSON}
+                        className="flex flex-col items-center justify-center gap-3 p-6 rounded-2xl border border-border/50 bg-card/50 hover:bg-primary/5 hover:border-primary/50 transition-all group"
+                    >
+                        <div className="p-4 rounded-full bg-amber-500/10 text-amber-600 group-hover:bg-amber-500 group-hover:text-white transition-colors">
+                            <FileCode className="w-8 h-8" />
+                        </div>
+                        <span className="font-semibold">JSON</span>
+                    </button>
+
+                    <button
+                        onClick={handleExportPDF}
+                        className="flex flex-col items-center justify-center gap-3 p-6 rounded-2xl border border-border/50 bg-card/50 hover:bg-primary/5 hover:border-primary/50 transition-all group"
+                    >
+                        <div className="p-4 rounded-full bg-rose-500/10 text-rose-600 group-hover:bg-rose-500 group-hover:text-white transition-colors">
+                            <File className="w-8 h-8" />
+                        </div>
+                        <span className="font-semibold">PDF</span>
+                    </button>
+                </DialogBody>
             </Dialog>
         </motion.div>
     );
