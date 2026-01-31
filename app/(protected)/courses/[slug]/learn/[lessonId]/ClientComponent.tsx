@@ -92,13 +92,17 @@ export function CoursePlayerClient({ course, currentLesson, asset, hasAccess, us
         }
 
         try {
-            await supabase.from('lesson_progress').upsert({
-                user_id: userId,
-                lesson_id: currentLesson.id,
-                enrollment_id: enrollmentId,
-                is_completed: true,
-                updated_at: new Date().toISOString()
-            });
+            await supabase.from('lesson_progress').upsert(
+                {
+                    user_id: userId,
+                    lesson_id: currentLesson.id,
+                    enrollment_id: enrollmentId,
+                    is_completed: true,
+                    completed_at: new Date().toISOString(),
+                    updated_at: new Date().toISOString()
+                },
+                { onConflict: 'user_id,lesson_id' }
+            );
 
             success("Lesson completed!");
 
