@@ -3,7 +3,7 @@
 import { useState, useRef, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { useRouter} from "next/navigation";
+import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "motion/react";
 import {
     User,
@@ -164,20 +164,12 @@ export function UserDropdown({ user, onOpen }: UserDropdownProps) {
                                 Dashboard
                             </Link>
                             <Link
-                                href="/dashboard/settings"
+                                href="/dashboard/profile"
                                 onClick={() => setIsOpen(false)}
                                 className="flex items-center gap-3 px-4 py-2.5 text-sm font-medium text-foreground/80 hover:text-foreground hover:bg-muted/50 rounded-xl transition-colors cursor-pointer"
                             >
                                 <User className="w-4 h-4" />
-                                Profile
-                            </Link>
-                            <Link
-                                href="/dashboard/settings"
-                                onClick={() => setIsOpen(false)}
-                                className="flex items-center gap-3 px-4 py-2.5 text-sm font-medium text-foreground/80 hover:text-foreground hover:bg-muted/50 rounded-xl transition-colors cursor-pointer"
-                            >
-                                <Settings className="w-4 h-4" />
-                                Settings
+                                My Profile
                             </Link>
                         </div>
 

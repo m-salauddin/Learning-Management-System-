@@ -4,6 +4,15 @@ import { Flag, MessageSquare, AlertTriangle, CheckCircle } from 'lucide-react';
 export default async function ModeratorPanel() {
     const supabase = await createSupabaseServerClient();
 
+    // Fetch Moderator Stats via RPC
+    const { data: stats } = await supabase.rpc('get_moderator_dashboard_stats');
+
+    // Default to 0 if null
+    const pendingReports = stats?.pending_reports || 0;
+    const reviewsToCheck = stats?.reviews_to_check || 0;
+    const flaggedContent = stats?.flagged_content || 0;
+    const resolvedToday = stats?.resolved_today || 0;
+
     return (
         <div className="space-y-8 pb-10">
             {/* Welcome Section */}
@@ -25,7 +34,7 @@ export default async function ModeratorPanel() {
                         </div>
                         <div>
                             <p className="text-sm text-muted-foreground">Pending Reports</p>
-                            <p className="text-2xl font-bold">0</p>
+                            <p className="text-2xl font-bold">{pendingReports}</p>
                         </div>
                     </div>
                 </div>
@@ -37,7 +46,7 @@ export default async function ModeratorPanel() {
                         </div>
                         <div>
                             <p className="text-sm text-muted-foreground">Reviews to Check</p>
-                            <p className="text-2xl font-bold">0</p>
+                            <p className="text-2xl font-bold">{reviewsToCheck}</p>
                         </div>
                     </div>
                 </div>
@@ -49,7 +58,7 @@ export default async function ModeratorPanel() {
                         </div>
                         <div>
                             <p className="text-sm text-muted-foreground">Flagged Content</p>
-                            <p className="text-2xl font-bold">0</p>
+                            <p className="text-2xl font-bold">{flaggedContent}</p>
                         </div>
                     </div>
                 </div>
@@ -61,7 +70,7 @@ export default async function ModeratorPanel() {
                         </div>
                         <div>
                             <p className="text-sm text-muted-foreground">Resolved Today</p>
-                            <p className="text-2xl font-bold">0</p>
+                            <p className="text-2xl font-bold">{resolvedToday}</p>
                         </div>
                     </div>
                 </div>
@@ -70,15 +79,21 @@ export default async function ModeratorPanel() {
             {/* Quick Actions */}
             <div className="space-y-4">
                 <h3 className="text-xl font-bold">Moderation Queue</h3>
-                <div className="p-10 border border-dashed border-border rounded-2xl flex flex-col items-center justify-center text-center bg-card/30">
-                    <div className="p-4 bg-muted rounded-full mb-4">
-                        <CheckCircle className="w-8 h-8 text-emerald-500 opacity-70" />
+                {pendingReports === 0 && reviewsToCheck === 0 ? (
+                    <div className="p-10 border border-dashed border-border rounded-2xl flex flex-col items-center justify-center text-center bg-card/30">
+                        <div className="p-4 bg-muted rounded-full mb-4">
+                            <CheckCircle className="w-8 h-8 text-emerald-500 opacity-70" />
+                        </div>
+                        <h4 className="text-lg font-semibold">All Clear!</h4>
+                        <p className="text-muted-foreground max-w-sm text-sm">
+                            No pending reports or reviews at this time. Great job keeping the community safe!
+                        </p>
                     </div>
-                    <h4 className="text-lg font-semibold">All Clear!</h4>
-                    <p className="text-muted-foreground max-w-sm text-sm">
-                        No pending reports or reviews at this time. Great job keeping the community safe!
-                    </p>
-                </div>
+                ) : (
+                    <div className="p-6 bg-card border border-border rounded-2xl">
+                        <p className="text-muted-foreground">Queue visualization not implemented yet.</p>
+                    </div>
+                )}
             </div>
 
             {/* Recent Activity */}

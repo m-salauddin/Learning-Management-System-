@@ -6,12 +6,9 @@ import { useRouter, useSearchParams, usePathname } from "next/navigation";
 import { motion, AnimatePresence, Variants } from "motion/react";
 import { ArrowLeft, Search, SlidersHorizontal, X, ChevronDown, Check, Filter, LayoutGrid, Grip, AlignJustify, FileQuestion, ChevronLeft, ChevronRight } from "lucide-react";
 import { fadeInUp } from "@/lib/motion";
-import { Navbar } from "@/components/Navbar";
 import { AnimatedCheckbox } from "@/components/ui/AnimatedCheckbox";
 import { CourseCard } from "@/components/CourseCard";
-
-// Enhanced Course Data
-import { COURSES as courses } from "@/data/courses";
+import { MappedCourse } from "@/types/mapped-course";
 
 const CATEGORIES = ["All Topics", "Web Development", "Data Science", "Mobile Development", "Cyber Security", "Cloud Computing", "Design"];
 const LEVELS = ["Beginner", "Intermediate", "Advanced"];
@@ -45,7 +42,7 @@ const itemVariants: Variants = {
     }
 };
 
-function CoursesContent() {
+function CoursesContent({ initialCourses }: { initialCourses: MappedCourse[] }) {
     const router = useRouter();
     const pathname = usePathname();
 
@@ -59,7 +56,6 @@ function CoursesContent() {
     const [showMobileFilters, setShowMobileFilters] = useState(false);
     const [gridCols, setGridCols] = useState<1 | 2 | 3>(3);
     const [currentPage, setCurrentPage] = useState(1);
-    const lastPushedSearch = useRef("");
     const [mounted, setMounted] = useState(false);
     const categoryContainerRef = useRef<HTMLDivElement>(null);
     const [canScrollLeft, setCanScrollLeft] = useState(false);
@@ -154,6 +150,7 @@ function CoursesContent() {
 
         const timer = setTimeout(() => {
             updateUrlSilently(searchInput, selectedCategory, selectedLevels, selectedTypes, selectedPrices, currentPage);
+
         }, 300);
 
         return () => clearTimeout(timer);
@@ -179,20 +176,23 @@ function CoursesContent() {
     };
 
     const filteredCourses = useMemo(() => {
-        return courses.filter((course) => {
+        return initialCourses.filter((course) => {
             // Use searchInput directly for instant feedback (client-side filtering best practice)
             const matchesSearch = course.title.toLowerCase().includes(searchInput.toLowerCase()) ||
                 course.description.toLowerCase().includes(searchInput.toLowerCase()) ||
-                course.tags.some(tag => tag.toLowerCase().includes(searchInput.toLowerCase()));
+                course.tags?.some(tag => tag.toLowerCase().includes(searchInput.toLowerCase()));
 
-            const matchesCategory = selectedCategory === "All Topics" || course.category === selectedCategory;
+            // Note: Categories in DB might not match CATEGORIES const exactly. Should probably fetch categories dynamically too.
+            const matchesCategory = selectedCategory === "All Topics" || course.category === selectedCategory || (selectedCategory === "Web Development" && course.tags?.some(t => t.includes("Web")));
+
             const matchesLevel = selectedLevels.length === 0 || selectedLevels.includes(course.level);
-            const matchesType = selectedTypes.length === 0 || selectedTypes.includes(course.type);
-            const matchesPrice = selectedPrices.length === 0 || selectedPrices.includes(course.priceType);
+            // Type and PriceType matching needs to be robust against case differences
+            const matchesType = selectedTypes.length === 0 || selectedTypes.some(t => t.toLowerCase() === course.type?.toLowerCase());
+            const matchesPrice = selectedPrices.length === 0 || selectedPrices.some(p => p.toLowerCase() === course.priceType?.toLowerCase());
 
             return matchesSearch && matchesCategory && matchesLevel && matchesType && matchesPrice;
         });
-    }, [searchInput, selectedCategory, selectedLevels, selectedTypes, selectedPrices]);
+    }, [searchInput, selectedCategory, selectedLevels, selectedTypes, selectedPrices, initialCourses]);
 
     const totalPages = Math.ceil(filteredCourses.length / ITEMS_PER_PAGE);
     const paginatedCourses = filteredCourses.slice(
@@ -529,10 +529,10 @@ function CoursesContent() {
     );
 }
 
-export default function CoursesClient() {
+export default function CoursesClient({ initialCourses }: { initialCourses: MappedCourse[] }) {
     return (
         <Suspense fallback={<div className="min-h-screen bg-background flex items-center justify-center"><div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin"></div></div>}>
-            <CoursesContent />
+            <CoursesContent initialCourses={initialCourses} />
         </Suspense>
     );
 }

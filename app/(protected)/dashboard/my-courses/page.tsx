@@ -3,10 +3,10 @@
 import { useAppSelector } from "@/lib/store/hooks";
 import { CourseProgressCard } from "@/components/dashboard/CourseProgressCard";
 import { motion } from "motion/react";
-import { COURSES } from "@/data/courses";
 import { Search, BookOpen } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
+import { createClient } from "@/lib/supabase/client";
 
 const container = {
     hidden: { opacity: 0 },
@@ -23,17 +23,61 @@ const item = {
     show: { opacity: 1, scale: 1 }
 };
 
+interface EnrolledCourse {
+    course: {
+        id: string;
+        slug: string;
+        title: string;
+        thumbnail_url: string;
+        total_lessons: number;
+    };
+    completed_lessons: number;
+    progress_percentage: number;
+}
+
 export default function MyCoursesPage() {
     const { user } = useAppSelector((state) => state.auth);
     const [searchQuery, setSearchQuery] = useState("");
+    const [enrolledCourses, setEnrolledCourses] = useState<EnrolledCourse[]>([]);
+    const [loading, setLoading] = useState(true);
 
-    const enrolledCourseIds = user?.coursesEnrolled || [];
+    useEffect(() => {
+        const fetchCourses = async () => {
+            const supabase = createClient();
+            const { data: { user } } = await supabase.auth.getUser();
 
-    // Filter enrolled courses
-    const myCourses = COURSES.filter(c =>
-        enrolledCourseIds.includes(c.slug)
-    ).filter(c =>
-        c.title.toLowerCase().includes(searchQuery.toLowerCase())
+            if (!user) {
+                setLoading(false);
+                return;
+            }
+
+            const { data, error } = await supabase
+                .from('enrollments')
+                .select(`
+                    completed_lessons,
+                    progress_percentage,
+                    course:courses(
+                        id,
+                        slug,
+                        title,
+                        thumbnail_url,
+                        total_lessons
+                    )
+                `)
+                .eq('user_id', user.id)
+                .eq('status', 'active');
+
+            if (data) {
+                setEnrolledCourses(data as unknown as EnrolledCourse[]);
+            }
+            setLoading(false);
+        };
+
+        fetchCourses();
+    }, []);
+
+    const filteredCourses = enrolledCourses.filter(enrollment =>
+        enrollment.course.title.toLowerCase().includes(searchQuery.toLowerCase())
     );
 
     return (
@@ -56,22 +100,28 @@ export default function MyCoursesPage() {
                 </div>
             </div>
 
-            {myCourses.length > 0 ? (
+            {loading ? (
+                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+                    {[1, 2, 3].map((i) => (
+                        <div key={i} className="h-[280px] rounded-2xl bg-muted/20 animate-pulse" />
+                    ))}
+                </div>
+            ) : filteredCourses.length > 0 ? (
                 <motion.div
                     variants={container}
                     initial="hidden"
                     animate="show"
                     className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6"
                 >
-                    {myCourses.map((course) => (
-                        <motion.div key={course.slug} variants={item}>
+                    {filteredCourses.map((enrollment) => (
+                        <motion.div key={enrollment.course.slug} variants={item}>
                             <CourseProgressCard
-                                slug={course.slug}
-                                title={course.title}
-                                image={course.image}
-                                progress={Math.floor(Math.random() * 80) + 10} // Mock random progress
-                                totalLessons={24}
-                                completedLessons={5}
+                                slug={enrollment.course.slug}
+                                title={enrollment.course.title}
+                                image={enrollment.course.thumbnail_url || 'https://images.unsplash.com/photo-1516321497487-e288fb19713f?q=80&w=2070&auto=format&fit=crop'}
+                                progress={enrollment.progress_percentage || 0}
+                                totalLessons={enrollment.course.total_lessons || 0}
+                                completedLessons={enrollment.completed_lessons || 0}
                             />
                         </motion.div>
                     ))}

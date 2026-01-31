@@ -8,10 +8,10 @@ interface DropdownProps {
     trigger: ReactNode;
     children: ReactNode;
     className?: string;
-    align?: 'left' | 'right';
+    direction?: 'up' | 'down';
 }
 
-export function Dropdown({ trigger, children, className, align = 'right' }: DropdownProps) {
+export function Dropdown({ trigger, children, className, align = 'right', direction = 'down' }: DropdownProps) {
     const [isOpen, setIsOpen] = useState(false);
     const dropdownRef = useRef<HTMLDivElement>(null);
 
@@ -40,13 +40,14 @@ export function Dropdown({ trigger, children, className, align = 'right' }: Drop
             <AnimatePresence>
                 {isOpen && (
                     <motion.div
-                        initial={{ opacity: 0, scale: 0.95, y: -10 }}
+                        initial={{ opacity: 0, scale: 0.95, y: direction === 'up' ? 10 : -10 }}
                         animate={{ opacity: 1, scale: 1, y: 0 }}
-                        exit={{ opacity: 0, scale: 0.95, y: -10 }}
+                        exit={{ opacity: 0, scale: 0.95, y: direction === 'up' ? 10 : -10 }}
                         transition={{ type: "spring", stiffness: 400, damping: 25 }}
                         className={cn(
-                            "absolute z-50 mt-2 min-w-56 rounded-xl border border-border/50 bg-background/80 backdrop-blur-xl shadow-xl shadow-black/10 overflow-hidden p-1",
+                            "absolute z-50 min-w-56 rounded-xl border border-border/50 bg-background/80 backdrop-blur-xl shadow-xl shadow-black/10 overflow-hidden p-1",
                             align === 'right' ? 'right-0' : 'left-0',
+                            direction === 'up' ? 'bottom-full mb-2' : 'mt-2',
                             className
                         )}
                     >

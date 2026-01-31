@@ -13,10 +13,10 @@ import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { cn } from "@/lib/utils";
 import {
-    ExtendedUser, UserRole, UserStats, UserFilters
+    ExtendedUser, UserRole, UserStats, UserFilters, UserStatus
 } from "@/types/user";
 import {
-    getUsers, getUserStats, updateUserRole, deleteUser,
+    getUsers, getUserStats, updateUserRole, deleteUser, updateUser,
     bulkDeleteUsers, bulkUpdateRoles, exportUsersToCSV, exportUsersToJSON, createUser
 } from "@/lib/actions/users";
 import { Dialog, DialogHeader, DialogTitle, DialogDescription, DialogBody, DialogFooter, DialogClose } from "@/components/ui/Dialog";
@@ -63,6 +63,24 @@ export default function UserManagementPage() {
         password: "",
         role: "student" as UserRole
     });
+
+    const [editFormData, setEditFormData] = useState({
+        name: "",
+        email: "",
+        role: "student" as UserRole,
+        status: "active" as UserStatus
+    });
+
+    useEffect(() => {
+        if (editUserModal) {
+            setEditFormData({
+                name: editUserModal.name || "",
+                email: editUserModal.email || "",
+                role: (editUserModal.role as UserRole) || "student",
+                status: (editUserModal.status as UserStatus) || "active"
+            });
+        }
+    }, [editUserModal]);
 
     // Fetch Users
     const fetchUsers = async () => {
@@ -211,6 +229,38 @@ export default function UserManagementPage() {
         }
     };
 
+    const getStatusType = (status?: string) => {
+        switch (status) {
+            case 'active': return 'success';
+            case 'suspended': return 'error';
+            case 'pending': return 'warning';
+            default: return 'default';
+        }
+    };
+
+    const StatusBadge = ({ status }: { status?: string }) => {
+        const styles = {
+            active: "bg-emerald-500/10 text-emerald-600 border-emerald-500/20",
+            inactive: "bg-muted text-muted-foreground border-border/50",
+            suspended: "bg-rose-500/10 text-rose-600 border-rose-500/20",
+            pending: "bg-amber-500/10 text-amber-600 border-amber-500/20"
+        };
+        const dotStyles = {
+            active: "bg-emerald-500",
+            inactive: "bg-muted-foreground",
+            suspended: "bg-rose-500",
+            pending: "bg-amber-500 animate-pulse"
+        };
+        const s = (status as keyof typeof styles) || 'active';
+
+        return (
+            <span className={cn("inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full border text-xs font-medium capitalize", styles[s])}>
+                <span className={cn("w-1.5 h-1.5 rounded-full", dotStyles[s])} />
+                {s}
+            </span>
+        );
+    };
+
     const handleExportPDF = async () => {
         setIsLoading(true);
         try {
@@ -253,7 +303,9 @@ export default function UserManagementPage() {
                     user.email || "N/A",
                     (user.role || "student").toUpperCase(),
                     new Date(user.created_at).toLocaleDateString(),
-                    "Active"
+                    (user.role || "student").toUpperCase(),
+                    new Date(user.created_at).toLocaleDateString(),
+                    (user.status || "active").toUpperCase()
                 ]);
 
                 autoTable(doc, {
@@ -336,6 +388,23 @@ export default function UserManagementPage() {
             fetchStats();
         } else {
             toast.error("Error", result.error || "Failed to create user");
+        }
+    };
+
+    const handleUpdateUser = async () => {
+        if (!editUserModal) return;
+
+        setIsCreating(true); // Reuse loading state
+        const result = await updateUser(editUserModal.id, editFormData);
+        setIsCreating(false);
+
+        if (result.user) {
+            toast.success("User updated", "User details have been updated successfully");
+            setEditUserModal(null);
+            fetchUsers();
+            fetchStats();
+        } else {
+            toast.error("Error", result.error || "Failed to update user");
         }
     };
 
@@ -684,16 +753,14 @@ export default function UserManagementPage() {
                                             </div>
                                         </td>
                                         <td className="px-6 py-4">
-                                            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-500/10 text-emerald-600 border border-emerald-500/20 text-xs font-medium">
-                                                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                                                Active
-                                            </span>
+                                            <StatusBadge status={user.status} />
                                         </td>
                                         <td className="px-6 py-4 text-muted-foreground text-xs">
                                             {formatDate(user.created_at)}
                                         </td>
                                         <td className="px-6 py-4 text-right">
                                             <Dropdown
+                                                direction={i >= users.length - 2 ? 'up' : 'down'}
                                                 trigger={
                                                     <button className="p-2 rounded-lg hover:bg-muted/50 transition-colors">
                                                         <MoreHorizontal className="w-4 h-4" />
@@ -881,6 +948,75 @@ export default function UserManagementPage() {
                         </div>
                     </DialogBody>
                 )}
+            </Dialog>
+
+            {/* Edit User Modal */}
+            <Dialog open={!!editUserModal} onClose={() => setEditUserModal(null)}>
+                <DialogClose onClose={() => setEditUserModal(null)} />
+                <DialogHeader>
+                    <DialogTitle>Edit User</DialogTitle>
+                    <DialogDescription>Update user information and role</DialogDescription>
+                </DialogHeader>
+                <DialogBody className="space-y-4">
+                    <div className="space-y-2">
+                        <label className="text-sm font-medium">Full Name</label>
+                        <input
+                            type="text"
+                            value={editFormData.name}
+                            onChange={(e) => setEditFormData({ ...editFormData, name: e.target.value })}
+                            className="w-full px-3 py-2 rounded-lg bg-background border border-border/50 focus:ring-2 focus:ring-primary/20 outline-none transition-all placeholder:text-muted-foreground/50"
+                        />
+                    </div>
+                    <div className="space-y-2">
+                        <label className="text-sm font-medium">Email Address</label>
+                        <input
+                            type="email"
+                            value={editFormData.email}
+                            onChange={(e) => setEditFormData({ ...editFormData, email: e.target.value })}
+                            className="w-full px-3 py-2 rounded-lg bg-background border border-border/50 focus:ring-2 focus:ring-primary/20 outline-none transition-all placeholder:text-muted-foreground/50"
+                        />
+                    </div>
+                    <div className="space-y-2">
+                        <label className="text-sm font-medium">Role</label>
+                        <Select
+                            value={editFormData.role}
+                            onChange={(val) => setEditFormData({ ...editFormData, role: val as UserRole })}
+                        >
+                            <SelectOption value="student">Student</SelectOption>
+                            <SelectOption value="teacher">Teacher</SelectOption>
+                            <SelectOption value="moderator">Moderator</SelectOption>
+                            <SelectOption value="admin">Admin</SelectOption>
+                        </Select>
+                    </div>
+                    <div className="space-y-2">
+                        <label className="text-sm font-medium">Status</label>
+                        <Select
+                            value={editFormData.status}
+                            onChange={(val) => setEditFormData({ ...editFormData, status: val as UserStatus })}
+                        >
+                            <SelectOption value="active">Active</SelectOption>
+                            <SelectOption value="inactive">Inactive</SelectOption>
+                            <SelectOption value="suspended">Suspended</SelectOption>
+                            <SelectOption value="pending">Pending</SelectOption>
+                        </Select>
+                    </div>
+                </DialogBody>
+                <DialogFooter>
+                    <button
+                        onClick={() => setEditUserModal(null)}
+                        className="px-4 py-2 rounded-xl border border-border/50 hover:bg-muted/50 transition-colors"
+                    >
+                        Cancel
+                    </button>
+                    <button
+                        onClick={handleUpdateUser}
+                        disabled={isCreating}
+                        className="px-4 py-2 rounded-xl bg-primary text-primary-foreground hover:bg-primary/90 transition-colors disabled:opacity-50 flex items-center gap-2"
+                    >
+                        {isCreating && <Loader2 className="w-4 h-4 animate-spin" />}
+                        Save Changes
+                    </button>
+                </DialogFooter>
             </Dialog>
 
             {/* Delete Confirmation Modal */}
