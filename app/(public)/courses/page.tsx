@@ -23,8 +23,6 @@ export default async function CoursesPage() {
             price,
             duration_hours,
             total_students,
-            total_lessons,
-            batch_no,
             rating,
             rating_count,
             tags,
@@ -38,13 +36,6 @@ export default async function CoursesPage() {
                     name,
                     avatar_url
                 )
-            ),
-            discounts:course_discounts(
-                value,
-                type,
-                starts_at,
-                ends_at,
-                is_active
             )
         `)
         .eq('status', 'published')
@@ -58,32 +49,6 @@ export default async function CoursesPage() {
         const instructorProfile = Array.isArray(c.instructor) ? c.instructor[0] : c.instructor;
         const instructorData = Array.isArray(instructorProfile?.users) ? instructorProfile.users[0] : instructorProfile?.users;
 
-        // Calculate discount
-        let discountPrice: string | undefined = undefined;
-        let discountExpiresAt: string | undefined = undefined;
-
-        if (c.discounts && c.discounts.length > 0) {
-            const now = new Date();
-            // Find the first valid active discount
-            const activeDiscount = c.discounts.find((d: any) =>
-                d.is_active &&
-                (!d.starts_at || new Date(d.starts_at) <= now) &&
-                (!d.ends_at || new Date(d.ends_at) > now)
-            );
-
-            if (activeDiscount) {
-                let finalPrice = c.price;
-                if (activeDiscount.type === 'fixed') {
-                    finalPrice = Math.max(0, c.price - activeDiscount.value);
-                } else if (activeDiscount.type === 'percentage') {
-                    finalPrice = Math.max(0, c.price * (1 - activeDiscount.value / 100));
-                }
-
-                discountPrice = `৳${Math.floor(finalPrice)}`;
-                discountExpiresAt = activeDiscount.ends_at;
-            }
-        }
-
         return {
             id: c.id,
             slug: c.slug,
@@ -91,12 +56,8 @@ export default async function CoursesPage() {
             description: c.description || "",
             image: c.thumbnail_url || "/placeholder-course.jpg",
             price: c.price > 0 ? `৳${c.price}` : "Free",
-            discountPrice,
-            discountExpiresAt,
             duration: c.duration_hours ? `${Math.floor(Number(c.duration_hours))}h` : "N/A",
             students: `${c.total_students || 0}+`,
-            totalLessons: c.total_lessons || 0,
-            batchNo: c.batch_no || undefined,
             rating: Number(c.rating) || 0,
             reviews: c.rating_count || 0,
             instructor: {
