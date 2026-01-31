@@ -4,6 +4,7 @@ import {
   TechStackSection,
   FeaturesSection,
   CoursesSection,
+  HowItWorks,
   TerminalSection,
   PricingSection,
   TestimonialsSection,
@@ -113,6 +114,7 @@ export default async function Home() {
       <TechStackSection />
       <FeaturesSection />
       <CoursesSection courses={mappedCourses} />
+      <HowItWorks />
       <TerminalSection />
       <PricingSection />
       <TestimonialsSection />
