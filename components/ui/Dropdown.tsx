@@ -9,6 +9,7 @@ interface DropdownProps {
     children: ReactNode;
     className?: string;
     direction?: 'up' | 'down';
+    align?: 'left' | 'right';
 }
 
 export function Dropdown({ trigger, children, className, align = 'right', direction = 'down' }: DropdownProps) {

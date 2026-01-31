@@ -57,12 +57,12 @@ export async function updateSession(request: NextRequest) {
         '/dashboard/coupons',
         '/dashboard/analytics'
     ];
-    
+
     const isAdminRoute = adminRoutes.some(route => request.nextUrl.pathname.startsWith(route));
-    
+
     if (isAdminRoute) {
         console.log(`[Middleware] Admin route detected: ${request.nextUrl.pathname}`);
-        
+
         if (!user) {
             console.log('[Middleware] No user, redirecting to login');
             const url = request.nextUrl.clone()
@@ -73,21 +73,23 @@ export async function updateSession(request: NextRequest) {
         // Check role: app_metadata (secure) first, then database
         const appRole = user.app_metadata?.role;
         let userRole = appRole;
-        
+
         console.log(`[Middleware] User: ${user.email}, app_metadata role: ${appRole}`);
-        
+
         if (!userRole) {
             // Only query database if app_metadata doesn't have role
-            const { data: profile, error } = await supabase
+            const { data: rawProfile, error } = await supabase
                 .from('users')
                 .select('role')
                 .eq('id', user.id)
                 .single()
-            
+
             if (error) {
                 console.error('[Middleware] Database role fetch error:', error.message);
             }
-            
+
+            // Explicitly cast to avoid 'never' type
+            const profile = rawProfile as { role: 'admin' | 'student' | 'teacher' | 'moderator' } | null;
             userRole = profile?.role;
             console.log(`[Middleware] Database role: ${userRole}`);
         }
@@ -100,7 +102,7 @@ export async function updateSession(request: NextRequest) {
             url.pathname = '/dashboard'
             return NextResponse.redirect(url)
         }
-        
+
         console.log('[Middleware] Admin access granted');
     }
 

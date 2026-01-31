@@ -54,21 +54,21 @@ export default function CouponsPage() {
             setIsLoading(true);
 
             // Fetch Coupons with course mappings
-            const { data: couponsData, error: couponsError } = await (supabase
-                .from('coupon_codes' as any)
+            const { data: couponsData, error: couponsError } = await (supabase as any)
+                .from('coupon_codes')
                 .select(`
           *,
           coupon_courses(course_id)
         `)
-                .order('created_at', { ascending: false }) as any);
+                .order('created_at', { ascending: false });
 
             if (couponsError) throw couponsError;
 
             // Fetch Courses (for selection)
-            const { data: coursesData, error: coursesError } = await (supabase
-                .from('courses' as any)
+            const { data: coursesData, error: coursesError } = await (supabase as any)
+                .from('courses')
                 .select('id, title')
-                .order('title') as any);
+                .order('title');
 
             if (coursesError) throw coursesError;
 
@@ -101,8 +101,8 @@ export default function CouponsPage() {
 
         try {
             // 1. Create Coupon
-            const { data: newCoupon, error: couponError } = await (supabase
-                .from('coupon_codes' as any)
+            const { data: newCoupon, error: couponError } = await (supabase as any)
+                .from('coupon_codes')
                 .insert({
                     code: formData.code.toUpperCase(),
                     type: formData.type,
@@ -113,7 +113,7 @@ export default function CouponsPage() {
                     is_active: true
                 })
                 .select()
-                .single() as any);
+                .single();
 
             if (couponError) throw couponError;
 
@@ -124,8 +124,8 @@ export default function CouponsPage() {
                     course_id: courseId
                 }));
 
-                const { error: mappingError } = await supabase
-                    .from('coupon_courses' as any)
+                const { error: mappingError } = await (supabase as any)
+                    .from('coupon_courses')
                     .insert(mappings);
 
                 if (mappingError) throw mappingError;
@@ -163,8 +163,8 @@ export default function CouponsPage() {
 
     const toggleActive = async (id: string, currentState: boolean) => {
         try {
-            const { error } = await supabase
-                .from('coupon_codes' as any)
+            const { error } = await (supabase as any)
+                .from('coupon_codes')
                 .update({ is_active: !currentState })
                 .eq('id', id);
 
@@ -183,8 +183,8 @@ export default function CouponsPage() {
         if (!confirm("Are you sure you want to delete this coupon? This cannot be undone.")) return;
 
         try {
-            const { error } = await supabase
-                .from('coupon_codes' as any)
+            const { error } = await (supabase as any)
+                .from('coupon_codes')
                 .delete()
                 .eq('id', id);
 
@@ -439,8 +439,8 @@ export default function CouponsPage() {
                                             <button
                                                 onClick={() => toggleActive(coupon.id, coupon.is_active)}
                                                 className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border transition-all cursor-pointer ${coupon.is_active
-                                                        ? "bg-green-500/10 text-green-600 border-green-500/20 hover:bg-green-500/20"
-                                                        : "bg-zinc-500/10 text-zinc-600 border-zinc-500/20 hover:bg-zinc-500/20 dark:text-zinc-400"
+                                                    ? "bg-green-500/10 text-green-600 border-green-500/20 hover:bg-green-500/20"
+                                                    : "bg-zinc-500/10 text-zinc-600 border-zinc-500/20 hover:bg-zinc-500/20 dark:text-zinc-400"
                                                     }`}
                                             >
                                                 {coupon.is_active ? "Active" : "Inactive"}

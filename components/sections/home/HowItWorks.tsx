@@ -261,7 +261,7 @@ export function HowItWorks() {
                                                         exit={{ scale: 0.5, opacity: 0, rotate: 45 }}
                                                         transition={{ duration: 0.4, ease: smoothEasing }}
                                                     >
-                                                        <Check className="w-6 h-6 stroke-[3]" />
+                                                        <Check className="w-6 h-6 stroke-3" />
                                                     </motion.div>
                                                 ) : (
                                                     <motion.span

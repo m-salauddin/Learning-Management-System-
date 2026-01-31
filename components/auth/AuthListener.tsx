@@ -4,6 +4,7 @@ import { createClient } from "@/lib/supabase/client";
 import { useAppDispatch } from "@/lib/store/hooks";
 import { setUser, setLoading } from "@/lib/store/features/auth/authSlice";
 import { Session } from "@supabase/supabase-js";
+import { Database } from "@/types/supabase";
 import { usePathname } from "next/navigation";
 
 export function AuthListener() {
@@ -14,11 +15,14 @@ export function AuthListener() {
         const supabase = createClient();
         if (session?.user) {
             try {
-                const { data: profile, error } = await supabase
+                const { data: rawProfile, error } = await supabase
                     .from('users')
                     .select('*')
                     .eq('id', session.user.id)
                     .maybeSingle();
+
+                // Explicitly type profile to avoid 'never' inference
+                const profile = rawProfile as Database['public']['Tables']['users']['Row'] | null;
 
                 if (error) {
                     console.error('Error fetching user profile:', JSON.stringify(error, null, 2));
