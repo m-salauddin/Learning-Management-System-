@@ -13,23 +13,35 @@ import {
     FileText,
     ArrowLeft
 } from "lucide-react";
-import { cn } from "@/lib/utils";
 import { ClassValue, clsx } from "clsx";
 import { twMerge } from "tailwind-merge";
 import { createClient } from "@/lib/supabase/client";
 import { useToast } from "@/components/ui/toast";
+import type { Database } from "@/types/supabase";
+
+type LessonProgressInsert = Database['public']['Tables']['lesson_progress']['Insert'];
 
 function cn_local(...inputs: ClassValue[]) {
     return twMerge(clsx(inputs));
 }
+interface Lesson {
+    id: string;
+    module_id: string;
+    title: string;
+    description?: string | null;
+    lesson_type?: 'video' | 'text' | 'quiz' | 'assignment' | null;
+    position?: number;
+    duration_minutes?: number | null;
+    is_free_preview?: boolean | null;
+}
 
 interface CoursePlayerClientProps {
     course: any;
-    currentLesson: any;
+    currentLesson: Lesson;
     asset: any;
     hasAccess: boolean;
     userId: string;
-    enrollmentId?: string; // Add this
+    enrollmentId?: string;
 }
 
 export function CoursePlayerClient({ course, currentLesson, asset, hasAccess, userId, enrollmentId }: CoursePlayerClientProps) {
@@ -79,10 +91,7 @@ export function CoursePlayerClient({ course, currentLesson, asset, hasAccess, us
     };
 
     const handleCompleteAndNext = async () => {
-        // If user is not enrolled (e.g. free preview), we can't save progress to DB.
-        // Or we could, but we need an enrollment ID.
         if (!enrollmentId) {
-            // Just navigate
             if (nextLesson) {
                 router.push(`/courses/${course.slug}/learn/${nextLesson.id}`);
             } else {
@@ -91,18 +100,17 @@ export function CoursePlayerClient({ course, currentLesson, asset, hasAccess, us
             return;
         }
 
+        const progressData: LessonProgressInsert = {
+            user_id: userId,
+            lesson_id: currentLesson.id,
+            enrollment_id: enrollmentId,
+            is_completed: true,
+            completed_at: new Date().toISOString(),
+            updated_at: new Date().toISOString()
+        };
+
         try {
-            await supabase.from('lesson_progress').upsert(
-                {
-                    user_id: userId,
-                    lesson_id: currentLesson.id,
-                    enrollment_id: enrollmentId,
-                    is_completed: true,
-                    completed_at: new Date().toISOString(),
-                    updated_at: new Date().toISOString()
-                },
-                { onConflict: 'user_id,lesson_id' }
-            );
+            await (supabase.from('lesson_progress') as any).upsert(progressData, { onConflict: 'user_id,lesson_id' });
 
             success("Lesson completed!");
 

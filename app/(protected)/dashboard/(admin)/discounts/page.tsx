@@ -51,21 +51,21 @@ export default function DiscountsPage() {
             setIsLoading(true);
 
             // Fetch Discounts
-            const { data: discountsData, error: discountsError } = await (supabase
-                .from('course_discounts' as any)
+            const { data: discountsData, error: discountsError } = await (supabase as any)
+                .from('course_discounts')
                 .select(`
           *,
           course:courses(id, title, price)
         `)
-                .order('created_at', { ascending: false }) as any);
+                .order('created_at', { ascending: false });
 
             if (discountsError) throw discountsError;
 
             // Fetch Courses (for dropdown)
-            const { data: coursesData, error: coursesError } = await (supabase
-                .from('courses' as any)
+            const { data: coursesData, error: coursesError } = await (supabase as any)
+                .from('courses')
                 .select('id, title, price')
-                .order('title') as any);
+                .order('title');
 
             if (coursesError) throw coursesError;
 
@@ -97,8 +97,8 @@ export default function DiscountsPage() {
                 is_active: true
             };
 
-            const { error } = await supabase
-                .from('course_discounts' as any)
+            const { error } = await (supabase as any)
+                .from('course_discounts')
                 .insert(payload);
 
             if (error) throw error;
@@ -121,8 +121,8 @@ export default function DiscountsPage() {
 
     const toggleActive = async (id: string, currentState: boolean) => {
         try {
-            const { error } = await supabase
-                .from('course_discounts' as any)
+            const { error } = await (supabase as any)
+                .from('course_discounts')
                 .update({ is_active: !currentState })
                 .eq('id', id);
 
@@ -141,8 +141,8 @@ export default function DiscountsPage() {
         if (!confirm("Are you sure you want to delete this discount?")) return;
 
         try {
-            const { error } = await supabase
-                .from('course_discounts' as any)
+            const { error } = await (supabase as any)
+                .from('course_discounts')
                 .delete()
                 .eq('id', id);
 
@@ -208,8 +208,8 @@ export default function DiscountsPage() {
                                                     type="button"
                                                     onClick={() => setFormData({ ...formData, type: 'percentage' })}
                                                     className={`flex-1 flex items-center justify-center text-sm py-1.5 rounded-md transition-all cursor-pointer ${formData.type === 'percentage'
-                                                            ? 'bg-background shadow-sm font-medium text-foreground'
-                                                            : 'text-muted-foreground hover:text-foreground'
+                                                        ? 'bg-background shadow-sm font-medium text-foreground'
+                                                        : 'text-muted-foreground hover:text-foreground'
                                                         }`}
                                                 >
                                                     <Percent className="w-3.5 h-3.5 mr-1.5" /> %
@@ -218,8 +218,8 @@ export default function DiscountsPage() {
                                                     type="button"
                                                     onClick={() => setFormData({ ...formData, type: 'fixed' })}
                                                     className={`flex-1 flex items-center justify-center text-sm py-1.5 rounded-md transition-all cursor-pointer ${formData.type === 'fixed'
-                                                            ? 'bg-background shadow-sm font-medium text-foreground'
-                                                            : 'text-muted-foreground hover:text-foreground'
+                                                        ? 'bg-background shadow-sm font-medium text-foreground'
+                                                        : 'text-muted-foreground hover:text-foreground'
                                                         }`}
                                                 >
                                                     <DollarSign className="w-3.5 h-3.5 mr-1.5" /> Fixed
@@ -318,8 +318,8 @@ export default function DiscountsPage() {
                                         <td className="px-6 py-4">
                                             <div className="flex items-center gap-2">
                                                 <span className={`inline-flex items-center px-2 py-1 rounded-md text-xs font-medium ${discount.type === 'percentage'
-                                                        ? 'bg-blue-500/10 text-blue-600 dark:text-blue-400'
-                                                        : 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400'
+                                                    ? 'bg-blue-500/10 text-blue-600 dark:text-blue-400'
+                                                    : 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400'
                                                     }`}>
                                                     {discount.type === 'percentage' ? (
                                                         <Percent className="w-3 h-3 mr-1" />
@@ -334,8 +334,8 @@ export default function DiscountsPage() {
                                             <button
                                                 onClick={() => toggleActive(discount.id, discount.is_active)}
                                                 className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border transition-all cursor-pointer ${discount.is_active
-                                                        ? "bg-green-500/10 text-green-600 border-green-500/20 hover:bg-green-500/20"
-                                                        : "bg-zinc-500/10 text-zinc-600 border-zinc-500/20 hover:bg-zinc-500/20 dark:text-zinc-400"
+                                                    ? "bg-green-500/10 text-green-600 border-green-500/20 hover:bg-green-500/20"
+                                                    : "bg-zinc-500/10 text-zinc-600 border-zinc-500/20 hover:bg-zinc-500/20 dark:text-zinc-400"
                                                     }`}
                                             >
                                                 {discount.is_active ? "Active" : "Inactive"}

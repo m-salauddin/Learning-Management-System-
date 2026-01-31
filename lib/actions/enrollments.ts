@@ -23,15 +23,15 @@ export async function getMyEnrollments(params: {
     status?: 'active' | 'completed' | 'all';
 } = {}): Promise<PaginatedResponse<EnrollmentWithCourse>> {
     const supabase = await createClient();
-    
+
     const { data: { user }, error: authError } = await supabase.auth.getUser();
     if (authError || !user) {
         return { data: [], total: 0, page: 1, pageSize: 10, totalPages: 0 };
     }
-    
+
     const { page = 1, pageSize = 10, status = 'all' } = params;
     const offset = (page - 1) * pageSize;
-    
+
     let query = supabase
         .from('enrollments')
         .select(`
@@ -42,24 +42,24 @@ export async function getMyEnrollments(params: {
             )
         `, { count: 'exact' })
         .eq('user_id', user.id);
-    
+
     if (status === 'active') {
         query = query.is('completed_at', null);
     } else if (status === 'completed') {
         query = query.not('completed_at', 'is', null);
     }
-    
+
     query = query
         .order('last_accessed_at', { ascending: false })
         .range(offset, offset + pageSize - 1);
-    
+
     const { data, error, count } = await query;
-    
+
     if (error) {
         console.error('Error fetching enrollments:', error);
         return { data: [], total: 0, page, pageSize, totalPages: 0 };
     }
-    
+
     return {
         data: data as EnrollmentWithCourse[],
         total: count || 0,
@@ -75,12 +75,12 @@ export async function getMyEnrollments(params: {
 
 export async function getEnrollment(courseId: string): Promise<ApiResponse<EnrollmentWithProgress>> {
     const supabase = await createClient();
-    
+
     const { data: { user }, error: authError } = await supabase.auth.getUser();
     if (authError || !user) {
         return { success: false, error: 'Unauthorized' };
     }
-    
+
     const { data: enrollment, error } = await supabase
         .from('enrollments')
         .select(`
@@ -93,17 +93,17 @@ export async function getEnrollment(courseId: string): Promise<ApiResponse<Enrol
         .eq('user_id', user.id)
         .eq('course_id', courseId)
         .single();
-    
+
     if (error) {
         return { success: false, error: 'Not enrolled in this course' };
     }
-    
+
     // Get lesson progress
     const { data: progress } = await supabase
         .from('lesson_progress')
         .select('*')
         .eq('enrollment_id', enrollment.id);
-    
+
     return {
         success: true,
         data: {
@@ -119,10 +119,10 @@ export async function getEnrollment(courseId: string): Promise<ApiResponse<Enrol
 
 export async function checkEnrollment(courseId: string): Promise<boolean> {
     const supabase = await createClient();
-    
+
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return false;
-    
+
     const { data } = await supabase
         .from('enrollments')
         .select('id')
@@ -130,7 +130,7 @@ export async function checkEnrollment(courseId: string): Promise<boolean> {
         .eq('course_id', courseId)
         .eq('status', 'active')
         .single();
-    
+
     return !!data;
 }
 
@@ -144,12 +144,12 @@ export async function updateLessonProgress(
     isCompleted: boolean = false
 ): Promise<ApiResponse<{ completed_lessons: number; total_lessons: number; progress_percentage: number }>> {
     const supabase = await createClient();
-    
+
     const { data: { user }, error: authError } = await supabase.auth.getUser();
     if (authError || !user) {
         return { success: false, error: 'Unauthorized' };
     }
-    
+
     // Call RPC function that handles all the logic
     const { data, error } = await supabase
         .rpc('update_lesson_progress', {
@@ -157,11 +157,11 @@ export async function updateLessonProgress(
             p_watched_seconds: watchedSeconds,
             p_is_completed: isCompleted
         });
-    
+
     if (error) {
         return { success: false, error: error.message };
     }
-    
+
     revalidatePath('/dashboard/my-courses');
     return { success: true, data };
 }
@@ -186,12 +186,12 @@ export async function getResumeLesson(courseId: string): Promise<ApiResponse<{
     watched_seconds: number;
 }>> {
     const supabase = await createClient();
-    
+
     const { data: { user }, error: authError } = await supabase.auth.getUser();
     if (authError || !user) {
         return { success: false, error: 'Unauthorized' };
     }
-    
+
     // Get enrollment with last lesson
     const { data: enrollment } = await supabase
         .from('enrollments')
@@ -199,7 +199,7 @@ export async function getResumeLesson(courseId: string): Promise<ApiResponse<{
         .eq('user_id', user.id)
         .eq('course_id', courseId)
         .single();
-    
+
     if (!enrollment?.last_lesson_id) {
         // Get first lesson of course
         const { data: firstLesson } = await supabase
@@ -213,11 +213,11 @@ export async function getResumeLesson(courseId: string): Promise<ApiResponse<{
             .order('position', { ascending: true })
             .limit(1)
             .single();
-        
+
         if (!firstLesson) {
             return { success: false, error: 'No lessons in this course' };
         }
-        
+
         return {
             success: true,
             data: {
@@ -228,7 +228,7 @@ export async function getResumeLesson(courseId: string): Promise<ApiResponse<{
             }
         };
     }
-    
+
     // Get last lesson with progress
     const { data: lesson } = await supabase
         .from('lessons')
@@ -238,18 +238,18 @@ export async function getResumeLesson(courseId: string): Promise<ApiResponse<{
         `)
         .eq('id', enrollment.last_lesson_id)
         .single();
-    
+
     const { data: progress } = await supabase
         .from('lesson_progress')
         .select('watched_seconds')
         .eq('lesson_id', enrollment.last_lesson_id)
         .eq('user_id', user.id)
         .single();
-    
+
     if (!lesson) {
         return { success: false, error: 'Lesson not found' };
     }
-    
+
     return {
         success: true,
         data: {
@@ -266,40 +266,46 @@ export async function getResumeLesson(courseId: string): Promise<ApiResponse<{
 // ============================================================================
 
 export async function getCourseProgress(courseId: string): Promise<ApiResponse<{
+    enrollment_id: string;
+    course_id: string;
     progress_percentage: number;
     completed_lessons: number;
     total_lessons: number;
+    completed_at: string | null;
     lessons: { lesson_id: string; is_completed: boolean; watched_seconds: number }[];
 }>> {
     const supabase = await createClient();
-    
+
     const { data: { user }, error: authError } = await supabase.auth.getUser();
     if (authError || !user) {
         return { success: false, error: 'Unauthorized' };
     }
-    
+
     const { data: enrollment } = await supabase
         .from('enrollments')
-        .select('id, progress_percentage, completed_lessons, total_lessons')
+        .select('id, course_id, progress_percentage, completed_lessons, total_lessons, completed_at')
         .eq('user_id', user.id)
         .eq('course_id', courseId)
         .single();
-    
+
     if (!enrollment) {
         return { success: false, error: 'Not enrolled' };
     }
-    
+
     const { data: progress } = await supabase
         .from('lesson_progress')
         .select('lesson_id, is_completed, watched_seconds')
         .eq('enrollment_id', enrollment.id);
-    
+
     return {
         success: true,
         data: {
+            enrollment_id: enrollment.id,
+            course_id: enrollment.course_id,
             progress_percentage: enrollment.progress_percentage,
             completed_lessons: enrollment.completed_lessons,
             total_lessons: enrollment.total_lessons,
+            completed_at: enrollment.completed_at,
             lessons: progress || []
         }
     };
@@ -316,26 +322,26 @@ export async function getAllEnrollments(params: {
     userId?: string;
 } = {}): Promise<PaginatedResponse<EnrollmentWithCourse & { user: { id: string; name: string; email: string } }>> {
     const supabase = await createClient();
-    
+
     const { data: { user }, error: authError } = await supabase.auth.getUser();
     if (authError || !user) {
         return { data: [], total: 0, page: 1, pageSize: 10, totalPages: 0 };
     }
-    
+
     // Check admin
     const { data: profile } = await supabase
         .from('users')
         .select('role')
         .eq('id', user.id)
         .single();
-    
+
     if (profile?.role !== 'admin') {
         return { data: [], total: 0, page: 1, pageSize: 10, totalPages: 0 };
     }
-    
+
     const { page = 1, pageSize = 10, courseId, userId } = params;
     const offset = (page - 1) * pageSize;
-    
+
     let query = supabase
         .from('enrollments')
         .select(`
@@ -346,25 +352,25 @@ export async function getAllEnrollments(params: {
             ),
             user:users(id, name, email)
         `, { count: 'exact' });
-    
+
     if (courseId) {
         query = query.eq('course_id', courseId);
     }
-    
+
     if (userId) {
         query = query.eq('user_id', userId);
     }
-    
+
     query = query
         .order('created_at', { ascending: false })
         .range(offset, offset + pageSize - 1);
-    
+
     const { data, error, count } = await query;
-    
+
     if (error) {
         return { data: [], total: 0, page, pageSize, totalPages: 0 };
     }
-    
+
     return {
         data: data as any,
         total: count || 0,

@@ -26,7 +26,7 @@ export function NotificationDropdown() {
     const dropdownRef = useRef<HTMLDivElement>(null);
     const supabase = createClient();
 
-    useOnClickOutside(dropdownRef, () => setIsOpen(false));
+    useOnClickOutside(dropdownRef as React.RefObject<HTMLElement>, () => setIsOpen(false));
 
     useEffect(() => {
         fetchNotifications();
@@ -91,7 +91,8 @@ export function NotificationDropdown() {
 
         await supabase
             .from('notifications')
-            .update({ is_read: true })
+            // @ts-expect-error - Update type not correctly inferred for notifications
+            .update({ is_read: true } as any)
             .eq('id', id);
     };
 
@@ -104,7 +105,8 @@ export function NotificationDropdown() {
 
         await supabase
             .from('notifications')
-            .update({ is_read: true })
+            // @ts-expect-error - Update type not correctly inferred for notifications
+            .update({ is_read: true } as any)
             .in('id', unreadIds);
     };
 
