@@ -6,3 +6,4 @@ export { TerminalSection } from "./TerminalSection";
 export { PricingSection } from "./PricingSection";
 export { TestimonialsSection } from "./TestimonialsSection";
 export { CTASection } from "./CTASection";
+export { HowItWorks } from "./HowItWorks";

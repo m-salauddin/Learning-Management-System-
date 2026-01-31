@@ -20,6 +20,10 @@ const nextConfig: NextConfig = {
         hostname: "ixbhljtotgsqkzbkucuc.supabase.co",
         pathname: "/storage/v1/object/public/**",
       },
+      {
+        protocol: "https",
+        hostname: "i.pravatar.cc",
+      },
     ],
   },
 };
