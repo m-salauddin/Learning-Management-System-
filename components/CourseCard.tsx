@@ -1,9 +1,12 @@
+"use client";
+
 import Image from "next/image";
 import Link from "next/link";
 import { Star, ArrowRight } from "lucide-react";
-import { Course } from "@/data/courses";
+import { MappedCourse } from "@/types/mapped-course";
 
-export function CourseCard({ course }: { course: Course }) {
+// Adapted to use MappedCourse
+export function CourseCard({ course }: { course: MappedCourse }) {
     return (
         <div className="group relative h-full">
             {/* Card container with glass effect */}
@@ -17,7 +20,7 @@ export function CourseCard({ course }: { course: Course }) {
                 <div className="p-4 pb-0">
                     <div className="relative h-48 rounded-2xl overflow-hidden w-full">
                         <Image
-                            src={course.image}
+                            src={course.image || '/placeholder-course.jpg'} // Fallback
                             alt={course.title}
                             fill
                             className="object-cover transition-transform duration-700 group-hover:scale-110"
@@ -64,7 +67,7 @@ export function CourseCard({ course }: { course: Course }) {
 
                     {/* Tags */}
                     <div className="flex flex-wrap gap-2 mb-5">
-                        {course.tags.map((tag) => (
+                        {course.tags?.slice(0, 3).map((tag) => (
                             <span
                                 key={tag}
                                 className="px-3 py-1 rounded-full text-xs font-medium bg-muted/80 text-muted-foreground hover:bg-primary/10 hover:text-primary transition-colors duration-300"

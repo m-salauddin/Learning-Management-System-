@@ -4,11 +4,11 @@ import Link from "next/link";
 import { motion } from "motion/react";
 import { ArrowRight, GraduationCap } from "lucide-react";
 import { staggerContainer, staggerItem } from "@/lib/motion";
-import { COURSES } from "@/data/courses";
 import { Badge } from "@/components/ui/Badge";
 import { CourseCard } from "@/components/CourseCard";
+import { MappedCourse } from "@/types/mapped-course";
 
-export function CoursesSection() {
+export function CoursesSection({ courses }: { courses: MappedCourse[] }) {
     return (
         <section id="courses" className="py-24">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -42,11 +42,17 @@ export function CoursesSection() {
                     viewport={{ once: true }}
                     className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
                 >
-                    {COURSES.slice(0, 6).map((course, index) => (
-                        <motion.div key={index} variants={staggerItem} className="h-full">
-                            <CourseCard course={course} />
-                        </motion.div>
-                    ))}
+                    {courses.length > 0 ? (
+                        courses.slice(0, 6).map((course) => (
+                            <motion.div key={course.id} variants={staggerItem} className="h-full">
+                                <CourseCard course={course} />
+                            </motion.div>
+                        ))
+                    ) : (
+                        <div className="col-span-full py-20 text-center border border-dashed border-border rounded-3xl bg-muted/20">
+                            <p className="text-muted-foreground">No courses found matching your criteria.</p>
+                        </div>
+                    )}
                 </motion.div>
             </div>
         </section>

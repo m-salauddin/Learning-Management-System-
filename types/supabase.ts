@@ -16,8 +16,8 @@ export interface Database {
                     email: string
                     avatar_url: string
                     courses_enrolled: string[]
-                    role: Database['public']['Enums']['user_role']
-                    providers: Database['public']['Enums']['auth_provider'][]
+                    role: 'student' | 'teacher' | 'moderator' | 'admin'
+                    providers: ('google' | 'github' | 'password')[]
                     created_at: string
                     updated_at: string
                 }
@@ -27,8 +27,8 @@ export interface Database {
                     email: string
                     avatar_url?: string
                     courses_enrolled?: string[]
-                    role?: Database['public']['Enums']['user_role']
-                    providers?: Database['public']['Enums']['auth_provider'][]
+                    role?: 'student' | 'teacher' | 'moderator' | 'admin'
+                    providers?: ('google' | 'github' | 'password')[]
                     created_at?: string
                     updated_at?: string
                 }
@@ -38,25 +38,17 @@ export interface Database {
                     email?: string
                     avatar_url?: string
                     courses_enrolled?: string[]
-                    role?: Database['public']['Enums']['user_role']
-                    providers?: Database['public']['Enums']['auth_provider'][]
+                    role?: 'student' | 'teacher' | 'moderator' | 'admin'
+                    providers?: ('google' | 'github' | 'password')[]
                     created_at?: string
                     updated_at?: string
                 }
-                Relationships: [
-                    {
-                        foreignKeyName: "users_id_fkey"
-                        columns: ["id"]
-                        referencedRelation: "users"
-                        referencedColumns: ["id"]
-                    }
-                ]
             }
             role_requests: {
                 Row: {
                     id: string
                     user_id: string
-                    requested_role: Database['public']['Enums']['user_role']
+                    requested_role: 'student' | 'teacher' | 'moderator' | 'admin'
                     status: 'pending' | 'approved' | 'rejected'
                     created_at: string
                     updated_at: string
@@ -64,7 +56,7 @@ export interface Database {
                 Insert: {
                     id?: string
                     user_id: string
-                    requested_role: Database['public']['Enums']['user_role']
+                    requested_role: 'student' | 'teacher' | 'moderator' | 'admin'
                     status?: 'pending' | 'approved' | 'rejected'
                     created_at?: string
                     updated_at?: string
@@ -72,20 +64,47 @@ export interface Database {
                 Update: {
                     id?: string
                     user_id?: string
-                    requested_role?: Database['public']['Enums']['user_role']
+                    requested_role?: 'student' | 'teacher' | 'moderator' | 'admin'
                     status?: 'pending' | 'approved' | 'rejected'
                     created_at?: string
                     updated_at?: string
                 }
-                Relationships: [
-                    {
-                        foreignKeyName: "role_requests_user_id_fkey"
-                        columns: ["user_id"]
-                        referencedRelation: "users"
-                        referencedColumns: ["id"]
-                    }
-                ]
-            },
+            }
+            categories: {
+                Row: {
+                    id: string
+                    name: string
+                    slug: string
+                    description: string | null
+                    icon: string | null
+                    parent_id: string | null
+                    course_count: number
+                    created_at: string
+                    updated_at: string
+                }
+                Insert: {
+                    id?: string
+                    name: string
+                    slug: string
+                    description?: string | null
+                    icon?: string | null
+                    parent_id?: string | null
+                    course_count?: number
+                    created_at?: string
+                    updated_at?: string
+                }
+                Update: {
+                    id?: string
+                    name?: string
+                    slug?: string
+                    description?: string | null
+                    icon?: string | null
+                    parent_id?: string | null
+                    course_count?: number
+                    created_at?: string
+                    updated_at?: string
+                }
+            }
             courses: {
                 Row: {
                     id: string
@@ -97,6 +116,22 @@ export interface Database {
                     published: boolean
                     created_at: string
                     updated_at: string
+                    // Extended columns
+                    slug: string | null
+                    short_description: string | null
+                    preview_video_url: string | null
+                    category_id: string | null
+                    level: 'beginner' | 'intermediate' | 'advanced' | null
+                    language: string | null
+                    duration_hours: number | null
+                    total_lessons: number | null
+                    total_students: number | null
+                    rating: number | null
+                    rating_count: number | null
+                    status: 'draft' | 'pending_review' | 'published' | 'archived' | null
+                    requirements: string[] | null
+                    learning_objectives: string[] | null
+                    tags: string[] | null
                 }
                 Insert: {
                     id?: string
@@ -108,6 +143,21 @@ export interface Database {
                     published?: boolean
                     created_at?: string
                     updated_at?: string
+                    slug?: string | null
+                    short_description?: string | null
+                    preview_video_url?: string | null
+                    category_id?: string | null
+                    level?: 'beginner' | 'intermediate' | 'advanced' | null
+                    language?: string | null
+                    duration_hours?: number | null
+                    total_lessons?: number | null
+                    total_students?: number | null
+                    rating?: number | null
+                    rating_count?: number | null
+                    status?: 'draft' | 'pending_review' | 'published' | 'archived' | null
+                    requirements?: string[] | null
+                    learning_objectives?: string[] | null
+                    tags?: string[] | null
                 }
                 Update: {
                     id?: string
@@ -119,15 +169,230 @@ export interface Database {
                     published?: boolean
                     created_at?: string
                     updated_at?: string
+                    slug?: string | null
+                    short_description?: string | null
+                    preview_video_url?: string | null
+                    category_id?: string | null
+                    level?: 'beginner' | 'intermediate' | 'advanced' | null
+                    language?: string | null
+                    duration_hours?: number | null
+                    total_lessons?: number | null
+                    total_students?: number | null
+                    rating?: number | null
+                    rating_count?: number | null
+                    status?: 'draft' | 'pending_review' | 'published' | 'archived' | null
+                    requirements?: string[] | null
+                    learning_objectives?: string[] | null
+                    tags?: string[] | null
                 }
-                Relationships: [
-                    {
-                        foreignKeyName: "courses_instructor_id_fkey"
-                        columns: ["instructor_id"]
-                        referencedRelation: "users"
-                        referencedColumns: ["id"]
-                    }
-                ]
+            }
+            modules: {
+                Row: {
+                    id: string
+                    course_id: string
+                    title: string
+                    description: string | null
+                    position: number
+                    is_published: boolean | null
+                    created_at: string
+                    updated_at: string
+                }
+                Insert: {
+                    id?: string
+                    course_id: string
+                    title: string
+                    description?: string | null
+                    position?: number
+                    is_published?: boolean | null
+                    created_at?: string
+                    updated_at?: string
+                }
+                Update: {
+                    id?: string
+                    course_id?: string
+                    title?: string
+                    description?: string | null
+                    position?: number
+                    is_published?: boolean | null
+                    created_at?: string
+                    updated_at?: string
+                }
+            }
+            lessons: {
+                Row: {
+                    id: string
+                    module_id: string
+                    title: string
+                    description: string | null
+                    lesson_type: 'video' | 'text' | 'quiz' | 'assignment' | null
+                    position: number
+                    duration_minutes: number | null
+                    is_free_preview: boolean | null
+                    is_published: boolean | null
+                    created_at: string
+                    updated_at: string
+                }
+                Insert: {
+                    id?: string
+                    module_id: string
+                    title: string
+                    description?: string | null
+                    lesson_type?: 'video' | 'text' | 'quiz' | 'assignment' | null
+                    position?: number
+                    duration_minutes?: number | null
+                    is_free_preview?: boolean | null
+                    is_published?: boolean | null
+                    created_at?: string
+                    updated_at?: string
+                }
+                Update: {
+                    id?: string
+                    module_id?: string
+                    title?: string
+                    description?: string | null
+                    lesson_type?: 'video' | 'text' | 'quiz' | 'assignment' | null
+                    position?: number
+                    duration_minutes?: number | null
+                    is_free_preview?: boolean | null
+                    is_published?: boolean | null
+                    created_at?: string
+                    updated_at?: string
+                }
+            }
+            lesson_assets: {
+                Row: {
+                    id: string
+                    lesson_id: string
+                    video_path: string | null
+                    video_duration_seconds: number | null
+                    markdown_content: string | null
+                    resources: Json | null
+                    attachments: string[] | null
+                    created_at: string
+                    updated_at: string
+                }
+                Insert: {
+                    id?: string
+                    lesson_id: string
+                    video_path?: string | null
+                    video_duration_seconds?: number | null
+                    markdown_content?: string | null
+                    resources?: Json | null
+                    attachments?: string[] | null
+                    created_at?: string
+                    updated_at?: string
+                }
+                Update: {
+                    id?: string
+                    lesson_id?: string
+                    video_path?: string | null
+                    video_duration_seconds?: number | null
+                    markdown_content?: string | null
+                    resources?: Json | null
+                    attachments?: string[] | null
+                    created_at?: string
+                    updated_at?: string
+                }
+            }
+            enrollments: {
+                Row: {
+                    id: string
+                    user_id: string
+                    course_id: string
+                    enrolled_at: string
+                    expires_at: string | null
+                    status: string | null // 'active' | 'expired' | 'cancelled' | 'refunded'
+                    progress_percentage: number | null
+                    completed_lessons: number | null
+                    total_lessons: number | null
+                    last_accessed_at: string | null
+                    last_lesson_id: string | null
+                    completed_at: string | null
+                    certificate_issued: boolean | null
+                    created_at: string
+                    updated_at: string
+                }
+                Insert: {
+                    id?: string
+                    user_id: string
+                    course_id: string
+                    enrolled_at?: string
+                    expires_at?: string | null
+                    status?: string | null
+                    progress_percentage?: number | null
+                    completed_lessons?: number | null
+                    total_lessons?: number | null
+                    last_accessed_at?: string | null
+                    last_lesson_id?: string | null
+                    completed_at?: string | null
+                    certificate_issued?: boolean | null
+                    created_at?: string
+                    updated_at?: string
+                }
+                Update: {
+                    id?: string
+                    user_id?: string
+                    course_id?: string
+                    enrolled_at?: string
+                    expires_at?: string | null
+                    status?: string | null
+                    progress_percentage?: number | null
+                    completed_lessons?: number | null
+                    total_lessons?: number | null
+                    last_accessed_at?: string | null
+                    last_lesson_id?: string | null
+                    completed_at?: string | null
+                    certificate_issued?: boolean | null
+                    created_at?: string
+                    updated_at?: string
+                }
+            }
+            lesson_progress: {
+                Row: {
+                    id: string
+                    user_id: string
+                    lesson_id: string
+                    enrollment_id: string
+                    watched_seconds: number | null
+                    total_seconds: number | null
+                    progress_percentage: number | null
+                    is_completed: boolean | null
+                    completed_at: string | null
+                    started_at: string | null
+                    last_watched_at: string | null
+                    created_at: string
+                    updated_at: string
+                }
+                Insert: {
+                    id?: string
+                    user_id: string
+                    lesson_id: string
+                    enrollment_id: string
+                    watched_seconds?: number | null
+                    total_seconds?: number | null
+                    progress_percentage?: number | null
+                    is_completed?: boolean | null
+                    completed_at?: string | null
+                    started_at?: string | null
+                    last_watched_at?: string | null
+                    created_at?: string
+                    updated_at?: string
+                }
+                Update: {
+                    id?: string
+                    user_id?: string
+                    lesson_id?: string
+                    enrollment_id?: string
+                    watched_seconds?: number | null
+                    total_seconds?: number | null
+                    progress_percentage?: number | null
+                    is_completed?: boolean | null
+                    completed_at?: string | null
+                    started_at?: string | null
+                    last_watched_at?: string | null
+                    created_at?: string
+                    updated_at?: string
+                }
             }
         }
         Views: {
@@ -139,6 +404,10 @@ export interface Database {
         Enums: {
             user_role: 'student' | 'teacher' | 'moderator' | 'admin'
             auth_provider: 'google' | 'github' | 'password'
+            course_status: 'draft' | 'pending_review' | 'published' | 'archived'
+            lesson_type: 'video' | 'text' | 'quiz' | 'assignment'
+            transaction_status: 'pending' | 'completed' | 'failed' | 'refunded'
+            coupon_type: 'percentage' | 'fixed'
         }
         CompositeTypes: {
             [_ in never]: never

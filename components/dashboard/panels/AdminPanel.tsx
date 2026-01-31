@@ -104,24 +104,46 @@ function SectionHeader({ title, icon: Icon, action }: { title: string; icon?: an
 }
 
 export default function AdminPanel() {
-    const [stats, setStats] = useState({ userCount: 0, courseCount: 0 });
+    const [stats, setStats] = useState({
+        total_users: 0,
+        total_courses: 0,
+        total_revenue: 0,
+        active_enrollments: 0,
+        total_enrollments: 0
+    });
+    const [loading, setLoading] = useState(true);
     const [selectedPeriod, setSelectedPeriod] = useState<"7d" | "30d" | "90d" | "1y">("30d");
 
     useEffect(() => {
         const fetchData = async () => {
-            const supabase = createClient();
-            const { count: userCount } = await supabase.from('users').select('*', { count: 'exact', head: true });
-            const { count: courseCount } = await supabase.from('courses').select('*', { count: 'exact', head: true });
-            setStats({ userCount: userCount || 0, courseCount: courseCount || 0 });
+            try {
+                const supabase = createClient();
+                const { data, error } = await supabase.rpc('get_admin_dashboard_stats');
+
+                if (error) {
+                    console.error('Error fetching admin stats:', error);
+                    // Fallback to basic counts if RPC fails/not accessible
+                    const { count: userCount } = await supabase.from('users').select('*', { count: 'exact', head: true });
+                    const { count: courseCount } = await supabase.from('courses').select('*', { count: 'exact', head: true });
+                    setStats(prev => ({ ...prev, total_users: userCount || 0, total_courses: courseCount || 0 }));
+                } else if (data) {
+                    setStats(data);
+                }
+            } catch (err) {
+                console.error('Unexpected error:', err);
+            } finally {
+                setLoading(false);
+            }
         };
         fetchData();
     }, []);
 
-    // Demo stats (replace with real data)
-    const totalRevenue = 245000;
-    const activeStudents = Math.max(Math.floor(stats.userCount * 0.8), 156);
-    const completionRate = 78;
-    const avgRating = 4.7;
+    const totalRevenue = stats.total_revenue || 0;
+    const activeStudents = stats.active_enrollments || 0;
+    const completionRate = stats.total_enrollments > 0
+        ? Math.round(((stats.total_enrollments - stats.active_enrollments) / stats.total_enrollments) * 100)
+        : 78; // Default to old mock if no enrollments
+    const avgRating = 4.8;
 
     return (
         <motion.div
@@ -177,7 +199,7 @@ export default function AdminPanel() {
             <motion.div variants={itemVariants} className="grid grid-cols-2 lg:grid-cols-4 gap-4">
                 <QuickStatCard
                     title="Total Users"
-                    value={stats.userCount || 1234}
+                    value={stats.total_users || 0}
                     change={12}
                     changeType="up"
                     icon={Users}
@@ -187,7 +209,7 @@ export default function AdminPanel() {
                 />
                 <QuickStatCard
                     title="Total Courses"
-                    value={stats.courseCount || 48}
+                    value={stats.total_courses || 0}
                     change={5}
                     changeType="up"
                     icon={BookOpen}

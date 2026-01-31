@@ -73,7 +73,8 @@ export async function createUser(userData: {
                 .update({
                     name: userData.name,
                     role: userData.role,
-                    email: userData.email
+                    email: userData.email,
+                    status: 'active'
                 })
                 .eq('id', newUser.user.id);
 
@@ -112,6 +113,10 @@ export async function getUsers(filters?: {
 
         if (filters?.role && filters.role !== 'all') {
             query = query.eq('role', filters.role);
+        }
+
+        if (filters?.status && filters.status !== 'all') {
+            query = query.eq('status', filters.status);
         }
 
         // Pagination
@@ -161,12 +166,36 @@ export async function getUserById(userId: string) {
     }
 }
 
-// Update user
+// Update user (Admin)
 export async function updateUser(userId: string, updates: Partial<ExtendedUser>) {
     try {
         const supabase = await createClient();
 
-        const { data, error } = await supabase
+        // 1. Check if current user is admin
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) {
+            return { user: null, error: 'Unauthorized' };
+        }
+
+        const { data: currentUser } = await supabase
+            .from('users')
+            .select('role')
+            .eq('id', user.id)
+            .single();
+
+        if (currentUser?.role !== 'admin') {
+            return { user: null, error: 'Only admins can update users' };
+        }
+
+        // 2. Update using Admin Client to bypass RLS
+        const supabaseAdmin = getSupabaseAdmin();
+
+        // Separate Auth updates (email/password if applicable) vs Profile updates
+        // For now, we update public.users. 
+        // Note: Changing email here won't change login email. 
+        // To change login email, we'd need supabaseAdmin.auth.admin.updateUserById(userId, { email: updates.email })
+
+        const { data, error } = await supabaseAdmin
             .from('users')
             .update({
                 ...updates,
@@ -181,6 +210,45 @@ export async function updateUser(userId: string, updates: Partial<ExtendedUser>)
         }
 
         revalidatePath('/dashboard/users');
+        return { user: data as ExtendedUser, error: null };
+    } catch (error: unknown) {
+        return { user: null, error: error instanceof Error ? error.message : 'Unknown error' };
+    }
+}
+
+// Update own profile
+export async function updateProfile(updates: Partial<ExtendedUser>) {
+    try {
+        const supabase = await createClient();
+
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) {
+            return { user: null, error: 'Unauthorized' };
+        }
+
+        // Only allow specific fields to be updated by the user
+        const allowedUpdates = {
+            name: updates.name,
+            avatar_url: updates.avatar_url,
+            bio: updates.bio,
+            phone: updates.phone,
+            location: updates.location,
+            website: updates.website,
+            updated_at: new Date().toISOString()
+        };
+
+        const { data, error } = await supabase
+            .from('users')
+            .update(allowedUpdates)
+            .eq('id', user.id)
+            .select()
+            .single();
+
+        if (error) {
+            return { user: null, error: error.message };
+        }
+
+        revalidatePath('/dashboard/profile');
         return { user: data as ExtendedUser, error: null };
     } catch (error: unknown) {
         return { user: null, error: error instanceof Error ? error.message : 'Unknown error' };
@@ -362,7 +430,7 @@ export async function getUserStats() {
 
         const { data: users, error } = await supabase
             .from('users')
-            .select('role, created_at');
+            .select('role, created_at, status');
 
         if (error || !users) {
             return { stats: null, error: error?.message || 'Failed to fetch stats' };
@@ -385,9 +453,9 @@ export async function getUserStats() {
 
         const stats = {
             total: users.length,
-            active: users.length, // You can add actual status field later
-            inactive: 0,
-            suspended: 0,
+            active: users.filter(u => u.status === 'active').length,
+            inactive: users.filter(u => u.status === 'inactive').length,
+            suspended: users.filter(u => u.status === 'suspended').length,
             students: users.filter(u => !u.role || u.role === 'student').length,
             teachers: users.filter(u => u.role === 'teacher').length,
             moderators: users.filter(u => u.role === 'moderator').length,
@@ -445,5 +513,37 @@ export async function exportUsersToCSV(filters?: {
         return { csv: csvContent, error: null };
     } catch (error: unknown) {
         return { csv: null, error: error instanceof Error ? error.message : 'Unknown error' };
+    }
+}
+
+// Export users to JSON
+export async function exportUsersToJSON(filters?: {
+    search?: string;
+    role?: string;
+}) {
+    try {
+        const supabase = await createClient();
+
+        let query = supabase
+            .from('users')
+            .select('*');
+
+        if (filters?.search) {
+            query = query.or(`name.ilike.%${filters.search}%,email.ilike.%${filters.search}%`);
+        }
+
+        if (filters?.role && filters.role !== 'all') {
+            query = query.eq('role', filters.role);
+        }
+
+        const { data, error } = await query;
+
+        if (error || !data) {
+            return { json: null, error: error?.message || 'Failed to export' };
+        }
+
+        return { json: JSON.stringify(data, null, 2), error: null };
+    } catch (error: unknown) {
+        return { json: null, error: error instanceof Error ? error.message : 'Unknown error' };
     }
 }

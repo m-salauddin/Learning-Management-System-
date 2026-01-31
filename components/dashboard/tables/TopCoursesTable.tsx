@@ -1,7 +1,7 @@
 "use client"
 
 import { cn } from "@/lib/utils"
-import { MoreHorizontal, ExternalLink, Star, Users, BookOpen, TrendingUp, TrendingDown } from "lucide-react"
+import { MoreHorizontal, ExternalLink, Star, Users, BookOpen, TrendingUp, TrendingDown, Edit, Trash } from "lucide-react"
 
 const courses = [
     {
@@ -71,14 +71,14 @@ export function TopCoursesTable() {
         <div className="w-full overflow-x-auto">
             <table className="w-full">
                 <thead>
-                    <tr className="border-b border-border/50">
-                        <th className="text-left py-3 px-4 text-sm font-medium text-muted-foreground">Course</th>
-                        <th className="text-left py-3 px-4 text-sm font-medium text-muted-foreground hidden md:table-cell">Instructor</th>
-                        <th className="text-center py-3 px-4 text-sm font-medium text-muted-foreground">Students</th>
-                        <th className="text-center py-3 px-4 text-sm font-medium text-muted-foreground hidden sm:table-cell">Rating</th>
-                        <th className="text-right py-3 px-4 text-sm font-medium text-muted-foreground">Revenue</th>
-                        <th className="text-center py-3 px-4 text-sm font-medium text-muted-foreground hidden lg:table-cell">Trend</th>
-                        <th className="text-center py-3 px-4 text-sm font-medium text-muted-foreground w-10"></th>
+                    <tr className="border-b border-border/50 text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                        <th className="text-left py-3 px-4">Course</th>
+                        <th className="text-left py-3 px-4 hidden md:table-cell">Instructor</th>
+                        <th className="text-center py-3 px-4">Students</th>
+                        <th className="text-center py-3 px-4 hidden sm:table-cell">Rating</th>
+                        <th className="text-right py-3 px-4">Revenue</th>
+                        <th className="text-center py-3 px-4 hidden lg:table-cell">Trend</th>
+                        <th className="text-center py-3 px-4">Actions</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -142,9 +142,14 @@ export function TopCoursesTable() {
                                 </div>
                             </td>
                             <td className="py-4 px-4">
-                                <button className="p-2 hover:bg-muted rounded-lg transition-colors">
-                                    <MoreHorizontal className="w-4 h-4 text-muted-foreground" />
-                                </button>
+                                <div className="flex items-center justify-center gap-2">
+                                    <button className="p-2 hover:bg-muted rounded-lg transition-colors text-muted-foreground hover:text-primary" title="Edit Course">
+                                        <Edit className="w-4 h-4" />
+                                    </button>
+                                    <button className="p-2 hover:bg-muted rounded-lg transition-colors text-muted-foreground hover:text-red-500" title="Delete Course">
+                                        <Trash className="w-4 h-4" />
+                                    </button>
+                                </div>
                             </td>
                         </tr>
                     ))}

@@ -43,6 +43,7 @@ export function Pagination({
                         <Select
                             value={String(pageSize)}
                             onChange={(val) => onPageSizeChange(Number(val))}
+                            direction="top"
                         >
                             {[10, 25, 50, 100].map((size) => (
                                 <SelectOption key={size} value={String(size)}>

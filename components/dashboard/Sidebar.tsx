@@ -16,6 +16,7 @@ import {
     Ticket,
     Tags,
     BarChart3,
+    User,
 } from "lucide-react";
 import { Logo } from "@/components/ui/Logo";
 import { cn } from "@/lib/utils";
@@ -33,19 +34,19 @@ const NAV_ITEMS: Record<UserRole, SidebarItem[]> = {
         { icon: LayoutDashboard, label: "Overview", href: "/dashboard" },
         { icon: BookOpen, label: "My Courses", href: "/dashboard/my-courses" },
         { icon: Award, label: "Certificates", href: "/dashboard/certificates" },
-        { icon: Settings, label: "Settings", href: "/dashboard/settings" },
+        { icon: User, label: "Profile", href: "/dashboard/profile" },
     ],
     teacher: [
         { icon: LayoutDashboard, label: "Overview", href: "/dashboard" },
         { icon: BookOpen, label: "Instructor Courses", href: "/dashboard/instructor-courses" },
         { icon: DollarSign, label: "Earnings", href: "/dashboard/earnings" },
-        { icon: Settings, label: "Settings", href: "/dashboard/settings" },
+        { icon: User, label: "Profile", href: "/dashboard/profile" },
     ],
     moderator: [
         { icon: LayoutDashboard, label: "Overview", href: "/dashboard" },
         { icon: Flag, label: "Reports", href: "/dashboard/reports" },
         { icon: FileText, label: "Reviews", href: "/dashboard/reviews" },
-        { icon: Settings, label: "Settings", href: "/dashboard/settings" },
+        { icon: User, label: "Profile", href: "/dashboard/profile" },
     ],
     admin: [
         { icon: LayoutDashboard, label: "Overview", href: "/dashboard" },
@@ -53,7 +54,7 @@ const NAV_ITEMS: Record<UserRole, SidebarItem[]> = {
         { icon: BookOpen, label: "Courses", href: "/dashboard/courses" },
         { icon: Tags, label: "Discounts", href: "/dashboard/discounts" },
         { icon: Ticket, label: "Coupons", href: "/dashboard/coupons" },
-        { icon: Settings, label: "Settings", href: "/dashboard/settings" },
+        { icon: User, label: "Profile", href: "/dashboard/profile" },
     ],
 };
 

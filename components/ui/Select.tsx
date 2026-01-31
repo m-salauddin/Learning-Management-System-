@@ -21,9 +21,10 @@ interface SelectProps {
     className?: string;
     placeholder?: string;
     icon?: ReactNode;
+    direction?: "top" | "bottom";
 }
 
-export function Select({ value, onChange, children, className, placeholder, icon }: SelectProps) {
+export function Select({ value, onChange, children, className, placeholder, icon, direction = "bottom" }: SelectProps) {
     const [isOpen, setIsOpen] = useState(false);
     const containerRef = useRef<HTMLDivElement>(null);
 
@@ -82,11 +83,14 @@ export function Select({ value, onChange, children, className, placeholder, icon
                 <AnimatePresence>
                     {isOpen && (
                         <motion.div
-                            initial={{ opacity: 0, y: 5, scale: 0.95 }}
+                            initial={{ opacity: 0, y: direction === "top" ? 10 : -10, scale: 0.95 }}
                             animate={{ opacity: 1, y: 0, scale: 1 }}
-                            exit={{ opacity: 0, y: 5, scale: 0.95 }}
+                            exit={{ opacity: 0, y: direction === "top" ? 10 : -10, scale: 0.95 }}
                             transition={{ type: "spring", stiffness: 400, damping: 25 }}
-                            className="absolute z-50 w-full mt-2 overflow-hidden rounded-xl border border-border/50 bg-background/80 backdrop-blur-xl shadow-xl shadow-black/10 p-1"
+                            className={cn(
+                                "absolute z-50 w-full overflow-hidden rounded-xl border border-border/50 bg-background/80 backdrop-blur-xl shadow-xl shadow-black/10 p-1",
+                                direction === "top" ? "bottom-full mb-2" : "mt-2"
+                            )}
                         >
                             <div className="max-h-60 overflow-y-auto custom-scrollbar flex flex-col gap-0.5">
                                 {children}
