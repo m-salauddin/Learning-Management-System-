@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Space_Grotesk, JetBrains_Mono } from "next/font/google";
 import { ThemeProvider } from "@/components/providers/theme-provider";
 import { ReduxProvider } from "@/components/providers/ReduxProvider";
+import { NotFoundProvider } from "@/contexts/NotFoundContext";
 import { CookieConsent } from "@/components/CookieConsent";
 import { ToastProvider } from "@/components/ui/toast";
 import { SocialLoginToast } from "@/components/auth/SocialLoginToast";
@@ -103,14 +104,16 @@ export default function RootLayout({
           disableTransitionOnChange
         >
           <ReduxProvider>
-            <ToastProvider>
-              <AuthListener />
-              <Suspense fallback={<div />}>
-                <SocialLoginToast />
-              </Suspense>
-              {children}
-              <CookieConsent />
-            </ToastProvider>
+            <NotFoundProvider>
+              <ToastProvider>
+                <AuthListener />
+                <Suspense fallback={<div />}>
+                  <SocialLoginToast />
+                </Suspense>
+                {children}
+                <CookieConsent />
+              </ToastProvider>
+            </NotFoundProvider>
           </ReduxProvider>
         </ThemeProvider>
       </body>

@@ -12,6 +12,7 @@ import { cn } from "@/lib/utils";
 import { UserDropdown } from "@/components/ui/UserDropdown/UserDropdown";
 import { NotificationDropdown } from "@/components/ui/NotificationDropdown";
 import { useAppSelector } from "@/lib/store/hooks";
+import { useNotFound } from "@/contexts/NotFoundContext";
 
 
 const navItems = [
@@ -61,6 +62,9 @@ export function Navbar() {
     const [isSearchOpen, setIsSearchOpen] = useState(false);
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
     const { user, isLoading } = useAppSelector((state) => state.auth);
+    const { isNotFound } = useNotFound();
+
+
 
 
 
@@ -92,6 +96,8 @@ export function Navbar() {
         };
     }, [isMobileMenuOpen, isSearchOpen]);
 
+
+    if (isNotFound) return null;
 
     return (
         <nav

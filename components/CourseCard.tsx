@@ -2,7 +2,7 @@
 import { useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { Star, Clock, Users, ArrowRight, Flame, Zap, BookOpen, Hash } from "lucide-react";
+import { Star, Clock, Users, ArrowRight, Zap, BookOpen, Hash, Timer } from "lucide-react";
 import { MappedCourse } from "@/types/mapped-course";
 
 export function CourseCard({ course }: { course: MappedCourse }) {
@@ -31,27 +31,23 @@ export function CourseCard({ course }: { course: MappedCourse }) {
 
     const hasDiscount = course.discountPrice && timeLeft;
 
+    // Format countdown string
+    const formatCountdown = () => {
+        if (!timeLeft) return "";
+        const parts = [];
+        if (timeLeft.days > 0) parts.push(`${timeLeft.days}d`);
+        parts.push(`${String(timeLeft.hours).padStart(2, '0')}h`);
+        parts.push(`${String(timeLeft.minutes).padStart(2, '0')}m`);
+        parts.push(`${String(timeLeft.seconds).padStart(2, '0')}s`);
+        return parts.join(" ");
+    };
+
     return (
         <div className="group relative h-full">
-            {/* Ambient glow effect */}
-            <div className="absolute -inset-0.5 bg-linear-to-r from-primary/20 via-accent/20 to-primary/20 rounded-[26px] opacity-0 group-hover:opacity-100 blur-xl transition-all duration-700" />
+            <div className="relative h-full flex flex-col bg-card/80 border border-border rounded-2xl overflow-hidden transition-all duration-500 group-hover:border-border group-hover:-translate-y-1">
 
-            {/* Card container */}
-            <div className="relative h-full flex flex-col bg-card/95 dark:bg-card/80 backdrop-blur-2xl border border-border/60 dark:border-white/10 rounded-3xl overflow-hidden transition-all duration-500 group-hover:border-primary/40 group-hover:shadow-2xl group-hover:-translate-y-1.5">
-
-                {/* Animated gradient border on hover */}
-                <div className="absolute inset-0 rounded-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none">
-                    <div className="absolute inset-px rounded-3xl bg-card/95 dark:bg-card/80" />
-                </div>
-
-                {/* Shine sweep effect */}
-                <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none overflow-hidden rounded-3xl">
-                    <div className="absolute inset-0 bg-linear-to-r from-transparent via-white/8 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000 ease-out" />
-                </div>
-
-                {/* Course Image Section */}
-                <div className="relative p-3 pb-0">
-                    <div className="relative h-44 rounded-2xl overflow-hidden">
+                <div className="relative p-3">
+                    <div className="relative h-48 rounded-xl overflow-hidden">
                         <Image
                             src={course.image || '/placeholder-course.jpg'}
                             alt={course.title}
@@ -59,121 +55,109 @@ export function CourseCard({ course }: { course: MappedCourse }) {
                             className="object-cover transition-transform duration-700 group-hover:scale-105"
                         />
 
-                        {/* Gradient overlays */}
-                        <div className="absolute inset-0 bg-linear-to-t from-black/60 via-black/20 to-transparent" />
-                        <div className="absolute inset-0 bg-linear-to-br from-primary/10 via-transparent to-accent/10 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+                        <div className="absolute inset-0 bg-linear-to-t from-black/90 via-black/40 to-black/20" />
 
-                        {/* Top badges row */}
-                        <div className="absolute top-2.5 left-2.5 right-2.5 flex items-start justify-between gap-2">
-                            {/* Discount countdown */}
+                        <div className="absolute top-3 left-3 right-3 flex items-start justify-between gap-2">
+                            {/* Countdown badge */}
                             {hasDiscount && (
-                                <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-linear-to-r from-orange-500 to-red-500 text-white text-xs font-bold shadow-lg shadow-orange-500/40">
-                                    <Flame className="w-3.5 h-3.5" />
-                                    <span className="font-mono font-bold tracking-wide">
-                                        {timeLeft.days > 0 ? `${timeLeft.days}d ` : ""}{String(timeLeft.hours).padStart(2, '0')}:{String(timeLeft.minutes).padStart(2, '0')}:{String(timeLeft.seconds).padStart(2, '0')}
+                                <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/20 dark:bg-black/60 backdrop-blur-md border border-white/30 dark:border-white/10 shadow-sm">
+                                    <Timer className="w-3.5 h-3.5 text-amber-400" />
+                                    <span className="text-white text-xs font-bold font-mono tracking-wide">
+                                        {formatCountdown()}
                                     </span>
                                 </div>
                             )}
 
-                            {/* Duration badge */}
-                            <div className="ml-auto flex items-center gap-1 px-2.5 py-1.5 rounded-xl bg-black/50 backdrop-blur-md text-white text-xs font-semibold border border-white/10">
-                                <Clock className="w-3 h-3 text-primary" />
+                            <div className="ml-auto flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/20 dark:bg-black/60 backdrop-blur-md text-white text-xs font-medium border border-white/30 dark:border-white/10 shadow-sm">
+                                <Clock className="w-3 h-3 text-sky-400" />
                                 <span>{course.duration}</span>
                             </div>
                         </div>
 
-                        {/* Bottom overlay with rating & students */}
-                        <div className="absolute bottom-0 left-0 right-0 p-3 flex items-center justify-between">
-                            {/* Rating */}
-                            <div className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-black/50 backdrop-blur-md border border-white/10">
-                                <Star className="w-3.5 h-3.5 fill-yellow-400 text-yellow-400" />
+                        <div className="absolute bottom-3 left-3 right-3 flex items-center justify-between">
+                            <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/20 dark:bg-black/60 backdrop-blur-md border border-white/30 dark:border-white/10 shadow-sm">
+                                <Star className="w-3.5 h-3.5 fill-amber-400 text-amber-400" />
                                 <span className="text-white text-xs font-bold">{course.rating.toFixed(1)}</span>
-                                <span className="text-white/60 text-[10px]">({course.reviews})</span>
+                                <span className="text-white/70 text-[10px]">({course.reviews})</span>
                             </div>
 
-                            {/* Students */}
-                            <div className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-black/50 backdrop-blur-md border border-white/10">
-                                <Users className="w-3.5 h-3.5 text-primary" />
-                                <span className="text-white text-xs font-semibold">{course.students}</span>
+                            <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/20 dark:bg-black/60 backdrop-blur-md border border-white/30 dark:border-white/10 shadow-sm">
+                                <Users className="w-3.5 h-3.5 text-emerald-400" />
+                                <span className="text-white text-xs font-medium">{course.students}</span>
                             </div>
                         </div>
                     </div>
                 </div>
 
-                {/* Content Section */}
-                <div className="relative p-4 pt-3 flex flex-col grow">
-                    {/* Level, Type & Batch badges */}
-                    <div className="flex items-center gap-1.5 mb-2.5">
-                        <span className="inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider text-primary bg-primary/10 border border-primary/20 px-2 py-1 rounded-lg">
+                <div className="relative px-4 pb-5 flex flex-col grow">
+                    <div className="flex items-center flex-wrap gap-2 mb-3">
+                        <span className="inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider text-primary bg-primary/10 border border-primary/20 px-2.5 py-1 rounded-full">
                             <Zap className="w-3 h-3" />
                             {course.level}
                         </span>
-                        <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground bg-muted/50 border border-border/50 px-2 py-1 rounded-lg">
+                        <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground bg-muted/50 border border-border/50 px-2.5 py-1 rounded-full">
                             {course.type}
                         </span>
                         {course.batchNo && (
-                            <span className="inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider text-accent bg-accent/10 border border-accent/20 px-2 py-1 rounded-lg ml-auto">
+                            <span className="inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider text-secondary bg-secondary/10 border border-secondary/20 px-2.5 py-1 rounded-full ml-auto">
                                 <Hash className="w-3 h-3" />
                                 Batch {course.batchNo}
                             </span>
                         )}
                     </div>
 
-                    {/* Title */}
-                    <h3 className="text-lg font-bold leading-snug mb-2 transition-colors duration-300 group-hover:text-primary line-clamp-2">
+                    <h3 className="text-lg font-bold leading-snug mb-2 text-foreground transition-colors duration-300 group-hover:text-primary line-clamp-2">
                         {course.title}
                     </h3>
 
-                    {/* Description */}
-                    <p className="text-muted-foreground text-sm leading-relaxed mb-3 line-clamp-2">
+                    <p className="text-muted-foreground text-sm leading-relaxed mb-4 line-clamp-2">
                         {course.description}
                     </p>
 
-                    {/* Stats Bar: Students, Lessons, Duration */}
-                    <div className="flex items-center justify-between py-2.5 px-3 mb-3 rounded-xl bg-muted/30 dark:bg-white/5 border border-border/30 dark:border-white/5">
-                        {/* Students */}
-                        <div className="flex items-center gap-1.5">
-                            <Users className="w-4 h-4 text-primary" />
-                            <span className="text-xs font-semibold text-foreground">{course.students}</span>
+                    <div className="flex items-center gap-4 py-3 px-4 mb-4 rounded-xl bg-card/50 border border-border/50">
+                        <div className="flex items-center gap-2">
+                            <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-secondary/10">
+                                <Users className="w-3.5 h-3.5 text-secondary" />
+                            </div>
+                            <span className="text-xs font-medium text-foreground">{course.students}</span>
                         </div>
 
-                        {/* Divider */}
-                        <div className="w-px h-4 bg-border/50 dark:bg-white/10" />
+                        <div className="w-px h-5 bg-border/50" />
 
-                        {/* Lessons */}
-                        <div className="flex items-center gap-1.5">
-                            <BookOpen className="w-4 h-4 text-primary" />
-                            <span className="text-xs font-semibold text-foreground">{course.totalLessons || 0} lessons</span>
+                        <div className="flex items-center gap-2">
+                            <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-primary/10">
+                                <BookOpen className="w-3.5 h-3.5 text-primary" />
+                            </div>
+                            <span className="text-xs font-medium text-foreground">{course.totalLessons || 0} lessons</span>
                         </div>
 
-                        {/* Divider */}
-                        <div className="w-px h-4 bg-border/50 dark:bg-white/10" />
+                        <div className="w-px h-5 bg-border/50" />
 
-                        {/* Duration */}
-                        <div className="flex items-center gap-1.5">
-                            <Clock className="w-4 h-4 text-primary" />
-                            <span className="text-xs font-semibold text-foreground">{course.duration}</span>
+                        <div className="flex items-center gap-2">
+                            <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-warning/10">
+                                <Clock className="w-3.5 h-3.5 text-warning" />
+                            </div>
+                            <span className="text-xs font-medium text-foreground">{course.duration}</span>
                         </div>
                     </div>
 
-                    {/* Spacer */}
                     <div className="grow" />
 
-                    {/* Price & CTA Section */}
-                    <div className="flex items-end justify-between pt-3 border-t border-border/40 dark:border-white/5">
+                    <div className="flex items-end justify-between pt-4 border-t border-border/50">
                         <div className="flex flex-col">
                             {hasDiscount ? (
                                 <>
-                                    {/* Discount badge */}
-                                    <span className="inline-flex items-center gap-1 text-[10px] font-bold text-red-500 mb-1">
-                                        <Flame className="w-3 h-3" />
+                                    <span className="inline-flex items-center gap-1 text-[10px] font-bold text-orange-500 mb-1">
+                                        <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+                                            <path fillRule="evenodd" d="M12.395 2.553a1 1 0 00-1.45-.385c-.345.23-.614.558-.822.88-.214.33-.403.713-.57 1.116-.334.804-.614 1.768-.84 2.734a31.365 31.365 0 00-.613 3.58 2.64 2.64 0 01-.945-1.067c-.328-.68-.398-1.534-.398-2.654A1 1 0 005.05 6.05 6.981 6.981 0 003 11a7 7 0 1011.95-4.95c-.592-.591-.98-.985-1.348-1.467-.363-.476-.724-1.063-1.207-2.03zM12.12 15.12A3 3 0 017 13s.879.5 2.5.5c0-1 .5-4 1.25-4.5.5 1 .786 1.293 1.371 1.879A2.99 2.99 0 0113 13a2.99 2.99 0 01-.879 2.121z" clipRule="evenodd" />
+                                        </svg>
                                         SALE
                                     </span>
                                     <div className="flex items-baseline gap-2">
-                                        <span className="text-2xl font-black bg-linear-to-r from-primary to-accent bg-clip-text text-transparent">
+                                        <span className="text-2xl font-black text-foreground">
                                             {course.discountPrice}
                                         </span>
-                                        <span className="text-sm font-medium text-muted-foreground line-through decoration-red-500/60 decoration-2">
+                                        <span className="text-sm font-medium text-muted-foreground line-through">
                                             {course.price}
                                         </span>
                                     </div>
@@ -183,7 +167,7 @@ export function CourseCard({ course }: { course: MappedCourse }) {
                                     <span className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider mb-0.5">
                                         Price
                                     </span>
-                                    <span className="text-2xl font-black bg-linear-to-r from-primary to-accent bg-clip-text text-transparent">
+                                    <span className="text-2xl font-black text-foreground">
                                         {course.price}
                                     </span>
                                 </>
@@ -192,12 +176,12 @@ export function CourseCard({ course }: { course: MappedCourse }) {
 
                         <Link
                             href={`/courses/${course.slug}`}
-                            className="relative flex items-center gap-2 px-5 py-2.5 rounded-xl font-semibold text-sm bg-linear-to-r from-primary to-primary/90 text-primary-foreground shadow-lg shadow-primary/20 hover:shadow-primary/40 hover:scale-[1.02] active:scale-[0.98] transition-all duration-300 group/btn overflow-hidden"
+                            className="group/btn flex items-center gap-2 pl-5 pr-1.5 py-1.5 bg-primary hover:bg-primary/90 rounded-full transition-all duration-300 active:scale-95"
                         >
-                            {/* Button shine */}
-                            <div className="absolute inset-0 bg-linear-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover/btn:translate-x-full transition-transform duration-500" />
-                            <span className="relative">Enroll</span>
-                            <ArrowRight className="relative w-4 h-4 transition-transform duration-300 group-hover/btn:translate-x-0.5" />
+                            <span className="text-sm font-semibold text-primary-foreground">Enroll</span>
+                            <div className="flex h-6 w-6 items-center justify-center rounded-full bg-background transition-transform duration-300 -rotate-45 group-hover/btn:rotate-0">
+                                <ArrowRight className="h-3.5 w-3.5 text-primary" />
+                            </div>
                         </Link>
                     </div>
                 </div>
