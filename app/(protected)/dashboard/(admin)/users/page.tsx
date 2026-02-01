@@ -21,21 +21,7 @@ import {
 } from "@/lib/actions/users";
 import { Dialog, DialogHeader, DialogTitle, DialogDescription, DialogBody, DialogFooter, DialogClose } from "@/components/ui/Dialog";
 import { Select, SelectOption } from "@/components/ui/Select";
-import {
-    Table,
-    TableBody,
-    TableCell,
-    TableHead,
-    TableHeader,
-    TableRow,
-} from "@/components/ui/table";
-import {
-    DropdownMenu,
-    DropdownMenuContent,
-    DropdownMenuItem,
-    DropdownMenuSeparator,
-    DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+import { Dropdown, DropdownItem, DropdownSeparator, DropdownLabel } from "@/components/ui/Dropdown";
 import { Pagination } from "@/components/ui/Pagination";
 import { useToast } from "@/components/ui/toast";
 import { AnimatedCheckbox } from "@/components/ui/AnimatedCheckbox";
@@ -149,10 +135,6 @@ export default function UserManagementPage() {
             newSelected.add(userId);
         }
         setSelectedUsers(newSelected);
-    };
-
-    const clearSelection = () => {
-        setSelectedUsers(new Set());
     };
 
     // Filters Handler
@@ -612,10 +594,10 @@ export default function UserManagementPage() {
                             {(searchTerm || roleFilter !== 'all' || statusFilter !== 'all') && (
                                 <button
                                     onClick={clearFilters}
-                                    className="flex items-center gap-1.5 px-3 py-2 rounded-xl border border-red-500/30 bg-red-500/10 hover:bg-red-500/20 text-red-500 text-sm font-medium transition-colors"
+                                    className="p-2.5 rounded-xl border border-border/50 bg-background/50 hover:bg-background hover:text-red-500 transition-colors text-muted-foreground"
+                                    title="Clear filters"
                                 >
-                                    <X className="w-3.5 h-3.5" />
-                                    Clear Filters
+                                    <X className="w-4 h-4" />
                                 </button>
                             )}
 
@@ -632,38 +614,65 @@ export default function UserManagementPage() {
                             </button>
 
                             {/* Bulk Actions */}
-
+                            {selectedUsers.size > 0 && (
+                                <motion.div
+                                    initial={{ opacity: 0, scale: 0.9 }}
+                                    animate={{ opacity: 1, scale: 1 }}
+                                    className="flex items-center gap-2 px-4 py-2 rounded-xl bg-primary/10 border border-primary/20"
+                                >
+                                    <span className="text-sm font-semibold text-primary">
+                                        {selectedUsers.size} selected
+                                    </span>
+                                    <div className="flex gap-1">
+                                        <button
+                                            onClick={() => setBulkActionModal('role')}
+                                            className="p-2 rounded-lg hover:bg-primary/20 transition-colors"
+                                            title="Change role"
+                                        >
+                                            <Shield className="w-4 h-4 text-primary" />
+                                        </button>
+                                        <button
+                                            onClick={() => setBulkActionModal('delete')}
+                                            className="p-2 rounded-lg hover:bg-red-500/20 transition-colors"
+                                            title="Delete selected"
+                                        >
+                                            <Trash2 className="w-4 h-4 text-red-500" />
+                                        </button>
+                                    </div>
+                                </motion.div>
+                            )}
                         </div>
                     </div>
                 </div>
 
                 {/* Table */}
-                <div className="rounded-md border border-border/40 overflow-hidden overflow-x-auto bg-card/30 backdrop-blur-xl [&::-webkit-scrollbar]:h-1.5 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-muted-foreground/20 [&::-webkit-scrollbar-thumb]:rounded-full hover:[&::-webkit-scrollbar-thumb]:bg-primary/50">
-                    <Table>
-                        <TableHeader className="bg-muted/10">
-                            <TableRow className="hover:bg-transparent border-b border-border/40">
-                                <TableHead className="w-[50px] px-6 py-4">
+                <div className="overflow-x-auto [&::-webkit-scrollbar]:h-1.5 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-muted-foreground/20 [&::-webkit-scrollbar-thumb]:rounded-full hover:[&::-webkit-scrollbar-thumb]:bg-primary/50 pb-2">
+                    <table className="w-full text-sm text-left">
+                        <thead className="bg-muted/10 text-muted-foreground font-semibold uppercase tracking-wider text-xs border-b border-border/40">
+                            <tr>
+                                <th className="px-6 py-4">
                                     <AnimatedCheckbox
                                         id="select-all"
                                         checked={selectedUsers.size === users.length && users.length > 0}
                                         onChange={toggleSelectAll}
                                     />
-                                </TableHead>
-                                <TableHead className="px-6 py-4">User</TableHead>
-                                <TableHead className="px-6 py-4">Role</TableHead>
-                                <TableHead className="px-6 py-4">Status</TableHead>
-                                <TableHead className="px-6 py-4">Joined</TableHead>
-                                <TableHead className="px-6 py-4 text-right">Actions</TableHead>
-                            </TableRow>
-                        </TableHeader>
-                        <TableBody>
+                                </th>
+                                <th className="px-6 py-4">User</th>
+                                <th className="px-6 py-4">Role</th>
+                                <th className="px-6 py-4">Status</th>
+                                <th className="px-6 py-4">Joined</th>
+                                <th className="px-6 py-4 text-right">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody className="divide-y divide-border/40">
                             {isLoading ? (
+                                // Loading Skeletons
                                 [...Array(pageSize)].map((_, i) => (
-                                    <TableRow key={`skeleton-${i}`} className="border-b border-border/40 hover:bg-muted/5 transition-colors">
-                                        <TableCell className="px-6 py-4">
+                                    <tr key={`skeleton-${i}`} className="border-b border-border/40 hover:bg-muted/5 transition-colors">
+                                        <td className="px-6 py-4">
                                             <div className="w-5 h-5 bg-muted/40 rounded-md animate-pulse" />
-                                        </TableCell>
-                                        <TableCell className="px-6 py-4">
+                                        </td>
+                                        <td className="px-6 py-4">
                                             <div className="flex items-center gap-4">
                                                 <div className="w-10 h-10 rounded-full bg-muted/40 animate-pulse" />
                                                 <div className="space-y-2">
@@ -671,39 +680,53 @@ export default function UserManagementPage() {
                                                     <div className="h-3 w-40 bg-muted/40 rounded-md animate-pulse" />
                                                 </div>
                                             </div>
-                                        </TableCell>
-                                        <TableCell className="px-6 py-4"><div className="h-7 w-24 bg-muted/40 rounded-full animate-pulse" /></TableCell>
-                                        <TableCell className="px-6 py-4"><div className="h-7 w-20 bg-muted/40 rounded-full animate-pulse" /></TableCell>
-                                        <TableCell className="px-6 py-4"><div className="h-4 w-24 bg-muted/40 rounded-md animate-pulse" /></TableCell>
-                                        <TableCell className="px-6 py-4"><div className="h-8 w-8 bg-muted/40 rounded-lg ml-auto animate-pulse" /></TableCell>
-                                    </TableRow>
+                                        </td>
+                                        <td className="px-6 py-4">
+                                            <div className="h-7 w-24 bg-muted/40 rounded-full animate-pulse" />
+                                        </td>
+                                        <td className="px-6 py-4">
+                                            <div className="h-7 w-20 bg-muted/40 rounded-full animate-pulse" />
+                                        </td>
+                                        <td className="px-6 py-4">
+                                            <div className="h-4 w-24 bg-muted/40 rounded-md animate-pulse" />
+                                        </td>
+                                        <td className="px-6 py-4">
+                                            <div className="h-8 w-8 bg-muted/40 rounded-lg ml-auto animate-pulse" />
+                                        </td>
+                                    </tr>
                                 ))
                             ) : users.length === 0 ? (
-                                <TableRow>
-                                    <TableCell colSpan={6} className="h-24 text-center">
-                                        <div className="flex flex-col items-center gap-3 py-10">
+                                <tr>
+                                    <td colSpan={6} className="py-20 text-center">
+                                        <div className="flex flex-col items-center gap-3">
                                             <div className="p-4 rounded-full bg-muted/30">
                                                 <Users className="w-8 h-8 text-muted-foreground opacity-50" />
                                             </div>
                                             <p className="font-medium text-foreground">No users found</p>
                                             <p className="text-xs text-muted-foreground">Try adjusting your search or filters</p>
                                         </div>
-                                    </TableCell>
-                                </TableRow>
+                                    </td>
+                                </tr>
                             ) : (
-                                users.map((user) => (
-                                    <TableRow key={user.id} className="hover:bg-primary/5 border-b border-border/40 transition-colors group">
-                                        <TableCell className="px-6 py-4">
+                                users.map((user, i) => (
+                                    <motion.tr
+                                        key={user.id}
+                                        initial={{ opacity: 0, y: 10 }}
+                                        animate={{ opacity: 1, y: 0 }}
+                                        transition={{ delay: i * 0.03 }}
+                                        className="hover:bg-primary/5 transition-colors group"
+                                    >
+                                        <td className="px-6 py-4">
                                             <AnimatedCheckbox
                                                 id={`select-${user.id}`}
                                                 checked={selectedUsers.has(user.id)}
                                                 onChange={() => toggleSelectUser(user.id)}
                                             />
-                                        </TableCell>
-                                        <TableCell className="px-6 py-4">
+                                        </td>
+                                        <td className="px-6 py-4">
                                             <div className="flex items-center gap-4">
                                                 <div className="relative">
-                                                    <div className="w-10 h-10 rounded-full bg-linear-to-br from-primary/20 to-primary/5 flex items-center justify-center text-primary font-bold border border-primary/10 overflow-hidden shadow-sm">
+                                                    <div className="w-10 h-10 rounded-full bg-linear-to-br from-primary/20 to-primary/5 flex items-center justify-center text-primary font-bold border border-primary/10 overflow-hidden shadow-sm group-hover:scale-105 transition-transform">
                                                         {user.avatar_url ? (
                                                             <img src={user.avatar_url} alt={user.name} className="w-full h-full object-cover" />
                                                         ) : (
@@ -713,14 +736,14 @@ export default function UserManagementPage() {
                                                     <div className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-emerald-500 border-2 border-background rounded-full" />
                                                 </div>
                                                 <div>
-                                                    <div className="font-semibold text-foreground">
+                                                    <div className="font-semibold text-foreground group-hover:text-primary transition-colors">
                                                         {user.name || 'Unnamed User'}
                                                     </div>
                                                     <div className="text-xs text-muted-foreground">{user.email}</div>
                                                 </div>
                                             </div>
-                                        </TableCell>
-                                        <TableCell className="px-6 py-4">
+                                        </td>
+                                        <td className="px-6 py-4">
                                             <div className={cn(
                                                 "inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold border shadow-sm",
                                                 getRoleBadgeStyle(user.role || 'student')
@@ -728,44 +751,48 @@ export default function UserManagementPage() {
                                                 {user.role === 'admin' ? <Shield className="w-3 h-3" /> : <User className="w-3 h-3" />}
                                                 <span className="capitalize">{user.role || 'student'}</span>
                                             </div>
-                                        </TableCell>
-                                        <TableCell className="px-6 py-4">
+                                        </td>
+                                        <td className="px-6 py-4">
                                             <StatusBadge status={user.status} />
-                                        </TableCell>
-                                        <TableCell className="px-6 py-4 text-muted-foreground text-xs">
+                                        </td>
+                                        <td className="px-6 py-4 text-muted-foreground text-xs">
                                             {formatDate(user.created_at)}
-                                        </TableCell>
-                                        <TableCell className="px-6 py-4 text-right">
-                                            <DropdownMenu>
-                                                <DropdownMenuTrigger asChild>
-                                                    <button className="p-2 rounded-lg hover:bg-muted/50 transition-colors outline-none">
+                                        </td>
+                                        <td className="px-6 py-4 text-right">
+                                            <Dropdown
+                                                direction={i >= users.length - 2 ? 'up' : 'down'}
+                                                trigger={
+                                                    <button className="p-2 rounded-lg hover:bg-muted/50 transition-colors">
                                                         <MoreHorizontal className="w-4 h-4" />
                                                     </button>
-                                                </DropdownMenuTrigger>
-                                                <DropdownMenuContent align="end" className="w-44 p-1.5 rounded-xl border border-border/50 dark:border-white/10 bg-white dark:bg-[#040a14] shadow-xl dark:shadow-2xl">
-                                                    <DropdownMenuItem onClick={() => setViewUserModal(user)} className="rounded-lg cursor-pointer text-sm gap-2.5 text-slate-700 dark:text-slate-200 focus:bg-slate-100 dark:focus:bg-white/10 focus:text-slate-900 dark:focus:text-white">
-                                                        <Eye className="w-4 h-4" />
-                                                        View Profile
-                                                    </DropdownMenuItem>
-                                                    <DropdownMenuItem onClick={() => setEditUserModal(user)} className="rounded-lg cursor-pointer text-sm gap-2.5 text-slate-700 dark:text-slate-200 focus:bg-slate-100 dark:focus:bg-white/10 focus:text-slate-900 dark:focus:text-white">
-                                                        <Edit className="w-4 h-4" />
-                                                        Edit User
-                                                    </DropdownMenuItem>
-
-                                                    <DropdownMenuSeparator className="my-1 bg-slate-200 dark:bg-white/10" />
-
-                                                    <DropdownMenuItem onClick={() => setDeleteConfirmModal(user.id)} className="rounded-lg cursor-pointer text-sm gap-2.5 text-red-500 dark:text-red-400 focus:bg-red-50 dark:focus:bg-red-500/15 focus:text-red-600 dark:focus:text-red-300">
-                                                        <Trash2 className="w-4 h-4 text-red-500 dark:text-red-400" />
-                                                        Delete User
-                                                    </DropdownMenuItem>
-                                                </DropdownMenuContent>
-                                            </DropdownMenu>
-                                        </TableCell>
-                                    </TableRow>
+                                                }
+                                            >
+                                                <DropdownItem
+                                                    icon={<Eye className="w-4 h-4" />}
+                                                    onClick={() => setViewUserModal(user)}
+                                                >
+                                                    View Profile
+                                                </DropdownItem>
+                                                <DropdownItem
+                                                    icon={<Edit className="w-4 h-4" />}
+                                                    onClick={() => setEditUserModal(user)}
+                                                >
+                                                    Edit User
+                                                </DropdownItem>
+                                                <DropdownItem
+                                                    icon={<Trash2 className="w-4 h-4" />}
+                                                    onClick={() => setDeleteConfirmModal(user.id)}
+                                                    destructive
+                                                >
+                                                    Delete User
+                                                </DropdownItem>
+                                            </Dropdown>
+                                        </td>
+                                    </motion.tr>
                                 ))
                             )}
-                        </TableBody>
-                    </Table>
+                        </tbody>
+                    </table>
                 </div>
 
                 {/* Pagination */}
@@ -1076,33 +1103,6 @@ export default function UserManagementPage() {
                     </button>
                 </DialogFooter>
             </Dialog>
-
-            {/* Floating Bulk selection Bar */}
-            <AnimatePresence>
-                {selectedUsers.size > 0 && (
-                    <motion.div
-                        initial={{ opacity: 0, y: 100 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0, y: 100 }}
-                        className="fixed bottom-8 left-1/2 -translate-x-1/2 z-50 flex items-center gap-1 p-1.5 pr-4 pl-4 rounded-full border border-border bg-card/95 text-foreground shadow-xl backdrop-blur-md"
-                    >
-                        <span className="text-sm font-semibold mr-2 whitespace-nowrap pl-1">{selectedUsers.size} selected</span>
-                        <div className="h-4 w-px bg-border mx-1" />
-                        <div className="flex items-center gap-1">
-                            <button onClick={() => setBulkActionModal('role')} className="p-2 rounded-full hover:bg-muted transition-colors text-blue-500" title="Change Role">
-                                <Shield className="w-4 h-4" />
-                            </button>
-                            <button onClick={() => setBulkActionModal('delete')} className="p-2 rounded-full hover:bg-muted transition-colors text-red-500" title="Delete Selected">
-                                <Trash2 className="w-4 h-4" />
-                            </button>
-                        </div>
-                        <div className="h-4 w-px bg-border mx-1" />
-                        <button onClick={clearSelection} className="p-2 rounded-full hover:bg-muted transition-colors ml-1 text-muted-foreground hover:text-foreground" title="Clear Selection">
-                            <X className="w-4 h-4" />
-                        </button>
-                    </motion.div>
-                )}
-            </AnimatePresence>
 
             {/* Export Modal */}
             <Dialog open={exportModal} onClose={() => setExportModal(false)}>
