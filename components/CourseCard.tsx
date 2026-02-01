@@ -178,7 +178,7 @@ export function CourseCard({ course }: { course: MappedCourse }) {
                             href={`/courses/${course.slug}`}
                             className="group/btn flex items-center gap-2 pl-5 pr-1.5 py-1.5 bg-primary hover:bg-primary/90 rounded-full transition-all duration-300 active:scale-95"
                         >
-                            <span className="text-sm font-semibold text-primary-foreground">Enroll</span>
+                            <span className="text-sm font-semibold text-primary-foreground">View</span>
                             <div className="flex h-6 w-6 items-center justify-center rounded-full bg-background transition-transform duration-300 -rotate-45 group-hover/btn:rotate-0">
                                 <ArrowRight className="h-3.5 w-3.5 text-primary" />
                             </div>
