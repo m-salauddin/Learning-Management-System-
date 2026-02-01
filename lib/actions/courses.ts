@@ -246,12 +246,22 @@ export async function createCourse(input: CreateCourseInput): Promise<ApiRespons
         return { success: false, error: 'Only teachers can create courses' };
     }
 
+    // Determine instructor_id
+    // Admins can assign a course to any teacher, otherwise use current user
+    let instructorId = user.id;
+    if (input.instructor_id && profile.role === 'admin') {
+        instructorId = input.instructor_id;
+    }
+
+    // Remove instructor_id from input to avoid conflict
+    const { instructor_id, ...courseData } = input;
+
     // Create course
     const { data: course, error } = await supabase
         .from('courses')
         .insert({
-            ...input,
-            instructor_id: user.id,
+            ...courseData,
+            instructor_id: instructorId,
             status: 'draft',
             published: false
         })
@@ -486,6 +496,27 @@ export async function getCategories(): Promise<ApiResponse<{ id: string; name: s
     const { data, error } = await supabase
         .from('categories')
         .select('id, name, slug')
+        .order('name');
+
+    if (error) {
+        return { success: false, error: error.message };
+    }
+
+    return { success: true, data };
+}
+
+// ============================================================================
+// GET TEACHERS
+// ============================================================================
+
+export async function getTeachers(): Promise<ApiResponse<{ id: string; name: string; email: string; avatar_url: string | null }[]>> {
+    const supabase = await createClient();
+
+    // Fetch users with role 'teacher' only
+    const { data, error } = await supabase
+        .from('users')
+        .select('id, name, email, avatar_url')
+        .eq('role', 'teacher')
         .order('name');
 
     if (error) {

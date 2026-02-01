@@ -106,7 +106,7 @@ export function CourseCard({ course }: { course: MappedCourse }) {
                         )}
                     </div>
 
-                    <h3 className="text-lg font-bold leading-snug mb-2 text-foreground transition-colors duration-300 group-hover:text-primary line-clamp-2">
+                    <h3 className="text-lg font-bold leading-snug mb-2 text-foreground transition-colors duration-300 group-hover:text-primary line-clamp-2 min-h-14">
                         {course.title}
                     </h3>
 

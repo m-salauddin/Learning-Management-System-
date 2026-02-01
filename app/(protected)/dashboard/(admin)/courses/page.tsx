@@ -2,11 +2,11 @@
 
 import {
     Search, BookOpen, Trash2, Edit, MoreHorizontal, TrendingUp,
-    Plus, Download, CheckCircle2, Eye, RefreshCw, Archive, Layers, BarChart, DollarSign
+    Plus, Download, CheckCircle2, Eye, RefreshCw, Archive, Layers, BarChart, DollarSign, X
 } from "lucide-react";
 import { jsPDF } from "jspdf";
 import autoTable from "jspdf-autotable";
-import { motion } from "motion/react";
+import { motion, AnimatePresence } from "motion/react";
 import { useEffect, useState } from "react";
 import { cn } from "@/lib/utils";
 import {
@@ -18,7 +18,21 @@ import {
     getCategories, publishCourse, unpublishCourse
 } from "@/lib/actions/courses";
 import { Select, SelectOption } from "@/components/ui/Select";
-import { Dropdown, DropdownItem } from "@/components/ui/Dropdown";
+import {
+    Table,
+    TableBody,
+    TableCell,
+    TableHead,
+    TableHeader,
+    TableRow,
+} from "@/components/ui/table";
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuSeparator,
+    DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { Pagination } from "@/components/ui/Pagination";
 import { useToast } from "@/components/ui/toast";
 import { AnimatedCheckbox } from "@/components/ui/AnimatedCheckbox";
@@ -135,6 +149,10 @@ export default function CourseManagementPage() {
             newSelected.add(courseId);
         }
         setSelectedCourses(newSelected);
+    };
+
+    const clearSelection = () => {
+        setSelectedCourses(new Set());
     };
 
     // Action Handlers
@@ -413,54 +431,54 @@ export default function CourseManagementPage() {
                                 <SelectOption value="advanced">Advanced</SelectOption>
                             </Select>
 
-                            <button onClick={fetchCoursesData} className="p-2.5 rounded-xl border border-border/50 bg-background/50 hover:bg-background hover:text-primary transition-colors text-muted-foreground">
+                            <button onClick={fetchCoursesData} className="p-2.5 rounded-xl border border-border/50 bg-background/50 hover:bg-background hover:text-primary transition-colors text-muted-foreground" title="Refresh">
                                 <RefreshCw className={cn("w-4 h-4", isLoading && "animate-spin")} />
                             </button>
 
-                            {selectedCourses.size > 0 && (
-                                <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} className="flex items-center gap-2 px-4 py-2 rounded-xl bg-primary/10 border border-primary/20">
-                                    <span className="text-sm font-semibold text-primary">{selectedCourses.size} selected</span>
-                                    <div className="flex gap-1">
-                                        <button onClick={() => { setBulkActionModal('publish'); handleBulkAction(); }} className="p-2 rounded-lg hover:bg-primary/20 transition-colors" title="Publish">
-                                            <CheckCircle2 className="w-4 h-4 text-emerald-500" />
-                                        </button>
-                                        <button onClick={() => { setBulkActionModal('unpublish'); handleBulkAction(); }} className="p-2 rounded-lg hover:bg-primary/20 transition-colors" title="Unpublish">
-                                            <Archive className="w-4 h-4 text-amber-500" />
-                                        </button>
-                                        <button onClick={() => { setBulkActionModal('delete'); handleBulkAction(); }} className="p-2 rounded-lg hover:bg-red-500/20 transition-colors" title="Delete">
-                                            <Trash2 className="w-4 h-4 text-red-500" />
-                                        </button>
-                                    </div>
-                                </motion.div>
+                            {(searchTerm || categoryFilter !== 'all' || statusFilter !== 'all' || levelFilter !== 'all') && (
+                                <button
+                                    onClick={() => {
+                                        setSearchTerm('');
+                                        setCategoryFilter('all');
+                                        setStatusFilter('all');
+                                        setLevelFilter('all');
+                                        setCurrentPage(1);
+                                    }}
+                                    className="flex items-center gap-1.5 px-3 py-2 rounded-xl border border-red-500/30 bg-red-500/10 hover:bg-red-500/20 text-red-500 text-sm font-medium transition-colors"
+                                >
+                                    <X className="w-3.5 h-3.5" />
+                                    Clear Filters
+                                </button>
                             )}
+
                         </div>
                     </div>
                 </div>
 
                 {/* Table */}
-                <div className="overflow-x-auto [&::-webkit-scrollbar]:h-1.5 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-muted-foreground/20 [&::-webkit-scrollbar-thumb]:rounded-full hover:[&::-webkit-scrollbar-thumb]:bg-primary/50 pb-2">
-                    <table className="w-full text-sm text-left">
-                        <thead className="bg-muted/10 text-muted-foreground font-semibold uppercase tracking-wider text-xs border-b border-border/40">
-                            <tr>
-                                <th className="px-6 py-4">
+                <div className="rounded-md border border-border/40 overflow-hidden overflow-x-auto bg-card/30 backdrop-blur-xl [&::-webkit-scrollbar]:h-1.5 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-muted-foreground/20 [&::-webkit-scrollbar-thumb]:rounded-full hover:[&::-webkit-scrollbar-thumb]:bg-primary/50">
+                    <Table>
+                        <TableHeader className="bg-muted/10">
+                            <TableRow className="hover:bg-transparent border-b border-border/40">
+                                <TableHead className="w-[50px] px-6 py-4">
                                     <AnimatedCheckbox id="select-all" checked={selectedCourses.size === courses.length && courses.length > 0} onChange={toggleSelectAll} />
-                                </th>
-                                <th className="px-6 py-4">Course</th>
-                                <th className="px-6 py-4">Price</th>
-                                <th className="px-6 py-4">Status</th>
-                                <th className="px-6 py-4">Level</th>
-                                <th className="px-6 py-4">Students</th>
-                                <th className="px-6 py-4 text-right">Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody className="divide-y divide-border/40">
+                                </TableHead>
+                                <TableHead className="px-6 py-4">Course</TableHead>
+                                <TableHead className="px-6 py-4">Price</TableHead>
+                                <TableHead className="px-6 py-4">Status</TableHead>
+                                <TableHead className="px-6 py-4">Level</TableHead>
+                                <TableHead className="px-6 py-4">Students</TableHead>
+                                <TableHead className="px-6 py-4 text-right">Actions</TableHead>
+                            </TableRow>
+                        </TableHeader>
+                        <TableBody>
                             {isLoading ? (
                                 [...Array(5)].map((_, i) => (
-                                    <tr key={i} className="border-b border-border/40 hover:bg-muted/5 transition-colors">
-                                        <td className="px-6 py-4">
+                                    <TableRow key={i} className="border-b border-border/40 hover:bg-muted/5 transition-colors">
+                                        <TableCell className="px-6 py-4">
                                             <div className="w-5 h-5 bg-muted/40 rounded-md animate-pulse" />
-                                        </td>
-                                        <td className="px-6 py-4">
+                                        </TableCell>
+                                        <TableCell className="px-6 py-4">
                                             <div className="flex items-center gap-3">
                                                 <div className="w-12 h-8 rounded bg-muted/40 animate-pulse" />
                                                 <div className="space-y-2">
@@ -468,43 +486,37 @@ export default function CourseManagementPage() {
                                                     <div className="h-3 w-40 bg-muted/40 rounded-md animate-pulse" />
                                                 </div>
                                             </div>
-                                        </td>
-                                        <td className="px-6 py-4"><div className="h-4 w-16 bg-muted/40 rounded-md animate-pulse" /></td>
-                                        <td className="px-6 py-4"><div className="h-7 w-24 bg-muted/40 rounded-full animate-pulse" /></td>
-                                        <td className="px-6 py-4"><div className="h-7 w-28 bg-muted/40 rounded-full animate-pulse" /></td>
-                                        <td className="px-6 py-4"><div className="h-4 w-12 bg-muted/40 rounded-md animate-pulse" /></td>
-                                        <td className="px-6 py-4"><div className="h-8 w-8 bg-muted/40 rounded-lg ml-auto animate-pulse" /></td>
-                                    </tr>
+                                        </TableCell>
+                                        <TableCell className="px-6 py-4"><div className="h-4 w-16 bg-muted/40 rounded-md animate-pulse" /></TableCell>
+                                        <TableCell className="px-6 py-4"><div className="h-7 w-24 bg-muted/40 rounded-full animate-pulse" /></TableCell>
+                                        <TableCell className="px-6 py-4"><div className="h-7 w-28 bg-muted/40 rounded-full animate-pulse" /></TableCell>
+                                        <TableCell className="px-6 py-4"><div className="h-4 w-12 bg-muted/40 rounded-md animate-pulse" /></TableCell>
+                                        <TableCell className="px-6 py-4"><div className="h-8 w-8 bg-muted/40 rounded-lg ml-auto animate-pulse" /></TableCell>
+                                    </TableRow>
                                 ))
                             ) : courses.length === 0 ? (
-                                <tr>
-                                    <td colSpan={7} className="py-20 text-center">
-                                        <div className="flex flex-col items-center gap-3">
+                                <TableRow>
+                                    <TableCell colSpan={7} className="h-24 text-center">
+                                        <div className="flex flex-col items-center gap-3 py-10">
                                             <div className="p-4 rounded-full bg-muted/30">
                                                 <BookOpen className="w-8 h-8 text-muted-foreground opacity-50" />
                                             </div>
                                             <p className="font-medium text-foreground">No courses found</p>
                                             <p className="text-xs text-muted-foreground">Try adjusting your search or filters</p>
                                         </div>
-                                    </td>
-                                </tr>
+                                    </TableCell>
+                                </TableRow>
                             ) : (
-                                courses.map((course, i) => (
-                                    <motion.tr
-                                        key={course.id}
-                                        initial={{ opacity: 0, y: 10 }}
-                                        animate={{ opacity: 1, y: 0 }}
-                                        transition={{ delay: i * 0.03 }}
-                                        className="hover:bg-primary/5 transition-colors group"
-                                    >
-                                        <td className="px-6 py-4">
+                                courses.map((course) => (
+                                    <TableRow key={course.id} className="hover:bg-primary/5 border-b border-border/40 transition-colors group">
+                                        <TableCell className="px-6 py-4">
                                             <AnimatedCheckbox
                                                 id={`select-${course.id}`}
                                                 checked={selectedCourses.has(course.id)}
                                                 onChange={() => toggleSelectCourse(course.id)}
                                             />
-                                        </td>
-                                        <td className="px-6 py-4">
+                                        </TableCell>
+                                        <TableCell className="px-6 py-4">
                                             <div className="flex items-center gap-3">
                                                 <div className="w-14 h-10 rounded-lg bg-muted overflow-hidden shrink-0 border border-border/20 shadow-sm group-hover:scale-105 transition-transform">
                                                     {course.thumbnail_url ? (
@@ -520,34 +532,55 @@ export default function CourseManagementPage() {
                                                     <div className="text-xs text-muted-foreground">{course.category?.name || 'Uncategorized'}</div>
                                                 </div>
                                             </div>
-                                        </td>
-                                        <td className="px-6 py-4 font-mono text-sm">
+                                        </TableCell>
+                                        <TableCell className="px-6 py-4 font-mono text-sm">
                                             {course.price > 0 ? `৳${course.price.toLocaleString()}` : <span className="text-emerald-500 font-bold">Free</span>}
-                                        </td>
-                                        <td className="px-6 py-4">
+                                        </TableCell>
+                                        <TableCell className="px-6 py-4">
                                             <StatusBadge status={course.status} />
-                                        </td>
-                                        <td className="px-6 py-4">
+                                        </TableCell>
+                                        <TableCell className="px-6 py-4">
                                             <LevelBadge level={course.level || 'beginner'} />
-                                        </td>
-                                        <td className="px-6 py-4 text-muted-foreground text-sm">
+                                        </TableCell>
+                                        <TableCell className="px-6 py-4 text-muted-foreground text-sm">
                                             {course.total_students || 0}
-                                        </td>
-                                        <td className="px-6 py-4 text-right">
-                                            <Dropdown side="left" trigger={<button className="p-2 rounded-lg hover:bg-muted/50 transition-colors"><MoreHorizontal className="w-4 h-4" /></button>}>
-                                                <DropdownItem icon={<Eye className="w-4 h-4" />} onClick={() => window.location.href = `/courses/${course.slug}`}>View Course</DropdownItem>
-                                                <DropdownItem icon={<Edit className="w-4 h-4" />} onClick={() => window.location.href = `/dashboard/courses/${course.id}/edit`}>Edit Course</DropdownItem>
-                                                <DropdownItem icon={course.status === 'published' ? <Archive className="w-4 h-4" /> : <CheckCircle2 className="w-4 h-4" />} onClick={() => togglePublishStatus(course)}>
-                                                    {course.status === 'published' ? 'Unpublish' : 'Publish'}
-                                                </DropdownItem>
-                                                <DropdownItem icon={<Trash2 className="w-4 h-4" />} destructive onClick={() => handleDeleteCourse(course.id)}>Delete Course</DropdownItem>
-                                            </Dropdown>
-                                        </td>
-                                    </motion.tr>
+                                        </TableCell>
+                                        <TableCell className="px-6 py-4 text-right">
+                                            <DropdownMenu>
+                                                <DropdownMenuTrigger asChild>
+                                                    <button className="p-2 rounded-lg hover:bg-muted/50 transition-colors outline-none"><MoreHorizontal className="w-4 h-4" /></button>
+                                                </DropdownMenuTrigger>
+                                                <DropdownMenuContent align="end" className="w-44 p-1.5 rounded-xl border border-border/50 dark:border-white/10 bg-white dark:bg-[#040a14] shadow-xl dark:shadow-2xl">
+                                                    <DropdownMenuItem className="rounded-lg cursor-pointer text-sm gap-2.5 text-slate-700 dark:text-slate-200 focus:bg-slate-100 dark:focus:bg-white/10 focus:text-slate-900 dark:focus:text-white" onClick={() => window.location.href = `/courses/${course.slug}`}>
+                                                        <Eye className="w-4 h-4" />
+                                                        View Course
+                                                    </DropdownMenuItem>
+                                                    <DropdownMenuItem className="rounded-lg cursor-pointer text-sm gap-2.5 text-slate-700 dark:text-slate-200 focus:bg-slate-100 dark:focus:bg-white/10 focus:text-slate-900 dark:focus:text-white" onClick={() => window.location.href = `/dashboard/courses/${course.id}/edit`}>
+                                                        <Edit className="w-4 h-4" />
+                                                        Edit Course
+                                                    </DropdownMenuItem>
+
+                                                    <DropdownMenuSeparator className="my-1 bg-slate-200 dark:bg-white/10" />
+
+                                                    <DropdownMenuItem className="rounded-lg cursor-pointer text-sm gap-2.5 text-slate-700 dark:text-slate-200 focus:bg-slate-100 dark:focus:bg-white/10 focus:text-slate-900 dark:focus:text-white" onClick={() => togglePublishStatus(course)}>
+                                                        {course.status === 'published' ? <Archive className="w-4 h-4" /> : <CheckCircle2 className="w-4 h-4" />}
+                                                        {course.status === 'published' ? 'Unpublish' : 'Publish'}
+                                                    </DropdownMenuItem>
+
+                                                    <DropdownMenuSeparator className="my-1 bg-slate-200 dark:bg-white/10" />
+
+                                                    <DropdownMenuItem onClick={() => handleDeleteCourse(course.id)} className="rounded-lg cursor-pointer text-sm gap-2.5 text-red-500 dark:text-red-400 focus:bg-red-50 dark:focus:bg-red-500/15 focus:text-red-600 dark:focus:text-red-300">
+                                                        <Trash2 className="w-4 h-4 text-red-500 dark:text-red-400" />
+                                                        Delete Course
+                                                    </DropdownMenuItem>
+                                                </DropdownMenuContent>
+                                            </DropdownMenu>
+                                        </TableCell>
+                                    </TableRow>
                                 ))
                             )}
-                        </tbody>
-                    </table>
+                        </TableBody>
+                    </Table>
                 </div>
 
                 {/* Pagination */}
@@ -564,6 +597,36 @@ export default function CourseManagementPage() {
                     </div>
                 )}
             </div>
+
+            {/* Floating Bulk selection Bar */}
+            <AnimatePresence>
+                {selectedCourses.size > 0 && (
+                    <motion.div
+                        initial={{ opacity: 0, y: 100 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: 100 }}
+                        className="fixed bottom-8 left-1/2 -translate-x-1/2 z-50 flex items-center gap-1 p-1.5 pr-4 pl-4 rounded-full border border-border bg-card/95 text-foreground shadow-xl backdrop-blur-md"
+                    >
+                        <span className="text-sm font-semibold mr-2 whitespace-nowrap pl-1">{selectedCourses.size} selected</span>
+                        <div className="h-4 w-px bg-border mx-1" />
+                        <div className="flex items-center gap-1">
+                            <button onClick={() => { setBulkActionModal('publish'); handleBulkAction(); }} className="p-2 rounded-full hover:bg-muted transition-colors text-emerald-500" title="Publish Selected">
+                                <CheckCircle2 className="w-4 h-4" />
+                            </button>
+                            <button onClick={() => { setBulkActionModal('unpublish'); handleBulkAction(); }} className="p-2 rounded-full hover:bg-muted transition-colors text-amber-500" title="Unpublish Selected">
+                                <Archive className="w-4 h-4" />
+                            </button>
+                            <button onClick={() => { setBulkActionModal('delete'); handleBulkAction(); }} className="p-2 rounded-full hover:bg-muted transition-colors text-red-500" title="Delete Selected">
+                                <Trash2 className="w-4 h-4" />
+                            </button>
+                        </div>
+                        <div className="h-4 w-px bg-border mx-1" />
+                        <button onClick={clearSelection} className="p-2 rounded-full hover:bg-muted transition-colors ml-1 text-muted-foreground hover:text-foreground" title="Clear Selection">
+                            <X className="w-4 h-4" />
+                        </button>
+                    </motion.div>
+                )}
+            </AnimatePresence>
 
             {/* Export Modal */}
             {exportModal && (
