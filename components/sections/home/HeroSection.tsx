@@ -121,13 +121,22 @@ export function HeroSection() {
 
 
                         <div className="flex flex-row flex-wrap gap-4 justify-center lg:justify-start mb-12">
-                            <Button size="responsive" className="group">
-                                Get Started Now
-                                <ArrowRight className="w-4 h-4 sm:w-5 sm:h-5 group-hover:translate-x-1 transition-transform ml-2" />
-                            </Button>
-                            <Button variant="premium" size="responsive">
-                                Explore Structure
-                            </Button>
+                            <a
+                                href="#courses"
+                                className="group/btn flex items-center gap-3 pl-8 pr-2 py-2 bg-primary hover:bg-primary/90 rounded-full transition-all duration-300 active:scale-95 cursor-pointer shadow-lg shadow-primary/25"
+                            >
+                                <span className="text-lg font-bold text-primary-foreground">Get Started Now</span>
+                                <div className="flex h-7 w-7 items-center justify-center rounded-full bg-background transition-transform duration-300 -rotate-45 group-hover/btn:rotate-0">
+                                    <ArrowRight className="h-5 w-5 text-primary" />
+                                </div>
+                            </a>
+                            <a
+                                href="/courses"
+                                className="group relative flex items-center gap-3 pl-8 pr-8 py-2.5 bg-[#0f1117] border border-white/10 hover:border-white/20 rounded-full transition-all duration-300 active:scale-95 cursor-pointer shadow-lg overflow-hidden"
+                            >
+                                <span className="absolute inset-0 w-1/2 h-full bg-linear-to-r from-transparent via-white/20 to-transparent -translate-x-[150%] skew-x-[-20deg] group-hover:translate-x-[250%] transition-transform duration-700 ease-in-out z-10" />
+                                <span className="text-lg font-bold text-white group-hover:text-primary transition-colors relative z-20">Explore Courses</span>
+                            </a>
                         </div>
 
 
