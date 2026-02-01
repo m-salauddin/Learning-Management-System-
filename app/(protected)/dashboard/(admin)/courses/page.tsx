@@ -1,657 +1,169 @@
 "use client";
 
-import {
-    Search, BookOpen, Trash2, Edit, MoreHorizontal, TrendingUp,
-    Plus, Download, CheckCircle2, Eye, RefreshCw, Archive, Layers, BarChart, DollarSign, X
-} from "lucide-react";
-import { jsPDF } from "jspdf";
-import autoTable from "jspdf-autotable";
-import { motion, AnimatePresence } from "motion/react";
+import { Search, Plus, Edit, Trash2 } from "lucide-react";
+import { motion } from "motion/react";
 import { useEffect, useState } from "react";
-import { cn } from "@/lib/utils";
-import {
-    CourseWithInstructor, CourseStatus
-} from "@/types/lms";
-import {
-    getCourses, getCourseStats, deleteCourse, bulkDeleteCourses,
-    bulkUpdateCourseStatus, exportCoursesToCSV, exportCoursesToJSON,
-    getCategories, publishCourse, unpublishCourse
-} from "@/lib/actions/courses";
-import { Select, SelectOption } from "@/components/ui/Select";
-import {
-    Table,
-    TableBody,
-    TableCell,
-    TableHead,
-    TableHeader,
-    TableRow,
-} from "@/components/ui/table";
-import {
-    DropdownMenu,
-    DropdownMenuContent,
-    DropdownMenuItem,
-    DropdownMenuSeparator,
-    DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { Pagination } from "@/components/ui/Pagination";
+import { createClient } from "@/lib/supabase/client";
 import { useToast } from "@/components/ui/toast";
-import { AnimatedCheckbox } from "@/components/ui/AnimatedCheckbox";
 import Link from "next/link";
-import Image from "next/image";
 
-// Import reusable admin components
-import {
-    AdminPageHeader,
-    AdminStatsCard,
-    AdminTableContainer,
-    StatusBadge,
-    LevelBadge,
-    SearchInput,
-    TableEmptyState,
-    TableLoadingState,
-    ActionButton
-} from "@/components/dashboard/admin";
+interface Course {
+    id: string;
+    slug: string;
+    title: string;
+    category: { name: string } | null; // Joined
+    price: number;
+    total_students: number;
+    status: string;
+    thumbnail_url: string;
+}
 
 export default function CourseManagementPage() {
-    // Toast
-    const toast = useToast();
-
-    // State Management
-    const [courses, setCourses] = useState<CourseWithInstructor[]>([]);
-    const [stats, setStats] = useState<any | null>(null);
-    const [categories, setCategories] = useState<{ id: string, name: string }[]>([]);
-    const [isLoading, setIsLoading] = useState(true);
-    const [selectedCourses, setSelectedCourses] = useState<Set<string>>(new Set());
-
-    // Filters & Pagination
-    const [searchTerm, setSearchTerm] = useState("");
-    const [categoryFilter, setCategoryFilter] = useState("all");
-    const [statusFilter, setStatusFilter] = useState("all");
-    const [levelFilter, setLevelFilter] = useState("all");
-    const [currentPage, setCurrentPage] = useState(1);
-    const [pageSize, setPageSize] = useState(10);
-    const [totalCourses, setTotalCourses] = useState(0);
-
-    // Modals & Confirmation (Simplified for now using window.confirm or similar pattern)
-    const [bulkActionModal, setBulkActionModal] = useState<'delete' | 'publish' | 'unpublish' | null>(null);
-    const [exportModal, setExportModal] = useState(false);
-
-    // Fetch Data
-    const fetchCoursesData = async () => {
-        setIsLoading(true);
-        try {
-            const result = await getCourses({
-                search: searchTerm,
-                category: categoryFilter,
-                status: statusFilter as any,
-                level: levelFilter,
-                page: currentPage,
-                pageSize
-            });
-
-            console.log('getCourses result:', result);
-
-            if (result.data && result.data.length > 0) {
-                setCourses(result.data);
-                setTotalCourses(result.total);
-            } else if (result.data) {
-                // Data exists but is empty array
-                setCourses([]);
-                setTotalCourses(0);
-                console.log('No courses returned from query');
-            } else {
-                toast.error('Failed to fetch courses');
-            }
-        } catch (error) {
-            console.error('Error in fetchCoursesData:', error);
-            toast.error('Error fetching courses');
-        }
-        setIsLoading(false);
-    };
-
-    const fetchStatsData = async () => {
-        const result = await getCourseStats();
-        if (result.stats) {
-            setStats(result.stats);
-        }
-    };
-
-    const fetchCategoriesData = async () => {
-        const result = await getCategories();
-        if (result.data) {
-            setCategories(result.data);
-        }
-    };
+    const [courses, setCourses] = useState<Course[]>([]);
+    const [loading, setLoading] = useState(true);
+    const [searchQuery, setSearchQuery] = useState("");
+    const { toast, success, error: toastError } = useToast();
 
     useEffect(() => {
-        fetchCoursesData();
-    }, [searchTerm, categoryFilter, statusFilter, levelFilter, currentPage, pageSize]);
-
-    useEffect(() => {
-        fetchStatsData();
-        fetchCategoriesData();
+        fetchCourses();
     }, []);
 
-    // Selection Handlers
-    const toggleSelectAll = () => {
-        if (selectedCourses.size === courses.length) {
-            setSelectedCourses(new Set());
+    const fetchCourses = async () => {
+        const supabase = createClient();
+        const { data, error } = await supabase
+            .from('courses')
+            .select(`
+                *,
+                category:categories(name)
+            `)
+            .order('created_at', { ascending: false });
+
+        if (error) {
+            toastError("Failed to fetch courses");
+        } else if (data) {
+            setCourses(data as unknown as Course[]);
+        }
+        setLoading(false);
+    };
+
+    const handleDelete = async (courseId: string) => {
+        if (!confirm("Are you sure you want to delete this course? This action cannot be undone.")) return;
+
+        const supabase = createClient();
+        const { error } = await supabase.from('courses').delete().eq('id', courseId);
+
+        if (error) {
+            toastError("Failed to delete course");
         } else {
-            setSelectedCourses(new Set(courses.map(c => c.id)));
+            success("Course deleted successfully");
+            fetchCourses(); // Refresh
         }
     };
 
-    const toggleSelectCourse = (courseId: string) => {
-        const newSelected = new Set(selectedCourses);
-        if (newSelected.has(courseId)) {
-            newSelected.delete(courseId);
-        } else {
-            newSelected.add(courseId);
-        }
-        setSelectedCourses(newSelected);
-    };
-
-    const clearSelection = () => {
-        setSelectedCourses(new Set());
-    };
-
-    // Action Handlers
-    const handleDeleteCourse = async (courseId: string) => {
-        if (!confirm("Are you sure you want to delete this course?")) return;
-
-        const result = await deleteCourse(courseId);
-        if (result.success) {
-            toast.success('Course deleted successfully');
-            fetchCoursesData();
-            fetchStatsData();
-        } else {
-            toast.error('Failed to delete course', result.error || 'An error occurred');
-        }
-    };
-
-    const handleBulkAction = async () => {
-        if (bulkActionModal === 'delete') {
-            if (!confirm(`Are you sure you want to delete ${selectedCourses.size} courses?`)) return;
-            const result = await bulkDeleteCourses(Array.from(selectedCourses));
-            if (result.success) {
-                toast.success(`${result.deletedCount} courses deleted`);
-            } else {
-                toast.error('Failed to delete courses');
-            }
-        } else if (bulkActionModal === 'publish') {
-            const result = await bulkUpdateCourseStatus(Array.from(selectedCourses), 'published');
-            if (result.success) {
-                toast.success(`${result.updatedCount} courses published`);
-            } else {
-                toast.error('Failed to publish courses');
-            }
-        } else if (bulkActionModal === 'unpublish') {
-            const result = await bulkUpdateCourseStatus(Array.from(selectedCourses), 'draft');
-            if (result.success) {
-                toast.success(`${result.updatedCount} courses unpublished`);
-            } else {
-                toast.error('Failed to unpublish courses');
-            }
-        }
-
-        setBulkActionModal(null);
-        setSelectedCourses(new Set());
-        fetchCoursesData();
-        fetchStatsData();
-    };
-
-    const togglePublishStatus = async (course: CourseWithInstructor) => {
-        const action = course.status === 'published' ? unpublishCourse : publishCourse;
-        const result = await action(course.id);
-
-        if (result.success) {
-            toast.success(`Course ${course.status === 'published' ? 'unpublished' : 'published'} successfully`);
-            fetchCoursesData();
-            fetchStatsData();
-        } else {
-            toast.error(`Failed to update status`);
-        }
-    };
-
-    // Export Handlers
-    const handleExportCSV = async () => {
-        const result = await exportCoursesToCSV({ search: searchTerm, category: categoryFilter, status: statusFilter as any });
-        if (result.csv) {
-            const blob = new Blob([result.csv], { type: 'text/csv' });
-            const url = window.URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = `courses-export-${new Date().toISOString().split('T')[0]}.csv`;
-            a.click();
-            window.URL.revokeObjectURL(url);
-            toast.success('Courses exported to CSV');
-            setExportModal(false);
-        } else {
-            toast.error('Failed to export courses');
-        }
-    };
-
-    const handleExportJSON = async () => {
-        const result = await exportCoursesToJSON({ search: searchTerm, category: categoryFilter, status: statusFilter as any });
-        if (result.json) {
-            const blob = new Blob([result.json], { type: 'application/json' });
-            const url = window.URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = `courses-export-${new Date().toISOString().split('T')[0]}.json`;
-            a.click();
-            window.URL.revokeObjectURL(url);
-            toast.success('Courses exported to JSON');
-            setExportModal(false);
-        } else {
-            toast.error('Failed to export courses');
-        }
-    };
-
-    const handleExportPDF = async () => {
-        const result = await exportCoursesToJSON({ search: searchTerm, category: categoryFilter, status: statusFilter as any });
-
-        if (result.json) {
-            try {
-                const coursesData = JSON.parse(result.json);
-                const doc = new jsPDF();
-
-                doc.setFillColor(63, 81, 181);
-                doc.rect(0, 0, 210, 40, 'F');
-
-                doc.setTextColor(255, 255, 255);
-                doc.setFontSize(22);
-                doc.setFont("helvetica", "bold");
-                doc.text("Dokkhota IT LMS", 14, 25);
-
-                doc.setFontSize(12);
-                doc.setFont("helvetica", "normal");
-                doc.text("Course Report", 14, 33);
-
-                doc.setTextColor(100, 100, 100);
-                doc.setFontSize(10);
-                doc.text(`Generated on: ${new Date().toLocaleDateString()}`, 14, 50);
-                doc.text(`Total Courses: ${coursesData.length}`, 14, 56);
-
-                const tableColumn = ["Title", "Category", "Status", "Price", "Students"];
-                const tableRows = coursesData.map((course: any) => [
-                    course.title,
-                    course.category?.name || "N/A",
-                    (course.status || "draft").toUpperCase(),
-                    `BDT ${course.price}`,
-                    course.total_students || 0
-                ]);
-
-                autoTable(doc, {
-                    head: [tableColumn],
-                    body: tableRows,
-                    startY: 65,
-                    theme: 'grid',
-                    styles: { fontSize: 9 },
-                    headStyles: { fillColor: [63, 81, 181] }
-                });
-
-                doc.save(`courses-export-${new Date().toISOString().split('T')[0]}.pdf`);
-                toast.success('Courses exported to PDF');
-                setExportModal(false);
-            } catch (err) {
-                console.error(err);
-                toast.error('Failed to generate PDF');
-            }
-        }
-    };
+    const filteredCourses = courses.filter(course =>
+        course.title.toLowerCase().includes(searchQuery.toLowerCase())
+    );
 
     return (
-        <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            className="space-y-6 pb-10 font-sans"
-        >
-            {/* Header */}
-            <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-6">
+        <div className="space-y-6 pb-10">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div>
-                    <motion.h1
-                        initial={{ opacity: 0, x: -20 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        className="text-3xl font-bold tracking-tight"
-                    >
-                        Course Management
-                    </motion.h1>
-                    <motion.p
-                        initial={{ opacity: 0, x: -20 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        transition={{ delay: 0.1 }}
-                        className="text-muted-foreground mt-1"
-                    >
-                        Create, edit, and track performance of all courses
-                    </motion.p>
+                    <h1 className="text-2xl font-bold tracking-tight">Course Management</h1>
+                    <p className="text-muted-foreground text-sm">Create, edit, and manage platform courses.</p>
                 </div>
-
-                <div className="flex flex-wrap items-center gap-3">
-                    <motion.button
-                        whileHover={{ scale: 1.02 }}
-                        whileTap={{ scale: 0.98 }}
-                        onClick={() => setExportModal(true)}
-                        className="px-4 py-2.5 rounded-xl border border-border/50 bg-background/50 hover:bg-background text-sm font-semibold transition-all flex items-center gap-2"
-                    >
-                        <Download className="w-4 h-4" />
-                        <span>Export</span>
-                    </motion.button>
-                    <Link href="/dashboard/courses/new">
-                        <motion.button
-                            whileHover={{ scale: 1.02 }}
-                            whileTap={{ scale: 0.98 }}
-                            className="bg-primary text-primary-foreground px-5 py-2.5 rounded-xl text-sm font-semibold hover:bg-primary/90 transition-all shadow-lg shadow-primary/20 hover:shadow-primary/30 flex items-center gap-2"
-                        >
-                            <Plus className="w-4 h-4" />
-                            <span>Create Course</span>
-                        </motion.button>
-                    </Link>
-                </div>
+                <Link href="/dashboard/courses/new" className="flex items-center gap-2 bg-primary text-primary-foreground px-4 py-2.5 rounded-xl text-sm font-medium hover:bg-primary/90 transition-all shadow-lg shadow-primary/20 hover:shadow-primary/30 active:scale-95 cursor-pointer">
+                    <Plus className="w-4 h-4" />
+                    Create Course
+                </Link>
             </div>
 
-            {/* Stats Cards */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                {!stats ? (
-                    [...Array(4)].map((_, i) => (
-                        <div key={`skel-${i}`} className="p-6 rounded-2xl border border-border/40 bg-card/30 backdrop-blur-xl animate-pulse">
-                            <div className="h-4 w-24 bg-muted/40 rounded mb-3" />
-                            <div className="h-8 w-16 bg-muted/40 rounded" />
-                        </div>
-                    ))
-                ) : (
-                    [
-                        { label: 'Total Courses', value: stats.total, icon: BookOpen, color: 'blue' },
-                        { label: 'Published', value: stats.published, icon: CheckCircle2, color: 'emerald' },
-                        { label: 'Total Students', value: stats.totalStudents, icon: TrendingUp, color: 'violet' },
-                        { label: 'Revenue (Est.)', value: `৳${(stats.totalRevenue || 0).toLocaleString()}`, icon: DollarSign, color: 'emerald' }
-                    ].map((stat, idx) => (
-                        <motion.div
-                            key={stat.label}
-                            initial={{ opacity: 0, y: 20 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            transition={{ delay: idx * 0.1 }}
-                            className="p-6 rounded-2xl border border-border/40 bg-card/30 backdrop-blur-xl"
-                        >
-                            <div className="flex items-center justify-between">
-                                <div>
-                                    <p className="text-sm text-muted-foreground font-medium">{stat.label}</p>
-                                    <p className="text-3xl font-bold mt-2">{stat.value}</p>
-                                </div>
-                                <div className={cn(
-                                    "p-3 rounded-xl",
-                                    stat.color === 'blue' && "bg-blue-500/10 text-blue-600",
-                                    stat.color === 'emerald' && "bg-emerald-500/10 text-emerald-600",
-                                    stat.color === 'violet' && "bg-violet-500/10 text-violet-600",
-                                    stat.color === 'rose' && "bg-rose-500/10 text-rose-600"
-                                )}>
-                                    <stat.icon className="w-6 h-6" />
-                                </div>
-                            </div>
-                        </motion.div>
-                    ))
-                )}
-            </div>
-
-            {/* Main Table Container */}
-            <div className="rounded-3xl border border-border/40 bg-card/30 backdrop-blur-xl shadow-2xl shadow-black/5">
-
-                {/* Toolbar */}
-                <div className="p-4 md:p-6 border-b border-border/40 bg-muted/20">
-                    <div className="flex flex-col lg:flex-row gap-4 justify-between">
-                        {/* Search */}
-                        <div className="relative w-full lg:max-w-md group">
-                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground group-focus-within:text-primary transition-colors" />
-                            <input
-                                type="text"
-                                placeholder="Search courses..."
-                                value={searchTerm}
-                                onChange={(e) => { setSearchTerm(e.target.value); setCurrentPage(1); }}
-                                className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-background/50 border border-border/50 text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary/50 outline-none transition-all placeholder:text-muted-foreground/70"
-                            />
-                        </div>
-
-                        <div className="flex flex-wrap items-center gap-3">
-                            <Select value={categoryFilter} onChange={setCategoryFilter} icon={<Layers className="w-4 h-4" />} className="w-full sm:w-36">
-                                <SelectOption value="all">Category</SelectOption>
-                                {categories.map(c => <SelectOption key={c.id} value={c.id}>{c.name}</SelectOption>)}
-                            </Select>
-
-                            <Select value={statusFilter} onChange={setStatusFilter} icon={<BookOpen className="w-4 h-4" />} className="w-full sm:w-36">
-                                <SelectOption value="all">Status</SelectOption>
-                                <SelectOption value="published">Published</SelectOption>
-                                <SelectOption value="draft">Draft</SelectOption>
-                                <SelectOption value="archived">Archived</SelectOption>
-                            </Select>
-
-                            <Select value={levelFilter} onChange={setLevelFilter} icon={<BarChart className="w-4 h-4" />} className="w-full sm:w-36">
-                                <SelectOption value="all">Level</SelectOption>
-                                <SelectOption value="beginner">Beginner</SelectOption>
-                                <SelectOption value="intermediate">Intermediate</SelectOption>
-                                <SelectOption value="advanced">Advanced</SelectOption>
-                            </Select>
-
-                            <button onClick={fetchCoursesData} className="p-2.5 rounded-xl border border-border/50 bg-background/50 hover:bg-background hover:text-primary transition-colors text-muted-foreground" title="Refresh">
-                                <RefreshCw className={cn("w-4 h-4", isLoading && "animate-spin")} />
-                            </button>
-
-                            {(searchTerm || categoryFilter !== 'all' || statusFilter !== 'all' || levelFilter !== 'all') && (
-                                <button
-                                    onClick={() => {
-                                        setSearchTerm('');
-                                        setCategoryFilter('all');
-                                        setStatusFilter('all');
-                                        setLevelFilter('all');
-                                        setCurrentPage(1);
-                                    }}
-                                    className="flex items-center gap-1.5 px-3 py-2 rounded-xl border border-red-500/30 bg-red-500/10 hover:bg-red-500/20 text-red-500 text-sm font-medium transition-colors"
-                                >
-                                    <X className="w-3.5 h-3.5" />
-                                    Clear Filters
-                                </button>
-                            )}
-
-                        </div>
-                    </div>
-                </div>
-
-                {/* Table */}
-                <div className="rounded-md border border-border/40 overflow-hidden overflow-x-auto bg-card/30 backdrop-blur-xl [&::-webkit-scrollbar]:h-1.5 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-muted-foreground/20 [&::-webkit-scrollbar-thumb]:rounded-full hover:[&::-webkit-scrollbar-thumb]:bg-primary/50">
-                    <Table>
-                        <TableHeader className="bg-muted/10">
-                            <TableRow className="hover:bg-transparent border-b border-border/40">
-                                <TableHead className="w-[50px] px-6 py-4">
-                                    <AnimatedCheckbox id="select-all" checked={selectedCourses.size === courses.length && courses.length > 0} onChange={toggleSelectAll} />
-                                </TableHead>
-                                <TableHead className="px-6 py-4">Course</TableHead>
-                                <TableHead className="px-6 py-4">Price</TableHead>
-                                <TableHead className="px-6 py-4">Status</TableHead>
-                                <TableHead className="px-6 py-4">Level</TableHead>
-                                <TableHead className="px-6 py-4">Students</TableHead>
-                                <TableHead className="px-6 py-4 text-right">Actions</TableHead>
-                            </TableRow>
-                        </TableHeader>
-                        <TableBody>
-                            {isLoading ? (
-                                [...Array(5)].map((_, i) => (
-                                    <TableRow key={i} className="border-b border-border/40 hover:bg-muted/5 transition-colors">
-                                        <TableCell className="px-6 py-4">
-                                            <div className="w-5 h-5 bg-muted/40 rounded-md animate-pulse" />
-                                        </TableCell>
-                                        <TableCell className="px-6 py-4">
-                                            <div className="flex items-center gap-3">
-                                                <div className="w-12 h-8 rounded bg-muted/40 animate-pulse" />
-                                                <div className="space-y-2">
-                                                    <div className="h-4 w-32 bg-muted/40 rounded-md animate-pulse" />
-                                                    <div className="h-3 w-40 bg-muted/40 rounded-md animate-pulse" />
-                                                </div>
-                                            </div>
-                                        </TableCell>
-                                        <TableCell className="px-6 py-4"><div className="h-4 w-16 bg-muted/40 rounded-md animate-pulse" /></TableCell>
-                                        <TableCell className="px-6 py-4"><div className="h-7 w-24 bg-muted/40 rounded-full animate-pulse" /></TableCell>
-                                        <TableCell className="px-6 py-4"><div className="h-7 w-28 bg-muted/40 rounded-full animate-pulse" /></TableCell>
-                                        <TableCell className="px-6 py-4"><div className="h-4 w-12 bg-muted/40 rounded-md animate-pulse" /></TableCell>
-                                        <TableCell className="px-6 py-4"><div className="h-8 w-8 bg-muted/40 rounded-lg ml-auto animate-pulse" /></TableCell>
-                                    </TableRow>
-                                ))
-                            ) : courses.length === 0 ? (
-                                <TableRow>
-                                    <TableCell colSpan={7} className="h-24 text-center">
-                                        <div className="flex flex-col items-center gap-3 py-10">
-                                            <div className="p-4 rounded-full bg-muted/30">
-                                                <BookOpen className="w-8 h-8 text-muted-foreground opacity-50" />
-                                            </div>
-                                            <p className="font-medium text-foreground">No courses found</p>
-                                            <p className="text-xs text-muted-foreground">Try adjusting your search or filters</p>
-                                        </div>
-                                    </TableCell>
-                                </TableRow>
-                            ) : (
-                                courses.map((course) => (
-                                    <TableRow key={course.id} className="hover:bg-primary/5 border-b border-border/40 transition-colors group">
-                                        <TableCell className="px-6 py-4">
-                                            <AnimatedCheckbox
-                                                id={`select-${course.id}`}
-                                                checked={selectedCourses.has(course.id)}
-                                                onChange={() => toggleSelectCourse(course.id)}
-                                            />
-                                        </TableCell>
-                                        <TableCell className="px-6 py-4">
-                                            <div className="flex items-center gap-3">
-                                                <div className="w-14 h-10 rounded-lg bg-muted overflow-hidden shrink-0 border border-border/20 shadow-sm group-hover:scale-105 transition-transform">
-                                                    {course.thumbnail_url ? (
-                                                        <Image src={course.thumbnail_url} alt="" width={56} height={40} className="w-full h-full object-cover" />
-                                                    ) : (
-                                                        <div className="w-full h-full flex items-center justify-center bg-muted text-xs text-muted-foreground">No Img</div>
-                                                    )}
-                                                </div>
-                                                <div>
-                                                    <Link href={`/courses/${course.slug}`} className="font-semibold text-foreground group-hover:text-primary transition-colors line-clamp-1 max-w-[200px]">
-                                                        {course.title}
-                                                    </Link>
-                                                    <div className="text-xs text-muted-foreground">{course.category?.name || 'Uncategorized'}</div>
-                                                </div>
-                                            </div>
-                                        </TableCell>
-                                        <TableCell className="px-6 py-4 font-mono text-sm">
-                                            {course.price > 0 ? `৳${course.price.toLocaleString()}` : <span className="text-emerald-500 font-bold">Free</span>}
-                                        </TableCell>
-                                        <TableCell className="px-6 py-4">
-                                            <StatusBadge status={course.status} />
-                                        </TableCell>
-                                        <TableCell className="px-6 py-4">
-                                            <LevelBadge level={course.level || 'beginner'} />
-                                        </TableCell>
-                                        <TableCell className="px-6 py-4 text-muted-foreground text-sm">
-                                            {course.total_students || 0}
-                                        </TableCell>
-                                        <TableCell className="px-6 py-4 text-right">
-                                            <DropdownMenu>
-                                                <DropdownMenuTrigger asChild>
-                                                    <button className="p-2 rounded-lg hover:bg-muted/50 transition-colors outline-none"><MoreHorizontal className="w-4 h-4" /></button>
-                                                </DropdownMenuTrigger>
-                                                <DropdownMenuContent align="end" className="w-44 p-1.5 rounded-xl border border-border/50 dark:border-white/10 bg-white dark:bg-[#040a14] shadow-xl dark:shadow-2xl">
-                                                    <DropdownMenuItem className="rounded-lg cursor-pointer text-sm gap-2.5 text-slate-700 dark:text-slate-200 focus:bg-slate-100 dark:focus:bg-white/10 focus:text-slate-900 dark:focus:text-white" onClick={() => window.location.href = `/courses/${course.slug}`}>
-                                                        <Eye className="w-4 h-4" />
-                                                        View Course
-                                                    </DropdownMenuItem>
-                                                    <DropdownMenuItem className="rounded-lg cursor-pointer text-sm gap-2.5 text-slate-700 dark:text-slate-200 focus:bg-slate-100 dark:focus:bg-white/10 focus:text-slate-900 dark:focus:text-white" onClick={() => window.location.href = `/dashboard/courses/${course.id}/edit`}>
-                                                        <Edit className="w-4 h-4" />
-                                                        Edit Course
-                                                    </DropdownMenuItem>
-
-                                                    <DropdownMenuSeparator className="my-1 bg-slate-200 dark:bg-white/10" />
-
-                                                    <DropdownMenuItem className="rounded-lg cursor-pointer text-sm gap-2.5 text-slate-700 dark:text-slate-200 focus:bg-slate-100 dark:focus:bg-white/10 focus:text-slate-900 dark:focus:text-white" onClick={() => togglePublishStatus(course)}>
-                                                        {course.status === 'published' ? <Archive className="w-4 h-4" /> : <CheckCircle2 className="w-4 h-4" />}
-                                                        {course.status === 'published' ? 'Unpublish' : 'Publish'}
-                                                    </DropdownMenuItem>
-
-                                                    <DropdownMenuSeparator className="my-1 bg-slate-200 dark:bg-white/10" />
-
-                                                    <DropdownMenuItem onClick={() => handleDeleteCourse(course.id)} className="rounded-lg cursor-pointer text-sm gap-2.5 text-red-500 dark:text-red-400 focus:bg-red-50 dark:focus:bg-red-500/15 focus:text-red-600 dark:focus:text-red-300">
-                                                        <Trash2 className="w-4 h-4 text-red-500 dark:text-red-400" />
-                                                        Delete Course
-                                                    </DropdownMenuItem>
-                                                </DropdownMenuContent>
-                                            </DropdownMenu>
-                                        </TableCell>
-                                    </TableRow>
-                                ))
-                            )}
-                        </TableBody>
-                    </Table>
-                </div>
-
-                {/* Pagination */}
-                {!isLoading && totalCourses > 0 && (
-                    <div className="p-6 border-t border-border/40 bg-muted/10">
-                        <Pagination
-                            currentPage={currentPage}
-                            totalItems={totalCourses}
-                            pageSize={pageSize}
-                            totalPages={Math.ceil(totalCourses / pageSize)}
-                            onPageChange={setCurrentPage}
-                            onPageSizeChange={setPageSize}
+            <div className="rounded-2xl border border-border/50 bg-card/50 backdrop-blur-xl overflow-hidden shadow-sm">
+                <div className="p-4 border-b border-border/50 flex flex-col sm:flex-row sm:items-center gap-4 justify-between bg-muted/20">
+                    <div className="relative w-full max-w-sm">
+                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                        <input
+                            type="text"
+                            placeholder="Search courses by title..."
+                            value={searchQuery}
+                            onChange={(e) => setSearchQuery(e.target.value)}
+                            className="w-full pl-9 pr-4 py-2 rounded-xl bg-background/50 border border-border/50 text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary/50 outline-none transition-all"
                         />
                     </div>
-                )}
-            </div>
-
-            {/* Floating Bulk selection Bar */}
-            <AnimatePresence>
-                {selectedCourses.size > 0 && (
-                    <motion.div
-                        initial={{ opacity: 0, y: 100 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0, y: 100 }}
-                        className="fixed bottom-8 left-1/2 -translate-x-1/2 z-50 flex items-center gap-1 p-1.5 pr-4 pl-4 rounded-full border border-border bg-card/95 text-foreground shadow-xl backdrop-blur-md"
-                    >
-                        <span className="text-sm font-semibold mr-2 whitespace-nowrap pl-1">{selectedCourses.size} selected</span>
-                        <div className="h-4 w-px bg-border mx-1" />
-                        <div className="flex items-center gap-1">
-                            <button onClick={() => { setBulkActionModal('publish'); handleBulkAction(); }} className="p-2 rounded-full hover:bg-muted transition-colors text-emerald-500" title="Publish Selected">
-                                <CheckCircle2 className="w-4 h-4" />
-                            </button>
-                            <button onClick={() => { setBulkActionModal('unpublish'); handleBulkAction(); }} className="p-2 rounded-full hover:bg-muted transition-colors text-amber-500" title="Unpublish Selected">
-                                <Archive className="w-4 h-4" />
-                            </button>
-                            <button onClick={() => { setBulkActionModal('delete'); handleBulkAction(); }} className="p-2 rounded-full hover:bg-muted transition-colors text-red-500" title="Delete Selected">
-                                <Trash2 className="w-4 h-4" />
-                            </button>
-                        </div>
-                        <div className="h-4 w-px bg-border mx-1" />
-                        <button onClick={clearSelection} className="p-2 rounded-full hover:bg-muted transition-colors ml-1 text-muted-foreground hover:text-foreground" title="Clear Selection">
-                            <X className="w-4 h-4" />
-                        </button>
-                    </motion.div>
-                )}
-            </AnimatePresence>
-
-            {/* Export Modal */}
-            {exportModal && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
-                    <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="w-full max-w-md bg-card border border-border rounded-2xl p-6 shadow-2xl">
-                        <h2 className="text-xl font-bold mb-2">Export Courses</h2>
-                        <p className="text-muted-foreground text-sm mb-6">Choose a format to download your course data.</p>
-                        <div className="grid grid-cols-1 gap-3">
-                            <button onClick={handleExportCSV} className="flex items-center gap-3 p-4 rounded-xl border border-border/50 bg-muted/20 hover:bg-primary/5 hover:border-primary/30 transition-all group text-left">
-                                <div className="p-2 rounded-lg bg-green-500/10 text-green-500"><Download className="w-5 h-5" /></div>
-                                <div><div className="font-semibold text-foreground">Export as CSV</div><div className="text-xs text-muted-foreground">Best for spreadsheet software</div></div>
-                            </button>
-                            <button onClick={handleExportJSON} className="flex items-center gap-3 p-4 rounded-xl border border-border/50 bg-muted/20 hover:bg-primary/5 hover:border-primary/30 transition-all group text-left">
-                                <div className="p-2 rounded-lg bg-yellow-500/10 text-yellow-500"><Download className="w-5 h-5" /></div>
-                                <div><div className="font-semibold text-foreground">Export as JSON</div><div className="text-xs text-muted-foreground">For developer use</div></div>
-                            </button>
-                            <button onClick={handleExportPDF} className="flex items-center gap-3 p-4 rounded-xl border border-border/50 bg-muted/20 hover:bg-primary/5 hover:border-primary/30 transition-all group text-left">
-                                <div className="p-2 rounded-lg bg-red-500/10 text-red-500"><Download className="w-5 h-5" /></div>
-                                <div><div className="font-semibold text-foreground">Export as PDF</div><div className="text-xs text-muted-foreground">Formatted report</div></div>
-                            </button>
-                        </div>
-                        <button onClick={() => setExportModal(false)} className="mt-6 w-full py-2.5 rounded-xl border border-border/50 hover:bg-muted font-medium transition-colors">Cancel</button>
-                    </motion.div>
                 </div>
-            )}
-        </motion.div>
+
+                <div className="overflow-x-auto">
+                    <table className="w-full text-sm text-left">
+                        <thead className="bg-muted/30 text-muted-foreground font-medium border-b border-border/50">
+                            <tr>
+                                <th className="px-6 py-4">Course Title</th>
+                                <th className="px-6 py-4">Category</th>
+                                <th className="px-6 py-4">Price</th>
+                                <th className="px-6 py-4">Students</th>
+                                <th className="px-6 py-4 text-right">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody className="divide-y divide-border/50 bg-card/30">
+                            {loading ? (
+                                <tr>
+                                    <td colSpan={5} className="px-6 py-8 text-center text-muted-foreground">Loading courses...</td>
+                                </tr>
+                            ) : filteredCourses.length === 0 ? (
+                                <tr>
+                                    <td colSpan={5} className="px-6 py-8 text-center text-muted-foreground">No courses found.</td>
+                                </tr>
+                            ) : filteredCourses.map((course, i) => (
+                                <motion.tr
+                                    key={course.id}
+                                    initial={{ opacity: 0, y: 10 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    transition={{ delay: i * 0.05 }}
+                                    className="hover:bg-muted/40 transition-colors group"
+                                >
+                                    <td className="px-6 py-4">
+                                        <div className="flex items-center gap-3">
+                                            <div className="w-12 h-8 rounded-lg bg-muted overflow-hidden shrink-0 border border-border/50">
+                                                {course.thumbnail_url ? (
+                                                    <img src={course.thumbnail_url} alt="" className="w-full h-full object-cover" />
+                                                ) : (
+                                                    <div className="w-full h-full bg-muted flex items-center justify-center text-xs">IMG</div>
+                                                )}
+                                            </div>
+                                            <Link href={`/courses/${course.slug}`} className="font-medium text-foreground line-clamp-1 max-w-[180px] sm:max-w-xs hover:underline">
+                                                {course.title}
+                                            </Link>
+                                        </div>
+                                    </td>
+                                    <td className="px-6 py-4">
+                                        <span className="px-2.5 py-1 rounded-full bg-primary/5 text-primary border border-primary/10 text-xs font-medium whitespace-nowrap">
+                                            {course.category?.name || 'Uncategorized'}
+                                        </span>
+                                    </td>
+                                    <td className="px-6 py-4 font-mono text-muted-foreground whitespace-nowrap">
+                                        ৳{course.price}
+                                    </td>
+                                    <td className="px-6 py-4 text-muted-foreground whitespace-nowrap">
+                                        {course.total_students || 0}
+                                    </td>
+                                    <td className="px-6 py-4 text-right">
+                                        <div className="flex items-center justify-end gap-1 opacity-100 sm:opacity-0 group-hover:opacity-100 transition-opacity">
+                                            <Link href={`/dashboard/courses/${course.id}/edit`} className="p-2 rounded-lg hover:bg-background border border-transparent hover:border-border/50 text-muted-foreground hover:text-foreground transition-all cursor-pointer" title="Edit">
+                                                <Edit className="w-4 h-4" />
+                                            </Link>
+                                            <button
+                                                onClick={() => handleDelete(course.id)}
+                                                className="p-2 rounded-lg hover:bg-red-500/10 border border-transparent hover:border-red-500/20 text-muted-foreground hover:text-red-500 transition-all cursor-pointer"
+                                                title="Delete"
+                                            >
+                                                <Trash2 className="w-4 h-4" />
+                                            </button>
+                                        </div>
+                                    </td>
+                                </motion.tr>
+                            ))}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
     );
 }

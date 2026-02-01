@@ -94,7 +94,7 @@ export default function CourseDetailClient({ course }: { course: MappedCourse })
             <div className="fixed bottom-0 right-0 w-[500px] h-[500px] bg-indigo-500/5 rounded-full blur-[120px] translate-x-1/3 translate-y-1/3 pointer-events-none" />
 
             {/* Header / Breadcrumb Area */}
-            <div className="bg-[#0f1117]/80 border-b border-white/5 backdrop-blur-md sticky top-0 z-40 supports-[backdrop-filter]:bg-[#0f1117]/60">
+            <div className="bg-[#0f1117]/80 border-b border-white/5 backdrop-blur-md sticky top-0 z-40 supports-backdrop-filter:bg-[#0f1117]/60">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
                     <Link
                         href="/courses"
@@ -393,7 +393,7 @@ export default function CourseDetailClient({ course }: { course: MappedCourse })
                                             className="w-full py-4 rounded-xl bg-emerald-600 text-white font-bold text-lg hover:bg-emerald-500 transition-all shadow-[0_0_20px_rgba(16,185,129,0.3)] hover:shadow-[0_0_25px_rgba(16,185,129,0.4)] active:scale-[0.98] disabled:opacity-70 disabled:cursor-not-allowed group relative overflow-hidden"
                                         >
                                             <span className="relative z-10">{loading ? "Processing..." : course.priceType === "Free" ? "Enroll Now" : "Buy Now"}</span>
-                                            <div className="absolute inset-0 bg-gradient-to-r from-emerald-600 to-teal-500 opacity-0 group-hover:opacity-100 transition-opacity" />
+                                            <div className="absolute inset-0 bg-linear-to-r from-emerald-600 to-teal-500 opacity-0 group-hover:opacity-100 transition-opacity" />
                                         </button>
                                         <button className="w-full py-4 rounded-xl border border-slate-600 text-white font-bold hover:bg-slate-800 transition-colors">
                                             Add to Cart
