@@ -4,10 +4,11 @@ import Link from "next/link";
 import { motion, AnimatePresence } from "motion/react";
 import { Home, ArrowLeft, X, Send, AlertCircle } from "lucide-react";
 import { Logo } from "@/components/ui/Logo";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useNotFound } from "@/contexts/NotFoundContext";
 
 // Schema for feedback
 const feedbackSchema = z.object({
@@ -19,6 +20,13 @@ type FeedbackFormValues = z.infer<typeof feedbackSchema>;
 export default function NotFound() {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [isSubmitted, setIsSubmitted] = useState(false);
+    const { setIsNotFound } = useNotFound();
+
+    // Hide navbar and footer on 404 page
+    useEffect(() => {
+        setIsNotFound(true);
+        return () => setIsNotFound(false);
+    }, [setIsNotFound]);
 
     const {
         register,
@@ -47,15 +55,21 @@ export default function NotFound() {
             className="relative min-h-screen bg-background flex flex-col items-center justify-center p-4 font-space-grotesk overflow-hidden selection:bg-primary/30 transition-colors duration-300"
             suppressHydrationWarning
         >
-            {/* Ambient Background Glows */}
+            {/* Animated Background - matching About page style */}
             <div className="absolute inset-0 overflow-hidden pointer-events-none">
-                <div className="absolute top-[-10%] left-[-10%] w-[50vw] h-[50vw] bg-linear-to-br from-primary/20 via-accent/10 to-transparent rounded-full blur-[120px]" />
-                <div className="absolute bottom-[-10%] right-[-10%] w-[50vw] h-[50vw] bg-linear-to-tr from-secondary/20 via-primary/10 to-transparent rounded-full blur-[120px]" />
+                {/* Gradient Orbs */}
+                <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-linear-to-br from-primary/20 via-accent/15 to-transparent rounded-full blur-3xl translate-x-1/4 -translate-y-1/4" />
+                <div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-linear-to-tr from-secondary/20 via-primary/15 to-transparent rounded-full blur-3xl -translate-x-1/4 translate-y-1/4" />
+                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[400px] h-[400px] bg-accent/10 rounded-full blur-[80px]" />
             </div>
 
             {/* Grid Pattern Overlay */}
             <div
-                className="absolute inset-0 bg-[linear-gradient(to_right,#00000008_1px,transparent_1px),linear-gradient(to_bottom,#00000008_1px,transparent_1px)] dark:bg-[linear-gradient(to_right,#80808012_1px,transparent_1px),linear-gradient(to_bottom,#80808012_1px,transparent_1px)] bg-size-[24px_24px] mask-[radial-gradient(ellipse_60%_50%_at_50%_0%,#000_70%,transparent_100%)] pointer-events-none"
+                className="absolute inset-0 opacity-[0.02] pointer-events-none"
+                style={{
+                    backgroundImage: `linear-gradient(var(--foreground) 1px, transparent 1px), linear-gradient(90deg, var(--foreground) 1px, transparent 1px)`,
+                    backgroundSize: '60px 60px',
+                }}
             />
 
             {/* Main Content Card */}

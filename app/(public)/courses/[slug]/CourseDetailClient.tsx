@@ -4,7 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { motion } from "motion/react";
+import { motion, AnimatePresence } from "motion/react";
 import {
     ArrowLeft,
     Star,
@@ -19,23 +19,27 @@ import {
     FileText,
     Download,
     MessageCircle,
-    Lock
+    Lock,
+    ChevronDown,
+    Layout,
+    Share2,
+    Gift
 } from "lucide-react";
-import { fadeInUp } from "@/lib/motion";
 import { MappedCourse } from "@/types/mapped-course";
 import { createClient } from "@/lib/supabase/client";
 import { useToast } from "@/components/ui/toast";
+import { cn } from "@/lib/utils";
 
 export default function CourseDetailClient({ course }: { course: MappedCourse }) {
     const router = useRouter();
     const [loading, setLoading] = useState(false);
+    const [expandedModules, setExpandedModules] = useState<number[]>([0]);
     const supabase = createClient();
     const { success, error, info } = useToast();
 
     const handleEnroll = async () => {
         setLoading(true);
 
-        // 1. Check Auth
         const { data: { user } } = await supabase.auth.getUser();
 
         if (!user) {
@@ -45,7 +49,6 @@ export default function CourseDetailClient({ course }: { course: MappedCourse })
             return;
         }
 
-        // 2. Handle Enrollment
         if (course.priceType === "Free") {
             try {
                 const res = await fetch('/api/enroll', {
@@ -60,280 +63,335 @@ export default function CourseDetailClient({ course }: { course: MappedCourse })
                 }
 
                 success("Enrolled successfully!");
-                // Redirect to player
                 router.refresh();
-                router.push(`/dashboard`); // Go to dashboard to see enrolled course
+                router.push(`/dashboard`);
             } catch (err: any) {
                 error(err.message);
             }
         } else {
-            // Paid Course Logic
             info("Payment integration coming soon. This is a demo.");
         }
 
         setLoading(false);
     };
 
+    const toggleModule = (index: number) => {
+        setExpandedModules(prev =>
+            prev.includes(index)
+                ? prev.filter(i => i !== index)
+                : [...prev, index]
+        );
+    };
+
+    // Helper to format price
+    const formattedPrice = course.priceType === "Free" ? "Free" : course.price;
+
     return (
-        <div className="min-h-screen bg-background">
-
-            {/* Hero Section */}
-            <div className="relative bg-muted/30 pt-28 pb-16 overflow-hidden">
-                {/* Background decoration */}
-                <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-primary/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2" />
-                <div className="absolute bottom-0 left-0 w-[400px] h-[400px] bg-accent/10 rounded-full blur-3xl translate-y-1/2 -translate-x-1/2" />
-
-                <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                    {/* Back button */}
+        <div className="min-h-screen bg-[#0f1117] text-slate-200 selection:bg-emerald-500/30">
+            {/* Header / Breadcrumb Area */}
+            <div className="bg-[#1e293b]/50 border-b border-white/5 backdrop-blur-md sticky top-0 z-40">
+                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
                     <Link
                         href="/courses"
-                        className="inline-flex items-center gap-2 text-muted-foreground hover:text-primary transition-colors mb-8"
+                        className="inline-flex items-center gap-2 text-sm font-medium text-slate-400 hover:text-white transition-colors"
                     >
                         <ArrowLeft className="w-4 h-4" />
-                        Back to Courses
+                        <span className="hidden sm:inline">Back to Courses</span>
                     </Link>
-
-                    <div className="grid lg:grid-cols-2 gap-12 items-center">
-                        {/* Course Info */}
-                        <motion.div
-                            initial="hidden"
-                            animate="visible"
-                            variants={fadeInUp}
-                        >
-                            {/* Tags */}
-                            <div className="flex flex-wrap gap-2 mb-4">
-                                {course.tags?.slice(0, 4).map((tag) => (
-                                    <span
-                                        key={tag}
-                                        className="px-3 py-1 rounded-full text-xs font-medium bg-primary/10 text-primary"
-                                    >
-                                        {tag}
-                                    </span>
-                                ))}
-                            </div>
-
-                            <h1 className="text-4xl sm:text-5xl font-bold tracking-tight mb-4">
-                                {course.title}
-                            </h1>
-                            <p className="text-lg text-muted-foreground mb-6">
-                                {course.description}
-                            </p>
-
-                            {/* Meta info */}
-                            <div className="flex flex-wrap items-center gap-4 mb-6 text-sm">
-                                <div className="flex items-center gap-1">
-                                    <Star className="w-5 h-5 fill-yellow-400 text-yellow-400" />
-                                    <span className="font-bold">{course.rating}</span>
-                                    <span className="text-muted-foreground">({course.reviews} reviews)</span>
-                                </div>
-                                <div className="flex items-center gap-1 text-muted-foreground">
-                                    <Users className="w-4 h-4" />
-                                    {course.students} students
-                                </div>
-                                <div className="flex items-center gap-1 text-muted-foreground">
-                                    <Clock className="w-4 h-4" />
-                                    {course.duration}
-                                </div>
-                            </div>
-
-                            {/* Instructor */}
-                            <div className="flex items-center gap-3 mb-8">
-                                <div className="w-12 h-12 rounded-full bg-primary flex items-center justify-center text-primary-foreground font-bold overflow-hidden relative">
-                                    {course.instructor.avatar ? (
-                                        <Image src={course.instructor.avatar} alt={course.instructor.name} fill className="object-cover" />
-                                    ) : (
-                                        <span>{course.instructor.name.charAt(0)}</span>
-                                    )}
-                                </div>
-                                <div>
-                                    <p className="font-semibold">{course.instructor.name}</p>
-                                    <p className="text-sm text-muted-foreground">{course.instructor.title}</p>
-                                </div>
-                            </div>
-
-                            {/* Price and CTA */}
-                            <div className="flex flex-wrap items-center gap-4">
-                                <div>
-                                    <span className="text-4xl font-black text-primary">{course.price}</span>
-                                </div>
-                                <button
-                                    onClick={handleEnroll}
-                                    disabled={loading}
-                                    className="px-8 py-3 rounded-xl bg-primary text-primary-foreground font-semibold hover:bg-primary/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                                >
-                                    {loading ? "Processing..." : "Enroll Now"}
-                                </button>
-                                <button className="px-8 py-3 rounded-xl bg-muted font-semibold hover:bg-muted/80 transition-colors">
-                                    Preview Course
-                                </button>
-                            </div>
-                        </motion.div>
-
-                        {/* Course Image */}
-                        <motion.div
-                            initial={{ opacity: 0, x: 20 }}
-                            animate={{ opacity: 1, x: 0 }}
-                            transition={{ delay: 0.2 }}
-                            className="relative"
-                        >
-                            <div className="relative aspect-video rounded-3xl overflow-hidden border border-border/50 shadow-2xl">
-                                <Image
-                                    src={course.image || '/placeholder-course.jpg'}
-                                    alt={course.title}
-                                    fill
-                                    className="object-cover"
-                                />
-                                {/* Play button overlay */}
-                                <div className="absolute inset-0 flex items-center justify-center bg-black/20">
-                                    <button className="w-20 h-20 rounded-full bg-primary/90 backdrop-blur-sm flex items-center justify-center hover:bg-primary transition-colors">
-                                        <Play className="w-8 h-8 text-primary-foreground ml-1" fill="currentColor" />
-                                    </button>
-                                </div>
-                            </div>
-                        </motion.div>
+                    <div className="text-sm font-medium text-slate-400">
+                        <span className="text-slate-500">Courses</span> / <span className="text-emerald-400">{course.title}</span>
                     </div>
                 </div>
             </div>
 
-            {/* Course Content */}
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
-                <div className="grid lg:grid-cols-3 gap-12">
-                    {/* Main Content */}
-                    <div className="lg:col-span-2 space-y-12">
-                        {/* About this course */}
-                        <section>
-                            <h2 className="text-2xl font-bold mb-4">About this course</h2>
-                            <p className="text-muted-foreground leading-relaxed whitespace-pre-wrap">
-                                {course.longDescription || course.description}
+            {/* Main Layout */}
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 lg:py-12">
+                <div className="grid lg:grid-cols-12 gap-8 lg:gap-12">
+
+                    {/* Left Column (Content) */}
+                    <div className="lg:col-span-8 space-y-10">
+
+                        {/* Hero Info (Left Side) */}
+                        <div className="space-y-6">
+                            <div className="flex flex-wrap gap-2">
+                                {course.tags?.map((tag) => (
+                                    <span key={tag} className="px-3 py-1 rounded-full text-xs font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                                        {tag}
+                                    </span>
+                                ))}
+                                <span className="px-3 py-1 rounded-full text-xs font-bold bg-amber-500/10 text-amber-400 border border-amber-500/20 flex items-center gap-1">
+                                    <Star className="w-3 h-3 fill-amber-400" /> Best Seller
+                                </span>
+                            </div>
+
+                            <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tight text-white leading-tight">
+                                {course.title}
+                            </h1>
+
+                            <p className="text-lg text-slate-400 leading-relaxed">
+                                {course.description}
                             </p>
-                        </section>
 
-                        {/* What you'll learn */}
-                        <section>
-                            <h2 className="text-2xl font-bold mb-6">What you'll learn</h2>
-                            <div className="grid sm:grid-cols-2 gap-4">
-                                {course.whatYouLearn?.map((item, index) => (
-                                    <div key={index} className="flex gap-3">
-                                        <CheckCircle2 className="w-5 h-5 text-primary shrink-0 mt-0.5" />
-                                        <span className="text-sm">{item}</span>
+                            <div className="flex flex-wrap items-center gap-6 text-sm text-slate-400">
+                                <div className="flex items-center gap-1.5">
+                                    <span className="font-bold text-amber-400 text-base">{course.rating}</span>
+                                    <div className="flex">
+                                        {[1, 2, 3, 4, 5].map(i => (
+                                            <Star key={i} className={cn("w-4 h-4", i <= Math.round(Number(course.rating)) ? "fill-amber-400 text-amber-400" : "fill-slate-700 text-slate-700")} />
+                                        ))}
                                     </div>
-                                ))}
+                                    <span className="underline decoration-slate-600 underline-offset-4">({course.reviews} ratings)</span>
+                                </div>
+                                <span>•</span>
+                                <div className="flex items-center gap-1.5">
+                                    <Users className="w-4 h-4" />
+                                    <span>{course.students} students</span>
+                                </div>
+                                <span>•</span>
+                                <div className="flex items-center gap-1.5">
+                                    <Clock className="w-4 h-4" />
+                                    <span>{course.duration} Total</span>
+                                </div>
                             </div>
-                        </section>
 
-                        {/* Curriculum */}
-                        <section>
-                            <h2 className="text-2xl font-bold mb-6">Course Curriculum</h2>
-                            <div className="space-y-4">
-                                {course.curriculum?.map((module, index) => (
-                                    <div
-                                        key={index}
-                                        className="bg-card/80 dark:bg-card/60 backdrop-blur-xl border border-border/50 dark:border-white/10 rounded-2xl overflow-hidden"
-                                    >
-                                        <div className="p-4 flex items-center justify-between bg-muted/30">
-                                            <div className="flex items-center gap-3">
-                                                <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center text-primary font-bold text-sm">
-                                                    {index + 1}
-                                                </div>
-                                                <h3 className="font-semibold">{module.title}</h3>
-                                            </div>
-                                            <span className="text-sm text-muted-foreground">{module.duration}</span>
-                                        </div>
-                                        <div className="p-4 space-y-2">
-                                            {module.lessons?.map((lesson, lIndex) => (
-                                                <div key={lIndex} className="flex items-center justify-between text-sm text-muted-foreground hover:bg-muted/50 p-2 rounded-lg transition-colors cursor-default">
-                                                    <div className="flex items-center gap-3">
-                                                        {lesson.isFreePreview ? (
-                                                            <Play className="w-4 h-4 text-primary" />
-                                                        ) : (
-                                                            <Lock className="w-4 h-4" />
-                                                        )}
-                                                        <span className={lesson.isFreePreview ? "text-foreground font-medium" : ""}>
-                                                            {lesson.title}
-                                                        </span>
-                                                    </div>
-                                                    <span className="text-xs">{lesson.duration}</span>
-                                                </div>
-                                            ))}
-                                        </div>
-                                    </div>
-                                ))}
-                            </div>
-                        </section>
-
-                        {/* Instructor */}
-                        <section>
-                            <h2 className="text-2xl font-bold mb-6">Your Instructor</h2>
-                            <div className="bg-card/80 dark:bg-card/60 backdrop-blur-xl border border-border/50 dark:border-white/10 rounded-2xl p-6">
-                                <div className="flex items-start gap-4">
-                                    <div className="w-20 h-20 rounded-2xl bg-primary flex items-center justify-center text-primary-foreground text-2xl font-bold overflow-hidden relative">
+                            {/* Mentors Section */}
+                            <div className="pt-4 border-t border-white/5">
+                                <p className="text-sm font-medium text-slate-400 mb-3">Created by</p>
+                                <div className="flex items-center gap-3">
+                                    <div className="w-10 h-10 rounded-full bg-slate-700 border border-slate-600 overflow-hidden relative">
                                         {course.instructor.avatar ? (
                                             <Image src={course.instructor.avatar} alt={course.instructor.name} fill className="object-cover" />
                                         ) : (
-                                            <span>{course.instructor.name.charAt(0)}</span>
+                                            <div className="w-full h-full flex items-center justify-center font-bold text-slate-300">{course.instructor.name.charAt(0)}</div>
                                         )}
                                     </div>
-                                    <div className="flex-1">
-                                        <h3 className="text-xl font-bold">{course.instructor.name}</h3>
-                                        <p className="text-primary font-medium mb-2">{course.instructor.title}</p>
-                                        <p className="text-muted-foreground text-sm">{course.instructor.bio}</p>
+                                    <div>
+                                        <p className="text-sm font-bold text-white hover:text-emerald-400 transition-colors cursor-pointer">{course.instructor.name}</p>
+                                        <p className="text-xs text-slate-500">{course.instructor.title}</p>
                                     </div>
                                 </div>
                             </div>
-                        </section>
+                        </div>
+
+                        {/* What you'll learn */}
+                        <div className="bg-[#1e293b]/30 border border-white/5 rounded-2xl p-6 sm:p-8">
+                            <h2 className="text-xl font-bold text-white mb-6">What you'll learn</h2>
+                            <div className="grid sm:grid-cols-2 gap-y-3 gap-x-6">
+                                {course.whatYouLearn?.map((item, index) => (
+                                    <div key={index} className="flex gap-3 items-start">
+                                        <CheckCircle2 className="w-5 h-5 text-emerald-500 shrink-0 mt-0.5" />
+                                        <span className="text-sm text-slate-300 leading-relaxed">{item}</span>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+
+                        {/* Course Content / Curriculum */}
+                        <div>
+                            <h2 className="text-2xl font-bold text-white mb-6">Course Content</h2>
+
+                            <div className="flex items-center gap-4 text-sm text-slate-400 mb-4">
+                                <span>{course.curriculum?.length || 0} sections</span>
+                                <span>•</span>
+                                <span>{course.curriculum?.reduce((acc, m) => acc + (m.lessons?.length || 0), 0) || 0} lectures</span>
+                                <span>•</span>
+                                <span>{course.duration} total length</span>
+                            </div>
+
+                            <div className="border border-white/10 rounded-xl overflow-hidden bg-[#1e293b]/20">
+                                {course.curriculum?.map((module, index) => (
+                                    <div key={index} className="border-b border-white/5 last:border-0">
+                                        <button
+                                            onClick={() => toggleModule(index)}
+                                            className="w-full flex items-center justify-between p-4 px-6 hover:bg-white/5 transition-colors text-left bg-[#1e293b]/40"
+                                        >
+                                            <div className="flex items-center gap-4">
+                                                <ChevronDown className={cn("w-5 h-5 text-slate-400 transition-transform duration-200", expandedModules.includes(index) && "rotate-180")} />
+                                                <h3 className="font-semibold text-slate-200">{module.title}</h3>
+                                            </div>
+                                            <span className="text-sm text-slate-500 hidden sm:block">{module.lessons?.length || 0} lectures • {module.duration}</span>
+                                        </button>
+
+                                        <AnimatePresence initial={false}>
+                                            {expandedModules.includes(index) && (
+                                                <motion.div
+                                                    initial="collapsed"
+                                                    animate="open"
+                                                    exit="collapsed"
+                                                    variants={{
+                                                        open: { height: "auto", opacity: 1 },
+                                                        collapsed: { height: 0, opacity: 0 }
+                                                    }}
+                                                    transition={{ duration: 0.2, ease: "easeInOut" }}
+                                                >
+                                                    <div className="bg-[#0f1117]/50">
+                                                        {module.lessons?.map((lesson, lIndex) => (
+                                                            <div key={lIndex} className="flex items-center justify-between py-3 px-6 pl-14 text-sm hover:bg-white/5 transition-colors group cursor-default">
+                                                                <div className="flex items-center gap-3">
+                                                                    {lesson.isFreePreview ? (
+                                                                        <Play className="w-4 h-4 text-emerald-500 shrink-0 fill-emerald-500/20" />
+                                                                    ) : (
+                                                                        <Lock className="w-4 h-4 text-slate-500 shrink-0" />
+                                                                    )}
+                                                                    <span className={cn("transition-colors", lesson.isFreePreview ? "text-emerald-400 font-medium group-hover:underline" : "text-slate-400")}>
+                                                                        {lesson.title}
+                                                                    </span>
+                                                                </div>
+                                                                <div className="flex items-center gap-4">
+                                                                    {lesson.isFreePreview && <span className="text-xs text-emerald-500 font-bold uppercase hidden sm:inline-block">Preview</span>}
+                                                                    <span className="text-xs text-slate-500 font-mono">{lesson.duration}</span>
+                                                                </div>
+                                                            </div>
+                                                        ))}
+                                                    </div>
+                                                </motion.div>
+                                            )}
+                                        </AnimatePresence>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+
+                        {/* Description */}
+                        <div>
+                            <h2 className="text-2xl font-bold text-white mb-6">Description</h2>
+                            <div className="prose prose-invert prose-slate max-w-none">
+                                <p className="leading-7 text-slate-300 whitespace-pre-wrap">{course.longDescription || course.description}</p>
+                            </div>
+                        </div>
+
+                        {/* Detailed Instructor Bio */}
+                        <div>
+                            <h2 className="text-2xl font-bold text-white mb-6">Instructor</h2>
+                            <div className="bg-[#1e293b]/30 border border-white/5 rounded-2xl p-6 sm:p-8">
+                                <div className="flex flex-col sm:flex-row gap-6">
+                                    <div className="shrink-0">
+                                        <div className="w-24 h-24 rounded-full border-2 border-emerald-500/20 p-1">
+                                            <div className="w-full h-full rounded-full bg-slate-700 overflow-hidden relative">
+                                                {course.instructor.avatar ? (
+                                                    <Image src={course.instructor.avatar} alt={course.instructor.name} fill className="object-cover" />
+                                                ) : (
+                                                    <div className="w-full h-full flex items-center justify-center font-bold text-2xl text-slate-300">{course.instructor.name.charAt(0)}</div>
+                                                )}
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div className="space-y-4">
+                                        <div>
+                                            <h3 className="text-xl font-bold text-emerald-400">{course.instructor.name}</h3>
+                                            <p className="text-slate-400 text-sm font-medium uppercase tracking-wide">{course.instructor.title}</p>
+                                        </div>
+                                        <p className="text-slate-300 leading-relaxed text-sm">
+                                            {course.instructor.bio || "Senior Instructor with 10+ years of experience in the industry. Passionate about teaching and helping students achieve their goals."}
+                                        </p>
+
+                                        <div className="flex gap-6 pt-4 border-t border-white/5">
+                                            <div className="text-xs font-semibold text-slate-400 uppercase tracking-widest">
+                                                <div className="text-white text-lg font-bold mb-1">{course.students}</div>
+                                                Students
+                                            </div>
+                                            <div className="text-xs font-semibold text-slate-400 uppercase tracking-widest">
+                                                <div className="text-white text-lg font-bold mb-1">{course.reviews}</div>
+                                                Reviews
+                                            </div>
+                                            <div className="text-xs font-semibold text-slate-400 uppercase tracking-widest">
+                                                <div className="text-white text-lg font-bold mb-1">12</div>
+                                                Courses
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
 
-                    {/* Sidebar */}
-                    <div className="lg:col-span-1">
-                        <div className="sticky top-24 bg-card/80 dark:bg-card/60 backdrop-blur-xl border border-border/50 dark:border-white/10 rounded-3xl p-6 space-y-6">
-                            <h3 className="text-lg font-bold">This course includes:</h3>
+                    {/* Right Column (Sticky Sidebar) */}
+                    <div className="lg:col-span-4">
+                        <div className="sticky top-24 space-y-6">
+                            {/* Video/Preview Card */}
+                            <div className="bg-[#1e293b] border border-white/10 rounded-2xl overflow-hidden shadow-2xl shadow-black/50">
+                                {/* Video Thumbnail Area */}
+                                <div className="aspect-video relative group cursor-pointer bg-black">
+                                    <Image
+                                        src={course.image || '/placeholder-course.jpg'}
+                                        alt={course.title}
+                                        fill
+                                        className="object-cover opacity-80 group-hover:opacity-60 transition-opacity"
+                                    />
+                                    <div className="absolute inset-0 flex items-center justify-center">
+                                        <div className="w-16 h-16 rounded-full bg-white/10 backdrop-blur-sm flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
+                                            <div className="w-12 h-12 rounded-full bg-white flex items-center justify-center shadow-lg">
+                                                <Play className="w-5 h-5 text-black fill-black ml-1" />
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div className="absolute bottom-4 left-0 right-0 text-center">
+                                        <span className="text-white font-bold text-sm drop-shadow-md">Preview this course</span>
+                                    </div>
+                                </div>
 
-                            <div className="space-y-4">
-                                <div className="flex items-center gap-3 text-sm">
-                                    <BookOpen className="w-5 h-5 text-primary" />
-                                    <span>{course.curriculum?.reduce((acc, m) => acc + (m.lessons?.length || 0), 0) || 0}+ lessons</span>
-                                </div>
-                                <div className="flex items-center gap-3 text-sm">
-                                    <Clock className="w-5 h-5 text-primary" />
-                                    <span>{course.duration} of content</span>
-                                </div>
-                                <div className="flex items-center gap-3 text-sm">
-                                    <Award className="w-5 h-5 text-primary" />
-                                    <span>Certificate of completion</span>
-                                </div>
-                                <div className="flex items-center gap-3 text-sm">
-                                    <Globe className="w-5 h-5 text-primary" />
-                                    <span>{course.language}</span>
-                                </div>
-                                <div className="flex items-center gap-3 text-sm">
-                                    <FileText className="w-5 h-5 text-primary" />
-                                    <span>{course.level}</span>
-                                </div>
-                                <div className="flex items-center gap-3 text-sm">
-                                    <Calendar className="w-5 h-5 text-primary" />
-                                    <span>Last updated {course.lastUpdated}</span>
-                                </div>
-                                <div className="flex items-center gap-3 text-sm">
-                                    <Download className="w-5 h-5 text-primary" />
-                                    <span>Downloadable resources</span>
-                                </div>
-                                <div className="flex items-center gap-3 text-sm">
-                                    <MessageCircle className="w-5 h-5 text-primary" />
-                                    <span>Community support</span>
+                                {/* Content */}
+                                <div className="p-6 space-y-6">
+                                    <div className="space-y-1">
+                                        <div className="flex items-end gap-3">
+                                            <span className="text-3xl font-bold text-white tracking-tight">{formattedPrice}</span>
+                                            {course.priceType !== "Free" && (
+                                                <span className="text-lg text-slate-500 line-through mb-1">৳12,000</span>
+                                            )}
+                                        </div>
+                                        {course.priceType !== "Free" && (
+                                            <div className="flex items-center gap-2 text-sm">
+                                                <span className="text-red-400 font-medium">86% off</span>
+                                                <span className="text-red-400">•</span>
+                                                <span className="text-red-400 flex items-center gap-1"><Clock className="w-3 h-3" /> 2 days left at this price!</span>
+                                            </div>
+                                        )}
+                                    </div>
+
+                                    <div className="space-y-3">
+                                        <button
+                                            onClick={handleEnroll}
+                                            disabled={loading}
+                                            className="w-full py-3.5 rounded-lg bg-emerald-600 text-white font-bold text-lg hover:bg-emerald-500 transition-all shadow-lg hover:shadow-emerald-500/20 active:scale-[0.98] disabled:opacity-70 disabled:cursor-not-allowed"
+                                        >
+                                            {loading ? "Processing..." : course.priceType === "Free" ? "Enroll Now" : "Buy Now"}
+                                        </button>
+                                        <button className="w-full py-3.5 rounded-lg border border-slate-600 text-white font-bold hover:bg-slate-800 transition-colors">
+                                            Add to Cart
+                                        </button>
+                                    </div>
+
+                                    <p className="text-xs text-center text-slate-400">30-Day Money-Back Guarantee</p>
+
+                                    <div className="pt-4 border-t border-white/10 space-y-4">
+                                        <h4 className="font-bold text-white text-sm">This course includes:</h4>
+                                        <ul className="space-y-3 text-sm text-slate-300">
+                                            <li className="flex items-center gap-3"><Layout className="w-4 h-4 text-emerald-500" /> Full lifetime access</li>
+                                            <li className="flex items-center gap-3"><BookOpen className="w-4 h-4 text-emerald-500" /> {course.curriculum?.reduce((acc, m) => acc + (m.lessons?.length || 0), 0) || 0}+ lessons</li>
+                                            <li className="flex items-center gap-3"><Download className="w-4 h-4 text-emerald-500" /> 15 Downloadable resources</li>
+                                            <li className="flex items-center gap-3"><Globe className="w-4 h-4 text-emerald-500" /> Access on mobile and TV</li>
+                                            <li className="flex items-center gap-3"><Award className="w-4 h-4 text-emerald-500" /> Certificate of completion</li>
+                                        </ul>
+                                    </div>
+
+                                    <div className="flex items-center justify-between pt-2">
+                                        <button className="text-sm font-medium text-slate-400 hover:text-white flex items-center gap-2 underline decoration-slate-600 underline-offset-4">
+                                            <Share2 className="w-4 h-4" /> Share
+                                        </button>
+                                        <button className="text-sm font-medium text-slate-400 hover:text-white flex items-center gap-2 underline decoration-slate-600 underline-offset-4">
+                                            <Gift className="w-4 h-4" /> Gift this course
+                                        </button>
+                                    </div>
                                 </div>
                             </div>
 
-                            <div className="pt-4 border-t border-border/50">
-                                <button
-                                    onClick={handleEnroll}
-                                    disabled={loading}
-                                    className="w-full py-3 rounded-xl bg-primary text-primary-foreground font-semibold hover:bg-primary/90 transition-colors mb-3 disabled:opacity-50"
-                                >
-                                    {loading ? "Processing..." : `Enroll Now - ${course.price}`}
+                            {/* Training for Team (Optional / Upsell) */}
+                            <div className="border border-white/10 rounded-xl p-5 bg-[#1e293b]/20">
+                                <h4 className="font-bold text-white mb-2">Training 5 or more people?</h4>
+                                <p className="text-sm text-slate-400 mb-4">Get your team access to 8,000+ top courses anytime, anywhere.</p>
+                                <button className="w-full py-2.5 rounded-lg border border-slate-600 text-white font-semibold hover:bg-slate-800 transition-colors text-sm">
+                                    Try Business
                                 </button>
-                                <p className="text-xs text-center text-muted-foreground">
-                                    30-day money-back guarantee
-                                </p>
                             </div>
                         </div>
                     </div>
