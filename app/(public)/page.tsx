@@ -23,7 +23,7 @@ export const metadata: Metadata = {
 export default async function Home() {
   const supabase = await createSupabaseServerClient();
 
-  // Fetch published courses with resolved relationships
+  // Fetch popular courses for Home page
   const { data: coursesData, error: coursesError } = await supabase
     .from('courses')
     .select(`
@@ -35,8 +35,6 @@ export default async function Home() {
       price,
       duration_hours,
       total_students,
-      total_lessons,
-      batch_no,
       rating,
       rating_count,
       tags,
@@ -48,13 +46,6 @@ export default async function Home() {
           name,
           avatar_url
         )
-      ),
-      discounts:course_discounts(
-        value,
-        type,
-        starts_at,
-        ends_at,
-        is_active
       )
     `)
     .eq('status', 'published')
@@ -70,32 +61,6 @@ export default async function Home() {
     const instructorProfile = Array.isArray(course.instructor) ? course.instructor[0] : course.instructor;
     const instructorData = Array.isArray(instructorProfile?.users) ? instructorProfile.users[0] : instructorProfile?.users;
 
-    // Calculate discount
-    let discountPrice: string | undefined = undefined;
-    let discountExpiresAt: string | undefined = undefined;
-
-    if (course.discounts && course.discounts.length > 0) {
-      const now = new Date();
-      // Find the first valid active discount
-      const activeDiscount = course.discounts.find((d: any) =>
-        d.is_active &&
-        (!d.starts_at || new Date(d.starts_at) <= now) &&
-        (!d.ends_at || new Date(d.ends_at) > now)
-      );
-
-      if (activeDiscount) {
-        let finalPrice = course.price;
-        if (activeDiscount.type === 'fixed') {
-          finalPrice = Math.max(0, course.price - activeDiscount.value);
-        } else if (activeDiscount.type === 'percentage') {
-          finalPrice = Math.max(0, course.price * (1 - activeDiscount.value / 100));
-        }
-
-        discountPrice = `৳${Math.floor(finalPrice)}`;
-        discountExpiresAt = activeDiscount.ends_at;
-      }
-    }
-
     return {
       id: course.id,
       slug: course.slug,
@@ -103,12 +68,8 @@ export default async function Home() {
       description: course.description || "",
       image: course.thumbnail_url || "/placeholder-course.jpg",
       price: course.price > 0 ? `৳${course.price}` : "Free",
-      discountPrice,
-      discountExpiresAt,
       duration: course.duration_hours ? `${Math.floor(Number(course.duration_hours))}h` : "N/A",
       students: `${course.total_students || 0}+`,
-      totalLessons: course.total_lessons || 0,
-      batchNo: course.batch_no || undefined,
       rating: Number(course.rating) || 0,
       reviews: course.rating_count || 0,
       instructor: {
