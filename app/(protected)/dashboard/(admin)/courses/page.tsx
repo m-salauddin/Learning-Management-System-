@@ -1,9 +1,8 @@
 "use client";
 
 import {
-    Search, BookOpen, Trash2, Edit, MoreHorizontal, Filter, ChevronDown,
-    Plus, Download, TrendingUp, TrendingDown,
-    CheckCircle2, AlertCircle, Eye, RefreshCw, Archive, Layers, BarChart, DollarSign
+    Search, BookOpen, Trash2, Edit, MoreHorizontal, TrendingUp,
+    Plus, Download, CheckCircle2, Eye, RefreshCw, Archive, Layers, BarChart, DollarSign
 } from "lucide-react";
 import { jsPDF } from "jspdf";
 import autoTable from "jspdf-autotable";
@@ -25,6 +24,19 @@ import { useToast } from "@/components/ui/toast";
 import { AnimatedCheckbox } from "@/components/ui/AnimatedCheckbox";
 import Link from "next/link";
 import Image from "next/image";
+
+// Import reusable admin components
+import {
+    AdminPageHeader,
+    AdminStatsCard,
+    AdminTableContainer,
+    StatusBadge,
+    LevelBadge,
+    SearchInput,
+    TableEmptyState,
+    TableLoadingState,
+    ActionButton
+} from "@/components/dashboard/admin";
 
 export default function CourseManagementPage() {
     // Toast
@@ -53,20 +65,32 @@ export default function CourseManagementPage() {
     // Fetch Data
     const fetchCoursesData = async () => {
         setIsLoading(true);
-        const result = await getCourses({
-            search: searchTerm,
-            category: categoryFilter,
-            status: statusFilter as any,
-            level: levelFilter,
-            page: currentPage,
-            pageSize
-        });
+        try {
+            const result = await getCourses({
+                search: searchTerm,
+                category: categoryFilter,
+                status: statusFilter as any,
+                level: levelFilter,
+                page: currentPage,
+                pageSize
+            });
 
-        if (result.data) {
-            setCourses(result.data);
-            setTotalCourses(result.total);
-        } else {
-            toast.error('Failed to fetch courses');
+            console.log('getCourses result:', result);
+
+            if (result.data && result.data.length > 0) {
+                setCourses(result.data);
+                setTotalCourses(result.total);
+            } else if (result.data) {
+                // Data exists but is empty array
+                setCourses([]);
+                setTotalCourses(0);
+                console.log('No courses returned from query');
+            } else {
+                toast.error('Failed to fetch courses');
+            }
+        } catch (error) {
+            console.error('Error in fetchCoursesData:', error);
+            toast.error('Error fetching courses');
         }
         setIsLoading(false);
     };
@@ -259,25 +283,6 @@ export default function CourseManagementPage() {
         }
     };
 
-    // Helper Styles
-    const getStatusStyle = (status: string) => {
-        switch (status) {
-            case 'published': return 'bg-emerald-500/10 text-emerald-600 border-emerald-500/20';
-            case 'draft': return 'bg-muted text-muted-foreground border-border/50';
-            case 'archived': return 'bg-amber-500/10 text-amber-600 border-amber-500/20';
-            default: return 'bg-muted text-muted-foreground';
-        }
-    };
-
-    const getLevelStyle = (level: string) => {
-        switch (level) {
-            case 'beginner': return 'text-emerald-500';
-            case 'intermediate': return 'text-blue-500';
-            case 'advanced': return 'text-rose-500';
-            default: return 'text-muted-foreground';
-        }
-    };
-
     return (
         <motion.div
             initial={{ opacity: 0 }}
@@ -371,7 +376,7 @@ export default function CourseManagementPage() {
             </div>
 
             {/* Main Table Container */}
-            <div className="rounded-3xl border border-border/40 bg-card/30 backdrop-blur-xl overflow-hidden shadow-2xl shadow-black/5">
+            <div className="rounded-3xl border border-border/40 bg-card/30 backdrop-blur-xl shadow-2xl shadow-black/5">
 
                 {/* Toolbar */}
                 <div className="p-4 md:p-6 border-b border-border/40 bg-muted/20">
@@ -433,7 +438,7 @@ export default function CourseManagementPage() {
                 </div>
 
                 {/* Table */}
-                <div className="overflow-x-auto">
+                <div className="overflow-x-auto [&::-webkit-scrollbar]:h-1.5 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-muted-foreground/20 [&::-webkit-scrollbar-thumb]:rounded-full hover:[&::-webkit-scrollbar-thumb]:bg-primary/50 pb-2">
                     <table className="w-full text-sm text-left">
                         <thead className="bg-muted/10 text-muted-foreground font-semibold uppercase tracking-wider text-xs border-b border-border/40">
                             <tr>
@@ -451,24 +456,37 @@ export default function CourseManagementPage() {
                         <tbody className="divide-y divide-border/40">
                             {isLoading ? (
                                 [...Array(5)].map((_, i) => (
-                                    <tr key={i} className="border-b border-border/40">
-                                        <td className="px-6 py-4"><div className="w-5 h-5 bg-muted/40 rounded animate-pulse" /></td>
+                                    <tr key={i} className="border-b border-border/40 hover:bg-muted/5 transition-colors">
+                                        <td className="px-6 py-4">
+                                            <div className="w-5 h-5 bg-muted/40 rounded-md animate-pulse" />
+                                        </td>
                                         <td className="px-6 py-4">
                                             <div className="flex items-center gap-3">
                                                 <div className="w-12 h-8 rounded bg-muted/40 animate-pulse" />
-                                                <div className="h-4 w-32 bg-muted/40 rounded animate-pulse" />
+                                                <div className="space-y-2">
+                                                    <div className="h-4 w-32 bg-muted/40 rounded-md animate-pulse" />
+                                                    <div className="h-3 w-40 bg-muted/40 rounded-md animate-pulse" />
+                                                </div>
                                             </div>
                                         </td>
-                                        <td className="px-6 py-4"><div className="h-4 w-16 bg-muted/40 rounded animate-pulse" /></td>
-                                        <td className="px-6 py-4"><div className="h-6 w-20 bg-muted/40 rounded-full animate-pulse" /></td>
-                                        <td className="px-6 py-4"><div className="h-4 w-20 bg-muted/40 rounded animate-pulse" /></td>
-                                        <td className="px-6 py-4"><div className="h-4 w-12 bg-muted/40 rounded animate-pulse" /></td>
-                                        <td className="px-6 py-4"><div className="h-8 w-8 bg-muted/40 rounded ml-auto animate-pulse" /></td>
+                                        <td className="px-6 py-4"><div className="h-4 w-16 bg-muted/40 rounded-md animate-pulse" /></td>
+                                        <td className="px-6 py-4"><div className="h-7 w-24 bg-muted/40 rounded-full animate-pulse" /></td>
+                                        <td className="px-6 py-4"><div className="h-7 w-28 bg-muted/40 rounded-full animate-pulse" /></td>
+                                        <td className="px-6 py-4"><div className="h-4 w-12 bg-muted/40 rounded-md animate-pulse" /></td>
+                                        <td className="px-6 py-4"><div className="h-8 w-8 bg-muted/40 rounded-lg ml-auto animate-pulse" /></td>
                                     </tr>
                                 ))
                             ) : courses.length === 0 ? (
                                 <tr>
-                                    <td colSpan={7} className="py-20 text-center text-muted-foreground">No courses found matching your filters.</td>
+                                    <td colSpan={7} className="py-20 text-center">
+                                        <div className="flex flex-col items-center gap-3">
+                                            <div className="p-4 rounded-full bg-muted/30">
+                                                <BookOpen className="w-8 h-8 text-muted-foreground opacity-50" />
+                                            </div>
+                                            <p className="font-medium text-foreground">No courses found</p>
+                                            <p className="text-xs text-muted-foreground">Try adjusting your search or filters</p>
+                                        </div>
+                                    </td>
                                 </tr>
                             ) : (
                                 courses.map((course, i) => (
@@ -476,7 +494,7 @@ export default function CourseManagementPage() {
                                         key={course.id}
                                         initial={{ opacity: 0, y: 10 }}
                                         animate={{ opacity: 1, y: 0 }}
-                                        transition={{ delay: i * 0.05 }}
+                                        transition={{ delay: i * 0.03 }}
                                         className="hover:bg-primary/5 transition-colors group"
                                     >
                                         <td className="px-6 py-4">
@@ -488,7 +506,7 @@ export default function CourseManagementPage() {
                                         </td>
                                         <td className="px-6 py-4">
                                             <div className="flex items-center gap-3">
-                                                <div className="w-14 h-10 rounded-lg bg-muted overflow-hidden shrink-0 border border-border/20">
+                                                <div className="w-14 h-10 rounded-lg bg-muted overflow-hidden shrink-0 border border-border/20 shadow-sm group-hover:scale-105 transition-transform">
                                                     {course.thumbnail_url ? (
                                                         <Image src={course.thumbnail_url} alt="" width={56} height={40} className="w-full h-full object-cover" />
                                                     ) : (
@@ -507,24 +525,16 @@ export default function CourseManagementPage() {
                                             {course.price > 0 ? `৳${course.price.toLocaleString()}` : <span className="text-emerald-500 font-bold">Free</span>}
                                         </td>
                                         <td className="px-6 py-4">
-                                            <span className={cn("inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium capitalize border", getStatusStyle(course.status))}>
-                                                <span className={cn("w-1.5 h-1.5 rounded-full",
-                                                    course.status === 'published' ? "bg-emerald-500" :
-                                                        course.status === 'draft' ? "bg-muted-foreground" : "bg-amber-500"
-                                                )} />
-                                                {course.status}
-                                            </span>
+                                            <StatusBadge status={course.status} />
                                         </td>
-                                        <td className="px-6 py-4 text-xs font-medium capitalize">
-                                            <span className={getLevelStyle(course.level || 'beginner')}>
-                                                {course.level || 'Beginner'}
-                                            </span>
+                                        <td className="px-6 py-4">
+                                            <LevelBadge level={course.level || 'beginner'} />
                                         </td>
                                         <td className="px-6 py-4 text-muted-foreground text-sm">
                                             {course.total_students || 0}
                                         </td>
                                         <td className="px-6 py-4 text-right">
-                                            <Dropdown trigger={<button className="p-2 rounded-lg hover:bg-muted/50 transition-colors"><MoreHorizontal className="w-4 h-4" /></button>}>
+                                            <Dropdown side="left" trigger={<button className="p-2 rounded-lg hover:bg-muted/50 transition-colors"><MoreHorizontal className="w-4 h-4" /></button>}>
                                                 <DropdownItem icon={<Eye className="w-4 h-4" />} onClick={() => window.location.href = `/courses/${course.slug}`}>View Course</DropdownItem>
                                                 <DropdownItem icon={<Edit className="w-4 h-4" />} onClick={() => window.location.href = `/dashboard/courses/${course.id}/edit`}>Edit Course</DropdownItem>
                                                 <DropdownItem icon={course.status === 'published' ? <Archive className="w-4 h-4" /> : <CheckCircle2 className="w-4 h-4" />} onClick={() => togglePublishStatus(course)}>
@@ -547,7 +557,9 @@ export default function CourseManagementPage() {
                             currentPage={currentPage}
                             totalItems={totalCourses}
                             pageSize={pageSize}
+                            totalPages={Math.ceil(totalCourses / pageSize)}
                             onPageChange={setCurrentPage}
+                            onPageSizeChange={setPageSize}
                         />
                     </div>
                 )}

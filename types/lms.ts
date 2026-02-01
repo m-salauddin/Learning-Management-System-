@@ -505,6 +505,7 @@ export interface CreateCourseInput {
 export interface UpdateCourseInput extends Partial<CreateCourseInput> {
     id: string;
     status?: CourseStatus;
+    published?: boolean;
     thumbnail_url?: string;
     preview_video_url?: string;
 }

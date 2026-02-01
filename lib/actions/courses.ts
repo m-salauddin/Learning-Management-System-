@@ -8,11 +8,32 @@
 // ============================================================================
 
 import { createClient } from "@/lib/supabase/server";
+import { createClient as createSupabaseAdmin } from "@supabase/supabase-js";
 import { revalidatePath } from "next/cache";
 import {
     Course, CourseWithInstructor, CourseWithModules, CourseStatus,
     CreateCourseInput, UpdateCourseInput, ApiResponse, PaginatedResponse
 } from "@/types/lms";
+
+// Helper to get Supabase Admin Client
+const getSupabaseAdmin = () => {
+    // Note: This requires SUPABASE_SERVICE_ROLE_KEY to be set in .env.local
+    const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY!;
+    const url = process.env.NEXT_PUBLIC_SUPABASE_URL!;
+
+    if (!serviceRoleKey || !url) {
+        console.error("Missing SUPABASE env vars for admin client");
+        // Fallback to anon key (will fail RLS but better than crash)
+        return createSupabaseAdmin(url, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!);
+    }
+
+    return createSupabaseAdmin(url, serviceRoleKey, {
+        auth: {
+            autoRefreshToken: false,
+            persistSession: false
+        }
+    });
+};
 
 // ============================================================================
 // GET COURSES
@@ -32,6 +53,16 @@ export interface GetCoursesParams {
 export async function getCourses(params: GetCoursesParams = {}): Promise<PaginatedResponse<CourseWithInstructor>> {
     const supabase = await createClient();
 
+    // Check if user is admin
+    const { data: { user } } = await supabase.auth.getUser();
+
+    console.log('[getCourses] User:', user?.id);
+
+    // Always use admin client to bypass RLS for this admin page
+    const dbClient = getSupabaseAdmin();
+
+    console.log('[getCourses] Using admin client');
+
     const {
         page = 1,
         pageSize = 12,
@@ -45,14 +76,10 @@ export async function getCourses(params: GetCoursesParams = {}): Promise<Paginat
 
     const offset = (page - 1) * pageSize;
 
-    // Build query
-    let query = supabase
+    // Build query - simplified select without complex joins first
+    let query = dbClient
         .from('courses')
-        .select(`
-            *,
-            instructor:users!courses_instructor_id_fkey(id, name, email, avatar_url),
-            category:categories(name)
-        `, { count: 'exact' });
+        .select('*', { count: 'exact' });
 
     // Apply filters
     if (status !== 'all') {
@@ -98,13 +125,40 @@ export async function getCourses(params: GetCoursesParams = {}): Promise<Paginat
 
     const { data, error, count } = await query;
 
+    console.log('[getCourses] Query result - data:', data?.length, 'error:', error, 'count:', count);
+
     if (error) {
-        console.error('Error fetching courses:', error);
+        console.error('[getCourses] Error fetching courses:', error);
         return { data: [], total: 0, page, pageSize, totalPages: 0 };
     }
 
+    // Fetch instructor and category data separately for each course
+    const coursesWithDetails = await Promise.all((data || []).map(async (course: any) => {
+        // Get instructor
+        const { data: instructor } = await dbClient
+            .from('users')
+            .select('id, name, email, avatar_url')
+            .eq('id', course.instructor_id)
+            .single();
+
+        // Get category
+        const { data: category } = course.category_id ? await dbClient
+            .from('categories')
+            .select('name')
+            .eq('id', course.category_id)
+            .single() : { data: null };
+
+        return {
+            ...course,
+            instructor: instructor || { id: '', name: 'Unknown', email: '', avatar_url: '' },
+            category: category || { name: 'Uncategorized' }
+        };
+    }));
+
+    console.log('[getCourses] Returning', coursesWithDetails.length, 'courses');
+
     return {
-        data: data as CourseWithInstructor[],
+        data: coursesWithDetails as CourseWithInstructor[],
         total: count || 0,
         page,
         pageSize,

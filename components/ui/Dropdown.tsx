@@ -10,9 +10,10 @@ interface DropdownProps {
     className?: string;
     direction?: 'up' | 'down';
     align?: 'left' | 'right';
+    side?: 'left' | 'right' | 'bottom'; // New prop for horizontal positioning
 }
 
-export function Dropdown({ trigger, children, className, align = 'right', direction = 'down' }: DropdownProps) {
+export function Dropdown({ trigger, children, className, align = 'right', direction = 'down', side = 'bottom' }: DropdownProps) {
     const [isOpen, setIsOpen] = useState(false);
     const dropdownRef = useRef<HTMLDivElement>(null);
 
@@ -32,6 +33,34 @@ export function Dropdown({ trigger, children, className, align = 'right', direct
         };
     }, [isOpen]);
 
+    // Determine position classes based on side prop
+    const getPositionClasses = () => {
+        if (side === 'left') {
+            return 'right-full mr-2 top-1/2 -translate-y-1/2';
+        }
+        if (side === 'right') {
+            return 'left-full ml-2 top-1/2 -translate-y-1/2';
+        }
+        // Default bottom positioning
+        return cn(
+            align === 'right' ? 'right-0' : 'left-0',
+            direction === 'up' ? 'bottom-full mb-2' : 'top-full mt-2'
+        );
+    };
+
+    // Get animation based on side
+    const getAnimation = () => {
+        if (side === 'left') {
+            return { initial: { opacity: 0, scale: 0.95, x: 10 }, animate: { opacity: 1, scale: 1, x: 0 }, exit: { opacity: 0, scale: 0.95, x: 10 } };
+        }
+        if (side === 'right') {
+            return { initial: { opacity: 0, scale: 0.95, x: -10 }, animate: { opacity: 1, scale: 1, x: 0 }, exit: { opacity: 0, scale: 0.95, x: -10 } };
+        }
+        return { initial: { opacity: 0, scale: 0.95, y: direction === 'up' ? 10 : -10 }, animate: { opacity: 1, scale: 1, y: 0 }, exit: { opacity: 0, scale: 0.95, y: direction === 'up' ? 10 : -10 } };
+    };
+
+    const anim = getAnimation();
+
     return (
         <div className="relative" ref={dropdownRef}>
             <div onClick={() => setIsOpen(!isOpen)}>
@@ -41,14 +70,13 @@ export function Dropdown({ trigger, children, className, align = 'right', direct
             <AnimatePresence>
                 {isOpen && (
                     <motion.div
-                        initial={{ opacity: 0, scale: 0.95, y: direction === 'up' ? 10 : -10 }}
-                        animate={{ opacity: 1, scale: 1, y: 0 }}
-                        exit={{ opacity: 0, scale: 0.95, y: direction === 'up' ? 10 : -10 }}
+                        initial={anim.initial}
+                        animate={anim.animate}
+                        exit={anim.exit}
                         transition={{ type: "spring", stiffness: 400, damping: 25 }}
                         className={cn(
-                            "absolute z-50 min-w-56 rounded-xl border border-border/50 bg-background/80 backdrop-blur-xl shadow-xl shadow-black/10 overflow-hidden p-1",
-                            align === 'right' ? 'right-0' : 'left-0',
-                            direction === 'up' ? 'bottom-full mb-2' : 'mt-2',
+                            "absolute z-9999 min-w-56 rounded-xl border border-border/50 bg-background/95 backdrop-blur-xl shadow-xl shadow-black/10 overflow-hidden p-1",
+                            getPositionClasses(),
                             className
                         )}
                     >
