@@ -121,13 +121,21 @@ export function HeroSection() {
 
 
                         <div className="flex flex-row flex-wrap gap-4 justify-center lg:justify-start mb-12">
-                            <Button size="responsive" className="group">
-                                Get Started Now
-                                <ArrowRight className="w-4 h-4 sm:w-5 sm:h-5 group-hover:translate-x-1 transition-transform ml-2" />
-                            </Button>
-                            <Button variant="premium" size="responsive">
-                                Explore Structure
-                            </Button>
+                            <a
+                                href="#courses"
+                                className="group/btn flex items-center gap-3 pl-8 pr-2 py-2 bg-primary hover:bg-primary/90 rounded-full transition-all duration-300 active:scale-95 cursor-pointer shadow-lg shadow-primary/25"
+                            >
+                                <span className="text-lg font-bold text-primary-foreground">Get Started Now</span>
+                                <div className="flex h-7 w-7 items-center justify-center rounded-full bg-background transition-transform duration-300 -rotate-45 group-hover/btn:rotate-0">
+                                    <ArrowRight className="h-5 w-5 text-primary" />
+                                </div>
+                            </a>
+                            <a
+                                href="/courses"
+                                className="group flex items-center gap-3 pl-8 pr-8 py-2.5 bg-[#0f1117] hover:bg-[#1e293b] border border-white/10 hover:border-white/20 rounded-full transition-all duration-300 active:scale-95 cursor-pointer shadow-lg"
+                            >
+                                <span className="text-lg font-bold text-white group-hover:text-primary transition-colors">Explore Courses</span>
+                            </a>
                         </div>
 
 
