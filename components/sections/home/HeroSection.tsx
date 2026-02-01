@@ -132,9 +132,10 @@ export function HeroSection() {
                             </a>
                             <a
                                 href="/courses"
-                                className="group flex items-center gap-3 pl-8 pr-8 py-2.5 bg-[#0f1117] hover:bg-[#1e293b] border border-white/10 hover:border-white/20 rounded-full transition-all duration-300 active:scale-95 cursor-pointer shadow-lg"
+                                className="group relative flex items-center gap-3 pl-8 pr-8 py-2.5 bg-[#0f1117] hover:bg-[#1e293b] border border-white/10 hover:border-white/20 rounded-full transition-all duration-300 active:scale-95 cursor-pointer shadow-lg overflow-hidden"
                             >
-                                <span className="text-lg font-bold text-white group-hover:text-primary transition-colors">Explore Courses</span>
+                                <span className="absolute inset-0 w-1/2 h-full bg-linear-to-r from-transparent via-white/20 to-transparent group-hover:animate-shine z-10 hidden group-hover:block" />
+                                <span className="text-lg font-bold text-white group-hover:text-primary transition-colors relative z-20">Explore Courses</span>
                             </a>
                         </div>
 
