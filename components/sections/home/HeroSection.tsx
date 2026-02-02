@@ -9,11 +9,10 @@ import {
     Briefcase,
     Trophy,
     Check,
-    ArrowRight,
     Rocket,
 } from "lucide-react";
 import { Badge } from "@/components/ui/Badge";
-import { Button } from "@/components/ui/Button";
+import { PrimaryCTAButton, SecondaryCTAButton } from "@/components/ui/CTAButton";
 
 
 function AnimatedStatCard({
@@ -121,22 +120,12 @@ export function HeroSection() {
 
 
                         <div className="flex flex-row flex-wrap gap-4 justify-center lg:justify-start mb-12">
-                            <a
-                                href="#courses"
-                                className="group/btn flex items-center gap-3 pl-8 pr-2 py-2 bg-primary hover:bg-primary/90 rounded-full transition-all duration-300 active:scale-95 cursor-pointer shadow-lg h-11 shadow-primary/25"
-                            >
-                                <span className="text-lg font-bold text-primary-foreground">Get Started</span>
-                                <div className="flex h-7 w-7 items-center justify-center rounded-full bg-background transition-transform duration-300 -rotate-45 group-hover/btn:rotate-0">
-                                    <ArrowRight className="h-5 w-5 text-primary" />
-                                </div>
-                            </a>
-                            <a
-                                href="/courses"
-                                className="group relative flex items-center gap-3 pl-8 bg-card pr-8 py-2.5 border border-border hover:border-white/20 rounded-full transition-all duration-300 active:scale-95 cursor-pointer h-11 shadow-lg overflow-hidden"
-                            >
-                                <span className="absolute inset-0 w-1/2 h-full bg-linear-to-r from-transparent via-white/20 to-transparent -translate-x-[150%] skew-x-[-20deg] group-hover:translate-x-[250%] transition-transform duration-700 ease-in-out z-10" />
-                                <span className="text-lg font-bold dark:text-white text-black group-hover:text-primary transition-colors relative z-20">Explore <span className="sm:inline hidden">Courses</span></span>
-                            </a>
+                            <PrimaryCTAButton href="#courses" isAnchor>
+                                Get Started
+                            </PrimaryCTAButton>
+                            <SecondaryCTAButton href="/courses">
+                                Explore <span className="sm:inline hidden">Courses</span>
+                            </SecondaryCTAButton>
                         </div>
 
 
