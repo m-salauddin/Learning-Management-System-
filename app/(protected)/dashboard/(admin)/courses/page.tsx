@@ -46,17 +46,8 @@ import Link from "next/link";
 import Image from "next/image";
 
 // Import reusable admin components
-import {
-    AdminPageHeader,
-    AdminStatsCard,
-    AdminTableContainer,
-    StatusBadge,
-    LevelBadge,
-    TableEmptyState,
-    TableLoadingState,
-    ActionButton
-} from "@/components/dashboard/admin";
 import { SearchInput } from "@/components/dashboard/shared/SearchInput";
+import { StatusBadge, LevelBadge } from "@/components/dashboard/shared/Badges";
 
 export default function CourseManagementPage() {
     // Toast
