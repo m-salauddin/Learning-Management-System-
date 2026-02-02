@@ -43,18 +43,19 @@ export function Dialog({ open, onClose, children, className, size = 'md' }: Dial
                         animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}
                         onClick={onClose}
-                        className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50"
+                        className="fixed inset-0 bg-black/80 backdrop-blur-md z-60"
+                        style={{ height: '100dvh' }}
                     />
-                    
-                    {/* Dialog */}
-                    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 overflow-y-auto">
+
+                    {/* Dialog Wrapper */}
+                    <div className="fixed inset-0 z-70 flex items-center justify-center p-4 sm:p-6 overflow-y-auto w-full h-dvh">
                         <motion.div
                             initial={{ opacity: 0, scale: 0.95, y: 20 }}
                             animate={{ opacity: 1, scale: 1, y: 0 }}
                             exit={{ opacity: 0, scale: 0.95, y: 20 }}
                             transition={{ type: "spring", damping: 25, stiffness: 300 }}
                             className={cn(
-                                "relative w-full bg-card border border-border/50 rounded-2xl shadow-2xl",
+                                "relative w-full bg-card/95 backdrop-blur-2xl border border-white/10 dark:border-white/5 rounded-2xl shadow-2xl overflow-hidden",
                                 sizeClasses[size],
                                 className
                             )}
@@ -71,7 +72,7 @@ export function Dialog({ open, onClose, children, className, size = 'md' }: Dial
 
 export function DialogHeader({ children, className }: { children: ReactNode; className?: string }) {
     return (
-        <div className={cn("px-6 py-4 border-b border-border/50", className)}>
+        <div className={cn("px-6 py-5 border-b border-border/40 space-y-1", className)}>
             {children}
         </div>
     );
@@ -79,7 +80,7 @@ export function DialogHeader({ children, className }: { children: ReactNode; cla
 
 export function DialogTitle({ children, className }: { children: ReactNode; className?: string }) {
     return (
-        <h2 className={cn("text-xl font-bold text-foreground", className)}>
+        <h2 className={cn("text-xl font-semibold tracking-tight text-foreground", className)}>
             {children}
         </h2>
     );
@@ -87,7 +88,7 @@ export function DialogTitle({ children, className }: { children: ReactNode; clas
 
 export function DialogDescription({ children, className }: { children: ReactNode; className?: string }) {
     return (
-        <p className={cn("text-sm text-muted-foreground mt-1", className)}>
+        <p className={cn("text-sm text-muted-foreground leading-relaxed", className)}>
             {children}
         </p>
     );
@@ -95,7 +96,7 @@ export function DialogDescription({ children, className }: { children: ReactNode
 
 export function DialogBody({ children, className }: { children: ReactNode; className?: string }) {
     return (
-        <div className={cn("px-6 py-4", className)}>
+        <div className={cn("p-6", className)}>
             {children}
         </div>
     );
@@ -103,7 +104,7 @@ export function DialogBody({ children, className }: { children: ReactNode; class
 
 export function DialogFooter({ children, className }: { children: ReactNode; className?: string }) {
     return (
-        <div className={cn("px-6 py-4 border-t border-border/50 flex items-center justify-end gap-3", className)}>
+        <div className={cn("px-6 py-4 bg-muted/20 border-t border-border/40 flex flex-col-reverse sm:flex-row sm:items-center sm:justify-end gap-3", className)}>
             {children}
         </div>
     );

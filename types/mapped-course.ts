@@ -25,6 +25,7 @@ export interface MappedCourse {
     longDescription?: string;
     image: string;
     price: string;
+    originalPrice?: string;
     duration: string;
     students: string;
     rating: number;
@@ -35,13 +36,17 @@ export interface MappedCourse {
     language: string;
     lastUpdated: string;
     whatYouLearn: string[];
+    requirements?: string[];
+    targetAudience?: string[];
+    curriculumOverview?: string;
     curriculum: CurriculumModule[];
     type: string;
     priceType: string;
     isEnrolled?: boolean;
-    category?: string; // Added category
+    category?: string;
     discountPrice?: string;
     discountExpiresAt?: string;
     totalLessons?: number;
     batchNo?: number;
 }
+

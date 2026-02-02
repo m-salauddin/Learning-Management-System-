@@ -65,15 +65,23 @@ export async function GET(
     // Since I don't have a configured Service Role Client util, I will stick to the User client but add a comment.
     // Actually, to fulfill "Strict security", I should strongly advise using Service Role for the signing.
 
+    // Use the correct private bucket for course videos
+    const expirySeconds = 300; // 5 minutes - short expiry for security
     const { data: signedData, error: signError } = await supabase
         .storage
-        .from('videos') // Make sure this bucket exists and is private
-        .createSignedUrl(asset.video_path, 60 * 60); // 1 hour expiry
+        .from('course-videos') // Private bucket for course videos
+        .createSignedUrl(asset.video_path, expirySeconds);
 
     if (signError) {
         console.error('Sign error:', signError);
         return NextResponse.json({ error: 'Failed to generate link' }, { status: 500 });
     }
 
-    return NextResponse.json({ url: signedData.signedUrl });
+    // Calculate expiry time for client-side cache management
+    const expiresAt = new Date(Date.now() + expirySeconds * 1000).toISOString();
+
+    return NextResponse.json({
+        url: signedData.signedUrl,
+        expires_at: expiresAt,
+    });
 }

@@ -2,7 +2,13 @@
 
 import { ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { Select, SelectOption } from "@/components/ui/Select";
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from "@/components/ui/select";
 
 interface PaginationProps {
     currentPage: number;
@@ -29,7 +35,7 @@ export function Pagination({
     return (
         <div className={cn("flex flex-col-reverse md:flex-row items-center justify-between gap-4 text-sm select-none", className)}>
             {/* Simple Info */}
-            <div className="text-muted-foreground font-medium">
+            <div className="text-input-dark-text font-medium">
                 {startItem}-{endItem} of {totalItems}
             </div>
 
@@ -38,28 +44,30 @@ export function Pagination({
 
                 {/* Rows Per Page */}
                 <div className="flex items-center gap-3">
-                    <span className="text-muted-foreground text-xs font-medium uppercase tracking-wider">Rows</span>
-                    <div className="w-[72px]">
-                        <Select
-                            value={String(pageSize)}
-                            onChange={(val) => onPageSizeChange(Number(val))}
-                            direction="top"
-                        >
+                    <span className="text-input-dark-text text-xs font-medium uppercase tracking-wider">Rows</span>
+                    <Select
+                        value={String(pageSize)}
+                        onValueChange={(val) => onPageSizeChange(Number(val))}
+                    >
+                        <SelectTrigger className="w-[72px]">
+                            <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent side="top">
                             {[10, 25, 50, 100].map((size) => (
-                                <SelectOption key={size} value={String(size)}>
+                                <SelectItem key={size} value={String(size)}>
                                     {size}
-                                </SelectOption>
+                                </SelectItem>
                             ))}
-                        </Select>
-                    </div>
+                        </SelectContent>
+                    </Select>
                 </div>
 
                 {/* Pagination Buttons */}
-                <div className="flex items-center gap-1 bg-background/50 p-1 rounded-xl border border-border/50">
+                <div className="flex items-center gap-1 bg-input-dark p-1 rounded-xl border border-input-dark-border">
                     <button
                         onClick={() => onPageChange(1)}
                         disabled={currentPage === 1}
-                        className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-primary/10 hover:text-primary disabled:opacity-30 disabled:cursor-not-allowed transition-colors text-muted-foreground"
+                        className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-input-dark-hover hover:text-foreground disabled:opacity-30 disabled:cursor-not-allowed transition-all duration-200 text-input-dark-text focus:shadow-[0_0_0_2px_var(--input-dark-glow)] focus:outline-none"
                         title="First page"
                     >
                         <ChevronsLeft className="w-4 h-4" />
@@ -68,7 +76,7 @@ export function Pagination({
                     <button
                         onClick={() => onPageChange(currentPage - 1)}
                         disabled={currentPage === 1}
-                        className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-primary/10 hover:text-primary disabled:opacity-30 disabled:cursor-not-allowed transition-colors text-muted-foreground"
+                        className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-input-dark-hover hover:text-foreground disabled:opacity-30 disabled:cursor-not-allowed transition-all duration-200 text-input-dark-text focus:shadow-[0_0_0_2px_var(--input-dark-glow)] focus:outline-none"
                         title="Previous page"
                     >
                         <ChevronLeft className="w-4 h-4" />
@@ -78,8 +86,8 @@ export function Pagination({
                         <span className="text-sm font-semibold text-foreground min-w-[20px] text-center">
                             {currentPage}
                         </span>
-                        <span className="text-muted-foreground mx-1">/</span>
-                        <span className="text-sm font-medium text-muted-foreground min-w-[20px] text-center">
+                        <span className="text-input-dark-text mx-1">/</span>
+                        <span className="text-sm font-medium text-input-dark-text min-w-[20px] text-center">
                             {totalPages}
                         </span>
                     </div>
@@ -87,7 +95,7 @@ export function Pagination({
                     <button
                         onClick={() => onPageChange(currentPage + 1)}
                         disabled={currentPage === totalPages}
-                        className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-primary/10 hover:text-primary disabled:opacity-30 disabled:cursor-not-allowed transition-colors text-muted-foreground"
+                        className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-input-dark-hover hover:text-foreground disabled:opacity-30 disabled:cursor-not-allowed transition-all duration-200 text-input-dark-text focus:shadow-[0_0_0_2px_var(--input-dark-glow)] focus:outline-none"
                         title="Next page"
                     >
                         <ChevronRight className="w-4 h-4" />
@@ -96,7 +104,7 @@ export function Pagination({
                     <button
                         onClick={() => onPageChange(totalPages)}
                         disabled={currentPage === totalPages}
-                        className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-primary/10 hover:text-primary disabled:opacity-30 disabled:cursor-not-allowed transition-colors text-muted-foreground"
+                        className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-input-dark-hover hover:text-foreground disabled:opacity-30 disabled:cursor-not-allowed transition-all duration-200 text-input-dark-text focus:shadow-[0_0_0_2px_var(--input-dark-glow)] focus:outline-none"
                         title="Last page"
                     >
                         <ChevronsRight className="w-4 h-4" />

@@ -1,7 +1,10 @@
 "use client"
 
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
+import { Badge } from "@/components/ui/Badge"
+import { Button } from "@/components/ui/Button"
 import { cn } from "@/lib/utils"
-import { MoreHorizontal, ExternalLink, Star, Users, BookOpen, TrendingUp, TrendingDown, Edit, Trash } from "lucide-react"
+import { Star, Users, TrendingUp, TrendingDown, Eye, Pencil, Trash2 } from "lucide-react"
 
 const courses = [
     {
@@ -68,93 +71,121 @@ const courses = [
 
 export function TopCoursesTable() {
     return (
-        <div className="w-full overflow-x-auto">
-            <table className="w-full">
-                <thead>
-                    <tr className="border-b border-border/50 text-xs font-medium text-muted-foreground uppercase tracking-wider">
-                        <th className="text-left py-3 px-4">Course</th>
-                        <th className="text-left py-3 px-4 hidden md:table-cell">Instructor</th>
-                        <th className="text-center py-3 px-4">Students</th>
-                        <th className="text-center py-3 px-4 hidden sm:table-cell">Rating</th>
-                        <th className="text-right py-3 px-4">Revenue</th>
-                        <th className="text-center py-3 px-4 hidden lg:table-cell">Trend</th>
-                        <th className="text-center py-3 px-4">Actions</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {courses.map((course, index) => (
-                        <tr
-                            key={course.id}
-                            className={cn(
-                                "border-b border-border/30 hover:bg-muted/30 transition-colors",
-                                index === courses.length - 1 && "border-0"
-                            )}
-                        >
-                            <td className="py-4 px-4">
-                                <div className="flex items-center gap-3">
-                                    <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary/20 to-primary/5 flex items-center justify-center text-lg">
-                                        {course.thumbnail}
-                                    </div>
-                                    <div className="min-w-0">
-                                        <p className="font-medium text-sm truncate max-w-[200px]">{course.title}</p>
-                                        <span className={cn(
-                                            "text-xs px-2 py-0.5 rounded-full",
+        <Table>
+            <TableHeader>
+                <TableRow className="hover:bg-transparent">
+                    <TableHead>Course</TableHead>
+                    <TableHead className="hidden md:table-cell">Instructor</TableHead>
+                    <TableHead className="text-center">Students</TableHead>
+                    <TableHead className="text-center hidden sm:table-cell">Rating</TableHead>
+                    <TableHead className="text-right">Revenue</TableHead>
+                    <TableHead className="text-center hidden lg:table-cell">Trend</TableHead>
+                    <TableHead className="text-center">Actions</TableHead>
+                </TableRow>
+            </TableHeader>
+            <TableBody>
+                {courses.map((course) => (
+                    <TableRow key={course.id}>
+                        {/* Course Info */}
+                        <TableCell>
+                            <div className="flex items-center gap-3">
+                                <div className="w-10 h-10 rounded-lg bg-muted flex items-center justify-center text-lg shrink-0">
+                                    {course.thumbnail}
+                                </div>
+                                <div className="min-w-0 space-y-1">
+                                    <p className="font-medium text-sm truncate max-w-52">
+                                        {course.title}
+                                    </p>
+                                    <Badge
+                                        variant="outline"
+                                        className={cn(
+                                            "text-[10px] px-1.5 py-0 font-medium",
                                             course.status === "published"
-                                                ? "bg-emerald-500/10 text-emerald-500"
-                                                : "bg-amber-500/10 text-amber-500"
-                                        )}>
-                                            {course.status}
-                                        </span>
-                                    </div>
+                                                ? "bg-success/10 text-success border-success/30"
+                                                : "bg-warning/10 text-warning border-warning/30"
+                                        )}
+                                    >
+                                        {course.status}
+                                    </Badge>
                                 </div>
-                            </td>
-                            <td className="py-4 px-4 text-sm text-muted-foreground hidden md:table-cell">
-                                {course.instructor}
-                            </td>
-                            <td className="py-4 px-4 text-center">
-                                <div className="flex items-center justify-center gap-1 text-sm">
-                                    <Users className="w-3.5 h-3.5 text-muted-foreground" />
-                                    <span className="font-medium">{course.students.toLocaleString()}</span>
-                                </div>
-                            </td>
-                            <td className="py-4 px-4 text-center hidden sm:table-cell">
-                                <div className="flex items-center justify-center gap-1 text-sm">
-                                    <Star className="w-3.5 h-3.5 text-amber-500 fill-amber-500" />
-                                    <span className="font-medium">{course.rating}</span>
-                                </div>
-                            </td>
-                            <td className="py-4 px-4 text-right">
-                                <span className="font-bold text-sm">৳{course.revenue.toLocaleString()}</span>
-                            </td>
-                            <td className="py-4 px-4 text-center hidden lg:table-cell">
-                                <div className={cn(
-                                    "inline-flex items-center gap-1 text-xs font-medium px-2 py-1 rounded-full",
+                            </div>
+                        </TableCell>
+
+                        {/* Instructor */}
+                        <TableCell className="hidden md:table-cell text-muted-foreground">
+                            {course.instructor}
+                        </TableCell>
+
+                        {/* Students */}
+                        <TableCell className="text-center">
+                            <div className="inline-flex items-center gap-1.5">
+                                <Users className="w-4 h-4 text-muted-foreground" />
+                                <span className="font-medium">{course.students.toLocaleString()}</span>
+                            </div>
+                        </TableCell>
+
+                        {/* Rating */}
+                        <TableCell className="text-center hidden sm:table-cell">
+                            <div className="inline-flex items-center gap-1">
+                                <Star className="w-4 h-4 text-warning fill-warning" />
+                                <span className="font-medium">{course.rating}</span>
+                            </div>
+                        </TableCell>
+
+                        {/* Revenue */}
+                        <TableCell className="text-right font-semibold">
+                            ৳{course.revenue.toLocaleString()}
+                        </TableCell>
+
+                        {/* Trend */}
+                        <TableCell className="text-center hidden lg:table-cell">
+                            <Badge
+                                variant="outline"
+                                className={cn(
+                                    "gap-1 text-xs font-medium",
                                     course.trend === "up"
-                                        ? "bg-emerald-500/10 text-emerald-500"
-                                        : "bg-red-500/10 text-red-500"
-                                )}>
-                                    {course.trend === "up" ? (
-                                        <TrendingUp className="w-3 h-3" />
-                                    ) : (
-                                        <TrendingDown className="w-3 h-3" />
-                                    )}
-                                    {course.trendValue}%
-                                </div>
-                            </td>
-                            <td className="py-4 px-4">
-                                <div className="flex items-center justify-center gap-2">
-                                    <button className="p-2 hover:bg-muted rounded-lg transition-colors text-muted-foreground hover:text-primary" title="Edit Course">
-                                        <Edit className="w-4 h-4" />
-                                    </button>
-                                    <button className="p-2 hover:bg-muted rounded-lg transition-colors text-muted-foreground hover:text-red-500" title="Delete Course">
-                                        <Trash className="w-4 h-4" />
-                                    </button>
-                                </div>
-                            </td>
-                        </tr>
-                    ))}
-                </tbody>
-            </table>
-        </div>
+                                        ? "bg-success/10 text-success border-success/30"
+                                        : "bg-destructive/10 text-destructive border-destructive/30"
+                                )}
+                            >
+                                {course.trend === "up" ? (
+                                    <TrendingUp className="w-3 h-3" />
+                                ) : (
+                                    <TrendingDown className="w-3 h-3" />
+                                )}
+                                {course.trendValue}%
+                            </Badge>
+                        </TableCell>
+
+                        {/* Actions */}
+                        <TableCell>
+                            <div className="flex items-center justify-center gap-1">
+                                <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    className="h-8 w-8 p-0"
+                                >
+                                    <Eye className="w-4 h-4" />
+                                </Button>
+                                <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    className="h-8 w-8 p-0"
+                                >
+                                    <Pencil className="w-4 h-4" />
+                                </Button>
+                                <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    className="h-8 w-8 p-0 hover:bg-destructive/10 hover:text-destructive"
+                                >
+                                    <Trash2 className="w-4 h-4" />
+                                </Button>
+                            </div>
+                        </TableCell>
+                    </TableRow>
+                ))}
+            </TableBody>
+        </Table>
     )
 }

@@ -5,6 +5,9 @@ import { createClient } from "@/lib/supabase/client";
 import { Plus, Trash2, Ticket, Users, Copy, Check, Search } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import { useToast } from "@/components/ui/toast";
+import { AdminCouponsTable } from "@/components/dashboard/tables/AdminCouponsTable";
+import { useAppDispatch } from "@/lib/store/hooks";
+import { fetchCoupons } from "@/lib/store/features/admin/couponsSlice";
 
 interface Course {
     id: string;
@@ -25,8 +28,9 @@ interface Coupon {
 }
 
 export default function CouponsPage() {
-    const [coupons, setCoupons] = useState<Coupon[]>([]);
+    const dispatch = useAppDispatch();
     const [courses, setCourses] = useState<Course[]>([]);
+    // const [coupons, setCoupons] = useState<Coupon[]>([]); // Removed local coupons state
     const [isLoading, setIsLoading] = useState(true);
     const [isCreating, setIsCreating] = useState(false);
 
@@ -53,16 +57,9 @@ export default function CouponsPage() {
         try {
             setIsLoading(true);
 
-            // Fetch Coupons with course mappings
-            const { data: couponsData, error: couponsError } = await (supabase as any)
-                .from('coupon_codes')
-                .select(`
-          *,
-          coupon_courses(course_id)
-        `)
-                .order('created_at', { ascending: false });
-
-            if (couponsError) throw couponsError;
+            // Fetch Coupons with course mappings - MOVED TO REDUX
+            // const { data: couponsData, error: couponsError } = await (supabase as any)
+            //     .from('coupon_codes') ...
 
             // Fetch Courses (for selection)
             const { data: coursesData, error: coursesError } = await (supabase as any)
@@ -72,7 +69,7 @@ export default function CouponsPage() {
 
             if (coursesError) throw coursesError;
 
-            setCoupons(couponsData || []);
+            // setCoupons(couponsData || []);
             setCourses(coursesData || []);
 
         } catch (error) {
@@ -144,6 +141,7 @@ export default function CouponsPage() {
                 selected_courses: [],
             });
             fetchData();
+            dispatch(fetchCoupons()); // Refresh Redux Table
 
         } catch (error: any) {
             toastError(error.message || "Failed to create coupon");
@@ -161,46 +159,11 @@ export default function CouponsPage() {
         });
     };
 
-    const toggleActive = async (id: string, currentState: boolean) => {
-        try {
-            const { error } = await (supabase as any)
-                .from('coupon_codes')
-                .update({ is_active: !currentState })
-                .eq('id', id);
-
-            if (error) throw error;
-
-            setCoupons(coupons.map(c =>
-                c.id === id ? { ...c, is_active: !currentState } : c
-            ));
-            success("Status updated");
-        } catch (error) {
-            toastError("Failed to update status");
-        }
-    };
-
-    const handleDelete = async (id: string) => {
-        if (!confirm("Are you sure you want to delete this coupon? This cannot be undone.")) return;
-
-        try {
-            const { error } = await (supabase as any)
-                .from('coupon_codes')
-                .delete()
-                .eq('id', id);
-
-            if (error) throw error;
-
-            setCoupons(coupons.filter(c => c.id !== id));
-            success("Coupon deleted");
-        } catch (error) {
-            toastError("Failed to delete coupon");
-        }
-    };
-
-    const copyCode = (code: string) => {
-        navigator.clipboard.writeText(code);
-        success("Code copied to clipboard");
-    };
+    /* Handlers removed as they are moved to Redux or AdminCouponsTable logic 
+    const toggleActive = async (id: string, currentState: boolean) => { ... }
+    const handleDelete = async (id: string) => { ... }
+    const copyCode = (code: string) => { ... }
+    */
 
     return (
         <div className="space-y-6 max-w-7xl mx-auto">
@@ -209,13 +172,6 @@ export default function CouponsPage() {
                     <h1 className="text-2xl font-bold tracking-tight">Coupons</h1>
                     <p className="text-muted-foreground">Manage promo codes and campaigns.</p>
                 </div>
-                <button
-                    onClick={() => setIsCreating(!isCreating)}
-                    className="inline-flex items-center justify-center gap-2 px-4 py-2 rounded-xl bg-primary text-primary-foreground font-medium hover:bg-primary/90 transition-colors cursor-pointer"
-                >
-                    {isCreating ? <Trash2 className="w-4 h-4" /> : <Plus className="w-4 h-4" />}
-                    {isCreating ? "Cancel" : "Create Coupon"}
-                </button>
             </div>
 
             <AnimatePresence>
@@ -376,92 +332,9 @@ export default function CouponsPage() {
             </AnimatePresence>
 
             {/* List */}
-            <div className="bg-card border border-border rounded-2xl overflow-hidden shadow-xs">
-                <div className="overflow-x-auto">
-                    <table className="w-full text-sm text-left">
-                        <thead className="bg-muted/50 text-muted-foreground border-b border-border">
-                            <tr>
-                                <th className="px-6 py-4 font-medium">Code</th>
-                                <th className="px-6 py-4 font-medium">Discount</th>
-                                <th className="px-6 py-4 font-medium">Usage</th>
-                                <th className="px-6 py-4 font-medium">Applies To</th>
-                                <th className="px-6 py-4 font-medium">Status</th>
-                                <th className="px-6 py-4 font-medium text-right">Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody className="divide-y divide-border">
-                            {isLoading ? (
-                                <tr>
-                                    <td colSpan={6} className="px-6 py-8 text-center text-muted-foreground">
-                                        Loading coupons...
-                                    </td>
-                                </tr>
-                            ) : coupons.length === 0 ? (
-                                <tr>
-                                    <td colSpan={6} className="px-6 py-8 text-center text-muted-foreground">
-                                        No coupons found. Create your first campaign!
-                                    </td>
-                                </tr>
-                            ) : (
-                                coupons.map((coupon) => (
-                                    <tr key={coupon.id} className="hover:bg-muted/30 transition-colors">
-                                        <td className="px-6 py-4">
-                                            <button
-                                                onClick={() => copyCode(coupon.code)}
-                                                className="group flex items-center gap-2 font-mono font-medium text-foreground bg-muted/50 hover:bg-muted px-2 py-1 rounded cursor-pointer transition-colors"
-                                            >
-                                                {coupon.code}
-                                                <Copy className="w-3 h-3 opacity-0 group-hover:opacity-100 transition-opacity" />
-                                            </button>
-                                        </td>
-                                        <td className="px-6 py-4">
-                                            <span className="font-medium">
-                                                {coupon.type === 'percentage' ? `${coupon.value}%` : `$${coupon.value}`}
-                                            </span>
-                                            <span className="text-muted-foreground ml-1">OFF</span>
-                                        </td>
-                                        <td className="px-6 py-4 text-muted-foreground">
-                                            <span className="text-foreground font-medium">{coupon.used_count}</span>
-                                            {coupon.max_uses ? ` / ${coupon.max_uses}` : " (∞)"}
-                                        </td>
-                                        <td className="px-6 py-4">
-                                            {(!coupon.coupon_courses || coupon.coupon_courses.length === 0) ? (
-                                                <span className="inline-flex items-center px-2 py-1 rounded-md text-xs font-medium bg-indigo-500/10 text-indigo-600 dark:text-indigo-400">
-                                                    Global
-                                                </span>
-                                            ) : (
-                                                <span className="inline-flex items-center px-2 py-1 rounded-md text-xs font-medium bg-orange-500/10 text-orange-600 dark:text-orange-400">
-                                                    {coupon.coupon_courses.length} Course{coupon.coupon_courses.length > 1 ? 's' : ''}
-                                                </span>
-                                            )}
-                                        </td>
-                                        <td className="px-6 py-4">
-                                            <button
-                                                onClick={() => toggleActive(coupon.id, coupon.is_active)}
-                                                className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border transition-all cursor-pointer ${coupon.is_active
-                                                    ? "bg-green-500/10 text-green-600 border-green-500/20 hover:bg-green-500/20"
-                                                    : "bg-zinc-500/10 text-zinc-600 border-zinc-500/20 hover:bg-zinc-500/20 dark:text-zinc-400"
-                                                    }`}
-                                            >
-                                                {coupon.is_active ? "Active" : "Inactive"}
-                                            </button>
-                                        </td>
-                                        <td className="px-6 py-4 text-right">
-                                            <button
-                                                onClick={() => handleDelete(coupon.id)}
-                                                className="p-2 text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded-lg transition-colors cursor-pointer"
-                                                title="Delete Coupon"
-                                            >
-                                                <Trash2 className="w-4 h-4" />
-                                            </button>
-                                        </td>
-                                    </tr>
-                                ))
-                            )}
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
+            <AdminCouponsTable onCreate={() => setIsCreating(true)} />
+
+            {/* Old Table Removed */}
+        </div >
     );
 }

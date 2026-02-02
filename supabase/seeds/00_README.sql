@@ -1,0 +1,45 @@
+-- ============================================================================
+-- DEMO SEED - MASTER RUNNER
+-- ============================================================================
+-- 
+-- HOW TO RUN:
+-- ===========
+-- 
+-- STEP 1: Create demo users in Supabase Auth Dashboard
+-- -----------------------------------------------------
+-- Go to: https://supabase.com/dashboard/project/ixbhljtotgsqkzbkucuc/auth/users
+-- Click "Add User" and create these 4 users with email/password:
+--   1. admin@demo.com     / DemoAdmin123!
+--   2. teacher@demo.com   / DemoTeacher123!
+--   3. student1@demo.com  / DemoStudent123!
+--   4. student2@demo.com  / DemoStudent234!
+--
+-- The handle_new_user trigger will auto-create public.users entries.
+--
+-- STEP 2: Run seed scripts in order in SQL Editor
+-- ------------------------------------------------
+-- Go to: https://supabase.com/dashboard/project/ixbhljtotgsqkzbkucuc/sql
+-- Run each file in order (01-10):
+--   01_demo_users.sql
+--   02_demo_courses.sql
+--   03_demo_course_details.sql
+--   04_demo_modules_lessons.sql
+--   05_demo_lesson_assets.sql
+--   06_demo_projects_resources_faq.sql
+--   07_demo_commerce.sql
+--   08_demo_enrollments_progress.sql
+--   09_demo_reviews_certificates.sql
+--   10_demo_leads_cleanup.sql
+--
+-- OR: Run this combined script (slower but all-in-one)
+--
+-- STEP 3: Run verification queries
+-- --------------------------------
+-- Use the queries in 11_verification_queries.sql to confirm everything works.
+--
+-- ============================================================================
+
+-- Note: This file exists for documentation. 
+-- The individual seed files (01-10) should be run in sequence.
+
+SELECT 'Please run seed files 01-10 in order through the Supabase SQL Editor.' as message;

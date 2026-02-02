@@ -87,6 +87,7 @@ export interface Course {
     instructor_id: string;
     category_id: string | null;
     price: number;
+    discount_price: number | null;
     level: CourseLevel;
     language: string;
     duration_hours: number;
@@ -99,6 +100,7 @@ export interface Course {
     requirements: string[];
     learning_objectives: string[];
     tags: string[];
+    batch_no: number | null;
     created_at: string;
     updated_at: string;
 }

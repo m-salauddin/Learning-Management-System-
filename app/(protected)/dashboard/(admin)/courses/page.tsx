@@ -1,7 +1,7 @@
 "use client";
 
 import {
-    Search, BookOpen, Trash2, Edit, MoreHorizontal, TrendingUp,
+    BookOpen, Trash2, Edit, MoreHorizontal, TrendingUp,
     Plus, Download, CheckCircle2, Eye, RefreshCw, Archive, Layers, BarChart, DollarSign, X
 } from "lucide-react";
 import { jsPDF } from "jspdf";
@@ -17,7 +17,13 @@ import {
     bulkUpdateCourseStatus, exportCoursesToCSV, exportCoursesToJSON,
     getCategories, publishCourse, unpublishCourse
 } from "@/lib/actions/courses";
-import { Select, SelectOption } from "@/components/ui/Select";
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from "@/components/ui/select";
 import {
     Table,
     TableBody,
@@ -46,11 +52,11 @@ import {
     AdminTableContainer,
     StatusBadge,
     LevelBadge,
-    SearchInput,
     TableEmptyState,
     TableLoadingState,
     ActionButton
 } from "@/components/dashboard/admin";
+import { SearchInput } from "@/components/dashboard/shared/SearchInput";
 
 export default function CourseManagementPage() {
     // Toast
@@ -400,35 +406,58 @@ export default function CourseManagementPage() {
                 <div className="p-4 md:p-6 border-b border-border/40 bg-muted/20">
                     <div className="flex flex-col lg:flex-row gap-4 justify-between">
                         {/* Search */}
-                        <div className="relative w-full lg:max-w-md group">
-                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground group-focus-within:text-primary transition-colors" />
-                            <input
-                                type="text"
-                                placeholder="Search courses..."
-                                value={searchTerm}
-                                onChange={(e) => { setSearchTerm(e.target.value); setCurrentPage(1); }}
-                                className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-background/50 border border-border/50 text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary/50 outline-none transition-all placeholder:text-muted-foreground/70"
-                            />
-                        </div>
+                        <SearchInput
+                            value={searchTerm}
+                            onChange={(value) => { setSearchTerm(value); setCurrentPage(1); }}
+                            placeholder="Search courses..."
+                            debounceMs={300}
+                            isSearching={isLoading}
+                            disabled={!stats || stats.total === 0}
+                            className="w-full lg:max-w-md"
+                        />
 
                         <div className="flex flex-wrap items-center gap-3">
-                            <Select value={categoryFilter} onChange={setCategoryFilter} icon={<Layers className="w-4 h-4" />} className="w-full sm:w-36">
-                                <SelectOption value="all">Category</SelectOption>
-                                {categories.map(c => <SelectOption key={c.id} value={c.id}>{c.name}</SelectOption>)}
+                            <Select value={categoryFilter} onValueChange={setCategoryFilter} disabled={!stats || stats.total === 0}>
+                                <SelectTrigger className="w-full sm:w-fit min-w-[140px]">
+                                    <div className="flex items-center gap-2">
+                                        <Layers className="w-4 h-4" />
+                                        <SelectValue placeholder="Category" />
+                                    </div>
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="all">Category</SelectItem>
+                                    {categories.map(c => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)}
+                                </SelectContent>
                             </Select>
 
-                            <Select value={statusFilter} onChange={setStatusFilter} icon={<BookOpen className="w-4 h-4" />} className="w-full sm:w-36">
-                                <SelectOption value="all">Status</SelectOption>
-                                <SelectOption value="published">Published</SelectOption>
-                                <SelectOption value="draft">Draft</SelectOption>
-                                <SelectOption value="archived">Archived</SelectOption>
+                            <Select value={statusFilter} onValueChange={setStatusFilter} disabled={!stats || stats.total === 0}>
+                                <SelectTrigger className="w-full sm:w-fit min-w-[140px]">
+                                    <div className="flex items-center gap-2">
+                                        <BookOpen className="w-4 h-4" />
+                                        <SelectValue placeholder="Status" />
+                                    </div>
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="all">Status</SelectItem>
+                                    <SelectItem value="published">Published</SelectItem>
+                                    <SelectItem value="draft">Draft</SelectItem>
+                                    <SelectItem value="archived">Archived</SelectItem>
+                                </SelectContent>
                             </Select>
 
-                            <Select value={levelFilter} onChange={setLevelFilter} icon={<BarChart className="w-4 h-4" />} className="w-full sm:w-36">
-                                <SelectOption value="all">Level</SelectOption>
-                                <SelectOption value="beginner">Beginner</SelectOption>
-                                <SelectOption value="intermediate">Intermediate</SelectOption>
-                                <SelectOption value="advanced">Advanced</SelectOption>
+                            <Select value={levelFilter} onValueChange={setLevelFilter} disabled={!stats || stats.total === 0}>
+                                <SelectTrigger className="w-full sm:w-fit min-w-[140px]">
+                                    <div className="flex items-center gap-2">
+                                        <BarChart className="w-4 h-4" />
+                                        <SelectValue placeholder="Level" />
+                                    </div>
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="all">Level</SelectItem>
+                                    <SelectItem value="beginner">Beginner</SelectItem>
+                                    <SelectItem value="intermediate">Intermediate</SelectItem>
+                                    <SelectItem value="advanced">Advanced</SelectItem>
+                                </SelectContent>
                             </Select>
 
                             <button onClick={fetchCoursesData} className="p-2.5 rounded-xl border border-border/50 bg-background/50 hover:bg-background hover:text-primary transition-colors text-muted-foreground" title="Refresh">
@@ -456,59 +485,61 @@ export default function CourseManagementPage() {
                 </div>
 
                 {/* Table */}
-                <div className="rounded-md border border-border/40 overflow-hidden overflow-x-auto bg-card/30 backdrop-blur-xl [&::-webkit-scrollbar]:h-1.5 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-muted-foreground/20 [&::-webkit-scrollbar-thumb]:rounded-full hover:[&::-webkit-scrollbar-thumb]:bg-primary/50">
+                <div className="overflow-hidden overflow-x-auto [&::-webkit-scrollbar]:h-1.5 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-muted-foreground/20 [&::-webkit-scrollbar-thumb]:rounded-full hover:[&::-webkit-scrollbar-thumb]:bg-primary/50">
                     <Table>
-                        <TableHeader className="bg-muted/10">
+                        <TableHeader>
                             <TableRow className="hover:bg-transparent border-b border-border/40">
-                                <TableHead className="w-[50px] px-6 py-4">
+                                <TableHead className="w-[50px] px-6 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
                                     <AnimatedCheckbox id="select-all" checked={selectedCourses.size === courses.length && courses.length > 0} onChange={toggleSelectAll} />
                                 </TableHead>
-                                <TableHead className="px-6 py-4">Course</TableHead>
-                                <TableHead className="px-6 py-4">Price</TableHead>
-                                <TableHead className="px-6 py-4">Status</TableHead>
-                                <TableHead className="px-6 py-4">Level</TableHead>
-                                <TableHead className="px-6 py-4">Students</TableHead>
-                                <TableHead className="px-6 py-4 text-right">Actions</TableHead>
+                                <TableHead className="px-6 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Course</TableHead>
+                                <TableHead className="px-6 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Price</TableHead>
+                                <TableHead className="px-6 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Status</TableHead>
+                                <TableHead className="px-6 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Level</TableHead>
+                                <TableHead className="px-6 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Students</TableHead>
+                                <TableHead className="px-6 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider text-right">Actions</TableHead>
                             </TableRow>
                         </TableHeader>
-                        <TableBody>
+                        <TableBody className="divide-y divide-border/20">
                             {isLoading ? (
                                 [...Array(5)].map((_, i) => (
-                                    <TableRow key={i} className="border-b border-border/40 hover:bg-muted/5 transition-colors">
+                                    <TableRow key={i} className="border-b border-border/30 bg-linear-to-r from-transparent via-muted/5 to-transparent">
                                         <TableCell className="px-6 py-4">
-                                            <div className="w-5 h-5 bg-muted/40 rounded-md animate-pulse" />
+                                            <div className="w-5 h-5 bg-linear-to-r from-muted/30 via-muted/50 to-muted/30 rounded-md animate-pulse" />
                                         </TableCell>
                                         <TableCell className="px-6 py-4">
                                             <div className="flex items-center gap-3">
-                                                <div className="w-12 h-8 rounded bg-muted/40 animate-pulse" />
+                                                <div className="w-12 h-8 rounded-lg bg-linear-to-r from-muted/30 via-muted/50 to-muted/30 animate-pulse" />
                                                 <div className="space-y-2">
-                                                    <div className="h-4 w-32 bg-muted/40 rounded-md animate-pulse" />
-                                                    <div className="h-3 w-40 bg-muted/40 rounded-md animate-pulse" />
+                                                    <div className="h-4 w-32 bg-linear-to-r from-muted/30 via-muted/50 to-muted/30 rounded-md animate-pulse" />
+                                                    <div className="h-3 w-24 bg-linear-to-r from-muted/30 via-muted/50 to-muted/30 rounded-md animate-pulse" />
                                                 </div>
                                             </div>
                                         </TableCell>
-                                        <TableCell className="px-6 py-4"><div className="h-4 w-16 bg-muted/40 rounded-md animate-pulse" /></TableCell>
-                                        <TableCell className="px-6 py-4"><div className="h-7 w-24 bg-muted/40 rounded-full animate-pulse" /></TableCell>
-                                        <TableCell className="px-6 py-4"><div className="h-7 w-28 bg-muted/40 rounded-full animate-pulse" /></TableCell>
-                                        <TableCell className="px-6 py-4"><div className="h-4 w-12 bg-muted/40 rounded-md animate-pulse" /></TableCell>
-                                        <TableCell className="px-6 py-4"><div className="h-8 w-8 bg-muted/40 rounded-lg ml-auto animate-pulse" /></TableCell>
+                                        <TableCell className="px-6 py-4"><div className="h-4 w-16 bg-linear-to-r from-muted/30 via-muted/50 to-muted/30 rounded-md animate-pulse" /></TableCell>
+                                        <TableCell className="px-6 py-4"><div className="h-6 w-20 bg-linear-to-r from-muted/30 via-muted/50 to-muted/30 rounded-full animate-pulse" /></TableCell>
+                                        <TableCell className="px-6 py-4"><div className="h-6 w-24 bg-linear-to-r from-muted/30 via-muted/50 to-muted/30 rounded-full animate-pulse" /></TableCell>
+                                        <TableCell className="px-6 py-4"><div className="h-4 w-10 bg-linear-to-r from-muted/30 via-muted/50 to-muted/30 rounded-md animate-pulse" /></TableCell>
+                                        <TableCell className="px-6 py-4"><div className="h-8 w-8 bg-linear-to-r from-muted/30 via-muted/50 to-muted/30 rounded-lg ml-auto animate-pulse" /></TableCell>
                                     </TableRow>
                                 ))
                             ) : courses.length === 0 ? (
                                 <TableRow>
                                     <TableCell colSpan={7} className="h-24 text-center">
-                                        <div className="flex flex-col items-center gap-3 py-10">
-                                            <div className="p-4 rounded-full bg-muted/30">
-                                                <BookOpen className="w-8 h-8 text-muted-foreground opacity-50" />
+                                        <div className="flex flex-col items-center gap-3 py-12">
+                                            <div className="bg-muted/50 p-4 rounded-xl border border-border/50">
+                                                <BookOpen className="w-8 h-8 text-muted-foreground/70" strokeWidth={1.5} />
                                             </div>
-                                            <p className="font-medium text-foreground">No courses found</p>
-                                            <p className="text-xs text-muted-foreground">Try adjusting your search or filters</p>
+                                            <div className="space-y-1">
+                                                <p className="font-medium text-foreground">No courses found</p>
+                                                <p className="text-sm text-muted-foreground">Try adjusting your search or filters</p>
+                                            </div>
                                         </div>
                                     </TableCell>
                                 </TableRow>
                             ) : (
                                 courses.map((course) => (
-                                    <TableRow key={course.id} className="hover:bg-primary/5 border-b border-border/40 transition-colors group">
+                                    <TableRow key={course.id} className="border-b border-border/30 hover:bg-primary/3 transition-all duration-200 group">
                                         <TableCell className="px-6 py-4">
                                             <AnimatedCheckbox
                                                 id={`select-${course.id}`}

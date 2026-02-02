@@ -10,7 +10,7 @@ import { Logo } from "@/components/ui/Logo";
 import { ThemeToggle, ThemeToggleCompact } from "@/components/ui/theme-toggle";
 import { cn } from "@/lib/utils";
 import { UserDropdown } from "@/components/ui/UserDropdown/UserDropdown";
-import { NotificationDropdown } from "@/components/ui/NotificationDropdown";
+
 import { useAppSelector } from "@/lib/store/hooks";
 import { useNotFound } from "@/contexts/NotFoundContext";
 
@@ -159,7 +159,7 @@ export function Navbar() {
                             <Search className="w-5 h-5" />
                         </button>
 
-                        {user && <NotificationDropdown />}
+
 
                         <div className="hidden sm:block">
                             <ThemeToggle />

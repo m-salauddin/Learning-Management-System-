@@ -14,7 +14,13 @@ import Link from "next/link";
 import { cn } from "@/lib/utils";
 import { useToast } from "@/components/ui/toast";
 import { createCourse, getCategories, getTeachers } from "@/lib/actions/courses";
-import { Select, SelectOption } from "@/components/ui/Select";
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from "@/components/ui/select";
 import { CourseLevel } from "@/types/lms";
 import { GraduationCap } from "lucide-react";
 
@@ -385,14 +391,17 @@ export default function CreateCoursePage() {
                                 <label className="block text-sm font-medium mb-2">Category</label>
                                 <Select
                                     value={formData.category_id}
-                                    onChange={(val) => setFormData(prev => ({ ...prev, category_id: val }))}
-                                    icon={<Layers className="w-4 h-4" />}
-                                    className="w-full"
+                                    onValueChange={(val) => setFormData(prev => ({ ...prev, category_id: val }))}
                                 >
-                                    <SelectOption value="">Select Category</SelectOption>
-                                    {categories.map(cat => (
-                                        <SelectOption key={cat.id} value={cat.id}>{cat.name}</SelectOption>
-                                    ))}
+                                    <SelectTrigger className="w-full bg-card">
+                                        <Layers className="w-4 h-4 mr-2" />
+                                        <SelectValue placeholder="Select Category" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        {categories.map(cat => (
+                                            <SelectItem key={cat.id} value={cat.id}>{cat.name}</SelectItem>
+                                        ))}
+                                    </SelectContent>
                                 </Select>
                             </div>
 
@@ -403,16 +412,20 @@ export default function CreateCoursePage() {
                                 </label>
                                 <Select
                                     value={formData.instructor_id}
-                                    onChange={(val) => setFormData(prev => ({ ...prev, instructor_id: val }))}
-                                    icon={<GraduationCap className="w-4 h-4" />}
-                                    className="w-full"
+                                    onValueChange={(val) => setFormData(prev => ({ ...prev, instructor_id: val }))}
                                 >
-                                    <SelectOption value="">Default (Me)</SelectOption>
-                                    {teachers.map(teacher => (
-                                        <SelectOption key={teacher.id} value={teacher.id}>
-                                            {teacher.name} ({teacher.email})
-                                        </SelectOption>
-                                    ))}
+                                    <SelectTrigger className="w-full bg-card">
+                                        <GraduationCap className="w-4 h-4 mr-2" />
+                                        <SelectValue placeholder="Default (Me)" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="_default">Default (Me)</SelectItem>
+                                        {teachers.map(teacher => (
+                                            <SelectItem key={teacher.id} value={teacher.id}>
+                                                {teacher.name} ({teacher.email})
+                                            </SelectItem>
+                                        ))}
+                                    </SelectContent>
                                 </Select>
                                 <p className="text-xs text-muted-foreground mt-1.5">
                                     Leave empty to assign yourself as the instructor
@@ -423,13 +436,17 @@ export default function CreateCoursePage() {
                                 <label className="block text-sm font-medium mb-2">Level</label>
                                 <Select
                                     value={formData.level}
-                                    onChange={(val) => setFormData(prev => ({ ...prev, level: val as CourseLevel }))}
-                                    icon={<BarChart className="w-4 h-4" />}
-                                    className="w-full"
+                                    onValueChange={(val) => setFormData(prev => ({ ...prev, level: val as CourseLevel }))}
                                 >
-                                    <SelectOption value="beginner">Beginner</SelectOption>
-                                    <SelectOption value="intermediate">Intermediate</SelectOption>
-                                    <SelectOption value="advanced">Advanced</SelectOption>
+                                    <SelectTrigger className="w-full bg-card">
+                                        <BarChart className="w-4 h-4 mr-2" />
+                                        <SelectValue placeholder="Select Level" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="beginner">Beginner</SelectItem>
+                                        <SelectItem value="intermediate">Intermediate</SelectItem>
+                                        <SelectItem value="advanced">Advanced</SelectItem>
+                                    </SelectContent>
                                 </Select>
                             </div>
 
@@ -437,13 +454,17 @@ export default function CreateCoursePage() {
                                 <label className="block text-sm font-medium mb-2">Language</label>
                                 <Select
                                     value={formData.language}
-                                    onChange={(val) => setFormData(prev => ({ ...prev, language: val }))}
-                                    icon={<Globe className="w-4 h-4" />}
-                                    className="w-full"
+                                    onValueChange={(val) => setFormData(prev => ({ ...prev, language: val }))}
                                 >
-                                    <SelectOption value="বাংলা">বাংলা</SelectOption>
-                                    <SelectOption value="English">English</SelectOption>
-                                    <SelectOption value="Hindi">Hindi</SelectOption>
+                                    <SelectTrigger className="w-full bg-card">
+                                        <Globe className="w-4 h-4 mr-2" />
+                                        <SelectValue placeholder="Select Language" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="বাংলা">বাংলা</SelectItem>
+                                        <SelectItem value="English">English</SelectItem>
+                                        <SelectItem value="Hindi">Hindi</SelectItem>
+                                    </SelectContent>
                                 </Select>
                             </div>
                         </div>

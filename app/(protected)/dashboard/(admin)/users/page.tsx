@@ -1,10 +1,11 @@
 "use client";
 
 import {
-    Search, Shield, User, Trash2, Edit, MoreHorizontal, Filter, ChevronDown,
+    Shield, User, Trash2, Edit, MoreHorizontal, Filter, ChevronDown,
     UserPlus, Download, Mail, Phone, MapPin, Calendar, Activity, Award,
     CheckCircle2, XCircle, AlertCircle, Users, TrendingUp, TrendingDown,
-    Eye, Lock, Unlock, RotateCcw, Settings, Loader2, X, FileText, FileCode, File, FileSpreadsheet
+    Eye, Lock, Unlock, RotateCcw, Settings, Loader2, X, FileText, FileCode, File, FileSpreadsheet,
+    ScanLine, Hash, Clock, BookOpen
 } from "lucide-react";
 import { jsPDF } from "jspdf";
 import autoTable from "jspdf-autotable";
@@ -17,10 +18,16 @@ import {
 } from "@/types/user";
 import {
     getUsers, getUserStats, updateUserRole, deleteUser, updateUser,
-    bulkDeleteUsers, bulkUpdateRoles, exportUsersToCSV, exportUsersToJSON, createUser
+    bulkDeleteUsers, bulkUpdateRoles, exportUsersToCSV, exportUsersToJSON, createUser, changeUserPassword
 } from "@/lib/actions/users";
 import { Dialog, DialogHeader, DialogTitle, DialogDescription, DialogBody, DialogFooter, DialogClose } from "@/components/ui/Dialog";
-import { Select, SelectOption } from "@/components/ui/Select";
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from "@/components/ui/select";
 import {
     Table,
     TableBody,
@@ -36,9 +43,10 @@ import {
     DropdownMenuSeparator,
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { AnimatedCheckbox } from "@/components/ui/AnimatedCheckbox";
 import { Pagination } from "@/components/ui/Pagination";
 import { useToast } from "@/components/ui/toast";
-import { AnimatedCheckbox } from "@/components/ui/AnimatedCheckbox";
+import { SearchInput } from "@/components/dashboard/shared/SearchInput";
 
 
 export default function UserManagementPage() {
@@ -85,6 +93,10 @@ export default function UserManagementPage() {
         status: "active" as UserStatus
     });
 
+    // Change Password State for Edit Modal
+    const [newPassword, setNewPassword] = useState("");
+    const [updatePasswordModal, setUpdatePasswordModal] = useState<ExtendedUser | null>(null);
+
     useEffect(() => {
         if (editUserModal) {
             setEditFormData({
@@ -93,6 +105,8 @@ export default function UserManagementPage() {
                 role: (editUserModal.role as UserRole) || "student",
                 status: (editUserModal.status as UserStatus) || "active"
             });
+            // Reset password states
+            setNewPassword("");
         }
     }, [editUserModal]);
 
@@ -413,7 +427,10 @@ export default function UserManagementPage() {
         if (!editUserModal) return;
 
         setIsCreating(true); // Reuse loading state
+
+        // 1. Update Profile Info
         const result = await updateUser(editUserModal.id, editFormData);
+
         setIsCreating(false);
 
         if (result.user) {
@@ -423,6 +440,25 @@ export default function UserManagementPage() {
             fetchStats();
         } else {
             toast.error("Error", result.error || "Failed to update user");
+        }
+    };
+
+    const handlePasswordUpdateConfirm = async () => {
+        if (!updatePasswordModal || !newPassword) {
+            toast.error("Missing password", "Please enter a new password");
+            return;
+        }
+
+        setIsCreating(true);
+        const result = await changeUserPassword(updatePasswordModal.id, newPassword);
+        setIsCreating(false);
+
+        if (result.success) {
+            toast.success("Password Updated", "User password has been changed successfully");
+            setUpdatePasswordModal(null);
+            setNewPassword("");
+        } else {
+            toast.error("Error", result.error || "Failed to update password");
         }
     };
 
@@ -503,17 +539,17 @@ export default function UserManagementPage() {
             </div>
 
             {/* Stats Cards */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-4 gap-4">
                 {!stats ? (
                     // Skeletons
                     [...Array(4)].map((_, i) => (
                         <div key={`stat-skeleton-${i}`} className="p-6 rounded-2xl border border-border/40 bg-card/30 backdrop-blur-xl">
                             <div className="flex items-center justify-between">
                                 <div>
-                                    <div className="h-4 w-24 bg-muted/40 rounded animate-pulse mb-3" />
-                                    <div className="h-8 w-16 bg-muted/40 rounded animate-pulse" />
+                                    <div className="h-4 w-24 bg-skeleton rounded animate-pulse mb-3" />
+                                    <div className="h-8 w-16 bg-skeleton rounded animate-pulse" />
                                 </div>
-                                <div className="w-12 h-12 rounded-xl bg-muted/40 animate-pulse" />
+                                <div className="w-12 h-12 rounded-xl bg-skeleton animate-pulse" />
                             </div>
                         </div>
                     ))
@@ -553,71 +589,24 @@ export default function UserManagementPage() {
             </div>
 
             {/* Main Table Container */}
-            <div className="rounded-3xl border border-border/40 bg-card/30 backdrop-blur-xl overflow-hidden shadow-2xl shadow-black/5">
+            <div className="rounded-2xl border border-border/40 bg-card/30 backdrop-blur-xl overflow-hidden shadow-sm shadow-black/5">
 
                 {/* Toolbar */}
-                <div className="p-4 md:p-6 border-b border-border/40 bg-muted/20">
+                <div className="p-4 md:p-6 border-b border-border/40 bg-card/30 backdrop-blur-xl">
                     <div className="flex flex-col lg:flex-row gap-4 justify-between">
-                        {/* Search */}
-                        <div className="relative w-full lg:max-w-md group">
-                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground group-focus-within:text-primary transition-colors" />
-                            <input
-                                type="text"
-                                placeholder="Search by name or email..."
+                        {/* Search & Refresh Group */}
+                        <div className="flex items-center gap-2 w-full lg:max-w-md">
+                            <SearchInput
                                 value={searchTerm}
-                                onChange={(e) => {
-                                    setSearchTerm(e.target.value);
+                                onChange={(value) => {
+                                    setSearchTerm(value);
                                     setCurrentPage(1);
                                 }}
-                                className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-background/50 border border-border/50 text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary/50 outline-none transition-all placeholder:text-muted-foreground/70"
+                                placeholder="Search by name or email..."
+                                debounceMs={300}
+                                isSearching={isLoading}
+                                className="flex-1"
                             />
-                        </div>
-
-                        <div className="flex flex-wrap items-center gap-3">
-                            {/* Role Filter */}
-                            <Select
-                                value={roleFilter}
-                                onChange={(val) => {
-                                    setRoleFilter(val);
-                                    setCurrentPage(1);
-                                }}
-                                icon={<Filter className="w-4 h-4" />}
-                                className="w-full sm:w-36"
-                            >
-                                <SelectOption value="all">All Roles</SelectOption>
-                                <SelectOption value="student">Student</SelectOption>
-                                <SelectOption value="teacher">Teacher</SelectOption>
-                                <SelectOption value="moderator">Moderator</SelectOption>
-                                <SelectOption value="admin">Admin</SelectOption>
-                            </Select>
-
-                            {/* Status Filter */}
-                            <Select
-                                value={statusFilter}
-                                onChange={(val) => {
-                                    setStatusFilter(val);
-                                    setCurrentPage(1);
-                                }}
-                                icon={<Activity className="w-4 h-4" />}
-                                className="w-full sm:w-36"
-                            >
-                                <SelectOption value="all">All Status</SelectOption>
-                                <SelectOption value="active">Active</SelectOption>
-                                <SelectOption value="inactive">Inactive</SelectOption>
-                                <SelectOption value="suspended">Suspended</SelectOption>
-                                <SelectOption value="pending">Pending</SelectOption>
-                            </Select>
-
-                            {/* Clear Filters */}
-                            {(searchTerm || roleFilter !== 'all' || statusFilter !== 'all') && (
-                                <button
-                                    onClick={clearFilters}
-                                    className="flex items-center gap-1.5 px-3 py-2 rounded-xl border border-red-500/30 bg-red-500/10 hover:bg-red-500/20 text-red-500 text-sm font-medium transition-colors"
-                                >
-                                    <X className="w-3.5 h-3.5" />
-                                    Clear Filters
-                                </button>
-                            )}
 
                             {/* Refresh Button */}
                             <button
@@ -625,74 +614,133 @@ export default function UserManagementPage() {
                                     fetchUsers();
                                     toast.success("Users list refreshed");
                                 }}
-                                className="p-2.5 rounded-xl border border-border/50 bg-background/50 hover:bg-background hover:text-primary transition-colors text-muted-foreground"
+                                className="p-2.5 shrink-0 rounded-xl border border-input-dark-border bg-input-dark hover:bg-input-dark-hover hover:text-foreground focus:shadow-[0_0_0_2px_var(--input-dark-glow)] focus:outline-none transition-all duration-200 text-input-dark-text"
                                 title="Refresh list"
                             >
                                 <RotateCcw className={cn("w-4 h-4", isLoading && "animate-spin")} />
                             </button>
+                        </div>
 
-                            {/* Bulk Actions */}
+                        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
+                            {/* Role Filter */}
+                            <Select
+                                value={roleFilter}
+                                onValueChange={(val) => {
+                                    setRoleFilter(val);
+                                    setCurrentPage(1);
+                                }}
+                            >
+                                <SelectTrigger className="w-full sm:w-fit sm:min-w-[140px]">
+                                    <div className="flex items-center gap-2">
+                                        <Filter className="w-4 h-4" />
+                                        <SelectValue placeholder="All Roles" />
+                                    </div>
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="all">All Roles</SelectItem>
+                                    <SelectItem value="student">Student</SelectItem>
+                                    <SelectItem value="teacher">Teacher</SelectItem>
+                                    <SelectItem value="moderator">Moderator</SelectItem>
+                                    <SelectItem value="admin">Admin</SelectItem>
+                                </SelectContent>
+                            </Select>
 
+                            {/* Status Filter */}
+                            <Select
+                                value={statusFilter}
+                                onValueChange={(val) => {
+                                    setStatusFilter(val);
+                                    setCurrentPage(1);
+                                }}
+                            >
+                                <SelectTrigger className="w-full sm:w-fit sm:min-w-[140px]">
+                                    <div className="flex items-center gap-2">
+                                        <Activity className="w-4 h-4" />
+                                        <SelectValue placeholder="All Status" />
+                                    </div>
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="all">All Status</SelectItem>
+                                    <SelectItem value="active">Active</SelectItem>
+                                    <SelectItem value="inactive">Inactive</SelectItem>
+                                    <SelectItem value="suspended">Suspended</SelectItem>
+                                    <SelectItem value="pending">Pending</SelectItem>
+                                </SelectContent>
+                            </Select>
+
+                            {/* Clear Filters */}
+                            {(searchTerm || roleFilter !== 'all' || statusFilter !== 'all') && (
+                                <button
+                                    onClick={clearFilters}
+                                    className="flex items-center justify-center gap-1.5 px-3 py-2.5 rounded-xl border border-red-500/30 bg-red-500/10 hover:bg-red-500/20 text-red-500 text-sm font-medium transition-colors"
+                                >
+                                    <X className="w-3.5 h-3.5" />
+                                    <span className="sm:hidden lg:inline">Clear</span>
+                                    <span className="hidden sm:inline lg:hidden">Clear Filters</span>
+                                </button>
+                            )}
                         </div>
                     </div>
                 </div>
 
                 {/* Table */}
-                <div className="rounded-md border border-border/40 overflow-hidden overflow-x-auto bg-card/30 backdrop-blur-xl [&::-webkit-scrollbar]:h-1.5 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-muted-foreground/20 [&::-webkit-scrollbar-thumb]:rounded-full hover:[&::-webkit-scrollbar-thumb]:bg-primary/50">
+                <div className="overflow-hidden overflow-x-auto [&::-webkit-scrollbar]:h-1.5 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-muted-foreground/20 [&::-webkit-scrollbar-thumb]:rounded-full hover:[&::-webkit-scrollbar-thumb]:bg-primary/50">
                     <Table>
-                        <TableHeader className="bg-muted/10">
+                        <TableHeader>
                             <TableRow className="hover:bg-transparent border-b border-border/40">
-                                <TableHead className="w-[50px] px-6 py-4">
+                                <TableHead className="w-[50px] px-6 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
                                     <AnimatedCheckbox
                                         id="select-all"
                                         checked={selectedUsers.size === users.length && users.length > 0}
                                         onChange={toggleSelectAll}
                                     />
                                 </TableHead>
-                                <TableHead className="px-6 py-4">User</TableHead>
-                                <TableHead className="px-6 py-4">Role</TableHead>
-                                <TableHead className="px-6 py-4">Status</TableHead>
-                                <TableHead className="px-6 py-4">Joined</TableHead>
-                                <TableHead className="px-6 py-4 text-right">Actions</TableHead>
+                                <TableHead className="px-6 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider">User</TableHead>
+                                <TableHead className="px-6 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Role</TableHead>
+                                <TableHead className="px-6 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Status</TableHead>
+                                <TableHead className="px-6 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Joined</TableHead>
+                                <TableHead className="px-6 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider text-right">Actions</TableHead>
                             </TableRow>
                         </TableHeader>
-                        <TableBody>
+                        <TableBody className="divide-y divide-border/20">
                             {isLoading ? (
                                 [...Array(pageSize)].map((_, i) => (
-                                    <TableRow key={`skeleton-${i}`} className="border-b border-border/40 hover:bg-muted/5 transition-colors">
+                                    <TableRow key={`skeleton-${i}`} className="border-b border-border/30 bg-linear-to-r from-transparent via-muted/5 to-transparent">
                                         <TableCell className="px-6 py-4">
-                                            <div className="w-5 h-5 bg-muted/40 rounded-md animate-pulse" />
+                                            <div className="w-5 h-5 bg-linear-to-r from-muted/30 via-muted/50 to-muted/30 rounded-md animate-pulse" />
                                         </TableCell>
                                         <TableCell className="px-6 py-4">
                                             <div className="flex items-center gap-4">
-                                                <div className="w-10 h-10 rounded-full bg-muted/40 animate-pulse" />
+                                                <div className="w-10 h-10 rounded-full bg-linear-to-r from-muted/30 via-muted/50 to-muted/30 animate-pulse" />
                                                 <div className="space-y-2">
-                                                    <div className="h-4 w-32 bg-muted/40 rounded-md animate-pulse" />
-                                                    <div className="h-3 w-40 bg-muted/40 rounded-md animate-pulse" />
+                                                    <div className="h-4 w-32 bg-linear-to-r from-muted/30 via-muted/50 to-muted/30 rounded-md animate-pulse" />
+                                                    <div className="h-3 w-40 bg-linear-to-r from-muted/30 via-muted/50 to-muted/30 rounded-md animate-pulse" />
                                                 </div>
                                             </div>
                                         </TableCell>
-                                        <TableCell className="px-6 py-4"><div className="h-7 w-24 bg-muted/40 rounded-full animate-pulse" /></TableCell>
-                                        <TableCell className="px-6 py-4"><div className="h-7 w-20 bg-muted/40 rounded-full animate-pulse" /></TableCell>
-                                        <TableCell className="px-6 py-4"><div className="h-4 w-24 bg-muted/40 rounded-md animate-pulse" /></TableCell>
-                                        <TableCell className="px-6 py-4"><div className="h-8 w-8 bg-muted/40 rounded-lg ml-auto animate-pulse" /></TableCell>
+                                        <TableCell className="px-6 py-4"><div className="h-6 w-20 bg-linear-to-r from-muted/30 via-muted/50 to-muted/30 rounded-full animate-pulse" /></TableCell>
+                                        <TableCell className="px-6 py-4"><div className="h-6 w-18 bg-linear-to-r from-muted/30 via-muted/50 to-muted/30 rounded-full animate-pulse" /></TableCell>
+                                        <TableCell className="px-6 py-4"><div className="h-4 w-24 bg-linear-to-r from-muted/30 via-muted/50 to-muted/30 rounded-md animate-pulse" /></TableCell>
+                                        <TableCell className="px-6 py-4"><div className="h-8 w-8 bg-linear-to-r from-muted/30 via-muted/50 to-muted/30 rounded-lg ml-auto animate-pulse" /></TableCell>
                                     </TableRow>
                                 ))
                             ) : users.length === 0 ? (
                                 <TableRow>
                                     <TableCell colSpan={6} className="h-24 text-center">
-                                        <div className="flex flex-col items-center gap-3 py-10">
-                                            <div className="p-4 rounded-full bg-muted/30">
-                                                <Users className="w-8 h-8 text-muted-foreground opacity-50" />
+                                        <div className="flex flex-col items-center gap-3 py-12">
+                                            <div className="bg-muted/50 p-4 rounded-xl border border-border/50">
+                                                <Users className="w-8 h-8 text-muted-foreground/70" strokeWidth={1.5} />
                                             </div>
-                                            <p className="font-medium text-foreground">No users found</p>
-                                            <p className="text-xs text-muted-foreground">Try adjusting your search or filters</p>
+                                            <div className="space-y-1">
+                                                <p className="font-medium text-foreground">No users found</p>
+                                                <p className="text-sm text-muted-foreground">Try adjusting your search or filters</p>
+                                            </div>
                                         </div>
                                     </TableCell>
                                 </TableRow>
                             ) : (
                                 users.map((user) => (
-                                    <TableRow key={user.id} className="hover:bg-primary/5 border-b border-border/40 transition-colors group">
+                                    <TableRow key={user.id} className="border-b border-border/30 transition-all duration-200 group">
                                         <TableCell className="px-6 py-4">
                                             <AnimatedCheckbox
                                                 id={`select-${user.id}`}
@@ -751,6 +799,10 @@ export default function UserManagementPage() {
                                                         <Edit className="w-4 h-4" />
                                                         Edit User
                                                     </DropdownMenuItem>
+                                                    <DropdownMenuItem onClick={() => { setUpdatePasswordModal(user); setNewPassword(""); }} className="rounded-lg cursor-pointer text-sm gap-2.5 text-slate-700 dark:text-slate-200 focus:bg-slate-100 dark:focus:bg-white/10 focus:text-slate-900 dark:focus:text-white">
+                                                        <Lock className="w-4 h-4" />
+                                                        Update Password
+                                                    </DropdownMenuItem>
 
                                                     <DropdownMenuSeparator className="my-1 bg-slate-200 dark:bg-white/10" />
 
@@ -790,133 +842,272 @@ export default function UserManagementPage() {
             <Dialog open={addUserModal} onClose={() => setAddUserModal(false)}>
                 <DialogClose onClose={() => setAddUserModal(false)} />
                 <DialogHeader>
-                    <DialogTitle>Add New User</DialogTitle>
-                    <DialogDescription>Create a new user account with specific role.</DialogDescription>
+                    <DialogTitle className="flex items-center gap-3">
+                        <div className="p-2.5 rounded-xl bg-primary/10 text-primary">
+                            <UserPlus className="w-5 h-5" />
+                        </div>
+                        Add New User
+                    </DialogTitle>
+                    <DialogDescription>Create a new user account with specific role and permissions.</DialogDescription>
                 </DialogHeader>
-                <DialogBody className="space-y-4">
-                    <div className="space-y-2">
-                        <label className="text-sm font-medium">Full Name</label>
-                        <input
-                            type="text"
-                            value={newUserData.name}
-                            onChange={(e) => setNewUserData({ ...newUserData, name: e.target.value })}
-                            className="w-full px-3 py-2 rounded-lg bg-background border border-border/50 focus:ring-2 focus:ring-primary/20 outline-none transition-all placeholder:text-muted-foreground/50"
-                            placeholder="John Doe"
-                        />
-                    </div>
-                    <div className="space-y-2">
-                        <label className="text-sm font-medium">Email Address</label>
-                        <input
-                            type="email"
-                            value={newUserData.email}
-                            onChange={(e) => setNewUserData({ ...newUserData, email: e.target.value })}
-                            className="w-full px-3 py-2 rounded-lg bg-background border border-border/50 focus:ring-2 focus:ring-primary/20 outline-none transition-all placeholder:text-muted-foreground/50"
-                            placeholder="john@example.com"
-                        />
-                    </div>
-                    <div className="space-y-2">
-                        <label className="text-sm font-medium">Password</label>
-                        <input
-                            type="password"
-                            value={newUserData.password}
-                            onChange={(e) => setNewUserData({ ...newUserData, password: e.target.value })}
-                            className="w-full px-3 py-2 rounded-lg bg-background border border-border/50 focus:ring-2 focus:ring-primary/20 outline-none transition-all placeholder:text-muted-foreground/50"
-                            placeholder="••••••••"
-                        />
-                    </div>
-                    <div className="space-y-2">
-                        <label className="text-sm font-medium">Role</label>
-                        <Select
-                            value={newUserData.role}
-                            onChange={(val) => setNewUserData({ ...newUserData, role: val as UserRole })}
+                <form onSubmit={(e) => { e.preventDefault(); handleCreateUser(); }}>
+                    <DialogBody className="space-y-5">
+                        {/* Full Name */}
+                        <div className="space-y-2">
+                            <label className="text-sm font-medium text-foreground flex items-center gap-2">
+                                <User className="w-4 h-4 text-muted-foreground" />
+                                Full Name
+                            </label>
+                            <input
+                                type="text"
+                                id="new-user-name"
+                                name="name"
+                                autoComplete="name"
+                                value={newUserData.name}
+                                onChange={(e) => setNewUserData({ ...newUserData, name: e.target.value })}
+                                className="w-full px-4 py-3 rounded-xl bg-input-dark border border-input-dark-border text-foreground placeholder:text-input-dark-text focus:border-primary/50 focus:ring-2 focus:ring-primary/20 outline-none transition-all"
+                                placeholder="John Doe"
+                            />
+                        </div>
+
+                        {/* Email */}
+                        <div className="space-y-2">
+                            <label className="text-sm font-medium text-foreground flex items-center gap-2">
+                                <Mail className="w-4 h-4 text-muted-foreground" />
+                                Email Address
+                            </label>
+                            <input
+                                type="email"
+                                id="new-user-email"
+                                name="email"
+                                autoComplete="email"
+                                value={newUserData.email}
+                                onChange={(e) => setNewUserData({ ...newUserData, email: e.target.value })}
+                                className="w-full px-4 py-3 rounded-xl bg-input-dark border border-input-dark-border text-foreground placeholder:text-input-dark-text focus:border-primary/50 focus:ring-2 focus:ring-primary/20 outline-none transition-all"
+                                placeholder="john@example.com"
+                            />
+                        </div>
+
+                        {/* Password */}
+                        <div className="space-y-2">
+                            <label className="text-sm font-medium text-foreground flex items-center gap-2">
+                                <Lock className="w-4 h-4 text-muted-foreground" />
+                                Password
+                            </label>
+                            <input
+                                type="password"
+                                id="new-user-password"
+                                name="password"
+                                autoComplete="new-password"
+                                value={newUserData.password}
+                                onChange={(e) => setNewUserData({ ...newUserData, password: e.target.value })}
+                                className="w-full px-4 py-3 rounded-xl bg-input-dark border border-input-dark-border text-foreground placeholder:text-input-dark-text focus:border-primary/50 focus:ring-2 focus:ring-primary/20 outline-none transition-all"
+                                placeholder="••••••••"
+                            />
+                        </div>
+
+                        {/* Role */}
+                        <div className="space-y-2">
+                            <label className="text-sm font-medium text-foreground flex items-center gap-2">
+                                <Shield className="w-4 h-4 text-muted-foreground" />
+                                Role
+                            </label>
+                            <Select
+                                value={newUserData.role}
+                                onValueChange={(val) => setNewUserData({ ...newUserData, role: val as UserRole })}
+                            >
+                                <SelectTrigger className="w-full">
+                                    <SelectValue placeholder="Select role" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="student">
+                                        <div className="flex items-center gap-2">
+                                            <User className="w-4 h-4 text-blue-500" />
+                                            Student
+                                        </div>
+                                    </SelectItem>
+                                    <SelectItem value="teacher">
+                                        <div className="flex items-center gap-2">
+                                            <Award className="w-4 h-4 text-violet-500" />
+                                            Teacher
+                                        </div>
+                                    </SelectItem>
+                                    <SelectItem value="moderator">
+                                        <div className="flex items-center gap-2">
+                                            <Settings className="w-4 h-4 text-amber-500" />
+                                            Moderator
+                                        </div>
+                                    </SelectItem>
+                                    <SelectItem value="admin">
+                                        <div className="flex items-center gap-2">
+                                            <Shield className="w-4 h-4 text-rose-500" />
+                                            Admin
+                                        </div>
+                                    </SelectItem>
+                                </SelectContent>
+                            </Select>
+                        </div>
+                    </DialogBody>
+                    <DialogFooter>
+                        <button
+                            type="button"
+                            onClick={() => setAddUserModal(false)}
+                            className="px-5 py-2.5 rounded-xl border border-border/50 hover:bg-muted/50 text-muted-foreground hover:text-foreground transition-all font-medium"
                         >
-                            <SelectOption value="student">Student</SelectOption>
-                            <SelectOption value="teacher">Teacher</SelectOption>
-                            <SelectOption value="moderator">Moderator</SelectOption>
-                            <SelectOption value="admin">Admin</SelectOption>
-                        </Select>
-                    </div>
-                </DialogBody>
-                <DialogFooter>
-                    <button
-                        onClick={() => setAddUserModal(false)}
-                        className="px-4 py-2 rounded-xl border border-border/50 hover:bg-muted/50 transition-colors"
-                    >
-                        Cancel
-                    </button>
-                    <button
-                        onClick={handleCreateUser}
-                        disabled={isCreating}
-                        className="px-4 py-2 rounded-xl bg-primary text-primary-foreground hover:bg-primary/90 transition-colors disabled:opacity-50 flex items-center gap-2"
-                    >
-                        {isCreating && <Loader2 className="w-4 h-4 animate-spin" />}
-                        Create User
-                    </button>
-                </DialogFooter>
+                            Cancel
+                        </button>
+                        <button
+                            type="submit"
+                            disabled={isCreating}
+                            className="px-5 py-2.5 rounded-xl bg-primary text-primary-foreground hover:bg-primary/90 transition-all disabled:opacity-50 flex items-center gap-2 font-medium shadow-lg shadow-primary/20"
+                        >
+                            {isCreating && <Loader2 className="w-4 h-4 animate-spin" />}
+                            <UserPlus className="w-4 h-4" />
+                            Create User
+                        </button>
+                    </DialogFooter>
+                </form>
             </Dialog>
 
+            {/* View User Modal */}
             {/* View User Modal */}
             <Dialog open={!!viewUserModal} onClose={() => setViewUserModal(null)} size="lg">
                 <DialogClose onClose={() => setViewUserModal(null)} />
                 <DialogHeader>
-                    <DialogTitle>User Details</DialogTitle>
-                    <DialogDescription>View detailed information about this user</DialogDescription>
+                    <DialogTitle className="flex items-center gap-3">
+                        <div className="p-2.5 rounded-xl bg-blue-500/10 text-blue-600">
+                            <ScanLine className="w-5 h-5" />
+                        </div>
+                        User Details
+                    </DialogTitle>
+                    <DialogDescription>View detailed information about this user account.</DialogDescription>
                 </DialogHeader>
                 {viewUserModal && (
-                    <DialogBody className="space-y-6">
-                        <div className="flex items-center gap-4">
-                            <div className="w-20 h-20 rounded-full bg-linear-to-br from-primary/20 to-primary/5 flex items-center justify-center text-primary font-bold text-2xl border-2 border-primary/10 overflow-hidden">
-                                {viewUserModal.avatar_url ? (
-                                    <img src={viewUserModal.avatar_url} alt={viewUserModal.name} className="w-full h-full object-cover" />
-                                ) : (
-                                    (viewUserModal.name?.[0] || 'U').toUpperCase()
-                                )}
-                            </div>
-                            <div>
-                                <h3 className="text-xl font-bold">{viewUserModal.name || 'Unnamed User'}</h3>
-                                <p className="text-muted-foreground">{viewUserModal.email}</p>
+                    <DialogBody className="space-y-8">
+                        {/* Profile Header */}
+                        <div className="flex flex-col sm:flex-row items-center sm:items-start gap-6">
+                            <div className="relative group">
+                                <div className="absolute inset-0 bg-primary/20 rounded-full blur-xl group-hover:blur-2xl transition-all" />
+                                <div className="relative w-24 h-24 rounded-full bg-linear-to-br from-primary/20 to-primary/5 flex items-center justify-center text-primary font-bold text-3xl border-2 border-primary/10 overflow-hidden shadow-2xl">
+                                    {viewUserModal.avatar_url ? (
+                                        <img src={viewUserModal.avatar_url} alt={viewUserModal.name} className="w-full h-full object-cover" />
+                                    ) : (
+                                        (viewUserModal.name?.[0] || 'U').toUpperCase()
+                                    )}
+                                </div>
                                 <div className={cn(
-                                    "inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold border shadow-sm mt-2",
-                                    getRoleBadgeStyle(viewUserModal.role || 'student')
-                                )}>
-                                    <span className="capitalize">{viewUserModal.role || 'student'}</span>
+                                    "absolute bottom-0 right-0 w-6 h-6 rounded-full border-[3px] border-card flex items-center justify-center",
+                                    viewUserModal.status === 'active' ? "bg-emerald-500" : "bg-slate-500"
+                                )} />
+                            </div>
+
+                            <div className="text-center sm:text-left space-y-2">
+                                <div>
+                                    <h3 className="text-2xl font-bold tracking-tight">{viewUserModal.name || 'Unnamed User'}</h3>
+                                    <p className="text-muted-foreground font-medium">{viewUserModal.email}</p>
+                                </div>
+                                <div className="flex items-center justify-center sm:justify-start gap-2">
+                                    <div className={cn(
+                                        "inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold border shadow-sm",
+                                        getRoleBadgeStyle(viewUserModal.role || 'student')
+                                    )}>
+                                        <span className="capitalize">{viewUserModal.role || 'student'}</span>
+                                    </div>
+                                    <span className="text-xs text-muted-foreground px-2 py-0.5 rounded-md bg-muted/50 font-mono">
+                                        ID: {viewUserModal.id.slice(0, 8)}
+                                    </span>
                                 </div>
                             </div>
                         </div>
 
-                        <div className="grid grid-cols-2 gap-4">
-                            <div className="space-y-1">
-                                <p className="text-xs text-muted-foreground uppercase tracking-wider">User ID</p>
-                                <p className="text-sm font-mono">{viewUserModal.id.slice(0, 8)}...</p>
+                        {/* Details Grid */}
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            {/* User ID Card */}
+                            <div className="p-4 rounded-xl bg-muted/30 border border-border/50 space-y-1">
+                                <div className="flex items-center gap-2 text-muted-foreground mb-1">
+                                    <Hash className="w-4 h-4" />
+                                    <span className="text-xs font-semibold uppercase tracking-wider">Full User ID</span>
+                                </div>
+                                <p className="text-sm font-mono truncate text-foreground/80" title={viewUserModal.id}>
+                                    {viewUserModal.id}
+                                </p>
                             </div>
-                            <div className="space-y-1">
-                                <p className="text-xs text-muted-foreground uppercase tracking-wider">Status</p>
-                                <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-500/10 text-emerald-600 border border-emerald-500/20 text-xs font-medium">
-                                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
-                                    Active
-                                </span>
-                            </div>
-                            <div className="space-y-1">
-                                <p className="text-xs text-muted-foreground uppercase tracking-wider">Joined</p>
-                                <p className="text-sm">{formatDate(viewUserModal.created_at)}</p>
-                            </div>
-                            <div className="space-y-1">
-                                <p className="text-xs text-muted-foreground uppercase tracking-wider">Last Updated</p>
-                                <p className="text-sm">{formatDate(viewUserModal.updated_at)}</p>
-                            </div>
-                            <div className="space-y-1">
-                                <p className="text-xs text-muted-foreground uppercase tracking-wider">Auth Providers</p>
-                                <div className="flex gap-1">
-                                    {viewUserModal.providers?.map(provider => (
-                                        <span key={provider} className="px-2 py-1 text-xs rounded-md bg-muted/50 border border-border/50 capitalize">
-                                            {provider}
+
+                            {/* Detailed Status Card */}
+                            <div className="p-4 rounded-xl bg-muted/30 border border-border/50 space-y-1">
+                                <div className="flex items-center gap-2 text-muted-foreground mb-1">
+                                    <Activity className="w-4 h-4" />
+                                    <span className="text-xs font-semibold uppercase tracking-wider">Account Status</span>
+                                </div>
+                                <div className="flex items-center gap-2">
+                                    {viewUserModal.status === 'active' ? (
+                                        <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-500/10 text-emerald-600 border border-emerald-500/20 text-xs font-medium">
+                                            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+                                            Active Account
                                         </span>
-                                    ))}
+                                    ) : (
+                                        <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-slate-500/10 text-slate-600 border border-slate-500/20 text-xs font-medium">
+                                            <span className="w-1.5 h-1.5 rounded-full bg-slate-500" />
+                                            Inactive
+                                        </span>
+                                    )}
                                 </div>
                             </div>
-                            <div className="space-y-1">
-                                <p className="text-xs text-muted-foreground uppercase tracking-wider">Enrolled Courses</p>
-                                <p className="text-sm font-semibold">{viewUserModal.courses_enrolled?.length || 0}</p>
+
+                            {/* Joined Date */}
+                            <div className="p-4 rounded-xl bg-muted/30 border border-border/50 space-y-1">
+                                <div className="flex items-center gap-2 text-muted-foreground mb-1">
+                                    <Calendar className="w-4 h-4" />
+                                    <span className="text-xs font-semibold uppercase tracking-wider">Joined Date</span>
+                                </div>
+                                <p className="text-sm font-medium text-foreground/80">
+                                    {formatDate(viewUserModal.created_at)}
+                                </p>
+                            </div>
+
+                            {/* Last Updated */}
+                            <div className="p-4 rounded-xl bg-muted/30 border border-border/50 space-y-1">
+                                <div className="flex items-center gap-2 text-muted-foreground mb-1">
+                                    <Clock className="w-4 h-4" />
+                                    <span className="text-xs font-semibold uppercase tracking-wider">Last Updated</span>
+                                </div>
+                                <p className="text-sm font-medium text-foreground/80">
+                                    {formatDate(viewUserModal.updated_at)}
+                                </p>
+                            </div>
+
+                            {/* Auth Providers */}
+                            <div className="p-4 rounded-xl bg-muted/30 border border-border/50 space-y-1">
+                                <div className="flex items-center gap-2 text-muted-foreground mb-1">
+                                    <Shield className="w-4 h-4" />
+                                    <span className="text-xs font-semibold uppercase tracking-wider">Auth Providers</span>
+                                </div>
+                                <div className="flex flex-wrap gap-1.5">
+                                    {viewUserModal.providers && viewUserModal.providers.length > 0 ? (
+                                        viewUserModal.providers.map(provider => (
+                                            <span key={provider} className="flex items-center gap-1 px-2 py-1 text-xs rounded-md bg-background border border-border/50 capitalize font-medium">
+                                                {provider === 'google' && <span className="text-rose-500 p-0.5">G</span>}
+                                                {provider === 'github' && <span className="text-foreground p-0.5">git</span>}
+                                                {provider === 'email' && <Mail className="w-3 h-3 text-blue-500" />}
+                                                {provider}
+                                            </span>
+                                        ))
+                                    ) : (
+                                        <span className="text-sm text-muted-foreground italic">Email Only</span>
+                                    )}
+                                </div>
+                            </div>
+
+                            {/* Enrolled Courses */}
+                            <div className="p-4 rounded-xl bg-muted/30 border border-border/50 space-y-1">
+                                <div className="flex items-center gap-2 text-muted-foreground mb-1">
+                                    <BookOpen className="w-4 h-4" />
+                                    <span className="text-xs font-semibold uppercase tracking-wider">Enrolled Courses</span>
+                                </div>
+                                <div className="flex items-center gap-2">
+                                    <span className="text-2xl font-bold">{viewUserModal.courses_enrolled?.length || 0}</span>
+                                    <span className="text-xs text-muted-foreground">active enrollments</span>
+                                </div>
                             </div>
                         </div>
                     </DialogBody>
@@ -927,69 +1118,158 @@ export default function UserManagementPage() {
             <Dialog open={!!editUserModal} onClose={() => setEditUserModal(null)}>
                 <DialogClose onClose={() => setEditUserModal(null)} />
                 <DialogHeader>
-                    <DialogTitle>Edit User</DialogTitle>
-                    <DialogDescription>Update user information and role</DialogDescription>
+                    <DialogTitle className="flex items-center gap-3">
+                        <div className="p-2.5 rounded-xl bg-violet-500/10 text-violet-600">
+                            <Edit className="w-5 h-5" />
+                        </div>
+                        Edit User Details
+                    </DialogTitle>
+                    <DialogDescription>Update user information, access role, and account status.</DialogDescription>
                 </DialogHeader>
-                <DialogBody className="space-y-4">
-                    <div className="space-y-2">
-                        <label className="text-sm font-medium">Full Name</label>
-                        <input
-                            type="text"
-                            value={editFormData.name}
-                            onChange={(e) => setEditFormData({ ...editFormData, name: e.target.value })}
-                            className="w-full px-3 py-2 rounded-lg bg-background border border-border/50 focus:ring-2 focus:ring-primary/20 outline-none transition-all placeholder:text-muted-foreground/50"
-                        />
-                    </div>
-                    <div className="space-y-2">
-                        <label className="text-sm font-medium">Email Address</label>
-                        <input
-                            type="email"
-                            value={editFormData.email}
-                            onChange={(e) => setEditFormData({ ...editFormData, email: e.target.value })}
-                            className="w-full px-3 py-2 rounded-lg bg-background border border-border/50 focus:ring-2 focus:ring-primary/20 outline-none transition-all placeholder:text-muted-foreground/50"
-                        />
-                    </div>
-                    <div className="space-y-2">
-                        <label className="text-sm font-medium">Role</label>
-                        <Select
-                            value={editFormData.role}
-                            onChange={(val) => setEditFormData({ ...editFormData, role: val as UserRole })}
+                <form onSubmit={(e) => { e.preventDefault(); handleUpdateUser(); }}>
+                    <DialogBody className="space-y-5">
+                        {/* Full Name */}
+                        <div className="space-y-2">
+                            <label className="text-sm font-medium text-foreground flex items-center gap-2">
+                                <User className="w-4 h-4 text-muted-foreground" />
+                                Full Name
+                            </label>
+                            <input
+                                type="text"
+                                id="edit-user-name"
+                                name="name"
+                                autoComplete="name"
+                                value={editFormData.name}
+                                onChange={(e) => setEditFormData({ ...editFormData, name: e.target.value })}
+                                className="w-full px-4 py-3 rounded-xl bg-input-dark border border-input-dark-border text-foreground placeholder:text-input-dark-text focus:border-primary/50 focus:ring-2 focus:ring-primary/20 outline-none transition-all"
+                                placeholder="John Doe"
+                            />
+                        </div>
+
+                        {/* Email */}
+                        <div className="space-y-2">
+                            <label className="text-sm font-medium text-foreground flex items-center gap-2">
+                                <Mail className="w-4 h-4 text-muted-foreground" />
+                                Email Address
+                            </label>
+                            <input
+                                type="email"
+                                id="edit-user-email"
+                                name="email"
+                                autoComplete="email"
+                                value={editFormData.email}
+                                onChange={(e) => setEditFormData({ ...editFormData, email: e.target.value })}
+                                className="w-full px-4 py-3 rounded-xl bg-input-dark border border-input-dark-border text-foreground placeholder:text-input-dark-text focus:border-primary/50 focus:ring-2 focus:ring-primary/20 outline-none transition-all"
+                                placeholder="john@example.com"
+                            />
+                        </div>
+
+                        {/* Role */}
+                        <div className="space-y-2">
+                            <label className="text-sm font-medium text-foreground flex items-center gap-2">
+                                <Shield className="w-4 h-4 text-muted-foreground" />
+                                Role
+                            </label>
+                            <Select
+                                value={editFormData.role}
+                                onValueChange={(val) => setEditFormData({ ...editFormData, role: val as UserRole })}
+                            >
+                                <SelectTrigger className="w-full">
+                                    <SelectValue placeholder="Select role" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="student">
+                                        <div className="flex items-center gap-2">
+                                            <User className="w-4 h-4 text-blue-500" />
+                                            Student
+                                        </div>
+                                    </SelectItem>
+                                    <SelectItem value="teacher">
+                                        <div className="flex items-center gap-2">
+                                            <Award className="w-4 h-4 text-violet-500" />
+                                            Teacher
+                                        </div>
+                                    </SelectItem>
+                                    <SelectItem value="moderator">
+                                        <div className="flex items-center gap-2">
+                                            <Settings className="w-4 h-4 text-amber-500" />
+                                            Moderator
+                                        </div>
+                                    </SelectItem>
+                                    <SelectItem value="admin">
+                                        <div className="flex items-center gap-2">
+                                            <Shield className="w-4 h-4 text-rose-500" />
+                                            Admin
+                                        </div>
+                                    </SelectItem>
+                                </SelectContent>
+                            </Select>
+                        </div>
+
+                        {/* Status */}
+                        <div className="space-y-2">
+                            <label className="text-sm font-medium text-foreground flex items-center gap-2">
+                                <Activity className="w-4 h-4 text-muted-foreground" />
+                                Status
+                            </label>
+                            <Select
+                                value={editFormData.status}
+                                onValueChange={(val) => setEditFormData({ ...editFormData, status: val as UserStatus })}
+                            >
+                                <SelectTrigger className="w-full">
+                                    <SelectValue placeholder="Select status" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="active">
+                                        <div className="flex items-center gap-2">
+                                            <div className="w-2 h-2 rounded-full bg-emerald-500" />
+                                            Active
+                                        </div>
+                                    </SelectItem>
+                                    <SelectItem value="inactive">
+                                        <div className="flex items-center gap-2">
+                                            <div className="w-2 h-2 rounded-full bg-slate-500" />
+                                            Inactive
+                                        </div>
+                                    </SelectItem>
+                                    <SelectItem value="suspended">
+                                        <div className="flex items-center gap-2">
+                                            <div className="w-2 h-2 rounded-full bg-rose-500" />
+                                            Suspended
+                                        </div>
+                                    </SelectItem>
+                                    <SelectItem value="pending">
+                                        <div className="flex items-center gap-2">
+                                            <div className="w-2 h-2 rounded-full bg-amber-500" />
+                                            Pending
+                                        </div>
+                                    </SelectItem>
+                                </SelectContent>
+                            </Select>
+                        </div>
+
+                        {/* Change Password Section */}
+
+                    </DialogBody>
+                    <DialogFooter>
+                        <button
+                            type="button"
+                            onClick={() => setEditUserModal(null)}
+                            className="px-5 py-2.5 rounded-xl border border-border/50 hover:bg-muted/50 text-muted-foreground hover:text-foreground transition-all font-medium"
                         >
-                            <SelectOption value="student">Student</SelectOption>
-                            <SelectOption value="teacher">Teacher</SelectOption>
-                            <SelectOption value="moderator">Moderator</SelectOption>
-                            <SelectOption value="admin">Admin</SelectOption>
-                        </Select>
-                    </div>
-                    <div className="space-y-2">
-                        <label className="text-sm font-medium">Status</label>
-                        <Select
-                            value={editFormData.status}
-                            onChange={(val) => setEditFormData({ ...editFormData, status: val as UserStatus })}
+                            Cancel
+                        </button>
+                        <button
+                            type="submit"
+                            disabled={isCreating}
+                            className="px-5 py-2.5 rounded-xl bg-primary text-primary-foreground hover:bg-primary/90 transition-all disabled:opacity-50 flex items-center gap-2 font-medium shadow-lg shadow-primary/20"
                         >
-                            <SelectOption value="active">Active</SelectOption>
-                            <SelectOption value="inactive">Inactive</SelectOption>
-                            <SelectOption value="suspended">Suspended</SelectOption>
-                            <SelectOption value="pending">Pending</SelectOption>
-                        </Select>
-                    </div>
-                </DialogBody>
-                <DialogFooter>
-                    <button
-                        onClick={() => setEditUserModal(null)}
-                        className="px-4 py-2 rounded-xl border border-border/50 hover:bg-muted/50 transition-colors"
-                    >
-                        Cancel
-                    </button>
-                    <button
-                        onClick={handleUpdateUser}
-                        disabled={isCreating}
-                        className="px-4 py-2 rounded-xl bg-primary text-primary-foreground hover:bg-primary/90 transition-colors disabled:opacity-50 flex items-center gap-2"
-                    >
-                        {isCreating && <Loader2 className="w-4 h-4 animate-spin" />}
-                        Save Changes
-                    </button>
-                </DialogFooter>
+                            {isCreating && <Loader2 className="w-4 h-4 animate-spin" />}
+                            <Edit className="w-4 h-4" />
+                            Save Changes
+                        </button>
+                    </DialogFooter>
+                </form>
             </Dialog>
 
             {/* Delete Confirmation Modal */}
@@ -1013,6 +1293,63 @@ export default function UserManagementPage() {
                         Delete
                     </button>
                 </DialogFooter>
+            </Dialog>
+
+            {/* Update Password Modal */}
+            <Dialog open={!!updatePasswordModal} onClose={() => setUpdatePasswordModal(null)}>
+                <DialogClose onClose={() => setUpdatePasswordModal(null)} />
+                <DialogHeader>
+                    <DialogTitle className="flex items-center gap-3">
+                        <div className="p-2.5 rounded-xl bg-amber-500/10 text-amber-600">
+                            <Lock className="w-5 h-5" />
+                        </div>
+                        Update Password
+                    </DialogTitle>
+                    <DialogDescription>
+                        Set a new password for <span className="font-medium text-foreground">{updatePasswordModal?.name}</span>.
+                    </DialogDescription>
+                </DialogHeader>
+                <form onSubmit={(e) => { e.preventDefault(); handlePasswordUpdateConfirm(); }}>
+                    <DialogBody className="space-y-4">
+                        <div className="space-y-2">
+                            <label className="text-sm font-medium text-foreground flex items-center gap-2">
+                                <Lock className="w-4 h-4 text-muted-foreground" />
+                                New Password
+                            </label>
+                            <input
+                                type="password"
+                                value={newPassword}
+                                onChange={(e) => setNewPassword(e.target.value)}
+                                className="w-full px-4 py-3 rounded-xl bg-input-dark border border-input-dark-border text-foreground placeholder:text-input-dark-text focus:border-primary/50 focus:ring-2 focus:ring-primary/20 outline-none transition-all"
+                                placeholder="Enter new password (min. 6 chars)"
+                                required
+                                minLength={6}
+                                autoComplete="new-password"
+                            />
+                            <p className="text-[11px] text-amber-500/80 flex items-center gap-1">
+                                <AlertCircle className="w-3 h-3" />
+                                The user will be required to sign in with this new password immediately.
+                            </p>
+                        </div>
+                    </DialogBody>
+                    <DialogFooter>
+                        <button
+                            type="button"
+                            onClick={() => setUpdatePasswordModal(null)}
+                            className="px-5 py-2.5 rounded-xl border border-border/50 hover:bg-muted/50 text-muted-foreground hover:text-foreground transition-all font-medium"
+                        >
+                            Cancel
+                        </button>
+                        <button
+                            type="submit"
+                            disabled={isCreating || !newPassword}
+                            className="px-5 py-2.5 rounded-xl bg-primary text-primary-foreground hover:bg-primary/90 transition-all disabled:opacity-50 flex items-center gap-2 font-medium shadow-lg shadow-primary/20"
+                        >
+                            {isCreating && <Loader2 className="w-4 h-4 animate-spin" />}
+                            Update Password
+                        </button>
+                    </DialogFooter>
+                </form>
             </Dialog>
 
             {/* Bulk Delete Modal */}
@@ -1052,13 +1389,20 @@ export default function UserManagementPage() {
                 <DialogBody>
                     <Select
                         value={selectedRole}
-                        onChange={(val) => setSelectedRole(val as UserRole)}
-                        icon={<Shield className="w-4 h-4" />}
+                        onValueChange={(val) => setSelectedRole(val as UserRole)}
                     >
-                        <SelectOption value="student">Student</SelectOption>
-                        <SelectOption value="teacher">Teacher</SelectOption>
-                        <SelectOption value="moderator">Moderator</SelectOption>
-                        <SelectOption value="admin">Admin</SelectOption>
+                        <SelectTrigger className="w-full">
+                            <div className="flex items-center gap-2">
+                                <Shield className="w-4 h-4" />
+                                <SelectValue placeholder="Select role" />
+                            </div>
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectItem value="student">Student</SelectItem>
+                            <SelectItem value="teacher">Teacher</SelectItem>
+                            <SelectItem value="moderator">Moderator</SelectItem>
+                            <SelectItem value="admin">Admin</SelectItem>
+                        </SelectContent>
                     </Select>
                 </DialogBody>
                 <DialogFooter>

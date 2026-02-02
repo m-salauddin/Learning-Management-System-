@@ -62,7 +62,7 @@ export function CTASection() {
                         <div className="flex flex-col sm:flex-row gap-4 justify-center items-center relative z-30">
                             <button className="relative px-8 py-3.5 rounded-xl bg-foreground text-background font-bold text-base hover:opacity-90 transition-all duration-300 shadow-lg shadow-foreground/5 hover:scale-[1.02] active:scale-[0.98]">
                                 <span className="flex items-center gap-2">
-                                    Get Started Now
+                                    Get Started
                                     <ArrowRight className="w-4 h-4" />
                                 </span>
                             </button>
