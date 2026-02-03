@@ -78,9 +78,9 @@ const staggerContainerVariants = {
 };
 
 const contentTransitionVariants = {
-    initial: { opacity: 0, y: -20, filter: "blur(10px)" },
-    animate: { opacity: 1, y: 0, filter: "blur(0px)" },
-    exit: { opacity: 0, y: 20, filter: "blur(10px)" }
+    initial: { opacity: 0, y: 10, filter: "blur(4px)", scale: 0.98 },
+    animate: { opacity: 1, y: 0, filter: "blur(0px)", scale: 1 },
+    exit: { opacity: 0, y: -10, filter: "blur(4px)", scale: 0.98 }
 };
 
 export function HowItWorks() {
@@ -134,7 +134,7 @@ export function HowItWorks() {
                                     initial="initial"
                                     animate="animate"
                                     exit="exit"
-                                    transition={{ duration: 0.5, ease: smoothEasing }}
+                                    transition={{ type: "spring", stiffness: 300, damping: 30 }}
                                     className="flex flex-col h-full"
                                 >
                                     {/* Icon & Title Header */}
@@ -161,8 +161,8 @@ export function HowItWorks() {
                                         {activeStep.details.map((detail, idx) => (
                                             <motion.div
                                                 key={idx}
-                                                initial={{ opacity: 0 }}
-                                                animate={{ opacity: 1 }}
+                                                initial={{ opacity: 0, x: 20 }}
+                                                animate={{ opacity: 1, x: 0 }}
                                                 transition={{ delay: 0.1 + idx * 0.1, duration: 0.4, ease: smoothEasing }}
                                                 className="group flex items-start gap-4 p-4 rounded-xl border bg-background/50 hover:bg-background/80 border-primary/20 hover:shadow-lg hover:shadow-primary/5 transition-all duration-300"
                                             >
