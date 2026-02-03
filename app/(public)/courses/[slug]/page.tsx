@@ -79,11 +79,20 @@ export default async function CourseDetailPage({ params }: PageProps) {
 
     const pageData = result.data;
 
+    // Debug logging
+    console.log('[CourseDetailPage] Data fetched:', {
+        courseId: pageData.course.id,
+        courseTitle: pageData.course.title,
+        detailsPresent: !!pageData.details,
+        faqCount: pageData.faq?.length || 0,
+        projectsCount: pageData.projects?.length || 0,
+        resourcesCount: pageData.resources?.length || 0,
+        reviewsCount: pageData.reviews?.length || 0,
+        modulesCount: pageData.modules?.length || 0,
+    });
+
     // Transform to MappedCourse format for backward compatibility
     const mappedCourse = transformToMappedCourse(pageData);
-
-    // Pass only the course prop for now - we can extend CourseDetailClient later
-    // to accept additional props (pageData, isEnrolled) for enhanced features
     return (
         <CourseDetailClient course={mappedCourse} pageData={pageData} />
     );
@@ -109,7 +118,8 @@ function transformToMappedCourse(pageData: CoursePageData): MappedCourse {
             lessons: mod.lessons.map((l) => ({
                 title: l.title,
                 isFreePreview: l.is_free_preview,
-                duration: `${l.duration_minutes || 0} min`
+                duration: `${l.duration_minutes || 0} min`,
+                type: l.lesson_type
             }))
         };
     });

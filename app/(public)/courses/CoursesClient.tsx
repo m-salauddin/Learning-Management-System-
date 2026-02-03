@@ -263,7 +263,7 @@ function CoursesContent({ initialCourses }: { initialCourses: MappedCourse[] }) 
 
                                 <div
                                     ref={categoryContainerRef}
-                                    className="overflow-x-auto flex gap-1.5 p-1 px-2"
+                                    className="overflow-x-auto flex gap-1.5 p-1 px-2 scrollbar-hide"
                                 >
                                     {CATEGORIES.map((category) => (
                                         <button

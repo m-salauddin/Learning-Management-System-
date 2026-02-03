@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { motion } from "motion/react";
-import { ArrowRight, GraduationCap } from "lucide-react";
+import { ArrowRight, GraduationCap, BookOpen } from "lucide-react";
 import { staggerContainer, staggerItem } from "@/lib/motion";
 import { Badge } from "@/components/ui/Badge";
 import { CourseCard } from "@/components/CourseCard";
@@ -49,8 +49,14 @@ export function CoursesSection({ courses }: { courses: MappedCourse[] }) {
                             </motion.div>
                         ))
                     ) : (
-                        <div className="col-span-full py-20 text-center border border-dashed border-border rounded-3xl bg-muted/20">
-                            <p className="text-muted-foreground">No courses found matching your criteria.</p>
+                        <div className="col-span-full py-24 text-center border border-dashed border-border rounded-3xl bg-muted/10 flex flex-col items-center justify-center">
+                            <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mb-4 text-primary transition-transform hover:scale-110 duration-300">
+                                <BookOpen className="w-8 h-8" />
+                            </div>
+                            <h3 className="text-xl font-bold text-foreground">No Courses Found</h3>
+                            <p className="text-muted-foreground mt-2 max-w-md mx-auto px-4">
+                                It looks like we haven't published any courses yet. Please check back later for updates.
+                            </p>
                         </div>
                     )}
                 </motion.div>

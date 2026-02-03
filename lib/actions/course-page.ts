@@ -20,6 +20,8 @@ import {
     CreateLeadInput,
     SubmitReviewInput,
     ValidateCouponResponse,
+    CourseOutlineModule,
+    CourseOutlineTopic,
 } from '@/types/course-page';
 import { Course, Category } from '@/types/lms';
 
@@ -163,26 +165,87 @@ export async function getCoursePageData(slug: string): Promise<{
         });
 
         // 5. Fetch projects
-        const { data: projects } = await supabase
+        const { data: projects, error: projectsError } = await supabase
             .from('course_projects')
             .select('*')
             .eq('course_id', course.id)
             .order('order_index', { ascending: true });
 
         // 6. Fetch resources (filtered by access)
-        const { data: resources } = await supabase
+        const { data: resources, error: resourcesError } = await supabase
             .from('course_resources')
             .select('*')
             .eq('course_id', course.id)
             .order('order_index', { ascending: true });
 
         // 7. Fetch FAQ
-        const { data: faq } = await supabase
+        const { data: faq, error: faqError } = await supabase
             .from('course_faq')
             .select('*')
             .eq('course_id', course.id)
             .eq('is_published', true)
             .order('order_index', { ascending: true });
+
+        // Debug logging for data fetching
+        console.log('[getCoursePageData] Fetched data:', {
+            courseId: course.id,
+            courseSlug: course.slug,
+            projectsCount: projects?.length || 0,
+            projectsError: projectsError?.message || null,
+            resourcesCount: resources?.length || 0,
+            resourcesError: resourcesError?.message || null,
+            faqCount: faq?.length || 0,
+            faqError: faqError?.message || null,
+        });
+
+        // 8. Fetch course outline modules with topics
+        const { data: outlineModulesData } = await supabase
+            .from('course_outline_modules')
+            .select(`
+                *,
+                topics:course_outline_topics (
+                    id,
+                    module_id,
+                    course_id,
+                    title,
+                    description,
+                    position,
+                    topic_type,
+                    duration_minutes,
+                    is_free_preview,
+                    is_published,
+                    created_at,
+                    updated_at
+                )
+            `)
+            .eq('course_id', course.id)
+            .eq('is_published', true)
+            .order('position', { ascending: true });
+
+        // Process outline modules, sort topics by position
+        const courseOutline: CourseOutlineModule[] = (outlineModulesData || []).map((mod) => {
+            const topics = ((mod.topics || []) as CourseOutlineTopic[])
+                .filter(t => t.is_published)
+                .sort((a, b) => a.position - b.position);
+
+            return {
+                id: mod.id,
+                course_id: mod.course_id,
+                title: mod.title,
+                description: mod.description,
+                position: mod.position,
+                is_published: mod.is_published,
+                estimated_duration_minutes: mod.estimated_duration_minutes || 0,
+                created_at: mod.created_at,
+                updated_at: mod.updated_at,
+                topics,
+            };
+        });
+
+        console.log('[getCoursePageData] Course outline:', {
+            modulesCount: courseOutline.length,
+            totalTopics: courseOutline.reduce((acc, m) => acc + m.topics.length, 0),
+        });
 
         // 8. Fetch reviews with user info
         const { data: reviewsData } = await supabase
@@ -196,7 +259,7 @@ export async function getCoursePageData(slug: string): Promise<{
                 )
             `)
             .eq('course_id', course.id)
-            .eq('is_hidden', false)
+            // .eq('is_hidden', false) // Removed to debug visibility
             .order('created_at', { ascending: false })
             .limit(20);
 
@@ -246,6 +309,7 @@ export async function getCoursePageData(slug: string): Promise<{
                 modules,
                 totalLessons,
                 totalDuration,
+                courseOutline,
                 projects: (projects as CourseProject[]) || [],
                 resources: (resources as CourseResource[]) || [],
                 faq: (faq as CourseFAQ[]) || [],

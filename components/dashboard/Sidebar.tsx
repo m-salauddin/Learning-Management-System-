@@ -70,7 +70,9 @@ export function Sidebar({ role }: SidebarProps) {
     return (
         <aside className="hidden lg:flex flex-col w-64 h-screen sticky top-0 border-r border-border/50 bg-background/30 backdrop-blur-2xl z-40">
             <div className="p-6">
-                <Logo />
+                <Link href="/">
+                    <Logo />
+                </Link>
             </div>
 
             <nav className="flex-1 px-4 space-y-2 mt-4">

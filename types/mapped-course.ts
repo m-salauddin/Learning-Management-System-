@@ -9,6 +9,7 @@ export interface LessonItem {
     title: string;
     isFreePreview: boolean; // Add this
     duration: string; // Add formatted duration
+    type?: string;
 }
 
 export interface CurriculumModule {

@@ -66,6 +66,40 @@ export interface CourseResource {
 }
 
 // ============================================================================
+// COURSE OUTLINE (Curriculum Display)
+// ============================================================================
+
+export type OutlineTopicType = 'video' | 'text' | 'quiz' | 'assignment' | 'live';
+
+export interface CourseOutlineTopic {
+    id: string;
+    module_id: string;
+    course_id: string;
+    title: string;
+    description: string | null;
+    position: number;
+    topic_type: OutlineTopicType;
+    duration_minutes: number;
+    is_free_preview: boolean;
+    is_published: boolean;
+    created_at: string;
+    updated_at: string;
+}
+
+export interface CourseOutlineModule {
+    id: string;
+    course_id: string;
+    title: string;
+    description: string | null;
+    position: number;
+    is_published: boolean;
+    estimated_duration_minutes: number;
+    created_at: string;
+    updated_at: string;
+    topics: CourseOutlineTopic[];
+}
+
+// ============================================================================
 // COURSE FAQ
 // ============================================================================
 
@@ -202,6 +236,9 @@ export interface CoursePageData {
     modules: ModuleWithLessonsPreview[];
     totalLessons: number;
     totalDuration: number;
+
+    // Course Outline (for marketing display)
+    courseOutline: CourseOutlineModule[];
 
     // Sections
     projects: CourseProject[];

@@ -356,6 +356,26 @@ export async function getCategories(): Promise<ApiResponse<{ id: string; name: s
 
     return { success: true, data };
 }
+
+// ============================================================================
+// GET TEACHERS
+// ============================================================================
+
+export async function getTeachers(): Promise<ApiResponse<{ id: string; name: string; email: string; avatar_url: string | null }[]>> {
+    const supabase = await createClient();
+
+    const { data, error } = await supabase
+        .from('users')
+        .select('id, name, email, avatar_url')
+        .eq('role', 'teacher')
+        .order('name');
+
+    if (error) {
+        return { success: false, error: error.message };
+    }
+
+    return { success: true, data };
+}
 export async function getCourseStats(): Promise<{ success: boolean; stats?: { total: number; published: number; totalStudents: number; totalRevenue: number }; error?: string }> {
     const supabase = await createClient();
 
