@@ -1,7 +1,12 @@
 // Re-export UI components for cleaner imports
 export { ThemeToggle, ThemeToggleCompact } from "./theme-toggle"
 export { Dialog, DialogHeader, DialogTitle, DialogDescription, DialogBody, DialogFooter, DialogClose } from "./Dialog"
-export { Select, SelectOption } from "./Select"
+export { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectScrollDownButton, SelectScrollUpButton, SelectSeparator, SelectTrigger, SelectValue } from "./select"
 export { Tabs, TabsList, TabsTrigger, TabsContent } from "./Tabs"
 export { Dropdown, DropdownItem, DropdownSeparator, DropdownLabel } from "./Dropdown"
 export { Pagination } from "./Pagination"
+export { Button } from "./Button"
+export { PrimaryCTAButton, SecondaryCTAButton } from "./CTAButton"
+export { Badge } from "./Badge"
+export { Input } from "./input"
+export { Table, TableHeader, TableBody, TableCell, TableHead, TableRow, TableFooter, TableCaption } from "./table"

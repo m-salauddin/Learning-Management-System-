@@ -1,6 +1,6 @@
 export type UserRole = 'student' | 'teacher' | 'moderator' | 'admin';
 
-export type AuthProvider = 'google' | 'github' | 'password';
+export type AuthProvider = 'google' | 'github' | 'email' | 'password';
 
 export type UserStatus = 'active' | 'inactive' | 'suspended' | 'pending';
 
@@ -28,6 +28,10 @@ export interface ExtendedUser extends UserProfile {
     total_courses?: number;
     completed_courses?: number;
     certificates_earned?: number;
+    // Soft delete fields
+    is_deleted?: boolean;
+    deleted_at?: string | null;
+    is_banned?: boolean;
 }
 
 export interface UserFilters {

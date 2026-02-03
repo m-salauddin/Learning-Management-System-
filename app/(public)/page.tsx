@@ -9,6 +9,7 @@ import {
   PricingSection,
   TestimonialsSection,
   CTASection,
+  FAQSection,
 } from "@/components/sections";
 
 import { FloatingNav } from "@/components/FloatingNav";
@@ -118,6 +119,7 @@ export default async function Home() {
       <TerminalSection />
       <PricingSection />
       <TestimonialsSection />
+      <FAQSection />
       <CTASection />
     </main>
   );

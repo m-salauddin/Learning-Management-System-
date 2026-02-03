@@ -216,6 +216,45 @@ export async function updateUser(userId: string, updates: Partial<ExtendedUser>)
     }
 }
 
+// Change user password (Admin)
+export async function changeUserPassword(userId: string, newPassword: string) {
+    try {
+        const supabase = await createClient();
+
+        // 1. Check if current user is admin
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) {
+            return { success: false, error: 'Unauthorized' };
+        }
+
+        const { data: currentUser } = await supabase
+            .from('users')
+            .select('role')
+            .eq('id', user.id)
+            .single();
+
+        if (currentUser?.role !== 'admin') {
+            return { success: false, error: 'Only admins can change passwords' };
+        }
+
+        // 2. Update password using Admin Client
+        const supabaseAdmin = getSupabaseAdmin();
+
+        const { error } = await supabaseAdmin.auth.admin.updateUserById(
+            userId,
+            { password: newPassword }
+        );
+
+        if (error) {
+            return { success: false, error: error.message };
+        }
+
+        return { success: true, error: null };
+    } catch (error: unknown) {
+        return { success: false, error: error instanceof Error ? error.message : 'Unknown error' };
+    }
+}
+
 // Update own profile
 export async function updateProfile(updates: Partial<ExtendedUser>) {
     try {
@@ -292,7 +331,7 @@ export async function updateUserRole(userId: string, newRole: UserRole) {
     }
 }
 
-// Delete user
+// Soft delete user (uses new safe deletion RPC)
 export async function deleteUser(userId: string) {
     try {
         const supabase = await createClient();
@@ -305,7 +344,7 @@ export async function deleteUser(userId: string) {
 
         const { data: currentUser } = await supabase
             .from('users')
-            .select('role')
+            .select('role, is_deleted, is_banned')
             .eq('id', user.id)
             .single();
 
@@ -313,28 +352,49 @@ export async function deleteUser(userId: string) {
             return { success: false, error: 'Only admins can delete users' };
         }
 
+        if (currentUser?.is_deleted || currentUser?.is_banned) {
+            return { success: false, error: 'Your account is not active' };
+        }
+
         // Prevent self-deletion
         if (userId === user.id) {
             return { success: false, error: 'You cannot delete your own account' };
         }
 
-        const { error } = await supabase
-            .from('users')
-            .delete()
-            .eq('id', userId);
+        // Use the new soft delete RPC
+        const { data, error } = await supabase.rpc('admin_soft_delete_user', {
+            p_user_id: userId
+        });
 
         if (error) {
-            return { success: false, error: error.message };
+            console.error('Soft delete RPC error:', error);
+            return { success: false, error: `Delete failed: ${error.message}` };
+        }
+
+        // RPC returns JSON with success/error
+        const result = data as {
+            success: boolean;
+            error?: string;
+            message?: string;
+            course_count?: number;
+        };
+
+        if (!result.success) {
+            return {
+                success: false,
+                error: result.error || 'Failed to delete user',
+                courseCount: result.course_count
+            };
         }
 
         revalidatePath('/dashboard/users');
-        return { success: true, error: null };
+        return { success: true, error: null, message: result.message };
     } catch (error: unknown) {
         return { success: false, error: error instanceof Error ? error.message : 'Unknown error' };
     }
 }
 
-// Bulk delete users
+// Bulk soft delete users
 export async function bulkDeleteUsers(userIds: string[]) {
     try {
         const supabase = await createClient();
@@ -347,12 +407,16 @@ export async function bulkDeleteUsers(userIds: string[]) {
 
         const { data: currentUser } = await supabase
             .from('users')
-            .select('role')
+            .select('role, is_deleted, is_banned')
             .eq('id', user.id)
             .single();
 
         if (currentUser?.role !== 'admin') {
             return { success: false, error: 'Only admins can delete users' };
+        }
+
+        if (currentUser?.is_deleted || currentUser?.is_banned) {
+            return { success: false, error: 'Your account is not active' };
         }
 
         // Filter out current user ID to prevent self-deletion
@@ -362,20 +426,38 @@ export async function bulkDeleteUsers(userIds: string[]) {
             return { success: false, error: 'No valid users to delete' };
         }
 
-        const { error } = await supabase
-            .from('users')
-            .delete()
-            .in('id', filteredIds);
+        // Use the new soft delete RPC for each user
+        const results = await Promise.all(filteredIds.map(async (id) => {
+            const { data, error } = await supabase.rpc('admin_soft_delete_user', {
+                p_user_id: id
+            });
+            const result = data as { success: boolean; error?: string; course_count?: number } | null;
+            return {
+                id,
+                error: error || (result && !result.success ? new Error(result.error || 'Failed') : null),
+                courseCount: result?.course_count
+            };
+        }));
 
-        if (error) {
-            return { success: false, error: error.message };
-        }
+        // Collect failed deletions
+        const failed = results.filter(r => r.error);
+        const succeeded = results.filter(r => !r.error);
 
         revalidatePath('/dashboard/users');
+
+        if (failed.length > 0 && succeeded.length === 0) {
+            const firstError = failed[0].error;
+            return {
+                success: false,
+                error: firstError instanceof Error ? firstError.message : 'Failed to delete users'
+            };
+        }
+
         return {
             success: true,
-            error: null,
-            deletedCount: filteredIds.length
+            error: failed.length > 0 ? `${failed.length} user(s) could not be deleted (may own courses)` : null,
+            deletedCount: succeeded.length,
+            failedCount: failed.length
         };
     } catch (error: unknown) {
         return { success: false, error: error instanceof Error ? error.message : 'Unknown error' };
@@ -545,5 +627,220 @@ export async function exportUsersToJSON(filters?: {
         return { json: JSON.stringify(data, null, 2), error: null };
     } catch (error: unknown) {
         return { json: null, error: error instanceof Error ? error.message : 'Unknown error' };
+    }
+}
+
+// ============================================================================
+// Safe User Management Functions (with course ownership handling)
+// ============================================================================
+
+// Restore a soft-deleted user (admin only)
+export async function restoreUser(userId: string) {
+    try {
+        const supabase = await createClient();
+
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) {
+            return { success: false, error: 'Unauthorized' };
+        }
+
+        const { data: currentUser } = await supabase
+            .from('users')
+            .select('role, is_deleted, is_banned')
+            .eq('id', user.id)
+            .single();
+
+        if (currentUser?.role !== 'admin') {
+            return { success: false, error: 'Only admins can restore users' };
+        }
+
+        if (currentUser?.is_deleted || currentUser?.is_banned) {
+            return { success: false, error: 'Your account is not active' };
+        }
+
+        const { data, error } = await supabase.rpc('admin_restore_user', {
+            p_user_id: userId
+        });
+
+        if (error) {
+            console.error('Restore user RPC error:', error);
+            return { success: false, error: `Restore failed: ${error.message}` };
+        }
+
+        const result = data as {
+            success: boolean;
+            error?: string;
+            message?: string;
+        };
+
+        if (!result.success) {
+            return { success: false, error: result.error || 'Failed to restore user' };
+        }
+
+        revalidatePath('/dashboard/users');
+        return { success: true, error: null, message: result.message };
+    } catch (error: unknown) {
+        return { success: false, error: error instanceof Error ? error.message : 'Unknown error' };
+    }
+}
+
+// Assign role to user with course ownership validation (admin only)
+export async function assignUserRole(
+    userId: string,
+    newRole: UserRole,
+    reassignTo?: string
+) {
+    try {
+        const supabase = await createClient();
+
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) {
+            return { success: false, error: 'Unauthorized' };
+        }
+
+        const { data: currentUser } = await supabase
+            .from('users')
+            .select('role, is_deleted, is_banned')
+            .eq('id', user.id)
+            .single();
+
+        if (currentUser?.role !== 'admin') {
+            return { success: false, error: 'Only admins can assign roles' };
+        }
+
+        if (currentUser?.is_deleted || currentUser?.is_banned) {
+            return { success: false, error: 'Your account is not active' };
+        }
+
+        const { data, error } = await supabase.rpc('admin_assign_role', {
+            p_user_id: userId,
+            p_new_role: newRole,
+            p_reassign_to: reassignTo || null
+        });
+
+        if (error) {
+            console.error('Assign role RPC error:', error);
+            return { success: false, error: `Role assignment failed: ${error.message}` };
+        }
+
+        const result = data as {
+            success: boolean;
+            error?: string;
+            message?: string;
+            course_count?: number;
+            requires_reassignment?: boolean;
+            old_role?: string;
+            new_role?: string;
+        };
+
+        if (!result.success) {
+            return {
+                success: false,
+                error: result.error || 'Failed to assign role',
+                courseCount: result.course_count,
+                requiresReassignment: result.requires_reassignment
+            };
+        }
+
+        revalidatePath('/dashboard/users');
+        return {
+            success: true,
+            error: null,
+            message: result.message,
+            oldRole: result.old_role,
+            newRole: result.new_role
+        };
+    } catch (error: unknown) {
+        return { success: false, error: error instanceof Error ? error.message : 'Unknown error' };
+    }
+}
+
+// Reassign all courses from one instructor to another (admin only)
+export async function reassignInstructor(
+    fromUserId: string,
+    toUserId: string
+) {
+    try {
+        const supabase = await createClient();
+
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) {
+            return { success: false, error: 'Unauthorized' };
+        }
+
+        const { data: currentUser } = await supabase
+            .from('users')
+            .select('role, is_deleted, is_banned')
+            .eq('id', user.id)
+            .single();
+
+        if (currentUser?.role !== 'admin') {
+            return { success: false, error: 'Only admins can reassign instructors' };
+        }
+
+        if (currentUser?.is_deleted || currentUser?.is_banned) {
+            return { success: false, error: 'Your account is not active' };
+        }
+
+        if (fromUserId === toUserId) {
+            return { success: false, error: 'Source and target instructor cannot be the same' };
+        }
+
+        const { data, error } = await supabase.rpc('admin_reassign_instructor', {
+            p_from_user: fromUserId,
+            p_to_user: toUserId
+        });
+
+        if (error) {
+            console.error('Reassign instructor RPC error:', error);
+            return { success: false, error: `Reassignment failed: ${error.message}` };
+        }
+
+        const result = data as {
+            success: boolean;
+            error?: string;
+            message?: string;
+            reassigned_count?: number;
+        };
+
+        if (!result.success) {
+            return { success: false, error: result.error || 'Failed to reassign instructor' };
+        }
+
+        revalidatePath('/dashboard/users');
+        revalidatePath('/dashboard/courses');
+        return {
+            success: true,
+            error: null,
+            message: result.message,
+            reassignedCount: result.reassigned_count || 0
+        };
+    } catch (error: unknown) {
+        return { success: false, error: error instanceof Error ? error.message : 'Unknown error' };
+    }
+}
+
+// Get user's course count (for validation before role change)
+export async function getUserCourseCount(userId: string) {
+    try {
+        const supabase = await createClient();
+
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) {
+            return { count: 0, error: 'Unauthorized' };
+        }
+
+        const { data, error } = await supabase.rpc('get_user_course_count', {
+            p_user_id: userId
+        });
+
+        if (error) {
+            console.error('Get course count RPC error:', error);
+            return { count: 0, error: error.message };
+        }
+
+        return { count: data as number, error: null };
+    } catch (error: unknown) {
+        return { count: 0, error: error instanceof Error ? error.message : 'Unknown error' };
     }
 }

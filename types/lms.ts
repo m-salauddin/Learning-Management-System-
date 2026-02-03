@@ -87,6 +87,7 @@ export interface Course {
     instructor_id: string;
     category_id: string | null;
     price: number;
+    discount_price: number | null;
     level: CourseLevel;
     language: string;
     duration_hours: number;
@@ -99,6 +100,7 @@ export interface Course {
     requirements: string[];
     learning_objectives: string[];
     tags: string[];
+    batch_no: number | null;
     created_at: string;
     updated_at: string;
 }
@@ -491,12 +493,17 @@ export interface PaginatedResponse<T> {
 
 export interface CreateCourseInput {
     title: string;
+    slug?: string;
     description?: string;
     short_description?: string;
     price: number;
+    discount_price?: number | null;
     category_id?: string;
+    instructor_id?: string;
     level?: CourseLevel;
     language?: string;
+    thumbnail_url?: string;
+    preview_video_url?: string;
     requirements?: string[];
     learning_objectives?: string[];
     tags?: string[];
@@ -505,8 +512,6 @@ export interface CreateCourseInput {
 export interface UpdateCourseInput extends Partial<CreateCourseInput> {
     id: string;
     status?: CourseStatus;
-    thumbnail_url?: string;
-    preview_video_url?: string;
 }
 
 export interface CreateModuleInput {
