@@ -1258,21 +1258,21 @@ export default function CourseDetailClient({ course, pageData }: CourseDetailCli
                                             {/* User Profile */}
                                             <div className="flex items-center gap-4 relative z-10">
                                                 <div className="relative w-14 h-14 rounded-2xl overflow-hidden bg-slate-800 shrink-0 ring-2 ring-white/5 group-hover:ring-primary/40 transition-all duration-500 -rotate-3 group-hover:rotate-0">
-                                                    {review.user.avatar_url ? (
+                                                    {review.user?.avatar_url ? (
                                                         <Image
                                                             src={review.user.avatar_url}
-                                                            alt={review.user.name}
+                                                            alt={review.user?.name || 'Student'}
                                                             fill
                                                             className="object-cover"
                                                         />
                                                     ) : (
                                                         <div className="w-full h-full flex items-center justify-center font-bold text-xl text-slate-400 bg-linear-to-br from-slate-800 to-slate-900">
-                                                            {review.user.name.charAt(0)}
+                                                            {(review.user?.name || 'S').charAt(0)}
                                                         </div>
                                                     )}
                                                 </div>
                                                 <div>
-                                                    <h4 className="font-bold text-white text-lg leading-tight group-hover:text-primary transition-colors">{review.user.name}</h4>
+                                                    <h4 className="font-bold text-white text-lg leading-tight group-hover:text-primary transition-colors">{review.user?.name || 'Anonymous Student'}</h4>
                                                     <div className="flex items-center gap-2 mt-1">
                                                         <span className="px-2 py-0.5 rounded-md bg-emerald-500/10 text-emerald-500 text-[10px] font-bold uppercase tracking-wider">Batch No {pageData?.course.batch_no || 12}</span>
                                                     </div>
