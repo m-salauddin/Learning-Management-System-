@@ -3,6 +3,7 @@
 import * as React from "react";
 import { motion } from "motion/react";
 import { ArrowRight, Sparkles } from "lucide-react";
+import { PrimaryCTAButton, SecondaryCTAButton } from "@/components/ui/CTAButton";
 
 
 export function AboutCommunitySection() {
@@ -152,13 +153,12 @@ export function AboutCommunitySection() {
                 </p>
 
                 <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-                    <button className="flex items-center justify-center gap-2 px-8 py-4 rounded-full bg-primary text-primary-foreground font-bold text-lg hover:bg-primary/90 transition-all duration-300 hover:scale-105 shadow-2xl shadow-primary/20 h-14">
+                    <PrimaryCTAButton href="/register">
                         Join the Community
-                        <ArrowRight className="w-5 h-5" />
-                    </button>
-                    <button className="flex items-center justify-center gap-2 px-8 py-4 rounded-full bg-background hover:bg-muted/50 font-bold text-lg border border-border h-14 transition-all duration-300">
+                    </PrimaryCTAButton>
+                    <SecondaryCTAButton href="/discord">
                         Explore Discord
-                    </button>
+                    </SecondaryCTAButton>
                 </div>
             </div>
         </section>

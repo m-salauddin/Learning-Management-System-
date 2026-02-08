@@ -24,6 +24,7 @@ export interface ExtendedUser extends UserProfile {
     bio?: string;
     location?: string;
     website?: string;
+    social_links?: { platform: string; url: string }[];
     is_verified?: boolean;
     total_courses?: number;
     completed_courses?: number;

@@ -273,6 +273,7 @@ export async function updateProfile(updates: Partial<ExtendedUser>) {
             phone: updates.phone,
             location: updates.location,
             website: updates.website,
+            social_links: updates.social_links,
             updated_at: new Date().toISOString()
         };
 

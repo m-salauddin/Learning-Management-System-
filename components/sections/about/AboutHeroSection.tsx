@@ -2,10 +2,10 @@
 
 import * as React from "react";
 import { motion } from "motion/react";
-import Link from "next/link";
 import { ArrowRight, Sparkles, Zap, Globe, Star, Award } from "lucide-react";
 import { Badge } from "@/components/ui/Badge";
 import { FloatingCard } from "./FloatingCard";
+import { PrimaryCTAButton, SecondaryCTAButton } from "@/components/ui/CTAButton";
 
 export function AboutHeroSection() {
     return (
@@ -52,19 +52,12 @@ export function AboutHeroSection() {
                     </p>
 
                     <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                        <Link
-                            href="/courses"
-                            className="group inline-flex items-center justify-center gap-2 px-8 py-4 rounded-2xl bg-foreground text-background font-bold text-lg hover:bg-foreground/90 transition-all duration-300 hover:-translate-y-0.5 shadow-xl shadow-foreground/10"
-                        >
+                        <PrimaryCTAButton href="/courses">
                             Explore Courses
-                            <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
-                        </Link>
-                        <Link
-                            href="/register"
-                            className="inline-flex items-center justify-center gap-2 px-8 py-4 rounded-2xl bg-card hover:bg-card/80 font-bold text-lg border border-border/50 text-foreground transition-all duration-300"
-                        >
+                        </PrimaryCTAButton>
+                        <SecondaryCTAButton href="/register">
                             Join Community
-                        </Link>
+                        </SecondaryCTAButton>
                     </div>
                 </motion.div>
             </div>
