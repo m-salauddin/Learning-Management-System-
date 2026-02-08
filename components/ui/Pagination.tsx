@@ -49,7 +49,7 @@ export function Pagination({
                         value={String(pageSize)}
                         onValueChange={(val) => onPageSizeChange(Number(val))}
                     >
-                        <SelectTrigger className="w-[72px]">
+                        <SelectTrigger className="w-[84px]">
                             <SelectValue />
                         </SelectTrigger>
                         <SelectContent side="top">

@@ -4,21 +4,22 @@ import {
     Shield, User, Trash2, Edit, MoreHorizontal, Filter, ChevronDown,
     UserPlus, Download, Mail, Phone, MapPin, Calendar, Activity, Award,
     CheckCircle2, XCircle, AlertCircle, Users, TrendingUp, TrendingDown,
-    Eye, Lock, Unlock, RotateCcw, Settings, Loader2, X, FileText, FileCode, File, FileSpreadsheet,
+    Eye, Lock, Unlock, RefreshCw, Settings, Loader2, X, FileText, FileCode, File, FileSpreadsheet,
     ScanLine, Hash, Clock, BookOpen
 } from "lucide-react";
 import { jsPDF } from "jspdf";
 import autoTable from "jspdf-autotable";
 import { motion, AnimatePresence } from "motion/react";
 import { useEffect, useState } from "react";
+import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 import { cn } from "@/lib/utils";
 import {
     ExtendedUser, UserRole, UserStats, UserFilters, UserStatus
 } from "@/types/user";
 import {
-    getUsers, getUserStats, updateUserRole, deleteUser, updateUser,
-    bulkDeleteUsers, bulkUpdateRoles, exportUsersToCSV, exportUsersToJSON, createUser, changeUserPassword
+    getUsers, getUserStats, updateUserRole, deleteUser,
+    bulkDeleteUsers, bulkUpdateRoles, exportUsersToCSV, exportUsersToJSON
 } from "@/lib/actions/users";
 import { Dialog, DialogHeader, DialogTitle, DialogDescription, DialogBody, DialogFooter, DialogClose } from "@/components/ui/Dialog";
 import {
@@ -70,45 +71,13 @@ export default function UserManagementPage() {
 
     // Modals
     const [viewUserModal, setViewUserModal] = useState<ExtendedUser | null>(null);
-    const [editUserModal, setEditUserModal] = useState<ExtendedUser | null>(null);
     const [deleteConfirmModal, setDeleteConfirmModal] = useState<string | null>(null);
     const [bulkActionModal, setBulkActionModal] = useState<'delete' | 'role' | null>(null);
     const [selectedRole, setSelectedRole] = useState<UserRole>('student');
     const [exportModal, setExportModal] = useState(false);
 
-    // Add User State
-    const [addUserModal, setAddUserModal] = useState(false);
-    const [isCreating, setIsCreating] = useState(false);
-    const [newUserData, setNewUserData] = useState({
-        name: "",
-        email: "",
-        password: "",
-        role: "student" as UserRole
-    });
-
-    const [editFormData, setEditFormData] = useState({
-        name: "",
-        email: "",
-        role: "student" as UserRole,
-        status: "active" as UserStatus
-    });
-
-    // Change Password State for Edit Modal
-    const [newPassword, setNewPassword] = useState("");
-    const [updatePasswordModal, setUpdatePasswordModal] = useState<ExtendedUser | null>(null);
-
-    useEffect(() => {
-        if (editUserModal) {
-            setEditFormData({
-                name: editUserModal.name || "",
-                email: editUserModal.email || "",
-                role: (editUserModal.role as UserRole) || "student",
-                status: (editUserModal.status as UserStatus) || "active"
-            });
-            // Reset password states
-            setNewPassword("");
-        }
-    }, [editUserModal]);
+    // Loading State for actions
+    const [isActionLoading, setIsActionLoading] = useState(false);
 
     // Fetch Users
     const fetchUsers = async () => {
@@ -402,65 +371,6 @@ export default function UserManagementPage() {
         setIsLoading(false);
     };
 
-    const handleCreateUser = async () => {
-        if (!newUserData.name || !newUserData.email || !newUserData.password) {
-            toast.error("Missing fields", "Please fill in all fields");
-            return;
-        }
-
-        setIsCreating(true);
-        const result = await createUser(newUserData);
-        setIsCreating(false);
-
-        if (result.success) {
-            toast.success("User created", "New user has been added successfully");
-            setAddUserModal(false);
-            setNewUserData({ name: "", email: "", password: "", role: "student" });
-            fetchUsers();
-            fetchStats();
-        } else {
-            toast.error("Error", result.error || "Failed to create user");
-        }
-    };
-
-    const handleUpdateUser = async () => {
-        if (!editUserModal) return;
-
-        setIsCreating(true); // Reuse loading state
-
-        // 1. Update Profile Info
-        const result = await updateUser(editUserModal.id, editFormData);
-
-        setIsCreating(false);
-
-        if (result.user) {
-            toast.success("User updated", "User details have been updated successfully");
-            setEditUserModal(null);
-            fetchUsers();
-            fetchStats();
-        } else {
-            toast.error("Error", result.error || "Failed to update user");
-        }
-    };
-
-    const handlePasswordUpdateConfirm = async () => {
-        if (!updatePasswordModal || !newPassword) {
-            toast.error("Missing password", "Please enter a new password");
-            return;
-        }
-
-        setIsCreating(true);
-        const result = await changeUserPassword(updatePasswordModal.id, newPassword);
-        setIsCreating(false);
-
-        if (result.success) {
-            toast.success("Password Updated", "User password has been changed successfully");
-            setUpdatePasswordModal(null);
-            setNewPassword("");
-        } else {
-            toast.error("Error", result.error || "Failed to update password");
-        }
-    };
 
     const formatDate = (dateString: string) => {
         return new Date(dateString).toLocaleDateString('en-US', {
@@ -499,7 +409,7 @@ export default function UserManagementPage() {
                         animate={{ opacity: 1, x: 0 }}
                         className="text-3xl font-bold tracking-tight"
                     >
-                        User Management
+                        Users
                     </motion.h1>
                     <motion.p
                         initial={{ opacity: 0, x: -20 }}
@@ -518,23 +428,24 @@ export default function UserManagementPage() {
                         whileHover={{ scale: 1.02 }}
                         whileTap={{ scale: 0.98 }}
                         onClick={() => setExportModal(true)}
-                        className="px-4 py-2.5 rounded-xl border border-border/50 bg-background/50 hover:bg-background text-sm font-semibold transition-all flex items-center gap-2"
+                        className="px-4 py-2.5 rounded-xl border border-border/50 bg-muted/40 hover:bg-muted/60 text-sm font-semibold transition-all flex items-center gap-2"
                     >
                         <Download className="w-4 h-4" />
                         <span>Export</span>
                     </motion.button>
 
-                    <motion.button
-                        initial={{ opacity: 0, scale: 0.9 }}
-                        animate={{ opacity: 1, scale: 1 }}
-                        whileHover={{ scale: 1.02 }}
-                        whileTap={{ scale: 0.98 }}
-                        onClick={() => setAddUserModal(true)}
-                        className="bg-primary text-primary-foreground px-5 py-2.5 rounded-xl text-sm font-semibold hover:bg-primary/90 transition-all shadow-lg shadow-primary/20 hover:shadow-primary/30 flex items-center gap-2"
-                    >
-                        <UserPlus className="w-4 h-4" />
-                        <span>Add User</span>
-                    </motion.button>
+                    <Link href="/dashboard/users/new">
+                        <motion.button
+                            initial={{ opacity: 0, scale: 0.9 }}
+                            animate={{ opacity: 1, scale: 1 }}
+                            whileHover={{ scale: 1.02 }}
+                            whileTap={{ scale: 0.98 }}
+                            className="bg-primary text-primary-foreground px-5 py-2.5 rounded-xl text-sm font-semibold hover:bg-primary/90 transition-all shadow-lg shadow-primary/20 hover:shadow-primary/30 flex items-center gap-2"
+                        >
+                            <UserPlus className="w-4 h-4" />
+                            <span>Add User</span>
+                        </motion.button>
+                    </Link>
                 </div>
             </div>
 
@@ -543,14 +454,9 @@ export default function UserManagementPage() {
                 {!stats ? (
                     // Skeletons
                     [...Array(4)].map((_, i) => (
-                        <div key={`stat-skeleton-${i}`} className="p-6 rounded-2xl border border-border/40 bg-card/30 backdrop-blur-xl">
-                            <div className="flex items-center justify-between">
-                                <div>
-                                    <div className="h-4 w-24 bg-skeleton rounded animate-pulse mb-3" />
-                                    <div className="h-8 w-16 bg-skeleton rounded animate-pulse" />
-                                </div>
-                                <div className="w-12 h-12 rounded-xl bg-skeleton animate-pulse" />
-                            </div>
+                        <div key={`skel-${i}`} className="p-6 rounded-2xl border border-border/40 bg-card/30 backdrop-blur-xl animate-pulse">
+                            <div className="h-4 w-24 bg-muted/40 rounded mb-3" />
+                            <div className="h-8 w-16 bg-muted/40 rounded" />
                         </div>
                     ))
                 ) : (
@@ -614,10 +520,10 @@ export default function UserManagementPage() {
                                     fetchUsers();
                                     toast.success("Users list refreshed");
                                 }}
-                                className="p-2.5 shrink-0 rounded-xl border border-input-dark-border bg-input-dark hover:bg-input-dark-hover hover:text-foreground focus:shadow-[0_0_0_2px_var(--input-dark-glow)] focus:outline-none transition-all duration-200 text-input-dark-text"
+                                className="h-11 w-11 flex items-center justify-center shrink-0 rounded-xl border border-input-dark-border bg-input-dark hover:bg-input-dark-hover hover:text-foreground focus:shadow-[0_0_0_2px_var(--input-dark-glow)] focus:outline-none transition-all duration-200 text-input-dark-text"
                                 title="Refresh list"
                             >
-                                <RotateCcw className={cn("w-4 h-4", isLoading && "animate-spin")} />
+                                <RefreshCw className={cn("w-4 h-4", isLoading && "animate-spin")} />
                             </button>
                         </div>
 
@@ -795,13 +701,17 @@ export default function UserManagementPage() {
                                                         <Eye className="w-4 h-4" />
                                                         View Profile
                                                     </DropdownMenuItem>
-                                                    <DropdownMenuItem onClick={() => setEditUserModal(user)} className="rounded-lg cursor-pointer text-sm gap-2.5 text-slate-700 dark:text-slate-200 focus:bg-slate-100 dark:focus:bg-white/10 focus:text-slate-900 dark:focus:text-white">
-                                                        <Edit className="w-4 h-4" />
-                                                        Edit User
+                                                    <DropdownMenuItem asChild className="rounded-lg cursor-pointer text-sm gap-2.5 text-slate-700 dark:text-slate-200 focus:bg-slate-100 dark:focus:bg-white/10 focus:text-slate-900 dark:focus:text-white">
+                                                        <Link href={`/dashboard/users/${user.id}/edit`} className="flex items-center w-full gap-2.5">
+                                                            <Edit className="w-4 h-4" />
+                                                            Edit User
+                                                        </Link>
                                                     </DropdownMenuItem>
-                                                    <DropdownMenuItem onClick={() => { setUpdatePasswordModal(user); setNewPassword(""); }} className="rounded-lg cursor-pointer text-sm gap-2.5 text-slate-700 dark:text-slate-200 focus:bg-slate-100 dark:focus:bg-white/10 focus:text-slate-900 dark:focus:text-white">
-                                                        <Lock className="w-4 h-4" />
-                                                        Update Password
+                                                    <DropdownMenuItem asChild className="rounded-lg cursor-pointer text-sm gap-2.5 text-slate-700 dark:text-slate-200 focus:bg-slate-100 dark:focus:bg-white/10 focus:text-slate-900 dark:focus:text-white">
+                                                        <Link href={`/dashboard/users/${user.id}/edit`} className="flex items-center w-full gap-2.5">
+                                                            <Lock className="w-4 h-4" />
+                                                            Update Password
+                                                        </Link>
                                                     </DropdownMenuItem>
 
                                                     <DropdownMenuSeparator className="my-1 bg-slate-200 dark:bg-white/10" />
@@ -838,136 +748,6 @@ export default function UserManagementPage() {
                 )}
             </div>
 
-            {/* Add User Modal */}
-            <Dialog open={addUserModal} onClose={() => setAddUserModal(false)}>
-                <DialogClose onClose={() => setAddUserModal(false)} />
-                <DialogHeader>
-                    <DialogTitle className="flex items-center gap-3">
-                        <div className="p-2.5 rounded-xl bg-primary/10 text-primary">
-                            <UserPlus className="w-5 h-5" />
-                        </div>
-                        Add New User
-                    </DialogTitle>
-                    <DialogDescription>Create a new user account with specific role and permissions.</DialogDescription>
-                </DialogHeader>
-                <form onSubmit={(e) => { e.preventDefault(); handleCreateUser(); }}>
-                    <DialogBody className="space-y-5">
-                        {/* Full Name */}
-                        <div className="space-y-2">
-                            <label className="text-sm font-medium text-foreground flex items-center gap-2">
-                                <User className="w-4 h-4 text-muted-foreground" />
-                                Full Name
-                            </label>
-                            <input
-                                type="text"
-                                id="new-user-name"
-                                name="name"
-                                autoComplete="name"
-                                value={newUserData.name}
-                                onChange={(e) => setNewUserData({ ...newUserData, name: e.target.value })}
-                                className="w-full px-4 py-3 rounded-xl bg-input-dark border border-input-dark-border text-foreground placeholder:text-input-dark-text focus:border-primary/50 focus:ring-2 focus:ring-primary/20 outline-none transition-all"
-                                placeholder="John Doe"
-                            />
-                        </div>
-
-                        {/* Email */}
-                        <div className="space-y-2">
-                            <label className="text-sm font-medium text-foreground flex items-center gap-2">
-                                <Mail className="w-4 h-4 text-muted-foreground" />
-                                Email Address
-                            </label>
-                            <input
-                                type="email"
-                                id="new-user-email"
-                                name="email"
-                                autoComplete="email"
-                                value={newUserData.email}
-                                onChange={(e) => setNewUserData({ ...newUserData, email: e.target.value })}
-                                className="w-full px-4 py-3 rounded-xl bg-input-dark border border-input-dark-border text-foreground placeholder:text-input-dark-text focus:border-primary/50 focus:ring-2 focus:ring-primary/20 outline-none transition-all"
-                                placeholder="john@example.com"
-                            />
-                        </div>
-
-                        {/* Password */}
-                        <div className="space-y-2">
-                            <label className="text-sm font-medium text-foreground flex items-center gap-2">
-                                <Lock className="w-4 h-4 text-muted-foreground" />
-                                Password
-                            </label>
-                            <input
-                                type="password"
-                                id="new-user-password"
-                                name="password"
-                                autoComplete="new-password"
-                                value={newUserData.password}
-                                onChange={(e) => setNewUserData({ ...newUserData, password: e.target.value })}
-                                className="w-full px-4 py-3 rounded-xl bg-input-dark border border-input-dark-border text-foreground placeholder:text-input-dark-text focus:border-primary/50 focus:ring-2 focus:ring-primary/20 outline-none transition-all"
-                                placeholder="••••••••"
-                            />
-                        </div>
-
-                        {/* Role */}
-                        <div className="space-y-2">
-                            <label className="text-sm font-medium text-foreground flex items-center gap-2">
-                                <Shield className="w-4 h-4 text-muted-foreground" />
-                                Role
-                            </label>
-                            <Select
-                                value={newUserData.role}
-                                onValueChange={(val) => setNewUserData({ ...newUserData, role: val as UserRole })}
-                            >
-                                <SelectTrigger className="w-full">
-                                    <SelectValue placeholder="Select role" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    <SelectItem value="student">
-                                        <div className="flex items-center gap-2">
-                                            <User className="w-4 h-4 text-blue-500" />
-                                            Student
-                                        </div>
-                                    </SelectItem>
-                                    <SelectItem value="teacher">
-                                        <div className="flex items-center gap-2">
-                                            <Award className="w-4 h-4 text-violet-500" />
-                                            Teacher
-                                        </div>
-                                    </SelectItem>
-                                    <SelectItem value="moderator">
-                                        <div className="flex items-center gap-2">
-                                            <Settings className="w-4 h-4 text-amber-500" />
-                                            Moderator
-                                        </div>
-                                    </SelectItem>
-                                    <SelectItem value="admin">
-                                        <div className="flex items-center gap-2">
-                                            <Shield className="w-4 h-4 text-rose-500" />
-                                            Admin
-                                        </div>
-                                    </SelectItem>
-                                </SelectContent>
-                            </Select>
-                        </div>
-                    </DialogBody>
-                    <DialogFooter>
-                        <button
-                            type="button"
-                            onClick={() => setAddUserModal(false)}
-                            className="px-5 py-2.5 rounded-xl border border-border/50 hover:bg-muted/50 text-muted-foreground hover:text-foreground transition-all font-medium"
-                        >
-                            Cancel
-                        </button>
-                        <button
-                            type="submit"
-                            disabled={isCreating}
-                            className="px-5 py-2.5 rounded-xl bg-primary text-primary-foreground hover:bg-primary/90 transition-all disabled:opacity-50 flex items-center gap-2 font-medium shadow-lg shadow-primary/20"
-                        >
-                            {isCreating && <Loader2 className="w-4 h-4 animate-spin" />}
-                            <UserPlus className="w-4 h-4" />
-                            Create User
-                        </button>
-                    </DialogFooter>
-                </form>
-            </Dialog>
 
             {/* View User Modal */}
             {/* View User Modal */}
@@ -1114,163 +894,6 @@ export default function UserManagementPage() {
                 )}
             </Dialog>
 
-            {/* Edit User Modal */}
-            <Dialog open={!!editUserModal} onClose={() => setEditUserModal(null)}>
-                <DialogClose onClose={() => setEditUserModal(null)} />
-                <DialogHeader>
-                    <DialogTitle className="flex items-center gap-3">
-                        <div className="p-2.5 rounded-xl bg-violet-500/10 text-violet-600">
-                            <Edit className="w-5 h-5" />
-                        </div>
-                        Edit User Details
-                    </DialogTitle>
-                    <DialogDescription>Update user information, access role, and account status.</DialogDescription>
-                </DialogHeader>
-                <form onSubmit={(e) => { e.preventDefault(); handleUpdateUser(); }}>
-                    <DialogBody className="space-y-5">
-                        {/* Full Name */}
-                        <div className="space-y-2">
-                            <label className="text-sm font-medium text-foreground flex items-center gap-2">
-                                <User className="w-4 h-4 text-muted-foreground" />
-                                Full Name
-                            </label>
-                            <input
-                                type="text"
-                                id="edit-user-name"
-                                name="name"
-                                autoComplete="name"
-                                value={editFormData.name}
-                                onChange={(e) => setEditFormData({ ...editFormData, name: e.target.value })}
-                                className="w-full px-4 py-3 rounded-xl bg-input-dark border border-input-dark-border text-foreground placeholder:text-input-dark-text focus:border-primary/50 focus:ring-2 focus:ring-primary/20 outline-none transition-all"
-                                placeholder="John Doe"
-                            />
-                        </div>
-
-                        {/* Email */}
-                        <div className="space-y-2">
-                            <label className="text-sm font-medium text-foreground flex items-center gap-2">
-                                <Mail className="w-4 h-4 text-muted-foreground" />
-                                Email Address
-                            </label>
-                            <input
-                                type="email"
-                                id="edit-user-email"
-                                name="email"
-                                autoComplete="email"
-                                value={editFormData.email}
-                                onChange={(e) => setEditFormData({ ...editFormData, email: e.target.value })}
-                                className="w-full px-4 py-3 rounded-xl bg-input-dark border border-input-dark-border text-foreground placeholder:text-input-dark-text focus:border-primary/50 focus:ring-2 focus:ring-primary/20 outline-none transition-all"
-                                placeholder="john@example.com"
-                            />
-                        </div>
-
-                        {/* Role */}
-                        <div className="space-y-2">
-                            <label className="text-sm font-medium text-foreground flex items-center gap-2">
-                                <Shield className="w-4 h-4 text-muted-foreground" />
-                                Role
-                            </label>
-                            <Select
-                                value={editFormData.role}
-                                onValueChange={(val) => setEditFormData({ ...editFormData, role: val as UserRole })}
-                            >
-                                <SelectTrigger className="w-full">
-                                    <SelectValue placeholder="Select role" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    <SelectItem value="student">
-                                        <div className="flex items-center gap-2">
-                                            <User className="w-4 h-4 text-blue-500" />
-                                            Student
-                                        </div>
-                                    </SelectItem>
-                                    <SelectItem value="teacher">
-                                        <div className="flex items-center gap-2">
-                                            <Award className="w-4 h-4 text-violet-500" />
-                                            Teacher
-                                        </div>
-                                    </SelectItem>
-                                    <SelectItem value="moderator">
-                                        <div className="flex items-center gap-2">
-                                            <Settings className="w-4 h-4 text-amber-500" />
-                                            Moderator
-                                        </div>
-                                    </SelectItem>
-                                    <SelectItem value="admin">
-                                        <div className="flex items-center gap-2">
-                                            <Shield className="w-4 h-4 text-rose-500" />
-                                            Admin
-                                        </div>
-                                    </SelectItem>
-                                </SelectContent>
-                            </Select>
-                        </div>
-
-                        {/* Status */}
-                        <div className="space-y-2">
-                            <label className="text-sm font-medium text-foreground flex items-center gap-2">
-                                <Activity className="w-4 h-4 text-muted-foreground" />
-                                Status
-                            </label>
-                            <Select
-                                value={editFormData.status}
-                                onValueChange={(val) => setEditFormData({ ...editFormData, status: val as UserStatus })}
-                            >
-                                <SelectTrigger className="w-full">
-                                    <SelectValue placeholder="Select status" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    <SelectItem value="active">
-                                        <div className="flex items-center gap-2">
-                                            <div className="w-2 h-2 rounded-full bg-emerald-500" />
-                                            Active
-                                        </div>
-                                    </SelectItem>
-                                    <SelectItem value="inactive">
-                                        <div className="flex items-center gap-2">
-                                            <div className="w-2 h-2 rounded-full bg-slate-500" />
-                                            Inactive
-                                        </div>
-                                    </SelectItem>
-                                    <SelectItem value="suspended">
-                                        <div className="flex items-center gap-2">
-                                            <div className="w-2 h-2 rounded-full bg-rose-500" />
-                                            Suspended
-                                        </div>
-                                    </SelectItem>
-                                    <SelectItem value="pending">
-                                        <div className="flex items-center gap-2">
-                                            <div className="w-2 h-2 rounded-full bg-amber-500" />
-                                            Pending
-                                        </div>
-                                    </SelectItem>
-                                </SelectContent>
-                            </Select>
-                        </div>
-
-                        {/* Change Password Section */}
-
-                    </DialogBody>
-                    <DialogFooter>
-                        <button
-                            type="button"
-                            onClick={() => setEditUserModal(null)}
-                            className="px-5 py-2.5 rounded-xl border border-border/50 hover:bg-muted/50 text-muted-foreground hover:text-foreground transition-all font-medium"
-                        >
-                            Cancel
-                        </button>
-                        <button
-                            type="submit"
-                            disabled={isCreating}
-                            className="px-5 py-2.5 rounded-xl bg-primary text-primary-foreground hover:bg-primary/90 transition-all disabled:opacity-50 flex items-center gap-2 font-medium shadow-lg shadow-primary/20"
-                        >
-                            {isCreating && <Loader2 className="w-4 h-4 animate-spin" />}
-                            <Edit className="w-4 h-4" />
-                            Save Changes
-                        </button>
-                    </DialogFooter>
-                </form>
-            </Dialog>
 
             {/* Delete Confirmation Modal */}
             <Dialog open={!!deleteConfirmModal} onClose={() => setDeleteConfirmModal(null)}>
@@ -1295,62 +918,6 @@ export default function UserManagementPage() {
                 </DialogFooter>
             </Dialog>
 
-            {/* Update Password Modal */}
-            <Dialog open={!!updatePasswordModal} onClose={() => setUpdatePasswordModal(null)}>
-                <DialogClose onClose={() => setUpdatePasswordModal(null)} />
-                <DialogHeader>
-                    <DialogTitle className="flex items-center gap-3">
-                        <div className="p-2.5 rounded-xl bg-amber-500/10 text-amber-600">
-                            <Lock className="w-5 h-5" />
-                        </div>
-                        Update Password
-                    </DialogTitle>
-                    <DialogDescription>
-                        Set a new password for <span className="font-medium text-foreground">{updatePasswordModal?.name}</span>.
-                    </DialogDescription>
-                </DialogHeader>
-                <form onSubmit={(e) => { e.preventDefault(); handlePasswordUpdateConfirm(); }}>
-                    <DialogBody className="space-y-4">
-                        <div className="space-y-2">
-                            <label className="text-sm font-medium text-foreground flex items-center gap-2">
-                                <Lock className="w-4 h-4 text-muted-foreground" />
-                                New Password
-                            </label>
-                            <input
-                                type="password"
-                                value={newPassword}
-                                onChange={(e) => setNewPassword(e.target.value)}
-                                className="w-full px-4 py-3 rounded-xl bg-input-dark border border-input-dark-border text-foreground placeholder:text-input-dark-text focus:border-primary/50 focus:ring-2 focus:ring-primary/20 outline-none transition-all"
-                                placeholder="Enter new password (min. 6 chars)"
-                                required
-                                minLength={6}
-                                autoComplete="new-password"
-                            />
-                            <p className="text-[11px] text-amber-500/80 flex items-center gap-1">
-                                <AlertCircle className="w-3 h-3" />
-                                The user will be required to sign in with this new password immediately.
-                            </p>
-                        </div>
-                    </DialogBody>
-                    <DialogFooter>
-                        <button
-                            type="button"
-                            onClick={() => setUpdatePasswordModal(null)}
-                            className="px-5 py-2.5 rounded-xl border border-border/50 hover:bg-muted/50 text-muted-foreground hover:text-foreground transition-all font-medium"
-                        >
-                            Cancel
-                        </button>
-                        <button
-                            type="submit"
-                            disabled={isCreating || !newPassword}
-                            className="px-5 py-2.5 rounded-xl bg-primary text-primary-foreground hover:bg-primary/90 transition-all disabled:opacity-50 flex items-center gap-2 font-medium shadow-lg shadow-primary/20"
-                        >
-                            {isCreating && <Loader2 className="w-4 h-4 animate-spin" />}
-                            Update Password
-                        </button>
-                    </DialogFooter>
-                </form>
-            </Dialog>
 
             {/* Bulk Delete Modal */}
             <Dialog open={bulkActionModal === 'delete'} onClose={() => setBulkActionModal(null)}>

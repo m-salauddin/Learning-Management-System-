@@ -1,8 +1,9 @@
 "use client";
 
 import React, { useState, useEffect, useCallback, useRef } from "react";
-import { Search, X, Loader2 } from "lucide-react";
+import { Search, X } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { motion, AnimatePresence } from "framer-motion";
 
 interface SearchInputProps {
     value: string;
@@ -91,7 +92,6 @@ export function SearchInput({
     };
 
     const showClearButton = localValue.length > 0;
-    const showLoader = isSearching && localValue.length > 0;
 
     return (
         <div className={cn("relative group", className)}>
@@ -129,27 +129,30 @@ export function SearchInput({
                 )}
             />
 
-            {/* Right side: Clear button or Loading indicator */}
-            <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center gap-1">
-                {showLoader && (
-                    <Loader2 className="w-4 h-4 text-input-dark-text animate-spin" />
-                )}
-
-                {showClearButton && !disabled && (
-                    <button
-                        type="button"
-                        onClick={handleClear}
-                        className={cn(
-                            "p-0.5 rounded-md transition-all duration-200",
-                            "text-input-dark-text hover:text-foreground",
-                            "hover:bg-input-dark-hover focus:outline-none focus:shadow-[0_0_0_2px_var(--input-dark-glow)]"
-                        )}
-                        title="Clear search (Esc)"
-                        aria-label="Clear search"
-                    >
-                        <X className="w-4 h-4" />
-                    </button>
-                )}
+            {/* Right side: Clear button */}
+            <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center">
+                <AnimatePresence>
+                    {showClearButton && !disabled && (
+                        <motion.button
+                            initial={{ opacity: 0, scale: 0.8 }}
+                            animate={{ opacity: 1, scale: 1 }}
+                            exit={{ opacity: 0, scale: 0.8 }}
+                            transition={{ duration: 0.2 }}
+                            type="button"
+                            onClick={handleClear}
+                            className={cn(
+                                "p-1.5 rounded-lg transition-all",
+                                "bg-foreground/5 text-input-dark-text hover:text-foreground",
+                                "hover:bg-foreground/10 focus:outline-none ring-1 ring-input-dark-border/50",
+                                "flex items-center justify-center"
+                            )}
+                            title="Clear search (Esc)"
+                            aria-label="Clear search"
+                        >
+                            <X className="w-3.5 h-3.5" />
+                        </motion.button>
+                    )}
+                </AnimatePresence>
             </div>
         </div>
     );

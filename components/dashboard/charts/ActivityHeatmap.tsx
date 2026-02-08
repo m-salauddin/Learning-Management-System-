@@ -32,8 +32,25 @@ const getIntensityClass = (value: number) => {
 }
 
 export function ActivityHeatmap() {
+    const [mounted, setMounted] = React.useState(false)
+
+    React.useEffect(() => {
+        setMounted(true)
+    }, [])
+
     const weeks = 12
     const days = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
+
+    if (!mounted) {
+        return (
+            <div className="w-full h-[180px] rounded-xl bg-muted/5 animate-pulse flex items-center justify-center border border-dashed border-border/50">
+                <div className="flex gap-1.5 items-center text-muted-foreground/50">
+                    <div className="w-2 h-2 rounded-full bg-current" />
+                    <span className="text-xs font-medium tracking-wide uppercase">Initializing platform activity...</span>
+                </div>
+            </div>
+        )
+    }
 
     return (
         <div className="w-full">

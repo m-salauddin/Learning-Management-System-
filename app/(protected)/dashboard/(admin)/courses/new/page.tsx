@@ -6,7 +6,8 @@ import { motion, AnimatePresence } from "motion/react";
 import {
     ArrowLeft, BookOpen, DollarSign, Layers, BarChart, Globe, Clock,
     Image as ImageIcon, Video, ListChecks, Target, Tags, Save, Loader2,
-    Upload, X, Check, Sparkles
+    Upload, X, Check, Sparkles, ChevronRight, ChevronLeft, HelpCircle,
+    FileText, FolderKanban, Info, PencilLine, AlertCircle, Users
 } from "lucide-react";
 import Image from "next/image";
 import { createClient } from "@/lib/supabase/client";
@@ -37,6 +38,8 @@ interface Teacher {
     avatar_url: string | null;
 }
 
+import { Breadcrumbs } from "@/components/dashboard/shared/Breadcrumbs";
+
 export default function CreateCoursePage() {
     const router = useRouter();
     const toast = useToast();
@@ -44,10 +47,21 @@ export default function CreateCoursePage() {
     const [categories, setCategories] = useState<Category[]>([]);
     const [teachers, setTeachers] = useState<Teacher[]>([]);
 
+    const breadcrumbItems = [
+        { label: "Courses", href: "/dashboard/courses", icon: BookOpen },
+        { label: "Create Course", active: true, icon: Sparkles }
+    ];
+    // Shared styling constants based on dashboard design system
+    const inputClasses = "w-full px-4 py-3 rounded-xl bg-input-dark border border-input-dark-border text-foreground text-sm placeholder:text-input-dark-text focus:shadow-[0_0_0_3px_var(--input-dark-glow)] focus:border-input-dark-border outline-none transition-all duration-200";
+    const selectTriggerClasses = "w-full h-11 rounded-xl bg-input-dark border border-input-dark-border text-foreground transition-all duration-200 focus:shadow-[0_0_0_3px_var(--input-dark-glow)] focus:border-input-dark-border outline-none";
+    const labelClasses = "flex items-center gap-1.5 text-sm font-semibold mb-2 text-foreground/80";
+
+
     // Form state
+    const [currentStep, setCurrentStep] = useState(1);
+    const totalSteps = 4;
     const [formData, setFormData] = useState({
         title: "",
-        slug: "",
         short_description: "",
         description: "",
         price: 0,
@@ -60,13 +74,23 @@ export default function CreateCoursePage() {
         preview_video_url: "",
         requirements: [] as string[],
         learning_objectives: [] as string[],
+        target_audience: [] as string[], // New
         tags: [] as string[],
+        faqs: [] as { question: string, answer: string }[], // New
+        projects: [] as { title: string, description: string }[], // New
+        resources: [] as { title: string, type: string, url: string }[], // New
     });
 
     // Temporary input states for array fields
     const [requirementInput, setRequirementInput] = useState("");
     const [objectiveInput, setObjectiveInput] = useState("");
+    const [targetInput, setTargetInput] = useState("");
     const [tagInput, setTagInput] = useState("");
+
+    // States for FAQ, Projects, Resources
+    const [faqInput, setFaqInput] = useState({ question: "", answer: "" });
+    const [projectInput, setProjectInput] = useState({ title: "", description: "" });
+    const [resourceInput, setResourceInput] = useState({ title: "", type: "link", url: "" });
 
     // Thumbnail upload state
     const [isUploadingThumbnail, setIsUploadingThumbnail] = useState(false);
@@ -205,7 +229,7 @@ export default function CreateCoursePage() {
             .replace(/\s+/g, "-")
             .replace(/-+/g, "-")
             .trim();
-        setFormData(prev => ({ ...prev, slug }));
+        setFormData(prev => ({ ...prev, slug: slug }));
     }, [formData.title]);
 
     const handleSubmit = async (e: React.FormEvent) => {
@@ -221,12 +245,16 @@ export default function CreateCoursePage() {
             return;
         }
 
+        if (isUploadingThumbnail) {
+            toast.error("Please wait for the thumbnail to finish uploading");
+            return;
+        }
+
         setIsSubmitting(true);
 
         try {
             const result = await createCourse({
                 title: formData.title,
-                slug: formData.slug,
                 short_description: formData.short_description,
                 description: formData.description,
                 price: formData.price,
@@ -239,7 +267,11 @@ export default function CreateCoursePage() {
                 preview_video_url: formData.preview_video_url,
                 requirements: formData.requirements,
                 learning_objectives: formData.learning_objectives,
+                target_audience: formData.target_audience,
                 tags: formData.tags,
+                faqs: formData.faqs,
+                projects: formData.projects,
+                resources: formData.resources,
             });
 
             if (result.success) {
@@ -256,543 +288,726 @@ export default function CreateCoursePage() {
         }
     };
 
-    const addArrayItem = (field: 'requirements' | 'learning_objectives' | 'tags', value: string, setter: (v: string) => void) => {
+    const addArrayItem = (field: 'requirements' | 'learning_objectives' | 'target_audience' | 'tags', value: string, setter: (v: string) => void) => {
         if (value.trim()) {
             setFormData(prev => ({
                 ...prev,
-                [field]: [...prev[field], value.trim()]
+                [field]: [...(prev[field] as string[]), value.trim()]
             }));
             setter("");
         }
     };
 
-    const removeArrayItem = (field: 'requirements' | 'learning_objectives' | 'tags', index: number) => {
+    const removeArrayItem = (field: 'requirements' | 'learning_objectives' | 'target_audience' | 'tags', index: number) => {
         setFormData(prev => ({
             ...prev,
-            [field]: prev[field].filter((_, i) => i !== index)
+            [field]: (prev[field] as string[]).filter((_, i) => i !== index)
         }));
     };
 
+    const addFaq = () => {
+        if (faqInput.question.trim() && faqInput.answer.trim()) {
+            setFormData(prev => ({ ...prev, faqs: [...prev.faqs, faqInput] }));
+            setFaqInput({ question: "", answer: "" });
+        }
+    };
+
+    const removeFaq = (index: number) => {
+        setFormData(prev => ({ ...prev, faqs: prev.faqs.filter((_, i) => i !== index) }));
+    };
+
+    const addProject = () => {
+        if (projectInput.title.trim()) {
+            setFormData(prev => ({ ...prev, projects: [...prev.projects, projectInput] }));
+            setProjectInput({ title: "", description: "" });
+        }
+    };
+
+    const removeProject = (index: number) => {
+        setFormData(prev => ({ ...prev, projects: prev.projects.filter((_, i) => i !== index) }));
+    };
+
+    const addResource = () => {
+        if (resourceInput.title.trim() && resourceInput.url.trim()) {
+            setFormData(prev => ({ ...prev, resources: [...prev.resources, resourceInput] }));
+            setResourceInput({ title: "", type: "link", url: "" });
+        }
+    };
+
+    const removeResource = (index: number) => {
+        setFormData(prev => ({ ...prev, resources: prev.resources.filter((_, i) => i !== index) }));
+    };
+
+    const nextStep = () => {
+        if (currentStep === 1) {
+            if (!formData.title.trim()) {
+                toast.error("Course title is required");
+                return;
+            }
+            if (!formData.category_id) {
+                toast.error("Category is required");
+                return;
+            }
+            if (!formData.level) {
+                toast.error("Difficulty level is required");
+                return;
+            }
+        }
+
+        if (currentStep === 2) {
+            if (!formData.short_description.trim()) {
+                toast.error("Short description is required");
+                return;
+            }
+            if (formData.learning_objectives.length === 0) {
+                toast.error("Please add at least one learning objective");
+                return;
+            }
+        }
+
+        if (currentStep === 3) {
+            if (formData.price < 0) {
+                toast.error("Price cannot be negative");
+                return;
+            }
+            // Optional: thumbnail check?
+        }
+
+        if (currentStep < totalSteps) setCurrentStep(prev => prev + 1);
+    };
+
+    const prevStep = () => {
+        if (currentStep > 1) setCurrentStep(prev => prev - 1);
+    };
+
+    const StepIndicator = () => (
+        <div className="flex items-center gap-2 mb-10 w-full max-w-4xl overflow-x-auto pb-4 no-scrollbar">
+            {[
+                { n: 1, label: "Basic Info", icon: Info },
+                { n: 2, label: "Content", icon: PencilLine },
+                { n: 3, label: "Pricing & Media", icon: DollarSign },
+                { n: 4, label: "Setup & Extras", icon: Sparkles }
+            ].map((step, i) => (
+                <div key={step.n} className="flex items-center shrink-0">
+                    <div className={cn(
+                        "flex items-center gap-2 transition-all duration-500 py-2 px-4 rounded-xl border",
+                        currentStep === step.n
+                            ? "bg-primary/10 border-primary text-primary shadow-lg shadow-primary/10"
+                            : currentStep > step.n
+                                ? "bg-emerald-500/5 border-emerald-500/30 text-emerald-500"
+                                : "bg-muted/30 border-border/40 text-muted-foreground"
+                    )}>
+                        <div className={cn(
+                            "w-6 h-6 rounded-lg flex items-center justify-center text-[10px] font-bold",
+                            currentStep === step.n ? "bg-primary text-primary-foreground" : "bg-muted/50"
+                        )}>
+                            {currentStep > step.n ? <Check className="w-3.5 h-3.5" /> : step.n}
+                        </div>
+                        <span className="text-xs font-semibold whitespace-nowrap">{step.label}</span>
+                    </div>
+                    {i < 3 && (
+                        <div className={cn(
+                            "w-8 h-px mx-2",
+                            currentStep > step.n ? "bg-emerald-500/30" : "bg-border/30"
+                        )} />
+                    )}
+                </div>
+            ))}
+        </div>
+    );
+
     return (
         <div className="min-h-screen p-6 md:p-8">
+            {/* Breadcrumbs */}
+            <Breadcrumbs items={breadcrumbItems} showHomeIcon={true} />
+
             {/* Header */}
-            <div className="mb-8">
-                <Link
-                    href="/dashboard/courses"
-                    className="inline-flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors mb-4"
-                >
-                    <ArrowLeft className="w-4 h-4" />
-                    Back to Courses
-                </Link>
-                <h1 className="text-3xl font-bold text-foreground">Create New Course</h1>
-                <p className="text-muted-foreground mt-2">Fill in the details to create a new course</p>
+            <div className="mb-10">
+                <h1 className="text-3xl font-bold tracking-tight text-foreground">Create New Course</h1>
+                <p className="text-muted-foreground mt-1.5">Design a premium learning experience for your students</p>
             </div>
 
             <form onSubmit={handleSubmit} className="max-w-4xl">
-                <div className="space-y-8">
-                    {/* Basic Information */}
-                    <motion.div
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        className="p-6 rounded-2xl border border-border/40 bg-card/30 backdrop-blur-xl"
-                    >
-                        <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
-                            <BookOpen className="w-5 h-5 text-primary" />
-                            Basic Information
-                        </h2>
+                <StepIndicator />
 
-                        <div className="space-y-4">
-                            <div>
-                                <label className="block text-sm font-medium mb-2">Course Title *</label>
-                                <input
-                                    type="text"
-                                    value={formData.title}
-                                    onChange={(e) => setFormData(prev => ({ ...prev, title: e.target.value }))}
-                                    placeholder="e.g., Complete Web Development Bootcamp"
-                                    className="w-full px-4 py-3 rounded-xl bg-background/50 border border-border/50 text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary/50 outline-none transition-all"
-                                    required
-                                />
-                            </div>
+                <div className="relative min-h-[500px]">
+                    <AnimatePresence mode="wait">
+                        {/* Step 1: Basic Information */}
+                        {currentStep === 1 && (
+                            <motion.div
+                                key="step1"
+                                initial={{ opacity: 0, x: 20 }}
+                                animate={{ opacity: 1, x: 0 }}
+                                exit={{ opacity: 0, x: -20 }}
+                                className="space-y-6"
+                            >
+                                <div className="p-6 rounded-2xl border border-border/40 bg-card/30 backdrop-blur-xl">
+                                    <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
+                                        <Info className="w-5 h-5 text-primary" />
+                                        Basic Information
+                                    </h2>
 
-                            <div>
-                                <label className="block text-sm font-medium mb-2">URL Slug</label>
-                                <input
-                                    type="text"
-                                    value={formData.slug}
-                                    onChange={(e) => setFormData(prev => ({ ...prev, slug: e.target.value }))}
-                                    placeholder="auto-generated-from-title"
-                                    className="w-full px-4 py-3 rounded-xl bg-background/50 border border-border/50 text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary/50 outline-none transition-all text-muted-foreground"
-                                />
-                            </div>
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                        <div className="md:col-span-2">
+                                            <label className={labelClasses}>
+                                                Course Title <span className="text-red-500">*</span>
+                                            </label>
+                                            <input
+                                                type="text"
+                                                value={formData.title}
+                                                onChange={(e) => setFormData(prev => ({ ...prev, title: e.target.value }))}
+                                                placeholder="e.g., Complete Web Development Bootcamp"
+                                                className={inputClasses}
+                                                required
+                                            />
+                                        </div>
 
-                            <div>
-                                <label className="block text-sm font-medium mb-2">Short Description</label>
-                                <input
-                                    type="text"
-                                    value={formData.short_description}
-                                    onChange={(e) => setFormData(prev => ({ ...prev, short_description: e.target.value }))}
-                                    placeholder="A brief one-line description"
-                                    maxLength={200}
-                                    className="w-full px-4 py-3 rounded-xl bg-background/50 border border-border/50 text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary/50 outline-none transition-all"
-                                />
-                            </div>
 
-                            <div>
-                                <label className="block text-sm font-medium mb-2">Full Description</label>
-                                <textarea
-                                    value={formData.description}
-                                    onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
-                                    placeholder="Detailed course description..."
-                                    rows={5}
-                                    className="w-full px-4 py-3 rounded-xl bg-background/50 border border-border/50 text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary/50 outline-none transition-all resize-none"
-                                />
-                            </div>
-                        </div>
-                    </motion.div>
-
-                    {/* Pricing & Category */}
-                    <motion.div
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: 0.1 }}
-                        className="p-6 rounded-2xl border border-border/40 bg-card/30 backdrop-blur-xl"
-                    >
-                        <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
-                            <DollarSign className="w-5 h-5 text-primary" />
-                            Pricing & Category
-                        </h2>
-
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <div>
-                                <label className="block text-sm font-medium mb-2">Price (৳) *</label>
-                                <input
-                                    type="number"
-                                    value={formData.price}
-                                    onChange={(e) => setFormData(prev => ({ ...prev, price: parseInt(e.target.value) || 0 }))}
-                                    min={0}
-                                    className="w-full px-4 py-3 rounded-xl bg-background/50 border border-border/50 text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary/50 outline-none transition-all"
-                                    required
-                                />
-                            </div>
-
-                            <div>
-                                <label className="block text-sm font-medium mb-2">Discount Price (৳)</label>
-                                <input
-                                    type="number"
-                                    value={formData.discount_price || ""}
-                                    onChange={(e) => setFormData(prev => ({ ...prev, discount_price: e.target.value ? parseInt(e.target.value) : null }))}
-                                    min={0}
-                                    placeholder="Optional"
-                                    className="w-full px-4 py-3 rounded-xl bg-background/50 border border-border/50 text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary/50 outline-none transition-all"
-                                />
-                            </div>
-
-                            <div>
-                                <label className="block text-sm font-medium mb-2">Category</label>
-                                <Select
-                                    value={formData.category_id}
-                                    onValueChange={(val) => setFormData(prev => ({ ...prev, category_id: val }))}
-                                >
-                                    <SelectTrigger className="w-full bg-card">
-                                        <Layers className="w-4 h-4 mr-2" />
-                                        <SelectValue placeholder="Select Category" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        {categories.map(cat => (
-                                            <SelectItem key={cat.id} value={cat.id}>{cat.name}</SelectItem>
-                                        ))}
-                                    </SelectContent>
-                                </Select>
-                            </div>
-
-                            <div>
-                                <label className="block text-sm font-medium mb-2">
-                                    <GraduationCap className="w-4 h-4 inline-block mr-1.5 text-primary" />
-                                    Assign Instructor
-                                </label>
-                                <Select
-                                    value={formData.instructor_id}
-                                    onValueChange={(val) => setFormData(prev => ({ ...prev, instructor_id: val }))}
-                                >
-                                    <SelectTrigger className="w-full bg-card">
-                                        <GraduationCap className="w-4 h-4 mr-2" />
-                                        <SelectValue placeholder="Default (Me)" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        <SelectItem value="_default">Default (Me)</SelectItem>
-                                        {teachers.map(teacher => (
-                                            <SelectItem key={teacher.id} value={teacher.id}>
-                                                {teacher.name} ({teacher.email})
-                                            </SelectItem>
-                                        ))}
-                                    </SelectContent>
-                                </Select>
-                                <p className="text-xs text-muted-foreground mt-1.5">
-                                    Leave empty to assign yourself as the instructor
-                                </p>
-                            </div>
-
-                            <div>
-                                <label className="block text-sm font-medium mb-2">Level</label>
-                                <Select
-                                    value={formData.level}
-                                    onValueChange={(val) => setFormData(prev => ({ ...prev, level: val as CourseLevel }))}
-                                >
-                                    <SelectTrigger className="w-full bg-card">
-                                        <BarChart className="w-4 h-4 mr-2" />
-                                        <SelectValue placeholder="Select Level" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        <SelectItem value="beginner">Beginner</SelectItem>
-                                        <SelectItem value="intermediate">Intermediate</SelectItem>
-                                        <SelectItem value="advanced">Advanced</SelectItem>
-                                    </SelectContent>
-                                </Select>
-                            </div>
-
-                            <div>
-                                <label className="block text-sm font-medium mb-2">Language</label>
-                                <Select
-                                    value={formData.language}
-                                    onValueChange={(val) => setFormData(prev => ({ ...prev, language: val }))}
-                                >
-                                    <SelectTrigger className="w-full bg-card">
-                                        <Globe className="w-4 h-4 mr-2" />
-                                        <SelectValue placeholder="Select Language" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        <SelectItem value="বাংলা">বাংলা</SelectItem>
-                                        <SelectItem value="English">English</SelectItem>
-                                        <SelectItem value="Hindi">Hindi</SelectItem>
-                                    </SelectContent>
-                                </Select>
-                            </div>
-                        </div>
-                    </motion.div>
-
-                    {/* Media */}
-                    <motion.div
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: 0.2 }}
-                        className="p-6 rounded-2xl border border-border/40 bg-card/30 backdrop-blur-xl"
-                    >
-                        <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
-                            <ImageIcon className="w-5 h-5 text-primary" />
-                            Media
-                        </h2>
-
-                        <div className="space-y-6">
-                            {/* Thumbnail Upload */}
-                            <div>
-                                <label className="block text-sm font-medium mb-3">Course Thumbnail</label>
-
-                                <AnimatePresence mode="wait">
-                                    {formData.thumbnail_url || thumbnailPreview ? (
-                                        <motion.div
-                                            key="preview"
-                                            initial={{ opacity: 0, scale: 0.95 }}
-                                            animate={{ opacity: 1, scale: 1 }}
-                                            exit={{ opacity: 0, scale: 0.95 }}
-                                            className="relative group"
-                                        >
-                                            <div className="relative aspect-video w-full max-w-md rounded-xl overflow-hidden border border-border/50 shadow-lg">
-                                                <Image
-                                                    src={thumbnailPreview || formData.thumbnail_url}
-                                                    alt="Course thumbnail preview"
-                                                    fill
-                                                    className="object-cover"
-                                                />
-                                                {isUploadingThumbnail && (
-                                                    <div className="absolute inset-0 bg-black/60 flex items-center justify-center backdrop-blur-sm">
-                                                        <div className="flex flex-col items-center gap-3">
-                                                            <div className="w-10 h-10 rounded-full border-3 border-white/30 border-t-white animate-spin" />
-                                                            <span className="text-white text-sm font-medium">Uploading...</span>
-                                                        </div>
+                                        <div>
+                                            <label className={labelClasses}>
+                                                Category <span className="text-red-500">*</span>
+                                            </label>
+                                            <Select
+                                                value={formData.category_id}
+                                                onValueChange={(val) => setFormData(prev => ({ ...prev, category_id: val }))}
+                                            >
+                                                <SelectTrigger className={selectTriggerClasses}>
+                                                    <div className="flex items-center gap-2">
+                                                        <Layers className="w-4 h-4 text-muted-foreground" />
+                                                        <SelectValue placeholder="Select Category" />
                                                     </div>
-                                                )}
+                                                </SelectTrigger>
+                                                <SelectContent>
+                                                    {categories.map(cat => (
+                                                        <SelectItem key={cat.id} value={cat.id}>{cat.name}</SelectItem>
+                                                    ))}
+                                                </SelectContent>
+                                            </Select>
+                                        </div>
+
+                                        <div>
+                                            <label className={labelClasses}>Instructor</label>
+                                            <Select
+                                                value={formData.instructor_id}
+                                                onValueChange={(val) => setFormData(prev => ({ ...prev, instructor_id: val }))}
+                                            >
+                                                <SelectTrigger className={selectTriggerClasses}>
+                                                    <div className="flex items-center gap-2">
+                                                        <GraduationCap className="w-4 h-4 text-muted-foreground" />
+                                                        <SelectValue placeholder="Default (Me)" />
+                                                    </div>
+                                                </SelectTrigger>
+                                                <SelectContent>
+                                                    <SelectItem value="_default">Default (Me)</SelectItem>
+                                                    {teachers.map(teacher => (
+                                                        <SelectItem key={teacher.id} value={teacher.id}>
+                                                            {teacher.name}
+                                                        </SelectItem>
+                                                    ))}
+                                                </SelectContent>
+                                            </Select>
+                                        </div>
+
+                                        <div>
+                                            <label className={labelClasses}>
+                                                Difficulty Level <span className="text-red-500">*</span>
+                                            </label>
+                                            <Select
+                                                value={formData.level}
+                                                onValueChange={(val) => setFormData(prev => ({ ...prev, level: val as CourseLevel }))}
+                                            >
+                                                <SelectTrigger className={selectTriggerClasses}>
+                                                    <div className="flex items-center gap-2">
+                                                        <BarChart className="w-4 h-4 text-muted-foreground" />
+                                                        <SelectValue placeholder="Select Level" />
+                                                    </div>
+                                                </SelectTrigger>
+                                                <SelectContent>
+                                                    <SelectItem value="beginner">Beginner</SelectItem>
+                                                    <SelectItem value="intermediate">Intermediate</SelectItem>
+                                                    <SelectItem value="advanced">Advanced</SelectItem>
+                                                </SelectContent>
+                                            </Select>
+                                        </div>
+
+                                        <div>
+                                            <label className={labelClasses}>
+                                                Language <span className="text-red-500">*</span>
+                                            </label>
+                                            <Select
+                                                value={formData.language}
+                                                onValueChange={(val) => setFormData(prev => ({ ...prev, language: val }))}
+                                            >
+                                                <SelectTrigger className={selectTriggerClasses}>
+                                                    <div className="flex items-center gap-2">
+                                                        <Globe className="w-4 h-4 text-muted-foreground" />
+                                                        <SelectValue placeholder="Select Language" />
+                                                    </div>
+                                                </SelectTrigger>
+                                                <SelectContent>
+                                                    <SelectItem value="বাংলা">বাংলা</SelectItem>
+                                                    <SelectItem value="English">English</SelectItem>
+                                                    <SelectItem value="Hindi">Hindi</SelectItem>
+                                                </SelectContent>
+                                            </Select>
+                                        </div>
+                                    </div>
+                                </div>
+                            </motion.div>
+                        )}
+
+                        {/* Step 2: Detailed Content */}
+                        {currentStep === 2 && (
+                            <motion.div
+                                key="step2"
+                                initial={{ opacity: 0, x: 20 }}
+                                animate={{ opacity: 1, x: 0 }}
+                                exit={{ opacity: 0, x: -20 }}
+                                className="space-y-6"
+                            >
+                                <div className="p-6 rounded-2xl border border-border/40 bg-card/30 backdrop-blur-xl">
+                                    <h2 className="text-lg font-semibold mb-6 flex items-center gap-2">
+                                        <PencilLine className="w-5 h-5 text-primary" />
+                                        Course Narratives
+                                    </h2>
+
+                                    <div className="space-y-6 mb-8">
+                                        <div>
+                                            <label className={labelClasses}>Short Description</label>
+                                            <input
+                                                type="text"
+                                                value={formData.short_description}
+                                                onChange={(e) => setFormData(prev => ({ ...prev, short_description: e.target.value }))}
+                                                placeholder="A brief one-line hook for the course"
+                                                maxLength={200}
+                                                className={inputClasses}
+                                            />
+                                            <p className="text-[10px] text-muted-foreground mt-2 flex items-center gap-1.5 pl-1">
+                                                <AlertCircle className="w-3 h-3 text-primary/70" />
+                                                Visible on course cards. Keep it catchy and concise.
+                                            </p>
+                                        </div>
+
+                                        <div>
+                                            <label className={labelClasses}>Full Description</label>
+                                            <textarea
+                                                value={formData.description}
+                                                onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
+                                                placeholder="Detailed course description..."
+                                                rows={5}
+                                                className={cn(inputClasses, "resize-none leading-relaxed")}
+                                            />
+                                        </div>
+                                    </div>
+
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                                        {/* Learning Objectives */}
+                                        <div className="space-y-3">
+                                            <label className={labelClasses}>
+                                                <Target className="w-4 h-4 text-emerald-500" />
+                                                What you will learn
+                                            </label>
+                                            <div className="flex gap-2">
+                                                <input
+                                                    type="text"
+                                                    value={objectiveInput}
+                                                    onChange={(e) => setObjectiveInput(e.target.value)}
+                                                    placeholder="Add a learning goal..."
+                                                    className={cn(inputClasses, "py-2 px-3")}
+                                                    onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), addArrayItem('learning_objectives', objectiveInput, setObjectiveInput))}
+                                                />
+                                                <button type="button" onClick={() => addArrayItem('learning_objectives', objectiveInput, setObjectiveInput)} className="p-2 aspect-square flex items-center justify-center bg-primary/10 text-primary rounded-xl border border-primary/20 hover:bg-primary/20 transition-all font-bold">+</button>
                                             </div>
+                                            <div className="flex flex-wrap gap-2">
+                                                {formData.learning_objectives.map((obj, i) => (
+                                                    <span key={i} className="px-3 py-1.5 rounded-lg bg-surface/50 border border-border/30 text-xs flex items-center gap-2 group hover:border-emerald-500/30 transition-colors">
+                                                        {obj}
+                                                        <X className="w-3 h-3 cursor-pointer text-muted-foreground group-hover:text-red-500 transition-colors" onClick={() => removeArrayItem('learning_objectives', i)} />
+                                                    </span>
+                                                ))}
+                                            </div>
+                                        </div>
 
-                                            {/* Overlay actions */}
-                                            {!isUploadingThumbnail && (
-                                                <div className="absolute inset-0 max-w-md bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity rounded-xl flex items-center justify-center gap-3">
-                                                    <button
-                                                        type="button"
-                                                        onClick={() => fileInputRef.current?.click()}
-                                                        className="p-3 rounded-xl bg-white/20 backdrop-blur-sm text-white hover:bg-white/30 transition-colors"
-                                                    >
-                                                        <Upload className="w-5 h-5" />
-                                                    </button>
-                                                    <button
-                                                        type="button"
-                                                        onClick={removeThumbnail}
-                                                        className="p-3 rounded-xl bg-red-500/80 backdrop-blur-sm text-white hover:bg-red-500 transition-colors"
-                                                    >
-                                                        <X className="w-5 h-5" />
-                                                    </button>
-                                                </div>
-                                            )}
+                                        {/* Requirements */}
+                                        <div className="space-y-3">
+                                            <label className={labelClasses}>
+                                                <ListChecks className="w-4 h-4 text-blue-500" />
+                                                Requirements
+                                            </label>
+                                            <div className="flex gap-2">
+                                                <input
+                                                    type="text"
+                                                    value={requirementInput}
+                                                    onChange={(e) => setRequirementInput(e.target.value)}
+                                                    placeholder="e.g., Basic JavaScript knowledge"
+                                                    className={cn(inputClasses, "py-2 px-3")}
+                                                    onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), addArrayItem('requirements', requirementInput, setRequirementInput))}
+                                                />
+                                                <button type="button" onClick={() => addArrayItem('requirements', requirementInput, setRequirementInput)} className="p-2 aspect-square flex items-center justify-center bg-primary/10 text-primary rounded-xl border border-primary/20 hover:bg-primary/20 transition-all font-bold">+</button>
+                                            </div>
+                                            <div className="flex flex-wrap gap-2">
+                                                {formData.requirements.map((req, i) => (
+                                                    <span key={i} className="px-3 py-1.5 rounded-lg bg-surface/50 border border-border/30 text-xs flex items-center gap-2 group hover:border-blue-500/30 transition-colors">
+                                                        {req}
+                                                        <X className="w-3 h-3 cursor-pointer text-muted-foreground group-hover:text-red-500 transition-colors" onClick={() => removeArrayItem('requirements', i)} />
+                                                    </span>
+                                                ))}
+                                            </div>
+                                        </div>
 
-                                            {/* Success badge */}
-                                            {formData.thumbnail_url && !isUploadingThumbnail && (
-                                                <div className="absolute top-3 right-3 flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-500/90 text-white text-xs font-medium backdrop-blur-sm">
-                                                    <Check className="w-3.5 h-3.5" />
-                                                    Uploaded
-                                                </div>
-                                            )}
-                                        </motion.div>
-                                    ) : (
-                                        <motion.div
-                                            key="dropzone"
-                                            initial={{ opacity: 0, scale: 0.95 }}
-                                            animate={{ opacity: 1, scale: 1 }}
-                                            exit={{ opacity: 0, scale: 0.95 }}
-                                            onDragOver={handleDragOver}
-                                            onDragLeave={handleDragLeave}
-                                            onDrop={handleDrop}
-                                            onClick={() => fileInputRef.current?.click()}
-                                            className={cn(
-                                                "relative aspect-video w-full max-w-md rounded-xl border-2 border-dashed transition-all cursor-pointer group",
-                                                isDragging
-                                                    ? "border-primary bg-primary/10 scale-[1.02]"
-                                                    : "border-border/50 bg-muted/20 hover:border-primary/50 hover:bg-muted/40"
-                                            )}
-                                        >
-                                            <div className="absolute inset-0 flex flex-col items-center justify-center gap-4">
-                                                <div className={cn(
-                                                    "p-4 rounded-2xl transition-all",
-                                                    isDragging
-                                                        ? "bg-primary/20 text-primary scale-110"
-                                                        : "bg-muted/50 text-muted-foreground group-hover:bg-primary/10 group-hover:text-primary"
-                                                )}>
-                                                    {isUploadingThumbnail ? (
-                                                        <div className="w-8 h-8 rounded-full border-2 border-primary/30 border-t-primary animate-spin" />
-                                                    ) : (
-                                                        <Upload className="w-8 h-8" />
+                                        {/* Target Audience */}
+                                        <div className="space-y-3">
+                                            <label className={labelClasses}>
+                                                <Users className="w-4 h-4 text-purple-500" />
+                                                Target Audience
+                                            </label>
+                                            <div className="flex gap-2">
+                                                <input
+                                                    type="text"
+                                                    value={targetInput}
+                                                    onChange={(e) => setTargetInput(e.target.value)}
+                                                    placeholder="e.g., Aspiring Web Developers"
+                                                    className={cn(inputClasses, "py-2 px-3")}
+                                                    onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), addArrayItem('target_audience', targetInput, setTargetInput))}
+                                                />
+                                                <button type="button" onClick={() => addArrayItem('target_audience', targetInput, setTargetInput)} className="p-2 aspect-square flex items-center justify-center bg-primary/10 text-primary rounded-xl border border-primary/20 hover:bg-primary/20 transition-all font-bold">+</button>
+                                            </div>
+                                            <div className="flex flex-wrap gap-2">
+                                                {formData.target_audience.map((item, i) => (
+                                                    <span key={i} className="px-3 py-1.5 rounded-lg bg-surface/50 border border-border/30 text-xs flex items-center gap-2 group hover:border-purple-500/30 transition-colors">
+                                                        {item}
+                                                        <X className="w-3 h-3 cursor-pointer text-muted-foreground group-hover:text-red-500 transition-colors" onClick={() => removeArrayItem('target_audience', i)} />
+                                                    </span>
+                                                ))}
+                                            </div>
+                                        </div>
+
+                                        {/* Tags */}
+                                        <div className="space-y-3">
+                                            <label className={labelClasses}>
+                                                <Tags className="w-4 h-4 text-primary" />
+                                                Search Tags
+                                            </label>
+                                            <div className="flex gap-2">
+                                                <input
+                                                    type="text"
+                                                    value={tagInput}
+                                                    onChange={(e) => setTagInput(e.target.value)}
+                                                    placeholder="coding, react, nextjs"
+                                                    className={cn(inputClasses, "py-2 px-3")}
+                                                    onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), addArrayItem('tags', tagInput, setTagInput))}
+                                                />
+                                                <button type="button" onClick={() => addArrayItem('tags', tagInput, setTagInput)} className="p-2 aspect-square flex items-center justify-center bg-primary/10 text-primary rounded-xl border border-primary/20 hover:bg-primary/20 transition-all font-bold">+</button>
+                                            </div>
+                                            <div className="flex flex-wrap gap-2">
+                                                {formData.tags.map((tag, i) => (
+                                                    <span key={i} className="px-3 py-1.5 rounded-lg bg-primary/10 text-primary border border-primary/30 text-xs flex items-center gap-2 group hover:border-primary transition-colors">
+                                                        #{tag}
+                                                        <X className="w-3 h-3 cursor-pointer group-hover:scale-110" onClick={() => removeArrayItem('tags', i)} />
+                                                    </span>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </motion.div>
+                        )}
+
+                        {/* Step 3: Pricing & Media */}
+                        {currentStep === 3 && (
+                            <motion.div
+                                key="step3"
+                                initial={{ opacity: 0, x: 20 }}
+                                animate={{ opacity: 1, x: 0 }}
+                                exit={{ opacity: 0, x: -20 }}
+                                className="space-y-6"
+                            >
+                                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                                    <div className="p-6 rounded-2xl border border-border/40 bg-card/30 backdrop-blur-xl h-fit">
+                                        <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
+                                            <DollarSign className="w-5 h-5 text-primary" />
+                                            Pricing
+                                        </h2>
+                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                            <div>
+                                                <label className={labelClasses}>
+                                                    Standard Price (৳) <span className="text-red-500">*</span>
+                                                </label>
+                                                <input
+                                                    type="number"
+                                                    value={formData.price}
+                                                    onChange={(e) => setFormData(prev => ({ ...prev, price: parseInt(e.target.value) || 0 }))}
+                                                    min={0}
+                                                    className={inputClasses}
+                                                    required
+                                                />
+                                            </div>
+                                            <div>
+                                                <label className={labelClasses}>Discount Price (৳)</label>
+                                                <input
+                                                    type="number"
+                                                    value={formData.discount_price || ""}
+                                                    onChange={(e) => setFormData(prev => ({ ...prev, discount_price: e.target.value ? parseInt(e.target.value) : null }))}
+                                                    min={0}
+                                                    placeholder="Promotion Price"
+                                                    className={inputClasses}
+                                                />
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div className="p-6 rounded-2xl border border-border/40 bg-card/30 backdrop-blur-xl">
+                                        <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
+                                            <ImageIcon className="w-5 h-5 text-primary" />
+                                            Thumbnail
+                                        </h2>
+                                        <AnimatePresence mode="wait">
+                                            {formData.thumbnail_url || thumbnailPreview ? (
+                                                <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="relative group rounded-2xl overflow-hidden border border-input-dark-border aspect-video shadow-2xl">
+                                                    <Image src={thumbnailPreview || formData.thumbnail_url} alt="Preview" fill className="object-cover transition-transform duration-500 group-hover:scale-110" />
+                                                    <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-all duration-300 flex items-center justify-center gap-4 backdrop-blur-[2px]">
+                                                        <button type="button" onClick={() => fileInputRef.current?.click()} className="p-3 bg-white/10 hover:bg-white/20 backdrop-blur-md rounded-xl text-white border border-white/20 transition-all transform hover:scale-110"><Upload className="w-5 h-5" /></button>
+                                                        <button type="button" onClick={removeThumbnail} className="p-3 bg-red-500/20 hover:bg-red-500/40 backdrop-blur-md rounded-xl text-white border border-red-500/20 transition-all transform hover:scale-110"><X className="w-5 h-5" /></button>
+                                                    </div>
+                                                </motion.div>
+                                            ) : (
+                                                <div
+                                                    onClick={() => fileInputRef.current?.click()}
+                                                    onDragOver={handleDragOver}
+                                                    onDragLeave={handleDragLeave}
+                                                    onDrop={handleDrop}
+                                                    className={cn(
+                                                        "border-2 border-dashed rounded-2xl aspect-video flex flex-col items-center justify-center cursor-pointer transition-all duration-300",
+                                                        isDragging
+                                                            ? "border-primary bg-primary/5 shadow-[0_0_20px_rgba(var(--primary-rgb),0.1)]"
+                                                            : "border-input-dark-border bg-input-dark hover:bg-input-dark-hover hover:border-primary/40 group/dropzone"
                                                     )}
+                                                >
+                                                    <div className="p-4 rounded-full bg-primary/10 mb-4 transition-transform group-hover/dropzone:scale-110 duration-300">
+                                                        <Upload className="w-8 h-8 text-primary shadow-primary/20 shadow-lg" />
+                                                    </div>
+                                                    <span className="text-sm font-semibold text-foreground/70 group-hover/dropzone:text-primary transition-colors">Upload thumbnail (1280x720)</span>
+                                                    <p className="text-[10px] text-muted-foreground mt-2">Drag and drop or click to browse</p>
                                                 </div>
-                                                <div className="text-center px-4">
-                                                    <p className={cn(
-                                                        "font-medium transition-colors",
-                                                        isDragging ? "text-primary" : "text-foreground"
-                                                    )}>
-                                                        {isDragging ? "Drop image here" : "Click to upload or drag & drop"}
-                                                    </p>
-                                                    <p className="text-xs text-muted-foreground mt-1">
-                                                        JPEG, PNG, WebP or GIF • Max 5MB
-                                                    </p>
-                                                </div>
+                                            )}
+                                        </AnimatePresence>
+                                        <input type="file" ref={fileInputRef} className="hidden" accept="image/*" onChange={handleFileChange} />
+                                    </div>
+                                </div>
 
-                                                {/* Recommended dimensions */}
-                                                <div className="flex items-center gap-2 text-xs text-muted-foreground/70">
-                                                    <Sparkles className="w-3.5 h-3.5" />
-                                                    Recommended: 1280 × 720px (16:9)
-                                                </div>
+                                <div className="p-6 rounded-2xl border border-border/40 bg-card/30 backdrop-blur-xl">
+                                    <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
+                                        <Video className="w-5 h-5 text-primary" />
+                                        Preview Media
+                                    </h2>
+                                    <label className={labelClasses}>Video Introduction URL</label>
+                                    <input
+                                        type="url"
+                                        value={formData.preview_video_url}
+                                        onChange={(e) => setFormData(prev => ({ ...prev, preview_video_url: e.target.value }))}
+                                        placeholder="https://youtube.com/watch?v=..."
+                                        className={inputClasses}
+                                    />
+                                </div>
+                            </motion.div>
+                        )}
+
+                        {/* Step 4: Setup & Extras */}
+                        {currentStep === 4 && (
+                            <motion.div
+                                key="step4"
+                                initial={{ opacity: 0, x: 20 }}
+                                animate={{ opacity: 1, x: 0 }}
+                                exit={{ opacity: 0, x: -20 }}
+                                className="space-y-6"
+                            >
+                                {/* FAQs */}
+                                <div className="p-6 rounded-2xl border border-border/40 bg-card/30 backdrop-blur-xl transition-all hover:border-primary/20">
+                                    <h2 className="text-lg font-semibold mb-6 flex items-center gap-2">
+                                        <HelpCircle className="w-5 h-5 text-primary" />
+                                        Frequently Asked Questions
+                                    </h2>
+                                    <div className="space-y-4 mb-6">
+                                        <input
+                                            type="text"
+                                            value={faqInput.question}
+                                            onChange={(e) => setFaqInput(prev => ({ ...prev, question: e.target.value }))}
+                                            placeholder="Question"
+                                            className={inputClasses}
+                                        />
+                                        <textarea
+                                            value={faqInput.answer}
+                                            onChange={(e) => setFaqInput(prev => ({ ...prev, answer: e.target.value }))}
+                                            placeholder="Answer"
+                                            rows={2}
+                                            className={cn(inputClasses, "resize-none")}
+                                        />
+                                        <button type="button" onClick={addFaq} className="w-full py-3 bg-primary/10 text-primary rounded-xl font-bold border border-primary/20 hover:bg-primary/20 transition-all flex items-center justify-center gap-2">
+                                            <Sparkles className="w-4 h-4 opacity-70" />
+                                            Add FAQ Entry
+                                        </button>
+                                    </div>
+                                    <div className="space-y-3">
+                                        {formData.faqs.map((faq, i) => (
+                                            <div key={i} className="p-4 rounded-xl border border-input-dark-border bg-input-dark group relative transition-all hover:bg-input-dark-hover">
+                                                <p className="font-bold text-sm mb-1 text-foreground/90">{faq.question}</p>
+                                                <p className="text-xs text-muted-foreground leading-relaxed">{faq.answer}</p>
+                                                <button onClick={() => removeFaq(i)} className="absolute top-2 right-2 p-1.5 rounded-lg text-muted-foreground opacity-0 group-hover:opacity-100 hover:text-red-500 hover:bg-red-500/10 transition-all"><X className="w-4 h-4" /></button>
                                             </div>
-                                        </motion.div>
-                                    )}
-                                </AnimatePresence>
+                                        ))}
+                                    </div>
+                                </div>
 
-                                {/* Hidden file input */}
-                                <input
-                                    type="file"
-                                    ref={fileInputRef}
-                                    className="hidden"
-                                    accept="image/jpeg,image/png,image/webp,image/gif"
-                                    onChange={handleFileChange}
-                                />
-                            </div>
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                    {/* Projects */}
+                                    {/* Projects */}
+                                    <div className="p-6 rounded-2xl border border-border/40 bg-card/30 backdrop-blur-xl transition-all hover:border-primary/20">
+                                        <h2 className="text-lg font-semibold mb-6 flex items-center gap-2">
+                                            <FolderKanban className="w-5 h-5 text-primary" />
+                                            Key Projects
+                                        </h2>
+                                        <div className="space-y-3 mb-6">
+                                            <input
+                                                type="text"
+                                                value={projectInput.title}
+                                                onChange={(e) => setProjectInput(prev => ({ ...prev, title: e.target.value }))}
+                                                placeholder="Project Title"
+                                                className={cn(inputClasses, "py-2 px-3")}
+                                            />
+                                            <textarea
+                                                value={projectInput.description}
+                                                onChange={(e) => setProjectInput(prev => ({ ...prev, description: e.target.value }))}
+                                                placeholder="Project Overview"
+                                                rows={2}
+                                                className={cn(inputClasses, "py-2 px-3 resize-none")}
+                                            />
+                                            <button type="button" onClick={addProject} className="w-full py-2.5 bg-primary/10 text-primary rounded-xl font-bold border border-primary/20 hover:bg-primary/20 transition-all">Add Project</button>
+                                        </div>
+                                        <div className="space-y-3">
+                                            {formData.projects.map((p, i) => (
+                                                <div key={i} className="p-3.5 rounded-xl border border-input-dark-border bg-input-dark flex justify-between items-start group">
+                                                    <div>
+                                                        <p className="font-bold text-sm text-foreground/90">{p.title}</p>
+                                                        <p className="text-[10px] text-muted-foreground mt-0.5 line-clamp-2">{p.description}</p>
+                                                    </div>
+                                                    <button onClick={() => removeProject(i)} className="p-1 rounded-lg text-muted-foreground hover:text-red-500 hover:bg-red-500/10 transition-all"><X className="w-4 h-4" /></button>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </div>
 
-                            {/* Preview Video URL */}
-                            <div>
-                                <label className="block text-sm font-medium mb-2">
-                                    <Video className="w-4 h-4 inline-block mr-2 text-muted-foreground" />
-                                    Preview Video URL
-                                </label>
-                                <input
-                                    type="url"
-                                    value={formData.preview_video_url}
-                                    onChange={(e) => setFormData(prev => ({ ...prev, preview_video_url: e.target.value }))}
-                                    placeholder="https://youtube.com/watch?v=..."
-                                    className="w-full px-4 py-3 rounded-xl bg-background/50 border border-border/50 text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary/50 outline-none transition-all"
-                                />
-                                <p className="text-xs text-muted-foreground mt-1.5">Optional: Add a YouTube or Vimeo video link for course preview</p>
-                            </div>
-                        </div>
-                    </motion.div>
+                                    {/* Resources */}
+                                    <div className="p-6 rounded-2xl border border-border/40 bg-card/30 backdrop-blur-xl transition-all hover:border-primary/20">
+                                        <h2 className="text-lg font-semibold mb-6 flex items-center gap-2">
+                                            <FileText className="w-5 h-5 text-primary" />
+                                            Extra Resources
+                                        </h2>
+                                        <div className="space-y-3 mb-6">
+                                            <input
+                                                type="text"
+                                                value={resourceInput.title}
+                                                onChange={(e) => setResourceInput(prev => ({ ...prev, title: e.target.value }))}
+                                                placeholder="Resource Title (e.g., UI Kit)"
+                                                className={cn(inputClasses, "py-2 px-3")}
+                                            />
+                                            <div className="flex gap-2">
+                                                <Select value={resourceInput.type} onValueChange={(val) => setResourceInput(prev => ({ ...prev, type: val }))}>
+                                                    <SelectTrigger className={cn(selectTriggerClasses, "w-1/3 h-10")}>
+                                                        <SelectValue />
+                                                    </SelectTrigger>
+                                                    <SelectContent>
+                                                        <SelectItem value="link">Link</SelectItem>
+                                                        <SelectItem value="pdf">PDF</SelectItem>
+                                                        <SelectItem value="code">Code</SelectItem>
+                                                    </SelectContent>
+                                                </Select>
+                                                <input
+                                                    type="text"
+                                                    value={resourceInput.url}
+                                                    onChange={(e) => setResourceInput(prev => ({ ...prev, url: e.target.value }))}
+                                                    placeholder="URL or Source"
+                                                    className={cn(inputClasses, "py-2 px-3 flex-1")}
+                                                />
+                                            </div>
+                                            <button type="button" onClick={addResource} className="w-full py-2.5 bg-primary/10 text-primary rounded-xl font-bold border border-primary/20 hover:bg-primary/20 transition-all">Add Resource</button>
+                                        </div>
+                                        <div className="space-y-2">
+                                            {formData.resources.map((r, i) => (
+                                                <div key={i} className="p-3.5 rounded-xl border border-input-dark-border bg-input-dark flex justify-between items-center group">
+                                                    <div className="flex items-center gap-2.5">
+                                                        <div className="p-1.5 rounded-lg bg-surface border border-border/30">
+                                                            <Globe className="w-3.5 h-3.5 text-primary/70" />
+                                                        </div>
+                                                        <span className="font-bold text-xs text-foreground/90">{r.title} <span className="font-normal text-muted-foreground ml-1">({r.type})</span></span>
+                                                    </div>
+                                                    <button onClick={() => removeResource(i)} className="p-1 rounded-lg text-muted-foreground hover:text-red-500 hover:bg-red-500/10 transition-all"><X className="w-4 h-4" /></button>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </div>
+                                </div>
+                            </motion.div>
+                        )}
+                    </AnimatePresence>
+                </div>
 
-                    {/* Requirements */}
-                    <motion.div
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: 0.3 }}
-                        className="p-6 rounded-2xl border border-border/40 bg-card/30 backdrop-blur-xl"
-                    >
-                        <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
-                            <ListChecks className="w-5 h-5 text-primary" />
-                            Requirements
-                        </h2>
+                {/* Submit / Navigation */}
+                <div className="flex justify-between items-center mt-12 bg-card/30 backdrop-blur-2xl border border-border/40 p-6 rounded-3xl shadow-xl shadow-black/5">
+                    <div className="flex items-center gap-2">
+                        {currentStep > 1 ? (
+                            <button
+                                type="button"
+                                onClick={prevStep}
+                                className="px-6 py-3 rounded-xl border border-border/50 text-muted-foreground hover:text-foreground hover:bg-surface/50 transition-all font-bold flex items-center gap-2 group"
+                            >
+                                <ChevronLeft className="w-4 h-4 transition-transform group-hover:-translate-x-1" />
+                                Previous Step
+                            </button>
+                        ) : (
+                            <Link
+                                href="/dashboard/courses"
+                                className="px-6 py-3 rounded-xl border border-border/50 text-muted-foreground hover:text-red-500 hover:bg-red-500/5 transition-all font-bold"
+                            >
+                                Cancel
+                            </Link>
+                        )}
+                    </div>
 
-                        <div className="space-y-3">
-                            <div className="flex gap-2">
-                                <input
-                                    type="text"
-                                    value={requirementInput}
-                                    onChange={(e) => setRequirementInput(e.target.value)}
-                                    placeholder="Add a requirement..."
-                                    className="flex-1 px-4 py-2 rounded-xl bg-background/50 border border-border/50 text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary/50 outline-none transition-all"
-                                    onKeyDown={(e) => {
-                                        if (e.key === 'Enter') {
-                                            e.preventDefault();
-                                            addArrayItem('requirements', requirementInput, setRequirementInput);
-                                        }
-                                    }}
-                                />
-                                <button
-                                    type="button"
-                                    onClick={() => addArrayItem('requirements', requirementInput, setRequirementInput)}
-                                    className="px-4 py-2 rounded-xl bg-primary/10 text-primary hover:bg-primary/20 transition-colors text-sm font-medium"
-                                >
-                                    Add
-                                </button>
-                            </div>
-                            <div className="flex flex-wrap gap-2">
-                                {formData.requirements.map((req, i) => (
-                                    <span key={i} className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-muted/50 text-sm">
-                                        {req}
-                                        <button type="button" onClick={() => removeArrayItem('requirements', i)} className="text-muted-foreground hover:text-red-500">×</button>
-                                    </span>
-                                ))}
-                            </div>
-                        </div>
-                    </motion.div>
-
-                    {/* Learning Objectives */}
-                    <motion.div
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: 0.4 }}
-                        className="p-6 rounded-2xl border border-border/40 bg-card/30 backdrop-blur-xl"
-                    >
-                        <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
-                            <Target className="w-5 h-5 text-primary" />
-                            Learning Objectives
-                        </h2>
-
-                        <div className="space-y-3">
-                            <div className="flex gap-2">
-                                <input
-                                    type="text"
-                                    value={objectiveInput}
-                                    onChange={(e) => setObjectiveInput(e.target.value)}
-                                    placeholder="What will students learn?"
-                                    className="flex-1 px-4 py-2 rounded-xl bg-background/50 border border-border/50 text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary/50 outline-none transition-all"
-                                    onKeyDown={(e) => {
-                                        if (e.key === 'Enter') {
-                                            e.preventDefault();
-                                            addArrayItem('learning_objectives', objectiveInput, setObjectiveInput);
-                                        }
-                                    }}
-                                />
-                                <button
-                                    type="button"
-                                    onClick={() => addArrayItem('learning_objectives', objectiveInput, setObjectiveInput)}
-                                    className="px-4 py-2 rounded-xl bg-primary/10 text-primary hover:bg-primary/20 transition-colors text-sm font-medium"
-                                >
-                                    Add
-                                </button>
-                            </div>
-                            <div className="flex flex-wrap gap-2">
-                                {formData.learning_objectives.map((obj, i) => (
-                                    <span key={i} className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-muted/50 text-sm">
-                                        {obj}
-                                        <button type="button" onClick={() => removeArrayItem('learning_objectives', i)} className="text-muted-foreground hover:text-red-500">×</button>
-                                    </span>
-                                ))}
-                            </div>
-                        </div>
-                    </motion.div>
-
-                    {/* Tags */}
-                    <motion.div
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: 0.5 }}
-                        className="p-6 rounded-2xl border border-border/40 bg-card/30 backdrop-blur-xl"
-                    >
-                        <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
-                            <Tags className="w-5 h-5 text-primary" />
-                            Tags
-                        </h2>
-
-                        <div className="space-y-3">
-                            <div className="flex gap-2">
-                                <input
-                                    type="text"
-                                    value={tagInput}
-                                    onChange={(e) => setTagInput(e.target.value)}
-                                    placeholder="Add tags..."
-                                    className="flex-1 px-4 py-2 rounded-xl bg-background/50 border border-border/50 text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary/50 outline-none transition-all"
-                                    onKeyDown={(e) => {
-                                        if (e.key === 'Enter') {
-                                            e.preventDefault();
-                                            addArrayItem('tags', tagInput, setTagInput);
-                                        }
-                                    }}
-                                />
-                                <button
-                                    type="button"
-                                    onClick={() => addArrayItem('tags', tagInput, setTagInput)}
-                                    className="px-4 py-2 rounded-xl bg-primary/10 text-primary hover:bg-primary/20 transition-colors text-sm font-medium"
-                                >
-                                    Add
-                                </button>
-                            </div>
-                            <div className="flex flex-wrap gap-2">
-                                {formData.tags.map((tag, i) => (
-                                    <span key={i} className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-primary/10 text-primary text-sm">
-                                        #{tag}
-                                        <button type="button" onClick={() => removeArrayItem('tags', i)} className="hover:text-red-500">×</button>
-                                    </span>
-                                ))}
-                            </div>
-                        </div>
-                    </motion.div>
-
-                    {/* Submit */}
-                    <motion.div
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: 0.6 }}
-                        className="flex justify-end gap-4"
-                    >
-                        <Link
-                            href="/dashboard/courses"
-                            className="px-6 py-3 rounded-xl border border-border/50 text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-colors font-medium"
-                        >
-                            Cancel
-                        </Link>
-                        <button
-                            type="submit"
-                            disabled={isSubmitting}
-                            className={cn(
-                                "px-6 py-3 rounded-xl bg-primary text-primary-foreground font-semibold flex items-center gap-2 transition-all",
-                                isSubmitting ? "opacity-70 cursor-not-allowed" : "hover:bg-primary/90 shadow-lg shadow-primary/20"
-                            )}
-                        >
-                            {isSubmitting ? (
-                                <>
-                                    <Loader2 className="w-4 h-4 animate-spin" />
-                                    Creating...
-                                </>
-                            ) : (
-                                <>
-                                    <Save className="w-4 h-4" />
-                                    Create Course
-                                </>
-                            )}
-                        </button>
-                    </motion.div>
+                    <div className="flex items-center gap-4">
+                        {currentStep < totalSteps ? (
+                            <button
+                                type="button"
+                                onClick={nextStep}
+                                className="px-10 py-3.5 rounded-xl bg-primary text-primary-foreground font-bold flex items-center gap-2 hover:bg-primary/90 shadow-[0_10px_20px_-10px_rgba(var(--primary-rgb),0.5)] transition-all active:scale-95 group"
+                            >
+                                Continue
+                                <ChevronRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
+                            </button>
+                        ) : (
+                            <button
+                                type="submit"
+                                disabled={isSubmitting}
+                                className={cn(
+                                    "px-12 py-3.5 rounded-xl text-white font-extrabold flex items-center gap-2 transition-all active:scale-95",
+                                    isSubmitting
+                                        ? "bg-slate-700 opacity-70 cursor-not-allowed"
+                                        : "bg-emerald-500 hover:bg-emerald-600 shadow-[0_10px_20px_-10px_rgba(16,185,129,0.5)] hover:shadow-[0_12px_24px_-8px_rgba(16,185,129,0.6)]"
+                                )}
+                            >
+                                {isSubmitting ? (
+                                    <>
+                                        <Loader2 className="w-5 h-5 animate-spin" />
+                                        Launching...
+                                    </>
+                                ) : (
+                                    <>
+                                        <Sparkles className="w-5 h-5" />
+                                        Publish Course
+                                    </>
+                                )}
+                            </button>
+                        )}
+                    </div>
                 </div>
             </form>
         </div>

@@ -4,6 +4,7 @@ import {
     BookOpen, Trash2, Edit, MoreHorizontal, TrendingUp,
     Plus, Download, CheckCircle2, Eye, RefreshCw, Archive, Layers, BarChart, DollarSign, X
 } from "lucide-react";
+import { useRouter } from "next/navigation";
 import { jsPDF } from "jspdf";
 import autoTable from "jspdf-autotable";
 import { motion, AnimatePresence } from "motion/react";
@@ -53,6 +54,9 @@ export default function CourseManagementPage() {
     // Toast
     const toast = useToast();
 
+    // Navigation
+    const router = useRouter();
+
     // State Management
     const [courses, setCourses] = useState<CourseWithInstructor[]>([]);
     const [stats, setStats] = useState<any | null>(null);
@@ -70,7 +74,6 @@ export default function CourseManagementPage() {
     const [totalCourses, setTotalCourses] = useState(0);
 
     // Modals & Confirmation (Simplified for now using window.confirm or similar pattern)
-    const [bulkActionModal, setBulkActionModal] = useState<'delete' | 'publish' | 'unpublish' | null>(null);
     const [exportModal, setExportModal] = useState(false);
 
     // Fetch Data
@@ -166,8 +169,8 @@ export default function CourseManagementPage() {
         }
     };
 
-    const handleBulkAction = async () => {
-        if (bulkActionModal === 'delete') {
+    const handleBulkAction = async (action: 'delete' | 'publish' | 'unpublish') => {
+        if (action === 'delete') {
             if (!confirm(`Are you sure you want to delete ${selectedCourses.size} courses?`)) return;
             const result = await bulkDeleteCourses(Array.from(selectedCourses));
             if (result.success) {
@@ -175,14 +178,14 @@ export default function CourseManagementPage() {
             } else {
                 toast.error('Failed to delete courses');
             }
-        } else if (bulkActionModal === 'publish') {
+        } else if (action === 'publish') {
             const result = await bulkUpdateCourseStatus(Array.from(selectedCourses), 'published');
             if (result.success) {
                 toast.success(`${result.updatedCount} courses published`);
             } else {
                 toast.error('Failed to publish courses');
             }
-        } else if (bulkActionModal === 'unpublish') {
+        } else if (action === 'unpublish') {
             const result = await bulkUpdateCourseStatus(Array.from(selectedCourses), 'draft');
             if (result.success) {
                 toast.success(`${result.updatedCount} courses unpublished`);
@@ -191,7 +194,6 @@ export default function CourseManagementPage() {
             }
         }
 
-        setBulkActionModal(null);
         setSelectedCourses(new Set());
         fetchCoursesData();
         fetchStatsData();
@@ -329,7 +331,7 @@ export default function CourseManagementPage() {
                         whileHover={{ scale: 1.02 }}
                         whileTap={{ scale: 0.98 }}
                         onClick={() => setExportModal(true)}
-                        className="px-4 py-2.5 rounded-xl border border-border/50 bg-background/50 hover:bg-background text-sm font-semibold transition-all flex items-center gap-2"
+                        className="px-4 py-2.5 rounded-xl border border-border/50 bg-muted/40 hover:bg-muted/60 text-sm font-semibold transition-all flex items-center gap-2"
                     >
                         <Download className="w-4 h-4" />
                         <span>Export</span>
@@ -391,21 +393,32 @@ export default function CourseManagementPage() {
             </div>
 
             {/* Main Table Container */}
-            <div className="rounded-3xl border border-border/40 bg-card/30 backdrop-blur-xl shadow-2xl shadow-black/5">
+            <div className="rounded-2xl border border-border/40 bg-card/30 backdrop-blur-xl overflow-hidden shadow-sm shadow-black/5">
 
                 {/* Toolbar */}
-                <div className="p-4 md:p-6 border-b border-border/40 bg-muted/20">
+                <div className="p-4 md:p-6 border-b border-border/40 bg-card/30 backdrop-blur-xl">
                     <div className="flex flex-col lg:flex-row gap-4 justify-between">
-                        {/* Search */}
-                        <SearchInput
-                            value={searchTerm}
-                            onChange={(value) => { setSearchTerm(value); setCurrentPage(1); }}
-                            placeholder="Search courses..."
-                            debounceMs={300}
-                            isSearching={isLoading}
-                            disabled={!stats || stats.total === 0}
-                            className="w-full lg:max-w-md"
-                        />
+                        {/* Search & Refresh Group */}
+                        <div className="flex items-center gap-2 w-full lg:max-w-md">
+                            <SearchInput
+                                value={searchTerm}
+                                onChange={(value) => { setSearchTerm(value); setCurrentPage(1); }}
+                                placeholder="Search courses..."
+                                debounceMs={300}
+                                isSearching={isLoading}
+                                disabled={!stats || stats.total === 0}
+                                className="flex-1"
+                            />
+
+                            {/* Refresh Button */}
+                            <button
+                                onClick={fetchCoursesData}
+                                className="h-11 w-11 flex items-center justify-center shrink-0 rounded-xl border border-input-dark-border bg-input-dark hover:bg-input-dark-hover hover:text-foreground focus:shadow-[0_0_0_2px_var(--input-dark-glow)] focus:outline-none transition-all duration-200 text-input-dark-text"
+                                title="Refresh list"
+                            >
+                                <RefreshCw className={cn("w-4 h-4", isLoading && "animate-spin")} />
+                            </button>
+                        </div>
 
                         <div className="flex flex-wrap items-center gap-3">
                             <Select value={categoryFilter} onValueChange={setCategoryFilter} disabled={!stats || stats.total === 0}>
@@ -450,10 +463,6 @@ export default function CourseManagementPage() {
                                     <SelectItem value="advanced">Advanced</SelectItem>
                                 </SelectContent>
                             </Select>
-
-                            <button onClick={fetchCoursesData} className="p-2.5 rounded-xl border border-border/50 bg-background/50 hover:bg-background hover:text-primary transition-colors text-muted-foreground" title="Refresh">
-                                <RefreshCw className={cn("w-4 h-4", isLoading && "animate-spin")} />
-                            </button>
 
                             {(searchTerm || categoryFilter !== 'all' || statusFilter !== 'all' || levelFilter !== 'all') && (
                                 <button
@@ -530,7 +539,7 @@ export default function CourseManagementPage() {
                                 </TableRow>
                             ) : (
                                 courses.map((course) => (
-                                    <TableRow key={course.id} className="border-b border-border/30 hover:bg-primary/3 transition-all duration-200 group">
+                                    <TableRow key={course.id} className="border-b border-border/30 transition-all duration-200 group">
                                         <TableCell className="px-6 py-4">
                                             <AnimatedCheckbox
                                                 id={`select-${course.id}`}
@@ -573,11 +582,11 @@ export default function CourseManagementPage() {
                                                     <button className="p-2 rounded-lg hover:bg-muted/50 transition-colors outline-none"><MoreHorizontal className="w-4 h-4" /></button>
                                                 </DropdownMenuTrigger>
                                                 <DropdownMenuContent align="end" className="w-44 p-1.5 rounded-xl border border-border/50 dark:border-white/10 bg-white dark:bg-[#040a14] shadow-xl dark:shadow-2xl">
-                                                    <DropdownMenuItem className="rounded-lg cursor-pointer text-sm gap-2.5 text-slate-700 dark:text-slate-200 focus:bg-slate-100 dark:focus:bg-white/10 focus:text-slate-900 dark:focus:text-white" onClick={() => window.location.href = `/courses/${course.slug}`}>
+                                                    <DropdownMenuItem className="rounded-lg cursor-pointer text-sm gap-2.5 text-slate-700 dark:text-slate-200 focus:bg-slate-100 dark:focus:bg-white/10 focus:text-slate-900 dark:focus:text-white" onClick={() => router.push(`/courses/${course.slug}`)}>
                                                         <Eye className="w-4 h-4" />
                                                         View Course
                                                     </DropdownMenuItem>
-                                                    <DropdownMenuItem className="rounded-lg cursor-pointer text-sm gap-2.5 text-slate-700 dark:text-slate-200 focus:bg-slate-100 dark:focus:bg-white/10 focus:text-slate-900 dark:focus:text-white" onClick={() => window.location.href = `/dashboard/courses/${course.id}/edit`}>
+                                                    <DropdownMenuItem className="rounded-lg cursor-pointer text-sm gap-2.5 text-slate-700 dark:text-slate-200 focus:bg-slate-100 dark:focus:bg-white/10 focus:text-slate-900 dark:focus:text-white" onClick={() => router.push(`/dashboard/courses/${course.id}/edit`)}>
                                                         <Edit className="w-4 h-4" />
                                                         Edit Course
                                                     </DropdownMenuItem>
@@ -614,7 +623,10 @@ export default function CourseManagementPage() {
                             pageSize={pageSize}
                             totalPages={Math.ceil(totalCourses / pageSize)}
                             onPageChange={setCurrentPage}
-                            onPageSizeChange={setPageSize}
+                            onPageSizeChange={(size) => {
+                                setPageSize(size);
+                                setCurrentPage(1);
+                            }}
                         />
                     </div>
                 )}
@@ -632,13 +644,13 @@ export default function CourseManagementPage() {
                         <span className="text-sm font-semibold mr-2 whitespace-nowrap pl-1">{selectedCourses.size} selected</span>
                         <div className="h-4 w-px bg-border mx-1" />
                         <div className="flex items-center gap-1">
-                            <button onClick={() => { setBulkActionModal('publish'); handleBulkAction(); }} className="p-2 rounded-full hover:bg-muted transition-colors text-emerald-500" title="Publish Selected">
+                            <button onClick={() => handleBulkAction('publish')} className="p-2 rounded-full hover:bg-muted transition-colors text-emerald-500" title="Publish Selected">
                                 <CheckCircle2 className="w-4 h-4" />
                             </button>
-                            <button onClick={() => { setBulkActionModal('unpublish'); handleBulkAction(); }} className="p-2 rounded-full hover:bg-muted transition-colors text-amber-500" title="Unpublish Selected">
+                            <button onClick={() => handleBulkAction('unpublish')} className="p-2 rounded-full hover:bg-muted transition-colors text-amber-500" title="Unpublish Selected">
                                 <Archive className="w-4 h-4" />
                             </button>
-                            <button onClick={() => { setBulkActionModal('delete'); handleBulkAction(); }} className="p-2 rounded-full hover:bg-muted transition-colors text-red-500" title="Delete Selected">
+                            <button onClick={() => handleBulkAction('delete')} className="p-2 rounded-full hover:bg-muted transition-colors text-red-500" title="Delete Selected">
                                 <Trash2 className="w-4 h-4" />
                             </button>
                         </div>
