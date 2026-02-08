@@ -265,7 +265,11 @@ export async function getCoursePageData(slug: string): Promise<{
 
         const reviews: ReviewWithUser[] = (reviewsData || []).map((r) => ({
             ...r,
-            user: r.user as { id: string; name: string; avatar_url: string },
+            user: (r.user as { id: string; name: string; avatar_url: string }) || {
+                id: r.user_id,
+                name: 'Anonymous Student',
+                avatar_url: ''
+            },
         }));
 
         // Calculate rating breakdown
