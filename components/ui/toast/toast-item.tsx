@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { Check, AlertTriangle, AlertOctagon, Info, X, Loader2 } from "lucide-react";
+import { Check, AlertTriangle, AlertOctagon, Info, X, Loader2, Copy } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 export type ToastType = "success" | "error" | "warning" | "info" | "loading";
@@ -16,6 +16,8 @@ interface ToastItemProps {
 }
 
 export const ToastItem = ({ title, description, variant, onDismiss, paused }: ToastItemProps) => {
+    const [copied, setCopied] = React.useState(false);
+
     React.useEffect(() => {
         if (paused || variant === "loading") return;
 
@@ -25,6 +27,17 @@ export const ToastItem = ({ title, description, variant, onDismiss, paused }: To
 
         return () => clearTimeout(timer);
     }, [paused, onDismiss, variant]);
+
+    const handleCopy = async () => {
+        const textToCopy = description ? `${title}\n${description}` : title;
+        try {
+            await navigator.clipboard.writeText(textToCopy);
+            setCopied(true);
+            setTimeout(() => setCopied(false), 2000);
+        } catch (err) {
+            console.error('Failed to copy:', err);
+        }
+    };
 
     const getIcon = () => {
         switch (variant) {
@@ -64,7 +77,7 @@ export const ToastItem = ({ title, description, variant, onDismiss, paused }: To
     return (
         <div
             className={cn(
-                "relative flex w-full max-w-[420px] items-center gap-4 overflow-hidden rounded-[24px] border border-border/50 dark:border-white/5 bg-white dark:bg-card p-5 shadow-2xl backdrop-blur-3xl min-w-[380px] pointer-events-auto",
+                "group relative flex w-full max-w-[420px] items-center gap-4 overflow-hidden rounded-[24px] border border-border/50 dark:border-white/5 bg-white dark:bg-card p-5 shadow-2xl backdrop-blur-3xl min-w-[380px] pointer-events-auto",
                 // Glow effects based on variant
                 variant === "success" && "shadow-[0_0_40px_-10px_rgba(16,185,129,0.1)]",
                 variant === "error" && "shadow-[0_0_40px_-10px_rgba(239,68,68,0.1)]",
@@ -76,7 +89,7 @@ export const ToastItem = ({ title, description, variant, onDismiss, paused }: To
                 {getIcon()}
             </div>
 
-            <div className="flex flex-col gap-1 flex-1">
+            <div className="flex flex-col gap-1 flex-1 pr-16">
                 <h3 className="font-semibold text-foreground text-[15px] leading-none tracking-wide">
                     {title}
                 </h3>
@@ -87,12 +100,38 @@ export const ToastItem = ({ title, description, variant, onDismiss, paused }: To
                 )}
             </div>
 
-            <button
-                onClick={onDismiss}
-                className="absolute top-4 right-4 text-muted-foreground hover:text-foreground transition-colors opacity-0 group-hover:opacity-100"
-            >
-                <X className="size-4" />
-            </button>
+            {/* Action buttons */}
+            <div className="absolute top-4 right-4 flex items-center gap-1.5">
+                {/* Copy button for error toasts */}
+                {variant === "error" && (
+                    <>
+                        <button
+                            onClick={handleCopy}
+                            className={cn(
+                                "flex items-center justify-center size-7 rounded-lg transition-all",
+                                copied
+                                    ? "bg-emerald-500/20 text-emerald-500"
+                                    : "bg-muted/60 text-muted-foreground hover:bg-muted hover:text-foreground"
+                            )}
+                            title={copied ? "Copied!" : "Copy error message"}
+                        >
+                            {copied ? (
+                                <Check className="size-3.5" strokeWidth={2.5} />
+                            ) : (
+                                <Copy className="size-3.5" />
+                            )}
+                        </button>
+                    </>
+                )}
+
+                <button
+                    onClick={onDismiss}
+                    className="flex items-center justify-center size-7 rounded-lg bg-muted/60 text-muted-foreground hover:bg-muted hover:text-foreground transition-all"
+                    title="Dismiss"
+                >
+                    <X className="size-3.5" />
+                </button>
+            </div>
         </div>
     );
 };

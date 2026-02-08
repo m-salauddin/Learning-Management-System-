@@ -64,7 +64,7 @@ export function SecondaryCTAButton({
 }: Omit<CTAButtonProps, "variant">) {
     const buttonContent = (
         <>
-            <span className="absolute inset-0 w-1/2 h-full bg-linear-to-r from-transparent via-white/20 to-transparent -translate-x-[150%] skew-x-[-20deg] group-hover/shimmer:translate-x-[250%] transition-transform duration-700 ease-in-out z-10" />
+            <span className="absolute inset-0 w-1/2 h-full bg-linear-to-r from-transparent via-black/10 dark:via-white/20 to-transparent -translate-x-[150%] skew-x-[-20deg] group-hover/shimmer:translate-x-[250%] transition-transform duration-700 ease-in-out z-10" />
             <span className="text-lg font-bold dark:text-white text-black group-hover/shimmer:text-primary transition-colors relative z-20">
                 {children}
             </span>
@@ -72,7 +72,7 @@ export function SecondaryCTAButton({
     );
 
     const buttonClasses = cn(
-        "group/shimmer relative flex items-center gap-3 pl-8 bg-card pr-8 py-2.5 border border-border hover:border-white/20 rounded-full transition-all duration-300 active:scale-95 cursor-pointer h-11 shadow-lg overflow-hidden",
+        "group/shimmer relative flex items-center gap-3 pl-8 bg-card pr-8 py-2.5 border border-border hover:border-slate-400 dark:hover:border-white/20 rounded-full transition-all duration-300 active:scale-95 cursor-pointer h-11 shadow-lg overflow-hidden",
         className
     );
 

@@ -40,10 +40,10 @@ function SelectTrigger({
       data-size={size}
       className={cn(
         // Base styles
-        "group flex w-full items-center justify-between gap-2 rounded-xl px-4 py-2.5 text-sm font-medium transition-all duration-200 outline-none disabled:cursor-not-allowed disabled:opacity-50",
+        "group flex w-full items-center justify-between gap-2 rounded-xl px-3 py-2.5 text-sm font-medium transition-all duration-200 outline-none disabled:cursor-not-allowed disabled:opacity-50",
         "**:data-[slot=select-value]:line-clamp-1 data-placeholder:text-input-dark-text [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
         // Dark input styling - consistent across variants
-        "bg-input-dark border border-input-dark-border text-input-dark-text",
+        "bg-input-dark border border-input-dark-border text-foreground/90",
         // Hover state
         "hover:bg-input-dark-hover hover:border-input-dark-border",
         // Focus/Active state with glow

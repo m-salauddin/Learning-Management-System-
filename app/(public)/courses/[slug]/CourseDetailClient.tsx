@@ -30,7 +30,7 @@ import {
     FolderKanban,
     HelpCircle,
     ExternalLink,
-    ThumbsUp,
+
     Code,
     FileCode,
     File,
@@ -1274,7 +1274,7 @@ export default function CourseDetailClient({ course, pageData }: CourseDetailCli
                                                 <div>
                                                     <h4 className="font-bold text-white text-lg leading-tight group-hover:text-primary transition-colors">{review.user.name}</h4>
                                                     <div className="flex items-center gap-2 mt-1">
-                                                        <span className="px-2 py-0.5 rounded-md bg-emerald-500/10 text-emerald-500 text-[10px] font-bold uppercase tracking-wider">Verified Student</span>
+                                                        <span className="px-2 py-0.5 rounded-md bg-emerald-500/10 text-emerald-500 text-[10px] font-bold uppercase tracking-wider">Batch No {pageData?.course.batch_no || 12}</span>
                                                     </div>
                                                 </div>
                                             </div>
@@ -1294,10 +1294,7 @@ export default function CourseDetailClient({ course, pageData }: CourseDetailCli
                                             </div>
 
                                             <div className="mt-auto pt-4 border-t border-white/5 flex items-center justify-between opacity-50 group-hover:opacity-100 transition-opacity">
-                                                <span className="text-xs font-medium text-slate-500 tracking-wide">Posted {new Date().toLocaleDateString()}</span>
-                                                <div className="flex gap-3">
-                                                    <ThumbsUp className="w-3.5 h-3.5 text-slate-400 hover:text-primary cursor-pointer transition-colors" />
-                                                </div>
+                                                <span className="text-xs font-medium text-slate-500 tracking-wide">Posted {new Date(review.created_at).toLocaleDateString()}</span>
                                             </div>
                                         </motion.div>
                                     ))}

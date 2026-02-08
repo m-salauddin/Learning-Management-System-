@@ -50,7 +50,10 @@ export async function getCourses(params: GetCoursesParams = {}): Promise<Paginat
         .from('courses')
         .select(`
             *,
-            instructor:users!courses_instructor_id_fkey(id, name, email, avatar_url)
+            instructor:instructor_profiles(
+                user:users(id, name, email, avatar_url)
+            ),
+            category:categories(id, name, slug)
         `, { count: 'exact' });
 
     // Apply filters
@@ -58,15 +61,15 @@ export async function getCourses(params: GetCoursesParams = {}): Promise<Paginat
         query = query.eq('status', status);
     }
 
-    if (category) {
+    if (category && category !== 'all') {
         query = query.eq('category_id', category);
     }
 
-    if (instructor) {
+    if (instructor && instructor !== 'all') {
         query = query.eq('instructor_id', instructor);
     }
 
-    if (level) {
+    if (level && level !== 'all') {
         query = query.eq('level', level);
     }
 
@@ -97,13 +100,19 @@ export async function getCourses(params: GetCoursesParams = {}): Promise<Paginat
 
     const { data, error, count } = await query;
 
-    if (error) {
-        console.error('Error fetching courses:', error);
-        return { data: [], total: 0, page, pageSize, totalPages: 0 };
-    }
+    // Map the instructor data to match CourseWithInstructor type
+    const transformedData = (data as any[])?.map(course => ({
+        ...course,
+        instructor: course.instructor?.user || {
+            id: course.instructor_id,
+            name: 'Unknown Instructor',
+            email: '',
+            avatar_url: null
+        }
+    }));
 
     return {
-        data: data as CourseWithInstructor[],
+        data: transformedData as CourseWithInstructor[],
         total: count || 0,
         page,
         pageSize,
@@ -122,7 +131,9 @@ export async function getCourseBySlug(slug: string): Promise<ApiResponse<CourseW
         .from('courses')
         .select(`
             *,
-            instructor:users!courses_instructor_id_fkey(id, name, email, avatar_url),
+            instructor:instructor_profiles(
+                user:users(id, name, email, avatar_url)
+            ),
             category:categories(id, name, slug),
             modules(
                 *,
@@ -134,11 +145,18 @@ export async function getCourseBySlug(slug: string): Promise<ApiResponse<CourseW
         .order('position', { foreignTable: 'modules.lessons', ascending: true })
         .single();
 
-    if (error) {
-        return { success: false, error: error.message };
-    }
+    // Map instructor
+    const transformedCourse = {
+        ...course,
+        instructor: (course as any).instructor?.user || {
+            id: (course as any).instructor_id,
+            name: 'Unknown Instructor',
+            email: '',
+            avatar_url: null
+        }
+    };
 
-    return { success: true, data: course as CourseWithModules };
+    return { success: true, data: transformedCourse as CourseWithModules };
 }
 
 export async function getCourseById(id: string): Promise<ApiResponse<CourseWithModules>> {
@@ -148,7 +166,9 @@ export async function getCourseById(id: string): Promise<ApiResponse<CourseWithM
         .from('courses')
         .select(`
             *,
-            instructor:users!courses_instructor_id_fkey(id, name, email, avatar_url),
+            instructor:instructor_profiles(
+                user:users(id, name, email, avatar_url)
+            ),
             category:categories(id, name, slug),
             modules(
                 *,
@@ -164,7 +184,18 @@ export async function getCourseById(id: string): Promise<ApiResponse<CourseWithM
         return { success: false, error: error.message };
     }
 
-    return { success: true, data: course as CourseWithModules };
+    // Map instructor
+    const transformedCourse = {
+        ...course,
+        instructor: (course as any).instructor?.user || {
+            id: (course as any).instructor_id,
+            name: 'Unknown Instructor',
+            email: '',
+            avatar_url: null
+        }
+    };
+
+    return { success: true, data: transformedCourse as CourseWithModules };
 }
 
 // ============================================================================
@@ -191,12 +222,55 @@ export async function createCourse(input: CreateCourseInput): Promise<ApiRespons
         return { success: false, error: 'Only teachers can create courses' };
     }
 
+    // Extract auxiliary data
+    const { faqs, projects, resources, target_audience, ...mainCourseData } = input;
+
+    const instructorId = mainCourseData.instructor_id === "_default" || !mainCourseData.instructor_id ? user.id : mainCourseData.instructor_id;
+
+    // 0. Ensure instructor profile exists (FK requirement)
+    const { data: existingProfile } = await supabase
+        .from('instructor_profiles')
+        .select('id')
+        .eq('id', instructorId)
+        .single();
+
+    if (!existingProfile) {
+        const { error: profileError } = await supabase
+            .from('instructor_profiles')
+            .insert({
+                id: instructorId,
+                bio: "Instructor at Dokkhota IT",
+                expertise: [],
+                social_links: {}
+            });
+
+        if (profileError) {
+            console.error('Error creating instructor profile:', profileError);
+            // If we can't create a profile, the course creation will fail anyway due to FK
+        }
+    }
+
+    // Generate slug if not provided
+    let finalSlug = mainCourseData.slug;
+    if (!finalSlug) {
+        finalSlug = mainCourseData.title
+            .toLowerCase()
+            .replace(/[^\w\s-]/g, '') // Remove non-word chars (except spaces and hyphens)
+            .replace(/\s+/g, '-')      // Replace spaces with hyphens
+            .replace(/--+/g, '-')      // Replace multiple hyphens with single hyphen
+            .trim();                   // Trim leading/trailing whitespace
+
+        // Add a random suffix if needed to ensure uniqueness (since it's a 'u' constraint)
+        // For now, let's keep it simple, but we could add a short ID here.
+    }
+
     // Create course
     const { data: course, error } = await supabase
         .from('courses')
         .insert({
-            ...input,
-            instructor_id: user.id,
+            ...mainCourseData,
+            slug: finalSlug,
+            instructor_id: instructorId,
             status: 'draft',
             published: false
         })
@@ -206,6 +280,55 @@ export async function createCourse(input: CreateCourseInput): Promise<ApiRespons
     if (error) {
         console.error('Error creating course:', error);
         return { success: false, error: error.message };
+    }
+
+    // 1. Insert into course_details if target_audience or description exists
+    if (target_audience?.length || mainCourseData.description) {
+        await supabase.from('course_details').insert({
+            course_id: course.id,
+            target_audience: target_audience || [],
+            description_long: mainCourseData.description || "",
+            learning_outcomes: mainCourseData.learning_objectives || [],
+            requirements: mainCourseData.requirements || [],
+            language: mainCourseData.language || "বাংলা",
+        });
+    }
+
+    // 2. Insert FAQs
+    if (faqs?.length) {
+        const faqData = faqs.map((faq, index) => ({
+            course_id: course.id,
+            question: faq.question,
+            answer: faq.answer,
+            order_index: index,
+            is_published: true
+        }));
+        await supabase.from('course_faq').insert(faqData);
+    }
+
+    // 3. Insert Projects
+    if (projects?.length) {
+        const projectData = projects.map((p, index) => ({
+            course_id: course.id,
+            title: p.title,
+            description: p.description,
+            order_index: index,
+            is_public: true
+        }));
+        await supabase.from('course_projects').insert(projectData);
+    }
+
+    // 4. Insert Resources
+    if (resources?.length) {
+        const resourceData = resources.map((r, index) => ({
+            course_id: course.id,
+            title: r.title,
+            resource_type: r.type,
+            external_url: r.url,
+            order_index: index,
+            is_public: true
+        }));
+        await supabase.from('course_resources').insert(resourceData);
     }
 
     revalidatePath('/dashboard/courses');
@@ -507,7 +630,9 @@ export async function exportCoursesToCSV(filters: any = {}): Promise<{ csv?: str
         .select(`
             *,
             category:categories(name),
-            instructor:users!courses_instructor_id_fkey(name)
+            instructor:instructor_profiles(
+                user:users(name)
+            )
         `);
 
     if (filters.search) {
@@ -536,7 +661,7 @@ export async function exportCoursesToCSV(filters: any = {}): Promise<{ csv?: str
     const rows = data.map((course: any) => [
         course.id,
         `"${course.title.replace(/"/g, '""')}"`, // Escape quotes
-        `"${course.instructor?.name || 'Unknown'}"`,
+        `"${course.instructor?.user?.name || 'Unknown'}"`,
         `"${course.category?.name || 'Uncategorized'}"`,
         course.price,
         course.status,
@@ -562,7 +687,9 @@ export async function exportCoursesToJSON(filters: any = {}): Promise<{ json?: s
         .select(`
             *,
             category:categories(name),
-            instructor:users!courses_instructor_id_fkey(name, email)
+            instructor:instructor_profiles(
+                user:users(name, email)
+            )
         `);
 
     if (filters.search) {

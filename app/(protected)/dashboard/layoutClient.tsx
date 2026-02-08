@@ -39,7 +39,7 @@ const NAV_ITEMS: Record<UserRole, SidebarItem[]> = {
     ],
     admin: [
         { icon: LayoutDashboard, label: "Overview", href: "/dashboard" },
-        { icon: Users, label: "User Management", href: "/dashboard/users" },
+        { icon: Users, label: "Users", href: "/dashboard/users" },
         { icon: BookOpen, label: "Courses", href: "/dashboard/courses" },
         { icon: Tags, label: "Discounts", href: "/dashboard/discounts" },
         { icon: Ticket, label: "Coupons", href: "/dashboard/coupons" },

@@ -247,8 +247,14 @@
 
   html {
     @apply scroll-smooth;
+  }
+
+  /* Prevent Radix UI from adding unwanted padding-right/margin-right when we use scrollbar-gutter: stable */
+  html,
+  body {
+    padding-right: 0 !important;
+    margin-right: 0 !important;
     scrollbar-gutter: stable;
-    /* Keeps scrollbar space reserved to prevent shifts */
   }
 
   body {
@@ -311,15 +317,16 @@
    ============================================ */
 @layer utilities {
 
-  /* Dashboard Scrollbar - Custom Override */
   .dashboard-scrollbar {
     scrollbar-width: thin;
     scrollbar-color: var(--border) transparent;
+    scrollbar-gutter: stable;
   }
 
   .dashboard-scrollbar::-webkit-scrollbar {
-    width: 6px;
-    height: 6px;
+    width: 5px;
+    /* Harmonized with global width to prevent shift */
+    height: 5px;
   }
 
   .dashboard-scrollbar::-webkit-scrollbar-track {

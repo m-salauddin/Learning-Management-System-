@@ -98,7 +98,7 @@ export function Navbar() {
             suppressHydrationWarning
             className="fixed top-4 left-0 right-0 mx-auto z-100 w-[95%] max-w-7xl"
         >
-            <div className="isolate bg-white/60 dark:bg-slate-950/50 backdrop-blur-3xl border border-white/20 dark:border-white/10 rounded-2xl px-4 xl:px-8 py-3 xl:py-4 shadow-xl shadow-black/5 dark:shadow-black/40">
+            <div className="isolate bg-white/60 dark:bg-slate-950/50 backdrop-blur-3xl border border-border rounded-2xl px-4 xl:px-8 py-3 xl:py-4 shadow-xl shadow-black/5 dark:shadow-black/40">
                 <div className="flex items-center justify-between">
 
                     <Link href="/" aria-label="Home" className="shrink-0">
@@ -204,7 +204,7 @@ export function Navbar() {
                             animate={{ opacity: 1, x: 0 }}
                             exit={{ opacity: 0, x: "100%" }}
                             transition={{ type: "spring", stiffness: 300, damping: 30 }}
-                            className="absolute top-full right-0 mt-2 w-72 p-4 bg-white/80 dark:bg-slate-950/90 backdrop-blur-xl border border-white/20 dark:border-white/10 rounded-3xl shadow-2xl origin-top-right flex flex-col gap-4 overflow-hidden"
+                            className="absolute top-full right-0 mt-2 w-72 p-4 bg-white/80 dark:bg-slate-950/90 backdrop-blur-xl border border-border rounded-3xl shadow-2xl origin-top-right flex flex-col gap-4 overflow-hidden"
                         >
 
                             <div className="flex flex-col gap-2">
