@@ -31,7 +31,7 @@ export function CourseCard({ course }: { course: MappedCourse }) {
 
     const hasDiscount = course.discountPrice && timeLeft;
 
-    // Format countdown string
+
     const formatCountdown = () => {
         if (!timeLeft) return "";
         const parts = [];
@@ -58,7 +58,7 @@ export function CourseCard({ course }: { course: MappedCourse }) {
                         <div className="absolute inset-0 bg-linear-to-t from-black/90 via-black/40 to-black/20" />
 
                         <div className="absolute top-3 left-3 right-3 flex items-start justify-between gap-2">
-                            {/* Countdown badge */}
+
                             {hasDiscount && (
                                 <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/20 dark:bg-black/60 backdrop-blur-md border border-white/30 dark:border-white/10 shadow-sm">
                                     <Timer className="w-3.5 h-3.5 text-amber-400" />

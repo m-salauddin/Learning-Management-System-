@@ -259,6 +259,25 @@ export interface CoursePageData {
     isEnrolled: boolean;
     enrollmentId: string | null;
     userProgress: number;
+
+    // Batches
+    batches: CourseBatch[];
+}
+
+// ============================================================================
+// COURSE BATCHES
+// ============================================================================
+
+export interface CourseBatch {
+    id: string;
+    course_id: string;
+    batch_name: string;
+    start_date: string;
+    end_date: string | null;
+    seats_total: number;
+    seats_remaining: number;
+    class_schedule: string;
+    is_active: boolean;
 }
 
 // ============================================================================

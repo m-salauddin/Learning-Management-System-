@@ -9,6 +9,8 @@ import { fadeInUp } from "@/lib/motion";
 import { AnimatedCheckbox } from "@/components/ui/AnimatedCheckbox";
 import { CourseCard } from "@/components/CourseCard";
 import { MappedCourse } from "@/types/mapped-course";
+import Breadcrumbs from "@/components/ui/Breadcrumbs";
+import { BookOpen, Layout } from "lucide-react";
 
 const CATEGORIES = ["All Topics", "Web Development", "Data Science", "Mobile Development", "Cyber Security", "Cloud Computing", "Design"];
 const LEVELS = ["Beginner", "Intermediate", "Advanced"];
@@ -225,9 +227,11 @@ function CoursesContent({ initialCourses }: { initialCourses: MappedCourse[] }) 
             <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 pt-28 pb-20">
                 <div className="mb-8 space-y-6">
                     <motion.div initial="hidden" animate="visible" variants={fadeInUp}>
-                        <Link href="/" className="inline-flex items-center gap-2 text-muted-foreground hover:text-primary transition-colors mb-4 text-sm font-medium">
-                            <ArrowLeft className="w-4 h-4" /> Back to Home
-                        </Link>
+                        <Breadcrumbs
+                            rootLabel="Home"
+                            items={[{ label: 'Courses', icon: BookOpen }]}
+                            className="mb-6"
+                        />
                         <h1 className="text-3xl sm:text-4xl font-bold tracking-tight mb-2">
                             Explore Courses
                         </h1>

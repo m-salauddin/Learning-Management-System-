@@ -19,7 +19,7 @@ import {
 } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
 
-import { Breadcrumbs } from "@/components/dashboard/shared/Breadcrumbs";
+import Breadcrumbs from "@/components/ui/Breadcrumbs";
 
 export default function EditUserPage() {
     const router = useRouter();
@@ -114,7 +114,13 @@ export default function EditUserPage() {
     return (
         <div className="max-w-4xl mx-auto py-8 px-4 sm:px-6">
             {/* Breadcrumbs */}
-            <Breadcrumbs items={breadcrumbItems} showHomeIcon={true} />
+            <Breadcrumbs
+                items={breadcrumbItems}
+                showHomeIcon={true}
+                rootLabel="Dashboard"
+                rootHref="/dashboard"
+                className="mb-6"
+            />
 
             {/* Header */}
             <div className="mb-8">

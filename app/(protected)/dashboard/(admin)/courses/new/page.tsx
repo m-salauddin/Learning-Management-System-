@@ -38,7 +38,7 @@ interface Teacher {
     avatar_url: string | null;
 }
 
-import { Breadcrumbs } from "@/components/dashboard/shared/Breadcrumbs";
+import Breadcrumbs from "@/components/ui/Breadcrumbs";
 
 export default function CreateCoursePage() {
     const router = useRouter();
@@ -48,7 +48,7 @@ export default function CreateCoursePage() {
     const [teachers, setTeachers] = useState<Teacher[]>([]);
 
     const breadcrumbItems = [
-        { label: "Courses", href: "/dashboard/courses", icon: BookOpen },
+        { label: "Courses", href: "/dashboard/courses", icon: Layers },
         { label: "Create Course", active: true, icon: Sparkles }
     ];
     // Shared styling constants based on dashboard design system
@@ -419,7 +419,13 @@ export default function CreateCoursePage() {
     return (
         <div className="min-h-screen p-6 md:p-8">
             {/* Breadcrumbs */}
-            <Breadcrumbs items={breadcrumbItems} showHomeIcon={true} />
+            <Breadcrumbs
+                items={breadcrumbItems}
+                showHomeIcon={true}
+                rootLabel="Dashboard"
+                rootHref="/dashboard"
+                className="mb-8"
+            />
 
             {/* Header */}
             <div className="mb-10">

@@ -53,27 +53,27 @@ export function UserDropdown({ user, onOpen }: UserDropdownProps) {
         const loadingToastId = toast.loading("Logging out...", "Please wait while we sign you out.");
 
         try {
-            // Client-side sign out
+
             const supabase = createClient();
             await supabase.auth.signOut();
 
-            // Server-side sign out
+
             await signOut();
 
-            // Clear local state
+
             dispatch(logout());
 
             toast.dismiss(loadingToastId);
             toast.success("Logged Out", "You have been logged out successfully.");
 
-            // Force refresh and redirect
+
             router.refresh();
             router.push('/login');
 
         } catch (error) {
             console.error("Logout error:", error);
             toast.dismiss(loadingToastId);
-            // Even if api fails, we should clear local state
+
             dispatch(logout());
             router.refresh();
             router.push('/login');
