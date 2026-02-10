@@ -9,7 +9,7 @@ import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 
-// Schema for feedback
+
 const feedbackSchema = z.object({
     message: z.string().min(10, "Please describe the issue in at least 10 characters."),
 });
@@ -31,9 +31,9 @@ export default function NotFound() {
     });
 
     const onSubmit = async (data: FeedbackFormValues) => {
-        // Simulate API call
+
         await new Promise((resolve) => setTimeout(resolve, 1500));
-        console.log("Feedback submitted:", data);
+
         setIsSubmitted(true);
         reset();
         setTimeout(() => {
@@ -47,25 +47,25 @@ export default function NotFound() {
             className="relative min-h-screen bg-background flex flex-col items-center justify-center p-4 font-space-grotesk overflow-hidden selection:bg-primary/30 transition-colors duration-300"
             suppressHydrationWarning
         >
-            {/* Ambient Background Glows */}
+
             <div className="absolute inset-0 overflow-hidden pointer-events-none">
                 <div className="absolute top-[-10%] left-[-10%] w-[50vw] h-[50vw] bg-linear-to-br from-primary/20 via-accent/10 to-transparent rounded-full blur-[120px]" />
                 <div className="absolute bottom-[-10%] right-[-10%] w-[50vw] h-[50vw] bg-linear-to-tr from-secondary/20 via-primary/10 to-transparent rounded-full blur-[120px]" />
             </div>
 
-            {/* Grid Pattern Overlay */}
+
             <div
                 className="absolute inset-0 bg-[linear-gradient(to_right,#00000008_1px,transparent_1px),linear-gradient(to_bottom,#00000008_1px,transparent_1px)] dark:bg-[linear-gradient(to_right,#80808012_1px,transparent_1px),linear-gradient(to_bottom,#80808012_1px,transparent_1px)] bg-size-[24px_24px] mask-[radial-gradient(ellipse_60%_50%_at_50%_0%,#000_70%,transparent_100%)] pointer-events-none"
             />
 
-            {/* Main Content Card */}
+
             <motion.div
                 initial={{ opacity: 0, y: 30 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
                 className="relative z-10 w-full max-w-2xl px-6"
             >
-                {/* Header/Logo Area */}
+
                 <div className="flex justify-center mb-12">
                     <div className="relative p-6 pr-10 rounded-3xl bg-white/10 dark:bg-black/20 border border-border backdrop-blur-2xl shadow-2xl dark:shadow-black/50 overflow-hidden group">
                         <div className="absolute inset-0 bg-linear-to-br from-white/20 via-transparent to-transparent opacity-50 pointer-events-none" />
@@ -73,7 +73,7 @@ export default function NotFound() {
                     </div>
                 </div>
 
-                {/* 404 Typography */}
+
                 <div className="relative text-center mb-12">
                     <h1 className="select-none text-[120px] sm:text-[180px] font-bold leading-[0.8] tracking-tighter text-transparent bg-clip-text bg-linear-to-b from-black/5 to-transparent dark:from-white/10 dark:to-transparent">
                         404
@@ -97,7 +97,7 @@ export default function NotFound() {
                     </div>
                 </div>
 
-                {/* Message */}
+
                 <motion.p
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
@@ -107,7 +107,7 @@ export default function NotFound() {
                     The learning path you're looking for seems to have vanished. Let's get you back to your studies.
                 </motion.p>
 
-                {/* Action Buttons */}
+
                 <motion.div
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
@@ -133,7 +133,7 @@ export default function NotFound() {
                     </button>
                 </motion.div>
 
-                {/* Footer Link */}
+
                 <motion.div
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
@@ -149,11 +149,11 @@ export default function NotFound() {
                 </motion.div>
             </motion.div>
 
-            {/* Feedback Modal */}
+
             <AnimatePresence>
                 {isModalOpen && (
                     <>
-                        {/* Backdrop */}
+
                         <motion.div
                             initial={{ opacity: 0 }}
                             animate={{ opacity: 1 }}
@@ -162,7 +162,7 @@ export default function NotFound() {
                             className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm"
                         />
 
-                        {/* Modal Content */}
+
                         <motion.div
                             initial={{ opacity: 0, scale: 0.95, y: 20 }}
                             animate={{ opacity: 1, scale: 1, y: 0 }}
@@ -170,7 +170,7 @@ export default function NotFound() {
                             className="fixed z-50 left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-md p-6"
                         >
                             <div className="bg-[#020617] border border-border rounded-2xl shadow-2xl p-0 relative overflow-hidden text-slate-200 w-full">
-                                {/* Header with Border */}
+
                                 <div className="px-6 py-5 border-b border-border flex items-center justify-between bg-white/2">
                                     <div className="flex items-center gap-3">
                                         <div className="w-10 h-10 rounded-lg bg-orange-500/10 border border-orange-500/20 flex items-center justify-center text-orange-500 shadow-inner">

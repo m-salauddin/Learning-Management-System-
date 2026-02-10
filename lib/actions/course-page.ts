@@ -1,10 +1,6 @@
 'use server';
 
-// ============================================================================
-// COURSE PAGE SERVER ACTIONS
-// ============================================================================
-// Server-side actions for the comprehensive course detail page
-// ============================================================================
+
 
 import { createClient } from '@/lib/supabase/server';
 import {
@@ -22,12 +18,11 @@ import {
     ValidateCouponResponse,
     CourseOutlineModule,
     CourseOutlineTopic,
+    CourseBatch,
 } from '@/types/course-page';
 import { Course, Category } from '@/types/lms';
 
-// ============================================================================
-// GET COMPLETE COURSE PAGE DATA
-// ============================================================================
+
 
 export async function getCoursePageData(slug: string): Promise<{
     success: boolean;
@@ -37,10 +32,10 @@ export async function getCoursePageData(slug: string): Promise<{
     try {
         const supabase = await createClient();
 
-        // Get current user
+
         const { data: { user } } = await supabase.auth.getUser();
 
-        // 1. Fetch the course by slug
+
         const { data: course, error: courseError } = await supabase
             .from('courses')
             .select(`
@@ -61,17 +56,17 @@ export async function getCoursePageData(slug: string): Promise<{
             return { success: false, error: 'Course not found' };
         }
 
-        // Type assertion for course
+
         const courseData = course as Course & { categories: Category | null };
 
-        // 2. Fetch course details
+
         const { data: details } = await supabase
             .from('course_details')
             .select('*')
             .eq('course_id', course.id)
             .single();
 
-        // 3. Fetch instructor info with profile
+
         const { data: instructorData } = await supabase
             .from('users')
             .select(`
@@ -84,7 +79,7 @@ export async function getCoursePageData(slug: string): Promise<{
             .eq('id', course.instructor_id)
             .single();
 
-        // Fetch instructor profile
+
         const { data: instructorProfile } = await supabase
             .from('instructor_profiles')
             .select('*')
@@ -104,7 +99,7 @@ export async function getCoursePageData(slug: string): Promise<{
             rating: instructorProfile?.rating || 0,
         };
 
-        // 4. Fetch modules with lessons
+
         const { data: modulesData } = await supabase
             .from('modules')
             .select(`
@@ -129,7 +124,7 @@ export async function getCoursePageData(slug: string): Promise<{
             .eq('is_published', true)
             .order('position', { ascending: true });
 
-        // Process modules and calculate totals
+
         let totalLessons = 0;
         let totalDuration = 0;
 
@@ -164,21 +159,21 @@ export async function getCoursePageData(slug: string): Promise<{
             };
         });
 
-        // 5. Fetch projects
+
         const { data: projects, error: projectsError } = await supabase
             .from('course_projects')
             .select('*')
             .eq('course_id', course.id)
             .order('order_index', { ascending: true });
 
-        // 6. Fetch resources (filtered by access)
+
         const { data: resources, error: resourcesError } = await supabase
             .from('course_resources')
             .select('*')
             .eq('course_id', course.id)
             .order('order_index', { ascending: true });
 
-        // 7. Fetch FAQ
+
         const { data: faq, error: faqError } = await supabase
             .from('course_faq')
             .select('*')
@@ -186,19 +181,10 @@ export async function getCoursePageData(slug: string): Promise<{
             .eq('is_published', true)
             .order('order_index', { ascending: true });
 
-        // Debug logging for data fetching
-        console.log('[getCoursePageData] Fetched data:', {
-            courseId: course.id,
-            courseSlug: course.slug,
-            projectsCount: projects?.length || 0,
-            projectsError: projectsError?.message || null,
-            resourcesCount: resources?.length || 0,
-            resourcesError: resourcesError?.message || null,
-            faqCount: faq?.length || 0,
-            faqError: faqError?.message || null,
-        });
 
-        // 8. Fetch course outline modules with topics
+
+
+
         const { data: outlineModulesData } = await supabase
             .from('course_outline_modules')
             .select(`
@@ -222,7 +208,7 @@ export async function getCoursePageData(slug: string): Promise<{
             .eq('is_published', true)
             .order('position', { ascending: true });
 
-        // Process outline modules, sort topics by position
+
         const courseOutline: CourseOutlineModule[] = (outlineModulesData || []).map((mod) => {
             const topics = ((mod.topics || []) as CourseOutlineTopic[])
                 .filter(t => t.is_published)
@@ -242,12 +228,9 @@ export async function getCoursePageData(slug: string): Promise<{
             };
         });
 
-        console.log('[getCoursePageData] Course outline:', {
-            modulesCount: courseOutline.length,
-            totalTopics: courseOutline.reduce((acc, m) => acc + m.topics.length, 0),
-        });
 
-        // 8. Fetch reviews with user info
+
+
         const { data: reviewsData } = await supabase
             .from('course_reviews')
             .select(`
@@ -272,10 +255,10 @@ export async function getCoursePageData(slug: string): Promise<{
             },
         }));
 
-        // Calculate rating breakdown
+
         const ratingBreakdown = calculateRatingBreakdown(reviews);
 
-        // 9. Fetch related courses
+
         const { data: relatedCourses } = await supabase
             .from('courses')
             .select('*')
@@ -284,7 +267,7 @@ export async function getCoursePageData(slug: string): Promise<{
             .eq('category_id', course.category_id)
             .limit(4);
 
-        // 10. Check enrollment status
+
         let isEnrolled = false;
         let enrollmentId: string | null = null;
         let userProgress = 0;
@@ -303,6 +286,14 @@ export async function getCoursePageData(slug: string): Promise<{
                 userProgress = enrollment.progress_percentage || 0;
             }
         }
+
+
+        const { data: batches } = await supabase
+            .from('course_batches')
+            .select('*')
+            .eq('course_id', course.id)
+            .eq('is_active', true)
+            .order('start_date', { ascending: true });
 
         return {
             success: true,
@@ -324,6 +315,7 @@ export async function getCoursePageData(slug: string): Promise<{
                 isEnrolled,
                 enrollmentId,
                 userProgress,
+                batches: (batches as CourseBatch[]) || [],
             },
         };
     } catch (error) {
@@ -332,9 +324,7 @@ export async function getCoursePageData(slug: string): Promise<{
     }
 }
 
-// ============================================================================
-// HELPER: Calculate Rating Breakdown
-// ============================================================================
+
 
 function calculateRatingBreakdown(reviews: ReviewWithUser[]): RatingBreakdown {
     const distribution = { 5: 0, 4: 0, 3: 0, 2: 0, 1: 0 };
@@ -356,9 +346,7 @@ function calculateRatingBreakdown(reviews: ReviewWithUser[]): RatingBreakdown {
     };
 }
 
-// ============================================================================
-// VALIDATE COUPON
-// ============================================================================
+
 
 export async function validateCoupon(
     courseId: string,
@@ -367,7 +355,7 @@ export async function validateCoupon(
     try {
         const supabase = await createClient();
 
-        // Get the course price
+
         const { data: course, error: courseError } = await supabase
             .from('courses')
             .select('price, discount_price')
@@ -380,7 +368,7 @@ export async function validateCoupon(
 
         const originalPrice = course.discount_price || course.price;
 
-        // Get the coupon
+
         const { data: coupon, error: couponError } = await supabase
             .from('coupons')
             .select('*')
@@ -392,17 +380,17 @@ export async function validateCoupon(
             return { valid: false, error: 'Invalid coupon code' };
         }
 
-        // Check expiry
+
         if (coupon.valid_until && new Date(coupon.valid_until) < new Date()) {
             return { valid: false, error: 'Coupon has expired' };
         }
 
-        // Check usage limit
+
         if (coupon.usage_limit && coupon.used_count >= coupon.usage_limit) {
             return { valid: false, error: 'Coupon usage limit reached' };
         }
 
-        // Calculate discount
+
         let discountAmount: number;
         if (coupon.discount_type === 'percentage') {
             discountAmount = Math.round(originalPrice * (coupon.discount_value / 100));
@@ -410,7 +398,7 @@ export async function validateCoupon(
             discountAmount = Math.min(coupon.discount_value, originalPrice);
         }
 
-        // Apply max discount if set
+
         if (coupon.max_discount_amount) {
             discountAmount = Math.min(discountAmount, coupon.max_discount_amount);
         }
@@ -431,9 +419,7 @@ export async function validateCoupon(
     }
 }
 
-// ============================================================================
-// SUBMIT CONTACT LEAD
-// ============================================================================
+
 
 export async function submitCourseLead(input: CreateLeadInput): Promise<{
     success: boolean;
@@ -465,9 +451,7 @@ export async function submitCourseLead(input: CreateLeadInput): Promise<{
     }
 }
 
-// ============================================================================
-// SUBMIT REVIEW
-// ============================================================================
+
 
 export async function submitCourseReview(input: SubmitReviewInput): Promise<{
     success: boolean;
@@ -476,14 +460,14 @@ export async function submitCourseReview(input: SubmitReviewInput): Promise<{
     try {
         const supabase = await createClient();
 
-        // Get current user
+
         const { data: { user } } = await supabase.auth.getUser();
 
         if (!user) {
             return { success: false, error: 'You must be logged in to submit a review' };
         }
 
-        // Check enrollment
+
         const { data: enrollment } = await supabase
             .from('enrollments')
             .select('id')
@@ -495,7 +479,7 @@ export async function submitCourseReview(input: SubmitReviewInput): Promise<{
             return { success: false, error: 'You must be enrolled to review this course' };
         }
 
-        // Check if user already reviewed
+
         const { data: existingReview } = await supabase
             .from('course_reviews')
             .select('id')
@@ -519,7 +503,6 @@ export async function submitCourseReview(input: SubmitReviewInput): Promise<{
                 return { success: false, error: 'Failed to update review' };
             }
         } else {
-            // Create new review
             const { error } = await supabase
                 .from('course_reviews')
                 .insert({
@@ -536,7 +519,7 @@ export async function submitCourseReview(input: SubmitReviewInput): Promise<{
             }
         }
 
-        // Update course rating stats
+
         await updateCourseRating(input.course_id);
 
         return { success: true };
@@ -546,14 +529,12 @@ export async function submitCourseReview(input: SubmitReviewInput): Promise<{
     }
 }
 
-// ============================================================================
-// UPDATE COURSE RATING
-// ============================================================================
+
 
 async function updateCourseRating(courseId: string): Promise<void> {
     const supabase = await createClient();
 
-    // Calculate new average rating
+
     const { data: reviews } = await supabase
         .from('course_reviews')
         .select('rating')
@@ -574,9 +555,7 @@ async function updateCourseRating(courseId: string): Promise<void> {
         .eq('id', courseId);
 }
 
-// ============================================================================
-// GET SIGNED VIDEO URL
-// ============================================================================
+
 
 export async function getSignedVideoUrl(lessonId: string): Promise<{
     success: boolean;
@@ -587,14 +566,14 @@ export async function getSignedVideoUrl(lessonId: string): Promise<{
     try {
         const supabase = await createClient();
 
-        // Get current user
+
         const { data: { user } } = await supabase.auth.getUser();
 
         if (!user) {
             return { success: false, error: 'Authentication required' };
         }
 
-        // Get lesson and verify access
+
         const { data: lesson, error: lessonError } = await supabase
             .from('lessons')
             .select(`
@@ -618,7 +597,7 @@ export async function getSignedVideoUrl(lessonId: string): Promise<{
         const courseId = moduleData?.course?.id;
         const instructorId = moduleData?.course?.instructor_id;
 
-        // Check access
+
         const hasAccess =
             lesson.is_free_preview ||
             user.id === instructorId ||
@@ -629,7 +608,7 @@ export async function getSignedVideoUrl(lessonId: string): Promise<{
             return { success: false, error: 'Access denied' };
         }
 
-        // Get the video path from lesson_assets
+
         const { data: asset, error: assetError } = await supabase
             .from('lesson_assets')
             .select('video_path')
@@ -664,9 +643,7 @@ export async function getSignedVideoUrl(lessonId: string): Promise<{
     }
 }
 
-// ============================================================================
-// GET LESSON CONTENT
-// ============================================================================
+
 
 export async function getLessonContent(lessonId: string): Promise<{
     success: boolean;
@@ -689,14 +666,14 @@ export async function getLessonContent(lessonId: string): Promise<{
     try {
         const supabase = await createClient();
 
-        // Get current user
+
         const { data: { user } } = await supabase.auth.getUser();
 
         if (!user) {
             return { success: false, error: 'Authentication required' };
         }
 
-        // Get lesson with asset (RLS will handle access check)
+
         const { data: lesson, error: lessonError } = await supabase
             .from('lessons')
             .select(`
@@ -724,7 +701,7 @@ export async function getLessonContent(lessonId: string): Promise<{
         const courseId = moduleData?.course?.id;
         const instructorId = moduleData?.course?.instructor_id;
 
-        // Check access
+
         const hasAccess =
             lesson.is_free_preview ||
             user.id === instructorId ||
@@ -735,7 +712,7 @@ export async function getLessonContent(lessonId: string): Promise<{
             return { success: false, error: 'Access denied' };
         }
 
-        // Get lesson asset
+
         const { data: asset } = await supabase
             .from('lesson_assets')
             .select('markdown_content, resources, video_path')
@@ -765,9 +742,7 @@ export async function getLessonContent(lessonId: string): Promise<{
     }
 }
 
-// ============================================================================
-// HELPER FUNCTIONS
-// ============================================================================
+
 
 async function checkIsEnrolled(userId: string, courseId: string): Promise<boolean> {
     const supabase = await createClient();
@@ -794,9 +769,7 @@ async function checkIsAdmin(userId: string): Promise<boolean> {
     return data?.role === 'admin';
 }
 
-// ============================================================================
-// GET RELATED COURSES
-// ============================================================================
+
 
 export async function getRelatedCourses(
     courseId: string,

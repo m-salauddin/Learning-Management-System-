@@ -11,23 +11,21 @@ interface PageProps {
     params: Promise<{ slug: string }>;
 }
 
-// ============================================================================
-// METADATA GENERATION
-// ============================================================================
+
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
     const { slug } = await params;
     const decodedSlug = decodeURIComponent(slug);
     const supabase = await createSupabaseServerClient();
 
-    // Simple fetch for id, title and description
+
     const { data: course } = await supabase
         .from('courses')
         .select('id, title, description')
         .eq('slug', decodedSlug)
         .maybeSingle();
 
-    // Check for SEO overrides in course_details (only if course exists)
+
     let seoTitle: string | null = null;
     let seoDescription: string | null = null;
 
@@ -47,19 +45,17 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     };
 }
 
-// ============================================================================
-// PAGE COMPONENT
-// ============================================================================
+
 
 export default async function CourseDetailPage({ params }: PageProps) {
     const { slug } = await params;
     const decodedSlug = decodeURIComponent(slug);
     const supabase = await createSupabaseServerClient();
 
-    // Fetch currentUser
+
     const { data: { user } } = await supabase.auth.getUser();
 
-    // Use the comprehensive course page data fetcher
+
     const result = await getCoursePageData(decodedSlug);
 
     if (!result.success || !result.data) {
@@ -78,34 +74,18 @@ export default async function CourseDetailPage({ params }: PageProps) {
     }
 
     const pageData = result.data;
-
-    // Debug logging
-    console.log('[CourseDetailPage] Data fetched:', {
-        courseId: pageData.course.id,
-        courseTitle: pageData.course.title,
-        detailsPresent: !!pageData.details,
-        faqCount: pageData.faq?.length || 0,
-        projectsCount: pageData.projects?.length || 0,
-        resourcesCount: pageData.resources?.length || 0,
-        reviewsCount: pageData.reviews?.length || 0,
-        modulesCount: pageData.modules?.length || 0,
-    });
-
-    // Transform to MappedCourse format for backward compatibility
     const mappedCourse = transformToMappedCourse(pageData);
     return (
         <CourseDetailClient course={mappedCourse} pageData={pageData} />
     );
 }
 
-// ============================================================================
-// HELPER: Transform CoursePageData to MappedCourse
-// ============================================================================
+
 
 function transformToMappedCourse(pageData: CoursePageData): MappedCourse {
     const { course, details, instructor, modules, totalLessons, totalDuration } = pageData;
 
-    // Build curriculum from modules
+
     const curriculum: CurriculumModule[] = modules.map((mod) => {
         const durationMinutes = mod.total_duration_minutes;
         const hours = Math.floor(durationMinutes / 60);
@@ -124,7 +104,7 @@ function transformToMappedCourse(pageData: CoursePageData): MappedCourse {
         };
     });
 
-    // Calculate total duration string
+
     const totalHours = Math.floor(totalDuration / 60);
     const totalMins = totalDuration % 60;
     const durationString = totalHours > 0
@@ -138,7 +118,7 @@ function transformToMappedCourse(pageData: CoursePageData): MappedCourse {
         description: course.description || "",
         longDescription: details?.description_long || course.description || "",
         image: course.thumbnail_url || "/placeholder-course.jpg",
-        // Handle price - include discount support
+
         price: course.price > 0 ? `৳${course.price.toLocaleString()}` : "Free",
         originalPrice: course.price > 0 ? `৳${course.price.toLocaleString()}` : undefined,
         discountPrice: course.discount_price && course.discount_price > 0
@@ -163,7 +143,7 @@ function transformToMappedCourse(pageData: CoursePageData): MappedCourse {
         curriculum: curriculum,
         type: "Recorded",
         priceType: course.price > 0 ? "Paid" : "Free",
-        // Extended fields from new data
+
         targetAudience: details?.target_audience || [],
         curriculumOverview: details?.curriculum_overview || "",
     };

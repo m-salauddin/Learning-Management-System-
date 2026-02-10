@@ -22,34 +22,33 @@ import { cn } from "@/lib/utils";
 export function AdminUsersTable() {
     const dispatch = useAppDispatch();
 
-    // Selectors
+
     const users = useAppSelector(usersTableSelectors.selectDisplayedRows) as UserManagement[]; // Type cast as necessary
     const isLoading = useAppSelector(usersTableSelectors.selectLoading);
     const emptyStateType = useAppSelector(usersTableSelectors.selectEmptyStateType);
     const filters = useAppSelector(usersTableSelectors.selectFilters);
     const totalUsers = useAppSelector(usersTableSelectors.selectTotal);
 
-    // We need to get page/pageSize from admin slice directly as they are not structured in 'pagination'
-    // Or we can use selectors if we made them. AdminSlice has usersPage, usersPageSize
+
+
     const page = useAppSelector((state) => state.admin.usersPage);
     const pageSize = useAppSelector((state) => state.admin.usersPageSize);
 
-    // Initial Fetch & Refetch on change
+
     useEffect(() => {
-        // If we are in "Empty Data" state (total === 0 and initialized), we might skip fetching with filters
-        // But the UI disables filters so it's fine.
+
+
         dispatch(fetchUsers({
             page,
             pageSize,
             role: filters.role === 'all' ? undefined : filters.role,
             search: filters.search
         }));
-    }, [dispatch, page, pageSize, filters.role, filters.search]); // Add sort dependencies if needed
+    }, [dispatch, page, pageSize, filters.role, filters.search]);
 
-    // Handlers
     const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
         dispatch(setUsersFilters({ search: e.target.value }));
-        dispatch(setUsersPage(1)); // Reset to page 1
+        dispatch(setUsersPage(1));
     };
 
     const handleRoleChange = (val: string) => {
@@ -63,10 +62,8 @@ export function AdminUsersTable() {
     };
 
     const handleInvite = () => {
-        console.log("Invite users");
     };
 
-    // Columns
     const columns: ColumnDef<UserManagement>[] = [
         {
             header: "User",
@@ -102,7 +99,6 @@ export function AdminUsersTable() {
         }
     ];
 
-    // Filter Bar
     const FilterBar = (
         <div className="flex flex-col sm:flex-row gap-3 items-center justify-between pb-4">
             <div className="flex items-center gap-2 w-full sm:w-auto">
@@ -154,9 +150,6 @@ export function AdminUsersTable() {
                 totalItems: totalUsers,
                 onPageChange: (p) => dispatch(setUsersPage(p)),
                 onPageSizeChange: (s) => {
-                    // Need action for pageSize if exists, currently undefined in slice but usually standard
-                    // dispatch(setUsersPageSize(s)); 
-                    console.log("Size change", s);
                 },
             }}
             onResetFilters={handleReset}

@@ -18,7 +18,6 @@ export const Logo = ({ className = "", showText = true, size = "md", textClassNa
     };
 
     const config = sizeConfig[size];
-    // Static IDs to avoid hydration mismatch (useId generates different IDs on server vs client)
     const gradId = 'logo-premiumGradient';
     const gradDarkId = 'logo-premiumGradientDark';
     const shineId = 'logo-metallicShine';
@@ -28,7 +27,7 @@ export const Logo = ({ className = "", showText = true, size = "md", textClassNa
 
     return (
         <div className={`flex items-center ${config.gap} ${className}`}>
-            {/* Logo Icon */}
+
             <div className="relative transition-transform duration-200 hover:scale-105 active:scale-95">
                 <svg
                     width={config.icon}
@@ -40,7 +39,7 @@ export const Logo = ({ className = "", showText = true, size = "md", textClassNa
                     aria-label="DokkhotaIT Logo"
                 >
                     <defs>
-                        {/* Premium Multi-stop Gradient */}
+
                         <linearGradient id={gradId} x1="0%" y1="0%" x2="100%" y2="100%">
                             <stop offset="0%" stopColor="#0036F9" />
                             <stop offset="35%" stopColor="#4F46E5" />
@@ -48,7 +47,7 @@ export const Logo = ({ className = "", showText = true, size = "md", textClassNa
                             <stop offset="100%" stopColor="#A855F7" />
                         </linearGradient>
 
-                        {/* Dark mode gradient */}
+
                         <linearGradient id={gradDarkId} x1="0%" y1="0%" x2="100%" y2="100%">
                             <stop offset="0%" stopColor="#FCB900" />
                             <stop offset="40%" stopColor="#F59E0B" />
@@ -56,21 +55,21 @@ export const Logo = ({ className = "", showText = true, size = "md", textClassNa
                             <stop offset="100%" stopColor="#06B6D4" />
                         </linearGradient>
 
-                        {/* Metallic Shine */}
+
                         <linearGradient id={shineId} x1="0%" y1="0%" x2="100%" y2="100%">
                             <stop offset="0%" stopColor="white" stopOpacity="0.4" />
                             <stop offset="50%" stopColor="white" stopOpacity="0" />
                             <stop offset="100%" stopColor="white" stopOpacity="0.15" />
                         </linearGradient>
 
-                        {/* Inner depth gradient */}
+
                         <radialGradient id={depthId} cx="30%" cy="30%" r="70%" fx="20%" fy="20%">
                             <stop offset="0%" stopColor="white" stopOpacity="0.25" />
                             <stop offset="60%" stopColor="white" stopOpacity="0" />
                             <stop offset="100%" stopColor="black" stopOpacity="0.1" />
                         </radialGradient>
 
-                        {/* Optimized shadow - single layer */}
+
                         <filter id={shadowId} x="-20%" y="-20%" width="140%" height="140%">
                             <feDropShadow dx="0" dy="2" stdDeviation="4" floodColor="#4F46E5" floodOpacity="0.3" />
                         </filter>
@@ -80,9 +79,9 @@ export const Logo = ({ className = "", showText = true, size = "md", textClassNa
                         </clipPath>
                     </defs>
 
-                    {/* Main Shape */}
+
                     <g filter={`url(#${shadowId})`}>
-                        {/* Light Mode Base */}
+
                         <rect
                             x="4" y="4"
                             width="56" height="56"
@@ -90,7 +89,7 @@ export const Logo = ({ className = "", showText = true, size = "md", textClassNa
                             fill={`url(#${gradId})`}
                             className="dark:hidden"
                         />
-                        {/* Dark Mode Base */}
+
                         <rect
                             x="4" y="4"
                             width="56" height="56"
@@ -102,7 +101,7 @@ export const Logo = ({ className = "", showText = true, size = "md", textClassNa
                         <rect x="4" y="4" width="56" height="56" rx="16" fill={`url(#${shineId})`} />
                     </g>
 
-                    {/* D Lettermark */}
+
                     <g clipPath={`url(#${clipId})`}>
                         <path
                             d="M24 16V48M24 16H32C42 16 46 22 46 32C46 42 42 48 32 48H24"
@@ -112,18 +111,18 @@ export const Logo = ({ className = "", showText = true, size = "md", textClassNa
                             fill="none"
                             className="stroke-white dark:stroke-slate-950"
                         />
-                        {/* Tech accents */}
+
                         <circle cx="24" cy="16" r="3" fillOpacity="0.3" className="fill-white dark:fill-slate-950" />
                         <circle cx="24" cy="48" r="3" fillOpacity="0.3" className="fill-white dark:fill-slate-950" />
                         <circle cx="46" cy="32" r="4" fillOpacity="0.3" className="fill-white dark:fill-slate-950" />
                     </g>
                 </svg>
 
-                {/* Subtle glow */}
+
                 <div className="absolute inset-0 rounded-2xl bg-primary/20 blur-lg -z-10 scale-110 opacity-50" />
             </div>
 
-            {/* Typography */}
+
             {showText && (
                 <div className={`flex flex-col ${textClassName}`}>
                     <div className={`${config.text} font-bold tracking-tight leading-none flex items-baseline`}>
@@ -143,7 +142,7 @@ export const Logo = ({ className = "", showText = true, size = "md", textClassNa
     );
 };
 
-// Lightweight Icon-only version
+
 export const LogoIcon = ({ size = 40, className = "" }: { size?: number; className?: string }) => {
     return (
         <svg

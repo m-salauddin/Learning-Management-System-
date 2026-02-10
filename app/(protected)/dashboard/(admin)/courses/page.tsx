@@ -10,6 +10,7 @@ import autoTable from "jspdf-autotable";
 import { motion, AnimatePresence } from "motion/react";
 import { useEffect, useState } from "react";
 import { cn } from "@/lib/utils";
+import Breadcrumbs from "@/components/ui/Breadcrumbs";
 import {
     CourseWithInstructor, CourseStatus
 } from "@/types/lms";
@@ -51,20 +52,20 @@ import { SearchInput } from "@/components/dashboard/shared/SearchInput";
 import { StatusBadge, LevelBadge } from "@/components/dashboard/shared/Badges";
 
 export default function CourseManagementPage() {
-    // Toast
+
     const toast = useToast();
 
-    // Navigation
+
     const router = useRouter();
 
-    // State Management
+
     const [courses, setCourses] = useState<CourseWithInstructor[]>([]);
     const [stats, setStats] = useState<any | null>(null);
     const [categories, setCategories] = useState<{ id: string, name: string }[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [selectedCourses, setSelectedCourses] = useState<Set<string>>(new Set());
 
-    // Filters & Pagination
+
     const [searchTerm, setSearchTerm] = useState("");
     const [categoryFilter, setCategoryFilter] = useState("all");
     const [statusFilter, setStatusFilter] = useState("all");
@@ -73,10 +74,10 @@ export default function CourseManagementPage() {
     const [pageSize, setPageSize] = useState(10);
     const [totalCourses, setTotalCourses] = useState(0);
 
-    // Modals & Confirmation (Simplified for now using window.confirm or similar pattern)
+
     const [exportModal, setExportModal] = useState(false);
 
-    // Fetch Data
+
     const fetchCoursesData = async () => {
         setIsLoading(true);
         try {
@@ -89,7 +90,7 @@ export default function CourseManagementPage() {
                 pageSize
             });
 
-            console.log('getCourses result:', result);
+
 
             if (result.data && result.data.length > 0) {
                 setCourses(result.data);
@@ -98,7 +99,7 @@ export default function CourseManagementPage() {
                 // Data exists but is empty array
                 setCourses([]);
                 setTotalCourses(0);
-                console.log('No courses returned from query');
+
             } else {
                 toast.error('Failed to fetch courses');
             }
@@ -132,7 +133,7 @@ export default function CourseManagementPage() {
         fetchCategoriesData();
     }, []);
 
-    // Selection Handlers
+
     const toggleSelectAll = () => {
         if (selectedCourses.size === courses.length) {
             setSelectedCourses(new Set());
@@ -155,7 +156,7 @@ export default function CourseManagementPage() {
         setSelectedCourses(new Set());
     };
 
-    // Action Handlers
+
     const handleDeleteCourse = async (courseId: string) => {
         if (!confirm("Are you sure you want to delete this course?")) return;
 
@@ -212,7 +213,7 @@ export default function CourseManagementPage() {
         }
     };
 
-    // Export Handlers
+
     const handleExportCSV = async () => {
         const result = await exportCoursesToCSV({ search: searchTerm, category: categoryFilter, status: statusFilter as any });
         if (result.csv) {
@@ -306,7 +307,15 @@ export default function CourseManagementPage() {
             animate={{ opacity: 1 }}
             className="space-y-6 pb-10 font-sans"
         >
-            {/* Header */}
+            <Breadcrumbs
+                items={[{ label: "Courses", icon: Layers }]}
+                showHomeIcon={true}
+                rootLabel="Dashboard"
+                rootHref="/dashboard"
+                className="mb-8"
+            />
+
+
             <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-6">
                 <div>
                     <motion.h1
@@ -349,7 +358,7 @@ export default function CourseManagementPage() {
                 </div>
             </div>
 
-            {/* Stats Cards */}
+
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                 {!stats ? (
                     [...Array(4)].map((_, i) => (
@@ -392,13 +401,13 @@ export default function CourseManagementPage() {
                 )}
             </div>
 
-            {/* Main Table Container */}
+
             <div className="rounded-2xl border border-border/40 bg-card/30 backdrop-blur-xl overflow-hidden shadow-sm shadow-black/5">
 
-                {/* Toolbar */}
+
                 <div className="p-4 md:p-6 border-b border-border/40 bg-card/30 backdrop-blur-xl">
                     <div className="flex flex-col lg:flex-row gap-4 justify-between">
-                        {/* Search & Refresh Group */}
+
                         <div className="flex items-center gap-2 w-full lg:max-w-md">
                             <SearchInput
                                 value={searchTerm}
@@ -410,7 +419,7 @@ export default function CourseManagementPage() {
                                 className="flex-1"
                             />
 
-                            {/* Refresh Button */}
+
                             <button
                                 onClick={fetchCoursesData}
                                 className="h-11 w-11 flex items-center justify-center shrink-0 rounded-xl border border-input-dark-border bg-input-dark hover:bg-input-dark-hover hover:text-foreground focus:shadow-[0_0_0_2px_var(--input-dark-glow)] focus:outline-none transition-all duration-200 text-input-dark-text"
@@ -484,7 +493,7 @@ export default function CourseManagementPage() {
                     </div>
                 </div>
 
-                {/* Table */}
+
                 <div className="overflow-hidden overflow-x-auto [&::-webkit-scrollbar]:h-1.5 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-muted-foreground/20 [&::-webkit-scrollbar-thumb]:rounded-full hover:[&::-webkit-scrollbar-thumb]:bg-primary/50">
                     <Table>
                         <TableHeader>
@@ -614,7 +623,7 @@ export default function CourseManagementPage() {
                     </Table>
                 </div>
 
-                {/* Pagination */}
+
                 {!isLoading && totalCourses > 0 && (
                     <div className="p-6 border-t border-border/40 bg-muted/10">
                         <Pagination
@@ -632,7 +641,7 @@ export default function CourseManagementPage() {
                 )}
             </div>
 
-            {/* Floating Bulk selection Bar */}
+
             <AnimatePresence>
                 {selectedCourses.size > 0 && (
                     <motion.div
@@ -662,7 +671,7 @@ export default function CourseManagementPage() {
                 )}
             </AnimatePresence>
 
-            {/* Export Modal */}
+
             {exportModal && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
                     <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="w-full max-w-md bg-card border border-border rounded-2xl p-6 shadow-2xl">

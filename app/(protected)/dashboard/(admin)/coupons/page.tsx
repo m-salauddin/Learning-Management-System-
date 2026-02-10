@@ -8,6 +8,7 @@ import { useToast } from "@/components/ui/toast";
 import { AdminCouponsTable } from "@/components/dashboard/tables/AdminCouponsTable";
 import { useAppDispatch } from "@/lib/store/hooks";
 import { fetchCoupons } from "@/lib/store/features/admin/couponsSlice";
+import Breadcrumbs from "@/components/ui/Breadcrumbs";
 
 interface Course {
     id: string;
@@ -167,6 +168,14 @@ export default function CouponsPage() {
 
     return (
         <div className="space-y-6 max-w-7xl mx-auto">
+            <Breadcrumbs
+                items={[{ label: "Coupons", icon: Ticket }]}
+                showHomeIcon={true}
+                rootLabel="Dashboard"
+                rootHref="/dashboard"
+                className="mb-8"
+            />
+
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div>
                     <h1 className="text-2xl font-bold tracking-tight">Coupons</h1>
