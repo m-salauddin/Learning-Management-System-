@@ -38,6 +38,8 @@ export interface CourseProject {
     description: string;
     thumbnail_url: string;
     technologies: string[];
+    demo_url?: string;
+    github_url?: string;
     order_index: number;
     is_public: boolean;
     created_at: string;
