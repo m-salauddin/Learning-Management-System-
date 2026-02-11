@@ -15,6 +15,7 @@ interface CTAButtonProps {
     disabled?: boolean;
     loading?: boolean;
     type?: "button" | "submit" | "reset";
+    hideIcon?: boolean;
 }
 
 
@@ -27,18 +28,21 @@ export function PrimaryCTAButton({
     disabled = false,
     loading = false,
     type = "button",
+    hideIcon = false,
 }: Omit<CTAButtonProps, "variant">) {
     const buttonContent = (
         <>
             <span className="text-sm sm:text-lg font-bold text-primary-foreground">{loading ? "Processing..." : children}</span>
-            <div className="flex h-[26px] w-[26px] sm:h-7 sm:w-7 items-center justify-center rounded-full bg-background transition-transform duration-300 -rotate-45 group-hover/btn:rotate-0">
-                <ArrowRight className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
-            </div>
+            {!hideIcon && (
+                <div className="flex h-[26px] w-[26px] sm:h-7 sm:w-7 items-center justify-center rounded-full bg-background transition-transform duration-300 -rotate-45 group-hover/btn:rotate-0">
+                    <ArrowRight className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
+                </div>
+            )}
         </>
     );
 
     const buttonClasses = cn(
-        "group/btn flex items-center justify-center gap-2.5 sm:gap-4 pl-6 sm:pl-10 pr-2 py-2 bg-primary hover:bg-primary/90 rounded-full transition-all duration-300 active:scale-95 cursor-pointer h-[34px] sm:h-11 disabled:opacity-70 disabled:cursor-not-allowed",
+        "group/btn flex items-center justify-center gap-2.5 sm:gap-4 pl-6 sm:pl-10 pr-2 py-2 bg-[#0036F9] dark:bg-primary hover:bg-[#0036F9]/90 dark:hover:bg-primary/90 rounded-full transition-all duration-300 active:scale-95 cursor-pointer h-[34px] sm:h-11 disabled:opacity-70 disabled:cursor-not-allowed",
         className
     );
 

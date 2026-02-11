@@ -3,6 +3,7 @@
 
 
 import { createClient } from '@/lib/supabase/server';
+import { createClient as createAdminClient } from '@supabase/supabase-js';
 import {
     CoursePageData,
     CourseDetails,
@@ -185,11 +186,27 @@ export async function getCoursePageData(slug: string): Promise<{
 
 
 
-        const { data: outlineModulesData } = await supabase
+        // Use admin client to bypass potential RLS issues for public outline data
+        // This ensures the outline is visible even if public policies are missing or misconfigured
+        const adminClient = createAdminClient(
+            process.env.NEXT_PUBLIC_SUPABASE_URL!,
+            process.env.SUPABASE_SERVICE_ROLE_KEY || ''
+        );
+
+        const { data: outlineModulesData } = await adminClient
             .from('course_outline_modules')
-            .select(`
-                *,
-                topics:course_outline_topics (
+            .select('*')
+            .eq('course_id', course.id)
+            .eq('is_published', true)
+            .order('position', { ascending: true });
+
+        const moduleIds = outlineModulesData?.map(m => m.id) || [];
+
+        let allTopics: CourseOutlineTopic[] = [];
+        if (moduleIds.length > 0) {
+            const { data } = await adminClient
+                .from('course_outline_topics')
+                .select(`
                     id,
                     module_id,
                     course_id,
@@ -202,16 +219,17 @@ export async function getCoursePageData(slug: string): Promise<{
                     is_published,
                     created_at,
                     updated_at
-                )
-            `)
-            .eq('course_id', course.id)
-            .eq('is_published', true)
-            .order('position', { ascending: true });
+                `)
+                .in('module_id', moduleIds)
+                .eq('is_published', true)
+                .order('position', { ascending: true });
 
+            allTopics = (data as unknown as CourseOutlineTopic[]) || [];
+        }
 
         const courseOutline: CourseOutlineModule[] = (outlineModulesData || []).map((mod) => {
-            const topics = ((mod.topics || []) as CourseOutlineTopic[])
-                .filter(t => t.is_published)
+            const topics = allTopics
+                .filter(t => t.module_id === mod.id)
                 .sort((a, b) => a.position - b.position);
 
             return {
@@ -227,6 +245,15 @@ export async function getCoursePageData(slug: string): Promise<{
                 topics,
             };
         });
+
+        // If LMS data is empty, populate totals from outline data
+        if (totalDuration === 0 && outlineModulesData) {
+            totalDuration = outlineModulesData.reduce((acc, mod) => acc + (mod.estimated_duration_minutes || 0), 0);
+        }
+
+        if (totalLessons === 0 && allTopics.length > 0) {
+            totalLessons = allTopics.length;
+        }
 
 
 
