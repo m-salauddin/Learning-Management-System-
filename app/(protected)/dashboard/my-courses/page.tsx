@@ -1,5 +1,6 @@
 "use client";
 
+
 import { useAppSelector } from "@/lib/store/hooks";
 import { CourseProgressCard } from "@/components/dashboard/CourseProgressCard";
 import { motion } from "motion/react";

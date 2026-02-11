@@ -16,6 +16,7 @@ interface BreadcrumbsProps {
     showHomeIcon?: boolean;
     rootLabel?: string;
     rootHref?: string;
+    rootIcon?: LucideIcon;
 }
 
 const Breadcrumbs: React.FC<BreadcrumbsProps> = ({
@@ -23,19 +24,27 @@ const Breadcrumbs: React.FC<BreadcrumbsProps> = ({
     className,
     showHomeIcon = true,
     rootLabel,
-    rootHref = "/"
+    rootHref = "/",
+    rootIcon: RootIcon = Home
 }) => {
     return (
         <nav className={cn("flex items-center gap-1.5 text-xs sm:text-sm font-medium overflow-hidden whitespace-nowrap pb-1", className)}>
             {(showHomeIcon || rootLabel) && (
                 <div className="flex items-center shrink-0">
-                    <Link
-                        href={rootHref}
-                        className="text-muted-foreground hover:text-primary transition-colors flex items-center gap-1.5 group"
-                    >
-                        {showHomeIcon && <Home className="w-3.5 h-3.5 sm:w-4 sm:h-4 group-hover:scale-110 transition-transform shrink-0" />}
-                        {rootLabel && <span className="hidden sm:inline-block shrink-0">{rootLabel}</span>}
-                    </Link>
+                    {items.length === 0 ? (
+                        <span className="flex items-center gap-1.5 font-bold text-primary transition-colors">
+                            {showHomeIcon && <RootIcon className="w-3.5 h-3.5 sm:w-4 sm:h-4 shrink-0" />}
+                            {rootLabel && <span className="hidden sm:inline-block shrink-0">{rootLabel}</span>}
+                        </span>
+                    ) : (
+                        <Link
+                            href={rootHref}
+                            className="text-muted-foreground hover:text-primary transition-colors flex items-center gap-1.5 group"
+                        >
+                            {showHomeIcon && <RootIcon className="w-3.5 h-3.5 sm:w-4 sm:h-4 group-hover:scale-110 transition-transform shrink-0" />}
+                            {rootLabel && <span className="hidden sm:inline-block shrink-0">{rootLabel}</span>}
+                        </Link>
+                    )}
                     {items.length > 0 && (
                         <ChevronRight className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-muted-foreground/40 mx-1 shrink-0" />
                     )}

@@ -10,7 +10,7 @@ import autoTable from "jspdf-autotable";
 import { motion, AnimatePresence } from "motion/react";
 import { useEffect, useState } from "react";
 import { cn } from "@/lib/utils";
-import Breadcrumbs from "@/components/ui/Breadcrumbs";
+
 import {
     CourseWithInstructor, CourseStatus
 } from "@/types/lms";
@@ -307,13 +307,7 @@ export default function CourseManagementPage() {
             animate={{ opacity: 1 }}
             className="space-y-6 pb-10 font-sans"
         >
-            <Breadcrumbs
-                items={[{ label: "Courses", icon: Layers }]}
-                showHomeIcon={true}
-                rootLabel="Dashboard"
-                rootHref="/dashboard"
-                className="mb-8"
-            />
+
 
 
             <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-6">

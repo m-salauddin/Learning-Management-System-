@@ -10,7 +10,7 @@ import {
 import { createUser } from "@/lib/actions/users";
 import { UserRole } from "@/types/user";
 import { useToast } from "@/components/ui/toast";
-import Breadcrumbs from "@/components/ui/Breadcrumbs";
+
 import {
     Select,
     SelectContent,
@@ -31,10 +31,7 @@ export default function AddUserPage() {
         role: "student" as UserRole
     });
 
-    const breadcrumbItems = [
-        { label: "Users", href: "/dashboard/users", icon: Users },
-        { label: "Add New User", active: true, icon: UserPlus }
-    ];
+
 
     const handleCreateUser = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -59,14 +56,7 @@ export default function AddUserPage() {
 
     return (
         <div className="max-w-4xl mx-auto py-8 px-4 sm:px-6">
-            {/* Breadcrumbs */}
-            <Breadcrumbs
-                items={breadcrumbItems}
-                showHomeIcon={true}
-                rootLabel="Dashboard"
-                rootHref="/dashboard"
-                className="mb-6"
-            />
+
 
             {/* Header */}
             <div className="mb-8">

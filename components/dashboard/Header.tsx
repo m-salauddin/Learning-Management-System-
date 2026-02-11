@@ -1,7 +1,12 @@
 "use client";
 
 import { usePathname } from "next/navigation";
-import { Bell, Menu, Search } from "lucide-react";
+import {
+    Bell, Menu, Search, Layers, BookOpen, Users, Settings,
+    FileText, Flag, Ticket, Tags, BarChart3, Award, DollarSign,
+    GraduationCap, Plus, Edit, Hash, UserPlus, FilePlus, PlusCircle, LayoutDashboard
+} from "lucide-react";
+import Breadcrumbs from "@/components/ui/Breadcrumbs";
 import { UserDropdown } from "@/components/ui/UserDropdown/UserDropdown";
 import { useAppSelector } from "@/lib/store/hooks";
 import { ThemeToggleCompact } from "@/components/ui/theme-toggle";
@@ -23,10 +28,55 @@ export function Header({ onMobileMenuOpen }: { onMobileMenuOpen: () => void }) {
     const pathname = usePathname();
     const { user, isLoading } = useAppSelector((state) => state.auth);
 
-    // Parse breadcrumb
-    const pathSegments = pathname?.split("/").filter(Boolean) || [];
-    const title = pathSegments[pathSegments.length - 1];
-    const formattedTitle = title === "dashboard" ? "Overview" : title.charAt(0).toUpperCase() + title.slice(1).replace(/-/g, " ");
+    // Generate breadcrumbs from path
+    const pathSegments = pathname?.split("/").filter(p => p !== "" && p !== "dashboard") || [];
+
+    const breadcrumbItems = pathSegments.map((segment, index) => {
+        const href = `/dashboard/${pathSegments.slice(0, index + 1).join("/")}`;
+        const IconMap: Record<string, any> = {
+            "courses": Layers,
+            "my-courses": BookOpen,
+            "instructor-courses": GraduationCap,
+            "users": Users,
+            "settings": Settings,
+            "earnings": DollarSign,
+            "reports": Flag,
+            "reviews": FileText,
+            "discounts": Tags,
+            "coupons": Ticket,
+            "analytics": BarChart3,
+            "certificates": Award,
+            "edit": Edit
+        };
+
+        let icon = IconMap[segment] || Hash;
+        let label = segment.split("-").map(s => s.charAt(0).toUpperCase() + s.slice(1)).join(" ");
+
+        // Handle 'new' segments specifically
+        if (segment === "new" && index > 0) {
+            const parent = pathSegments[index - 1];
+            // Simple singularization: remove trailing 's' if present
+            const parentSingular = parent.endsWith('s') ? parent.slice(0, -1) : parent;
+            const entityName = parentSingular.charAt(0).toUpperCase() + parentSingular.slice(1);
+
+            label = `Create ${entityName}`;
+
+            // Context-aware icons for creation
+            if (parent === "users") icon = UserPlus;
+            else if (parent === "courses") icon = FilePlus;
+            else icon = PlusCircle;
+        }
+
+        // Disable link for current page
+        const isLast = index === pathSegments.length - 1;
+
+        return {
+            label,
+            href: isLast ? undefined : href,
+            icon,
+            active: isLast
+        };
+    });
 
     return (
         <header className="h-20 px-6 flex items-center justify-between border-b border-border/50 bg-background/50 backdrop-blur-xl sticky top-0 z-30">
@@ -38,9 +88,14 @@ export function Header({ onMobileMenuOpen }: { onMobileMenuOpen: () => void }) {
                     <Menu className="w-6 h-6" />
                 </button>
 
-                <h2 className="text-xl font-bold capitalize text-foreground/90 tracking-tight">
-                    {formattedTitle}
-                </h2>
+                <Breadcrumbs
+                    items={breadcrumbItems}
+                    showHomeIcon={true}
+                    rootLabel="Dashboard"
+                    rootHref="/dashboard"
+                    className="text-lg font-semibold"
+                    rootIcon={LayoutDashboard}
+                />
             </div>
 
             <div className="flex items-center gap-2 sm:gap-4">
