@@ -4,7 +4,7 @@ import { usePathname } from "next/navigation";
 import {
     Bell, Menu, Search, Layers, BookOpen, Users, Settings,
     FileText, Flag, Ticket, Tags, BarChart3, Award, DollarSign,
-    GraduationCap, Plus, Edit, Hash, UserPlus, FilePlus, PlusCircle, LayoutDashboard
+    GraduationCap, Plus, Edit, Hash, UserPlus, FilePlus, PlusCircle, LayoutDashboard, AlignLeft
 } from "lucide-react";
 import Breadcrumbs from "@/components/ui/Breadcrumbs";
 import { UserDropdown } from "@/components/ui/UserDropdown/UserDropdown";
@@ -83,9 +83,9 @@ export function Header({ onMobileMenuOpen }: { onMobileMenuOpen: () => void }) {
             <div className="flex items-center gap-4">
                 <button
                     onClick={onMobileMenuOpen}
-                    className="lg:hidden p-2 -ml-2 text-muted-foreground hover:text-foreground rounded-lg hover:bg-muted/50 transition-colors cursor-pointer"
+                    className="lg:hidden w-10 h-10 flex items-center justify-center -ml-2 text-muted-foreground hover:text-primary rounded-xl bg-muted/40 border border-white/5 hover:bg-muted/60 transition-all cursor-pointer shadow-sm group"
                 >
-                    <Menu className="w-6 h-6" />
+                    <AlignLeft className="w-5 h-5 group-hover:scale-110 transition-transform" />
                 </button>
 
                 <Breadcrumbs
@@ -101,14 +101,6 @@ export function Header({ onMobileMenuOpen }: { onMobileMenuOpen: () => void }) {
             <div className="flex items-center gap-2 sm:gap-4">
                 {isLoading ? (
                     <>
-                        {/* Search Skeleton */}
-                        <Skeleton className="hidden md:flex h-10 w-64 rounded-xl items-center px-4">
-                            <div className="h-4 w-4 rounded-full bg-muted-foreground/20 mr-3" />
-                            <div className="h-3 w-24 bg-muted-foreground/20 rounded-md" />
-                        </Skeleton>
-
-                        <div className="h-8 w-px bg-border/50 mx-1 hidden sm:block" />
-
                         {/* Theme Toggle Skeleton */}
                         <Skeleton className="w-10 h-10 rounded-xl flex items-center justify-center">
                             <div className="w-5 h-5 rounded-md bg-muted-foreground/20" />
@@ -123,21 +115,8 @@ export function Header({ onMobileMenuOpen }: { onMobileMenuOpen: () => void }) {
                     </>
                 ) : (
                     <>
-                        <div className="hidden md:flex items-center px-3 py-2 rounded-xl bg-muted/30 border border-white/5 focus-within:ring-2 focus-within:ring-primary/20 transition-all w-64">
-                            <Search className="w-4 h-4 text-muted-foreground" />
-                            <input
-                                type="text"
-                                placeholder="Search courses..."
-                                className="bg-transparent border-none outline-none text-sm ml-2 w-full text-foreground placeholder:text-muted-foreground"
-                            />
-                        </div>
-
-                        <div className="h-8 w-px bg-border/50 mx-1 hidden sm:block" />
-
                         <ThemeToggleCompact />
-
                         <NotificationPanel />
-
                         {user && <UserDropdown user={user} />}
                     </>
                 )}
@@ -145,4 +124,3 @@ export function Header({ onMobileMenuOpen }: { onMobileMenuOpen: () => void }) {
         </header>
     );
 }
-

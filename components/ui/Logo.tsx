@@ -109,12 +109,12 @@ export const Logo = ({ className = "", showText = true, size = "md", textClassNa
                             strokeLinecap="round"
                             strokeLinejoin="round"
                             fill="none"
-                            className="stroke-white dark:stroke-slate-950"
+                            className="stroke-white"
                         />
 
-                        <circle cx="24" cy="16" r="3" fillOpacity="0.3" className="fill-white dark:fill-slate-950" />
-                        <circle cx="24" cy="48" r="3" fillOpacity="0.3" className="fill-white dark:fill-slate-950" />
-                        <circle cx="46" cy="32" r="4" fillOpacity="0.3" className="fill-white dark:fill-slate-950" />
+                        <circle cx="24" cy="16" r="3" fillOpacity="0.3" className="fill-white" />
+                        <circle cx="24" cy="48" r="3" fillOpacity="0.3" className="fill-white" />
+                        <circle cx="46" cy="32" r="4" fillOpacity="0.3" className="fill-white" />
                     </g>
                 </svg>
 
@@ -129,7 +129,7 @@ export const Logo = ({ className = "", showText = true, size = "md", textClassNa
                         <span className="bg-linear-to-r from-primary via-accent to-secondary bg-clip-text text-transparent dark:from-primary dark:via-secondary dark:to-accent">
                             Dokkhota
                         </span>
-                        <span className="ml-1 text-[0.5em] font-black tracking-wider text-white dark:text-slate-950 bg-linear-to-r from-primary to-accent dark:from-primary dark:to-secondary px-1.5 py-0.5 rounded-md shadow-sm">
+                        <span className="ml-1 text-[0.5em] font-black tracking-wider text-white bg-linear-to-r from-primary to-accent px-1.5 py-0.5 rounded-md shadow-sm">
                             IT
                         </span>
                     </div>
@@ -178,7 +178,20 @@ export const LogoIcon = ({ size = 40, className = "" }: { size?: number; classNa
             </defs>
 
             <g filter="url(#iconShadow)">
-                <rect x="4" y="4" width="56" height="56" rx="16" className="fill-[url(#iconGrad)] dark:fill-[url(#iconGradDark)]" />
+                <rect
+                    x="4" y="4"
+                    width="56" height="56"
+                    rx="16"
+                    fill="url(#iconGrad)"
+                    className="dark:hidden"
+                />
+                <rect
+                    x="4" y="4"
+                    width="56" height="56"
+                    rx="16"
+                    fill="url(#iconGradDark)"
+                    className="hidden dark:block"
+                />
                 <rect x="4" y="4" width="56" height="56" rx="16" fill="url(#iconShine)" />
             </g>
 
@@ -188,12 +201,12 @@ export const LogoIcon = ({ size = 40, className = "" }: { size?: number; classNa
                 strokeLinecap="round"
                 strokeLinejoin="round"
                 fill="none"
-                className="stroke-white dark:stroke-slate-950"
+                className="stroke-white"
             />
 
-            <circle cx="46" cy="32" r="4" fillOpacity="0.25" className="fill-white dark:fill-slate-950" />
-            <circle cx="24" cy="16" r="3" fillOpacity="0.25" className="fill-white dark:fill-slate-950" />
-            <circle cx="24" cy="48" r="3" fillOpacity="0.25" className="fill-white dark:fill-slate-950" />
+            <circle cx="46" cy="32" r="4" fillOpacity="0.25" className="fill-white" />
+            <circle cx="24" cy="16" r="3" fillOpacity="0.25" className="fill-white" />
+            <circle cx="24" cy="48" r="3" fillOpacity="0.25" className="fill-white" />
         </svg>
     );
 };

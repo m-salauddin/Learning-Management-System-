@@ -97,10 +97,13 @@ export function DashboardLayoutClient({ children, role: serverRole }: DashboardL
                             transition={{ type: "spring", stiffness: 300, damping: 30 }}
                             className="fixed inset-y-0 left-0 w-64 bg-background border-r border-border/50 z-50 lg:hidden flex flex-col shadow-2xl"
                         >
-                            <div className="p-6 flex items-center justify-between">
+                            <div className="p-5 flex items-center justify-between border-b border-white/5 bg-slate-900/40 backdrop-blur-md sticky top-0 z-10">
                                 <Logo />
-                                <button onClick={() => setIsMobileMenuOpen(false)} className="p-2 -mr-2 text-muted-foreground hover:text-foreground">
-                                    <X className="w-5 h-5" />
+                                <button
+                                    onClick={() => setIsMobileMenuOpen(false)}
+                                    className="w-10 h-10 flex items-center justify-center rounded-xl bg-muted/40 border border-white/5 text-muted-foreground hover:text-primary transition-all cursor-pointer shadow-sm group"
+                                >
+                                    <X className="w-5 h-5 group-hover:scale-110 transition-transform" />
                                 </button>
                             </div>
 
