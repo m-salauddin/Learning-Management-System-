@@ -27,7 +27,6 @@ export const StepIndicator = ({ currentStep, setCurrentStep }: StepIndicatorProp
         <div className="mb-12 md:mb-24 mt-6 md:mt-12 relative w-full max-w-7xl mx-auto px-6 sm:px-12 lg:px-20 select-none flex items-center justify-between h-16 sm:h-20 lg:h-24">
             {steps.map((step, i) => (
                 <div key={step.n} className={cn("flex items-center", i < steps.length - 1 ? "flex-1" : "")}>
-                    {/* Node */}
                     <motion.button
                         type="button"
                         onClick={() => setCurrentStep(step.n)}
@@ -48,7 +47,6 @@ export const StepIndicator = ({ currentStep, setCurrentStep }: StepIndicatorProp
                                 borderColor: currentStep >= step.n ? step.color : 'rgba(255,255,255,0.1)'
                             }}
                         >
-                            {/* Number Badge */}
                             <div
                                 className="absolute -top-1 -right-1 sm:top-0 sm:right-0 w-3.5 h-3.5 sm:w-6 sm:h-6 rounded-full flex items-center justify-center text-[7px] sm:text-[10px] font-black text-white/90 shadow-lg z-20"
                                 style={{ backgroundColor: currentStep >= step.n ? step.color : '#1e293b' }}
@@ -74,40 +72,37 @@ export const StepIndicator = ({ currentStep, setCurrentStep }: StepIndicatorProp
                         </div>
                     </motion.button>
 
-                    {/* Connection Line segment (only if not last step) */}
                     {i < steps.length - 1 && (
-                        <div className="flex-1 px-3 sm:px-4 md:px-6 relative pointer-events-none">
-                            <div className="w-full relative">
-                                {/* Line Background */}
-                                <div className="absolute h-px inset-0 bg-white/10 rounded-full" />
+                        <div className="flex-1 px-2.5 sm:px-4 md:px-6 relative pointer-events-none">
+                            <div className="w-full h-4 relative flex items-center">
+                                <div className="w-full h-px bg-white/10 rounded-full shrink-0" />
 
-                                {/* Terminal dots (Background) */}
-                                <div className="absolute z-10 left-0 top-1/2 -translate-y-1/2 min-w-1.5 min-h-1.5 w-1.5 h-1.5 sm:w-3 sm:h-3 rounded-full border border-white/20 bg-slate-950 -translate-x-1/2" />
-                                <div className="absolute z-10 right-0 top-1/2 -translate-y-1/2 min-w-1.5 min-h-1.5 w-1.5 h-1.5 sm:w-3 sm:h-3 rounded-full border border-white/20 bg-slate-950 translate-x-1/2" />
+                                <div className="absolute left-0 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[7px] h-[7px] sm:w-[10px] sm:h-[10px] rounded-full border border-white/20 bg-slate-950 z-10" />
+                                <div className="absolute right-0 top-1/2 translate-x-1/2 -translate-y-1/2 w-[7px] h-[7px] sm:w-[10px] sm:h-[10px] rounded-full border border-white/20 bg-slate-950 z-10" />
 
-                                {/* Active Line (Minimal) */}
-                                <motion.div
-                                    initial={false}
-                                    animate={{ scaleX: currentStep > step.n ? 1 : 0 }}
-                                    transition={{ duration: 0.8, ease: "circOut" }}
-                                    className="absolute h-px inset-0 origin-left rounded-full"
-                                    style={{ backgroundColor: step.color }}
-                                />
+                                <div className="absolute inset-x-0 top-1/2 -translate-y-1/2 h-px pointer-events-none overflow-hidden rounded-full">
+                                    <motion.div
+                                        initial={false}
+                                        animate={{ scaleX: currentStep > step.n ? 1 : 0 }}
+                                        transition={{ duration: 0.8, ease: "circOut" }}
+                                        className="w-full h-full origin-left"
+                                        style={{ backgroundColor: step.color }}
+                                    />
+                                </div>
 
-                                {/* Active Terminal dots (Minimal) */}
                                 <AnimatePresence>
                                     {currentStep > step.n && (
                                         <>
                                             <motion.div
                                                 initial={{ scale: 0 }}
                                                 animate={{ scale: 1 }}
-                                                className="absolute left-0 top-1/2 -translate-y-1/2 w-1.5 h-1.5 sm:w-3 sm:h-3 rounded-full border-[1.5px] bg-slate-950 -translate-x-1/2 z-20"
+                                                className="absolute left-0 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[7px] h-[7px] sm:w-[10px] sm:h-[10px] rounded-full border-[1.5px] bg-slate-950 z-20"
                                                 style={{ borderColor: step.color }}
                                             />
                                             <motion.div
                                                 initial={{ scale: 0 }}
                                                 animate={{ scale: 1, transition: { delay: 0.7 } }}
-                                                className="absolute right-0 top-1/2 -translate-y-1/2 w-1.5 h-1.5 sm:w-3 sm:h-3 rounded-full border-[1.5px] bg-slate-950 translate-x-1/2 z-20"
+                                                className="absolute right-0 top-1/2 translate-x-1/2 -translate-y-1/2 w-[7px] h-[7px] sm:w-[10px] sm:h-[10px] rounded-full border-[1.5px] bg-slate-950 z-20"
                                                 style={{ borderColor: step.color }}
                                             />
                                         </>

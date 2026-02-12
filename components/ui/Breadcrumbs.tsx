@@ -33,9 +33,7 @@ const Breadcrumbs: React.FC<BreadcrumbsProps> = ({
                 <div className="flex items-center shrink-0">
                     {items.length === 0 ? (
                         <span className="flex items-center gap-2 md:gap-2.5 font-bold text-primary transition-colors">
-                            <div className="w-7 h-7 md:w-8 md:h-8 rounded-lg bg-primary/10 border border-primary/20 flex items-center justify-center shadow-sm">
-                                {showHomeIcon && <RootIcon className="w-3.5 h-3.5 md:w-4 md:h-4 shrink-0" />}
-                            </div>
+                            {showHomeIcon && <RootIcon className="w-3.5 h-3.5 md:w-4 md:h-4 shrink-0 text-primary" />}
                             {rootLabel && <span className="hidden md:inline-block shrink-0">{rootLabel}</span>}
                         </span>
                     ) : (
@@ -43,14 +41,12 @@ const Breadcrumbs: React.FC<BreadcrumbsProps> = ({
                             href={rootHref}
                             className="text-muted-foreground hover:text-primary transition-colors flex items-center gap-2 md:gap-2.5 group"
                         >
-                            <div className="w-7 h-7 md:w-8 md:h-8 rounded-lg bg-muted/40 border border-white/5 flex items-center justify-center group-hover:bg-primary/10 group-hover:border-primary/20 transition-all shadow-sm">
-                                {showHomeIcon && <RootIcon className="w-3.5 h-3.5 md:w-4 md:h-4 group-hover:scale-110 transition-transform shrink-0" />}
-                            </div>
+                            {showHomeIcon && <RootIcon className="w-3.5 h-3.5 md:w-4 md:h-4 group-hover:scale-110 transition-all shrink-0" />}
                             {rootLabel && <span className="hidden md:inline-block shrink-0">{rootLabel}</span>}
                         </Link>
                     )}
                     {items.length > 0 && (
-                        <ChevronRight className="w-3 h-3 md:w-3.5 md:h-3.5 text-muted-foreground/20 mx-0.5 md:mx-1 shrink-0" />
+                        <ChevronRight className="w-3 h-3 md:w-3.5 md:h-3.5 text-muted-foreground/50 mx-0.5 md:mx-1 shrink-0" />
                     )}
                 </div>
             )}
@@ -67,9 +63,7 @@ const Breadcrumbs: React.FC<BreadcrumbsProps> = ({
                                     href={item.href}
                                     className="text-muted-foreground hover:text-primary transition-colors cursor-pointer flex items-center gap-2 md:gap-2.5 group overflow-hidden"
                                 >
-                                    <div className="w-7 h-7 md:w-8 md:h-8 rounded-lg bg-muted/40 border border-white/5 flex items-center justify-center group-hover:bg-primary/10 group-hover:border-primary/20 transition-all shadow-sm">
-                                        {item.icon && <item.icon className="w-3.5 h-3.5 md:w-4 md:h-4 group-hover:scale-110 transition-transform shrink-0" />}
-                                    </div>
+                                    {item.icon && <item.icon className="w-3.5 h-3.5 md:w-4 md:h-4 group-hover:scale-110 transition-all shrink-0" />}
                                     <span className="truncate hidden md:inline-block text-muted-foreground" title={item.label}>{item.label}</span>
                                 </Link>
                             ) : (
@@ -77,12 +71,7 @@ const Breadcrumbs: React.FC<BreadcrumbsProps> = ({
                                     "flex items-center gap-2 md:gap-2.5 overflow-hidden",
                                     isActive ? "text-primary font-bold" : "text-muted-foreground"
                                 )}>
-                                    <div className={cn(
-                                        "w-7 h-7 md:w-8 md:h-8 rounded-lg flex items-center justify-center shadow-sm",
-                                        isActive ? "bg-primary/10 border border-primary/20" : "bg-muted/40 border border-white/5"
-                                    )}>
-                                        {item.icon && <item.icon className="w-3.5 h-3.5 md:w-4 md:h-4 shrink-0" />}
-                                    </div>
+                                    {item.icon && <item.icon className="w-3.5 h-3.5 md:w-4 md:h-4 shrink-0" />}
                                     <span
                                         className="truncate hidden md:inline-block"
                                         title={item.label}
@@ -93,7 +82,7 @@ const Breadcrumbs: React.FC<BreadcrumbsProps> = ({
                             )}
 
                             {!isLast && (
-                                <ChevronRight className="w-3 h-3 md:w-3.5 md:h-3.5 text-muted-foreground/20 mx-0.5 md:mx-1 shrink-0" />
+                                <ChevronRight className="w-3 h-3 md:w-3.5 md:h-3.5 text-muted-foreground/50 mx-0.5 md:mx-1 shrink-0" />
                             )}
                         </div>
                     </React.Fragment>
