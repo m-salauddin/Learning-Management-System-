@@ -22,6 +22,7 @@ interface Category {
     id: string;
     name: string;
     slug: string;
+    icon?: string;
 }
 
 interface Teacher {
@@ -116,7 +117,7 @@ export default function CreateCoursePage() {
             reader.onloadend = () => setThumbnailPreview(reader.result as string);
             reader.readAsDataURL(file);
 
-            toast.success("Identity asset uploaded");
+            toast.success("Thumbnail uploaded successfully");
         } catch (error: any) {
             toast.error(error.message || "Upload failed");
         } finally {
@@ -158,10 +159,10 @@ export default function CreateCoursePage() {
 
         try {
             await createCourse(formData);
-            toast.success("Course Initialized Successfully!");
+            toast.success("Course created successfully!");
             router.push("/dashboard/courses");
         } catch (error: any) {
-            toast.error(error.message || "Initialization Failed");
+            toast.error(error.message || "Failed to create course");
         } finally {
             setIsSubmitting(false);
         }
@@ -181,45 +182,18 @@ export default function CreateCoursePage() {
     };
 
     return (
-        <div className="min-h-screen overflow-x-hidden selection:bg-primary selection:text-white">
-            <form onSubmit={handleSubmit} className="max-w-7xl mx-auto">
+        <div className="max-w-6xl mx-auto py-8 px-4 sm:px-6">
+            <form onSubmit={handleSubmit} className="space-y-8">
                 {/* Header */}
-                <div className="mb-12 flex flex-col md:flex-row md:items-center justify-between gap-8">
-                    <div className="space-y-4">
-                        <motion.div
-                            initial={{ opacity: 0, x: -20 }}
-                            animate={{ opacity: 1, x: 0 }}
-                            className="inline-flex items-center gap-2.5 px-4 py-2 rounded-full bg-white/5 border border-white/10 backdrop-blur-md"
-                        >
-                            <span className="w-2 h-2 rounded-full bg-primary animate-pulse" />
-                            <span className="text-[9px] font-black uppercase tracking-[0.3em] text-white/60">Creative Studio</span>
-                        </motion.div>
-                        <h1 className="text-4xl md:text-6xl font-black text-white tracking-tighter leading-none">
-                            Launch Your <span className="text-primary italic">Expertise</span>
-                        </h1>
-                        <p className="text-white/40 text-base md:text-lg max-w-2xl font-medium leading-relaxed">
-                            Follow our streamlined process to create a world-class learning experience for your students.
-                        </p>
-                    </div>
-                    <motion.div
-                        initial={{ opacity: 0, scale: 0.9 }}
-                        animate={{ opacity: 1, scale: 1 }}
-                        className="flex items-center gap-5 bg-white/2 backdrop-blur-2xl border border-white/10 p-4 rounded-[2rem] shadow-2xl"
-                    >
-                        <div className="w-14 h-14 rounded-2xl bg-primary/10 flex items-center justify-center text-primary shadow-inner">
-                            <GraduationCap className="w-7 h-7" />
-                        </div>
-                        <div className="pr-4">
-                            <p className="text-[10px] font-black text-white/30 uppercase tracking-[0.2em] mb-1">Global Status</p>
-                            <p className="text-lg font-black text-white">Draft Mode</p>
-                        </div>
-                    </motion.div>
+                <div className="mb-8">
+                    <h1 className="text-3xl font-bold tracking-tight text-white">Initialize New Course</h1>
+                    <p className="text-muted-foreground mt-1 font-medium">Configure the core details, curriculum, and presentation for your new educational program.</p>
                 </div>
 
                 <StepIndicator currentStep={currentStep} setCurrentStep={setCurrentStep} />
 
-                <div className="grid grid-cols-1 xl:grid-cols-12 gap-12 items-start">
-                    <div className="xl:col-span-8 space-y-8 min-h-[600px] md:min-h-[700px]">
+                <div className="grid grid-cols-1 xl:grid-cols-12 gap-10 items-start">
+                    <div className="xl:col-span-8 space-y-8 min-h-[500px]">
                         <AnimatePresence mode="wait">
                             {currentStep === 1 && (
                                 <StepFoundations
@@ -259,8 +233,12 @@ export default function CreateCoursePage() {
                         </AnimatePresence>
                     </div>
 
-                    <div className="xl:col-span-4 hidden xl:block sticky top-8">
-                        <CoursePreview formData={formData} thumbnailPreview={thumbnailPreview} />
+                    {/* Live Preview Sidebar */}
+                    <div className="xl:col-span-4 h-full">
+                        <CoursePreview
+                            formData={formData}
+                            thumbnailPreview={thumbnailPreview}
+                        />
                     </div>
                 </div>
 

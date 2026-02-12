@@ -53,7 +53,7 @@ export async function getCourses(params: GetCoursesParams = {}): Promise<Paginat
             instructor:instructor_profiles(
                 user:users(id, name, email, avatar_url)
             ),
-            category:categories(id, name, slug)
+            category:categories(id, name, slug, color)
         `, { count: 'exact' });
 
     // Apply filters
@@ -134,7 +134,7 @@ export async function getCourseBySlug(slug: string): Promise<ApiResponse<CourseW
             instructor:instructor_profiles(
                 user:users(id, name, email, avatar_url)
             ),
-            category:categories(id, name, slug),
+            category:categories(id, name, slug, color),
             modules(
                 *,
                 lessons(*)
@@ -470,7 +470,7 @@ export async function getCategories(): Promise<ApiResponse<{ id: string; name: s
 
     const { data, error } = await supabase
         .from('categories')
-        .select('id, name, slug')
+        .select('id, name, slug, icon')
         .order('name');
 
     if (error) {

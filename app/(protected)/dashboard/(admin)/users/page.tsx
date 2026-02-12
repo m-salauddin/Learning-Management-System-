@@ -393,6 +393,28 @@ export default function UserManagementPage() {
         }
     };
 
+    const AVATAR_COLORS = [
+        "bg-blue-500/15 text-blue-500 border-blue-500/20",
+        "bg-emerald-500/15 text-emerald-500 border-emerald-500/20",
+        "bg-rose-500/15 text-rose-500 border-rose-500/20",
+        "bg-amber-500/15 text-amber-500 border-amber-500/20",
+        "bg-violet-500/15 text-violet-500 border-violet-500/20",
+        "bg-indigo-500/15 text-indigo-500 border-indigo-500/20",
+        "bg-cyan-500/15 text-cyan-500 border-cyan-500/20",
+        "bg-pink-500/15 text-pink-500 border-pink-500/20",
+        "bg-orange-500/15 text-orange-500 border-orange-500/20",
+        "bg-fuchsia-500/15 text-fuchsia-500 border-fuchsia-500/20",
+    ];
+
+    const getAvatarColor = (seed: string) => {
+        let hash = 0;
+        for (let i = 0; i < seed.length; i++) {
+            hash = seed.charCodeAt(i) + ((hash << 5) - hash);
+        }
+        const index = Math.abs(hash) % AVATAR_COLORS.length;
+        return AVATAR_COLORS[index];
+    };
+
     const totalPages = Math.ceil(totalUsers / pageSize);
 
     return (
@@ -527,125 +549,109 @@ export default function UserManagementPage() {
                             </button>
                         </div>
 
-                        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
-                            {/* Role Filter */}
-                            <Select
-                                value={roleFilter}
-                                onValueChange={(val) => {
-                                    setRoleFilter(val);
-                                    setCurrentPage(1);
-                                }}
-                            >
-                                <SelectTrigger className="w-full sm:w-fit sm:min-w-[140px]">
-                                    <div className="flex items-center gap-2">
-                                        <Filter className="w-4 h-4" />
-                                        <SelectValue placeholder="All Roles" />
-                                    </div>
-                                </SelectTrigger>
-                                <SelectContent>
-                                    <SelectItem value="all">All Roles</SelectItem>
-                                    <SelectItem value="student">Student</SelectItem>
-                                    <SelectItem value="teacher">Teacher</SelectItem>
-                                    <SelectItem value="moderator">Moderator</SelectItem>
-                                    <SelectItem value="admin">Admin</SelectItem>
-                                </SelectContent>
-                            </Select>
+                        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-4 mt-4 lg:mt-0">
 
-                            {/* Status Filter */}
-                            <Select
-                                value={statusFilter}
-                                onValueChange={(val) => {
-                                    setStatusFilter(val);
-                                    setCurrentPage(1);
-                                }}
-                            >
-                                <SelectTrigger className="w-full sm:w-fit sm:min-w-[140px]">
-                                    <div className="flex items-center gap-2">
-                                        <Activity className="w-4 h-4" />
-                                        <SelectValue placeholder="All Status" />
-                                    </div>
-                                </SelectTrigger>
-                                <SelectContent>
-                                    <SelectItem value="all">All Status</SelectItem>
-                                    <SelectItem value="active">Active</SelectItem>
-                                    <SelectItem value="inactive">Inactive</SelectItem>
-                                    <SelectItem value="suspended">Suspended</SelectItem>
-                                    <SelectItem value="pending">Pending</SelectItem>
-                                </SelectContent>
-                            </Select>
-
-                            {/* Clear Filters */}
-                            {(searchTerm || roleFilter !== 'all' || statusFilter !== 'all') && (
-                                <button
-                                    onClick={clearFilters}
-                                    className="flex items-center justify-center gap-1.5 px-3 py-2.5 rounded-xl border border-red-500/30 bg-red-500/10 hover:bg-red-500/20 text-red-500 text-sm font-medium transition-colors"
+                            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
+                                {/* Role Filter */}
+                                <Select
+                                    value={roleFilter}
+                                    onValueChange={(val) => {
+                                        setRoleFilter(val);
+                                        setCurrentPage(1);
+                                    }}
                                 >
-                                    <X className="w-3.5 h-3.5" />
-                                    <span className="sm:hidden lg:inline">Clear</span>
-                                    <span className="hidden sm:inline lg:hidden">Clear Filters</span>
-                                </button>
-                            )}
+                                    <SelectTrigger className="w-full sm:w-fit sm:min-w-[140px]">
+                                        <div className="flex items-center gap-2">
+                                            <Filter className="w-4 h-4" />
+                                            <SelectValue placeholder="All Roles" />
+                                        </div>
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="all">All Roles</SelectItem>
+                                        <SelectItem value="student">Student</SelectItem>
+                                        <SelectItem value="teacher">Teacher</SelectItem>
+                                        <SelectItem value="moderator">Moderator</SelectItem>
+                                        <SelectItem value="admin">Admin</SelectItem>
+                                    </SelectContent>
+                                </Select>
+
+                                {/* Status Filter */}
+                                <Select
+                                    value={statusFilter}
+                                    onValueChange={(val) => {
+                                        setStatusFilter(val);
+                                        setCurrentPage(1);
+                                    }}
+                                >
+                                    <SelectTrigger className="w-full sm:w-fit sm:min-w-[140px]">
+                                        <div className="flex items-center gap-2">
+                                            <Activity className="w-4 h-4" />
+                                            <SelectValue placeholder="All Status" />
+                                        </div>
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="all">All Status</SelectItem>
+                                        <SelectItem value="active">Active</SelectItem>
+                                        <SelectItem value="inactive">Inactive</SelectItem>
+                                        <SelectItem value="suspended">Suspended</SelectItem>
+                                        <SelectItem value="pending">Pending</SelectItem>
+                                    </SelectContent>
+                                </Select>
+
+                                {/* Clear Filters */}
+                                {(searchTerm || roleFilter !== 'all' || statusFilter !== 'all') && (
+                                    <button
+                                        onClick={clearFilters}
+                                        className="flex items-center justify-center gap-1.5 px-3 py-2.5 rounded-xl border border-red-500/30 bg-red-500/10 hover:bg-red-500/20 text-red-500 text-sm font-medium transition-colors"
+                                    >
+                                        <X className="w-3.5 h-3.5" />
+                                        <span className="sm:hidden lg:inline">Clear</span>
+                                        <span className="hidden sm:inline lg:hidden">Clear Filters</span>
+                                    </button>
+                                )}
+                            </div>
                         </div>
                     </div>
                 </div>
 
                 {/* Table */}
-                <div className="overflow-hidden overflow-x-auto [&::-webkit-scrollbar]:h-1.5 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-muted-foreground/20 [&::-webkit-scrollbar-thumb]:rounded-full hover:[&::-webkit-scrollbar-thumb]:bg-primary/50">
-                    <Table>
-                        <TableHeader>
-                            <TableRow className="hover:bg-transparent border-b border-border/40">
-                                <TableHead className="w-[50px] px-6 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                                    <AnimatedCheckbox
-                                        id="select-all"
-                                        checked={selectedUsers.size === users.length && users.length > 0}
-                                        onChange={toggleSelectAll}
-                                    />
-                                </TableHead>
-                                <TableHead className="px-6 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider">User</TableHead>
-                                <TableHead className="px-6 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Role</TableHead>
-                                <TableHead className="px-6 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Status</TableHead>
-                                <TableHead className="px-6 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Joined</TableHead>
-                                <TableHead className="px-6 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider text-right">Actions</TableHead>
-                            </TableRow>
-                        </TableHeader>
-                        <TableBody className="divide-y divide-border/20">
-                            {isLoading ? (
-                                [...Array(pageSize)].map((_, i) => (
-                                    <TableRow key={`skeleton-${i}`} className="border-b border-border/30 bg-linear-to-r from-transparent via-muted/5 to-transparent">
-                                        <TableCell className="px-6 py-4">
-                                            <div className="w-5 h-5 bg-linear-to-r from-muted/30 via-muted/50 to-muted/30 rounded-md animate-pulse" />
-                                        </TableCell>
-                                        <TableCell className="px-6 py-4">
-                                            <div className="flex items-center gap-4">
-                                                <div className="w-10 h-10 rounded-full bg-linear-to-r from-muted/30 via-muted/50 to-muted/30 animate-pulse" />
-                                                <div className="space-y-2">
-                                                    <div className="h-4 w-32 bg-linear-to-r from-muted/30 via-muted/50 to-muted/30 rounded-md animate-pulse" />
-                                                    <div className="h-3 w-40 bg-linear-to-r from-muted/30 via-muted/50 to-muted/30 rounded-md animate-pulse" />
-                                                </div>
-                                            </div>
-                                        </TableCell>
-                                        <TableCell className="px-6 py-4"><div className="h-6 w-20 bg-linear-to-r from-muted/30 via-muted/50 to-muted/30 rounded-full animate-pulse" /></TableCell>
-                                        <TableCell className="px-6 py-4"><div className="h-6 w-18 bg-linear-to-r from-muted/30 via-muted/50 to-muted/30 rounded-full animate-pulse" /></TableCell>
-                                        <TableCell className="px-6 py-4"><div className="h-4 w-24 bg-linear-to-r from-muted/30 via-muted/50 to-muted/30 rounded-md animate-pulse" /></TableCell>
-                                        <TableCell className="px-6 py-4"><div className="h-8 w-8 bg-linear-to-r from-muted/30 via-muted/50 to-muted/30 rounded-lg ml-auto animate-pulse" /></TableCell>
-                                    </TableRow>
-                                ))
-                            ) : users.length === 0 ? (
-                                <TableRow>
-                                    <TableCell colSpan={6} className="h-24 text-center">
-                                        <div className="flex flex-col items-center gap-3 py-12">
-                                            <div className="bg-muted/50 p-4 rounded-xl border border-border/50">
-                                                <Users className="w-8 h-8 text-muted-foreground/70" strokeWidth={1.5} />
-                                            </div>
-                                            <div className="space-y-1">
-                                                <p className="font-medium text-foreground">No users found</p>
-                                                <p className="text-sm text-muted-foreground">Try adjusting your search or filters</p>
-                                            </div>
-                                        </div>
-                                    </TableCell>
+                {/* Content Rendering */}
+                {isLoading ? (
+                    <div className="py-20 text-center">
+                        <RefreshCw className="w-8 h-8 animate-spin text-primary mx-auto mb-4" />
+                        <p className="text-muted-foreground animate-pulse">Syncing user directory...</p>
+                    </div>
+                ) : users.length === 0 ? (
+                    <div className="py-20 text-center">
+                        <div className="bg-muted/50 w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-4 border border-border/50">
+                            <Users className="w-8 h-8 text-muted-foreground/50" />
+                        </div>
+                        <h3 className="text-lg font-bold">No users found</h3>
+                        <p className="text-sm text-muted-foreground max-w-xs mx-auto mt-1">
+                            We couldn&apos;t find any users matching your criteria.
+                        </p>
+                    </div>
+                ) : (
+                    <div className="overflow-hidden overflow-x-auto [&::-webkit-scrollbar]:h-1.5 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-muted-foreground/20 [&::-webkit-scrollbar-thumb]:rounded-full hover:[&::-webkit-scrollbar-thumb]:bg-primary/50">
+                        <Table>
+                            <TableHeader>
+                                <TableRow className="hover:bg-transparent border-b border-border/40">
+                                    <TableHead className="w-[50px] px-6 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                                        <AnimatedCheckbox
+                                            id="select-all"
+                                            checked={selectedUsers.size === users.length && users.length > 0}
+                                            onChange={toggleSelectAll}
+                                        />
+                                    </TableHead>
+                                    <TableHead className="px-6 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider">User</TableHead>
+                                    <TableHead className="px-6 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Role</TableHead>
+                                    <TableHead className="px-6 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Status</TableHead>
+                                    <TableHead className="px-6 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Joined</TableHead>
+                                    <TableHead className="px-6 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider text-right">Actions</TableHead>
                                 </TableRow>
-                            ) : (
-                                users.map((user) => (
+                            </TableHeader>
+                            <TableBody className="divide-y divide-border/20">
+                                {users.map((user) => (
                                     <TableRow key={user.id} className="border-b border-border/30 transition-all duration-200 group">
                                         <TableCell className="px-6 py-4">
                                             <AnimatedCheckbox
@@ -657,13 +663,25 @@ export default function UserManagementPage() {
                                         <TableCell className="px-6 py-4">
                                             <div className="flex items-center gap-4">
                                                 <div className="relative">
-                                                    <div className="w-10 h-10 rounded-full bg-linear-to-br from-primary/20 to-primary/5 flex items-center justify-center text-primary font-bold border border-primary/10 overflow-hidden shadow-sm">
-                                                        {user.avatar_url ? (
-                                                            <img src={user.avatar_url} alt={user.name} className="w-full h-full object-cover" />
-                                                        ) : (
-                                                            (user.name?.[0] || 'U').toUpperCase()
-                                                        )}
-                                                    </div>
+                                                    {(() => {
+                                                        const userInitial = (user.name?.[0] || user.email?.[0] || 'U').toUpperCase();
+                                                        const avatarStyle = user.avatar_color || getAvatarColor(user.id || user.email || user.name || 'user');
+
+                                                        return (
+                                                            <div className={cn(
+                                                                "w-10 h-10 rounded-full flex items-center justify-center font-bold border overflow-hidden shadow-sm transition-all duration-300",
+                                                                user.avatar_url
+                                                                    ? "border-primary/10 bg-linear-to-br from-primary/20 to-primary/5 text-primary"
+                                                                    : avatarStyle
+                                                            )}>
+                                                                {user.avatar_url ? (
+                                                                    <img src={user.avatar_url} alt={user.name} className="w-full h-full object-cover" />
+                                                                ) : (
+                                                                    userInitial
+                                                                )}
+                                                            </div>
+                                                        );
+                                                    })()}
                                                     <div className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-emerald-500 border-2 border-background rounded-full" />
                                                 </div>
                                                 <div>
@@ -724,11 +742,12 @@ export default function UserManagementPage() {
                                             </DropdownMenu>
                                         </TableCell>
                                     </TableRow>
-                                ))
-                            )}
-                        </TableBody>
-                    </Table>
-                </div>
+                                ))}
+                            </TableBody>
+                        </Table>
+                    </div>
+                )}
+
 
                 {/* Pagination */}
                 {!isLoading && users.length > 0 && (

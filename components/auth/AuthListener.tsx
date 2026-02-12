@@ -35,6 +35,7 @@ export function AuthListener() {
                         fullName: profile.name,
                         role: (session.user.app_metadata?.role || profile.role || 'student'),
                         avatarUrl: profile.avatar_url,
+                        avatarColor: profile.avatar_color,
                         coursesEnrolled: profile.courses_enrolled || [],
                         providers: profile.providers || []
                     }));

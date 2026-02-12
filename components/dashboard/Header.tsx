@@ -4,8 +4,10 @@ import { usePathname } from "next/navigation";
 import {
     Bell, Menu, Search, Layers, BookOpen, Users, Settings,
     FileText, Flag, Ticket, Tags, BarChart3, Award, DollarSign,
-    GraduationCap, Plus, Edit, Hash, UserPlus, FilePlus, PlusCircle, LayoutDashboard, AlignLeft
+    GraduationCap, Plus, Edit, Hash, UserPlus, FilePlus, PlusCircle, LayoutDashboard, AlignLeft,
+    PanelLeftClose
 } from "lucide-react";
+import { motion } from "motion/react";
 import Breadcrumbs from "@/components/ui/Breadcrumbs";
 import { UserDropdown } from "@/components/ui/UserDropdown/UserDropdown";
 import { useAppSelector } from "@/lib/store/hooks";
@@ -24,7 +26,13 @@ const AuthSkeleton = () => (
     </Skeleton>
 );
 
-export function Header({ onMobileMenuOpen }: { onMobileMenuOpen: () => void }) {
+interface HeaderProps {
+    onMobileMenuOpen: () => void;
+    isSidebarCollapsed: boolean;
+    onSidebarToggle: () => void;
+}
+
+export function Header({ onMobileMenuOpen, isSidebarCollapsed, onSidebarToggle }: HeaderProps) {
     const pathname = usePathname();
     const { user, isLoading } = useAppSelector((state) => state.auth);
 
@@ -101,20 +109,27 @@ export function Header({ onMobileMenuOpen }: { onMobileMenuOpen: () => void }) {
             <div className="flex items-center gap-2 sm:gap-4">
                 {isLoading ? (
                     <>
-                        {/* Theme Toggle Skeleton */}
-                        <Skeleton className="w-10 h-10 rounded-xl flex items-center justify-center">
-                            <div className="w-5 h-5 rounded-md bg-muted-foreground/20" />
-                        </Skeleton>
-
-                        {/* Notification Skeleton */}
-                        <Skeleton className="w-10 h-10 rounded-xl flex items-center justify-center">
-                            <div className="w-5 h-5 rounded-md bg-muted-foreground/20" />
-                        </Skeleton>
-
+                        <Skeleton className="w-10 h-10 rounded-xl" />
+                        <Skeleton className="w-10 h-10 rounded-xl" />
+                        <Skeleton className="w-10 h-10 rounded-xl" />
                         <AuthSkeleton />
                     </>
                 ) : (
                     <>
+                        {/* Sidebar Toggle Button (Desktop) */}
+                        <motion.button
+                            whileTap={{ scale: 0.95 }}
+                            onClick={onSidebarToggle}
+                            className="hidden lg:flex w-10 h-10 items-center justify-center rounded-xl bg-muted/40 border border-white/5 text-muted-foreground hover:text-primary transition-all cursor-pointer shadow-sm group hover:bg-muted/60"
+                        >
+                            <motion.div
+                                animate={{ rotate: isSidebarCollapsed ? 180 : 0 }}
+                                transition={{ type: "spring", stiffness: 300, damping: 20 }}
+                            >
+                                <PanelLeftClose className="w-5 h-5 group-hover:scale-110 transition-transform" />
+                            </motion.div>
+                        </motion.button>
+
                         <ThemeToggleCompact />
                         <NotificationPanel />
                         {user && <UserDropdown user={user} />}

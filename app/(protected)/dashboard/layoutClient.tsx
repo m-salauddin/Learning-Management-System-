@@ -57,6 +57,7 @@ import { useAppSelector } from "@/lib/store/hooks";
 
 export function DashboardLayoutClient({ children, role: serverRole }: DashboardLayoutClientProps) {
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+    const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
     const pathname = usePathname();
     const { user } = useAppSelector((state) => state.auth);
 
@@ -68,11 +69,15 @@ export function DashboardLayoutClient({ children, role: serverRole }: DashboardL
     return (
         <div className="flex min-h-screen bg-background">
             {/* Desktop Sidebar */}
-            <Sidebar role={role} />
+            <Sidebar role={role} isCollapsed={isSidebarCollapsed} onToggle={() => setIsSidebarCollapsed(!isSidebarCollapsed)} />
 
             {/* Main Content */}
             <div className="flex-1 flex flex-col min-w-0">
-                <Header onMobileMenuOpen={() => setIsMobileMenuOpen(true)} />
+                <Header
+                    onMobileMenuOpen={() => setIsMobileMenuOpen(true)}
+                    isSidebarCollapsed={isSidebarCollapsed}
+                    onSidebarToggle={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
+                />
 
                 <main className="flex-1 p-4 sm:p-6 lg:p-8 overflow-y-auto dashboard-scrollbar">
                     {children}

@@ -24,7 +24,7 @@ export const StepIndicator = ({ currentStep, setCurrentStep }: StepIndicatorProp
     ];
 
     return (
-        <div className="mb-12 md:mb-24 mt-6 md:mt-12 relative w-full max-w-7xl mx-auto px-6 sm:px-12 lg:px-20 select-none flex items-center justify-between h-16 sm:h-20 lg:h-24">
+        <div className="mb-8 md:mb-16 mt-4 md:mt-8 relative w-full max-w-7xl mx-auto px-6 sm:px-12 lg:px-20 select-none flex items-center justify-between h-12 sm:h-16 lg:h-20">
             {steps.map((step, i) => (
                 <div key={step.n} className={cn("flex items-center", i < steps.length - 1 ? "flex-1" : "")}>
                     <motion.button
@@ -36,7 +36,7 @@ export const StepIndicator = ({ currentStep, setCurrentStep }: StepIndicatorProp
                     >
                         <div
                             className={cn(
-                                "w-9 h-9 sm:w-14 sm:h-14 lg:w-16 lg:h-16 rounded-full border sm:border-2 flex items-center justify-center transition-all duration-700 bg-slate-950",
+                                "w-10 h-10 sm:w-12 sm:h-12 lg:w-14 lg:h-14 rounded-2xl border sm:border-2 flex items-center justify-center transition-all duration-700 bg-slate-950",
                                 currentStep === step.n
                                     ? "ring-4 ring-slate-950 opacity-100 shadow-2xl"
                                     : currentStep > step.n
@@ -48,7 +48,7 @@ export const StepIndicator = ({ currentStep, setCurrentStep }: StepIndicatorProp
                             }}
                         >
                             <div
-                                className="absolute -top-1 -right-1 sm:top-0 sm:right-0 w-3.5 h-3.5 sm:w-6 sm:h-6 rounded-full flex items-center justify-center text-[7px] sm:text-[10px] font-black text-white/90 shadow-lg z-20"
+                                className="absolute -top-1 -right-1 sm:top-0 sm:right-0 w-4 h-4 sm:w-5 sm:h-5 rounded-lg flex items-center justify-center text-[8px] sm:text-[10px] font-black text-white/90 shadow-lg z-20"
                                 style={{ backgroundColor: currentStep >= step.n ? step.color : '#1e293b' }}
                             >
                                 {step.n}
@@ -57,12 +57,12 @@ export const StepIndicator = ({ currentStep, setCurrentStep }: StepIndicatorProp
                             <AnimatePresence mode="wait">
                                 {currentStep > step.n ? (
                                     <motion.div key="check" initial={{ scale: 0 }} animate={{ scale: 1 }}>
-                                        <Check className="w-4 h-4 sm:w-7 sm:h-7" style={{ color: step.color }} strokeWidth={4} />
+                                        <Check className="w-5 h-5 sm:w-6 sm:h-6" style={{ color: step.color }} strokeWidth={4} />
                                     </motion.div>
                                 ) : (
                                     <motion.div key="icon" initial={{ scale: 0.8 }} animate={{ scale: 1 }}>
                                         <step.icon
-                                            className={cn("w-4 h-4 sm:w-7 sm:h-7", currentStep === step.n ? "" : "opacity-20")}
+                                            className={cn("w-5 h-5 sm:w-6 sm:h-6", currentStep === step.n ? "" : "opacity-20")}
                                             style={{ color: currentStep === step.n ? step.color : "white" }}
                                             strokeWidth={currentStep === step.n ? 2 : 1.5}
                                         />
@@ -77,8 +77,8 @@ export const StepIndicator = ({ currentStep, setCurrentStep }: StepIndicatorProp
                             <div className="w-full h-4 relative flex items-center">
                                 <div className="w-full h-px bg-white/10 rounded-full shrink-0" />
 
-                                <div className="absolute left-0 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[7px] h-[7px] sm:w-[10px] sm:h-[10px] rounded-full border border-white/20 bg-slate-950 z-10" />
-                                <div className="absolute right-0 top-1/2 translate-x-1/2 -translate-y-1/2 w-[7px] h-[7px] sm:w-[10px] sm:h-[10px] rounded-full border border-white/20 bg-slate-950 z-10" />
+                                <div className="absolute left-0 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[7px] h-[7px] sm:w-[8px] sm:h-[8px] rounded-full border border-white/20 bg-slate-950 z-10" />
+                                <div className="absolute right-0 top-1/2 translate-x-1/2 -translate-y-1/2 w-[7px] h-[7px] sm:w-[8px] sm:h-[8px] rounded-full border border-white/20 bg-slate-950 z-10" />
 
                                 <div className="absolute inset-x-0 top-1/2 -translate-y-1/2 h-px pointer-events-none overflow-hidden rounded-full">
                                     <motion.div
@@ -96,13 +96,13 @@ export const StepIndicator = ({ currentStep, setCurrentStep }: StepIndicatorProp
                                             <motion.div
                                                 initial={{ scale: 0 }}
                                                 animate={{ scale: 1 }}
-                                                className="absolute left-0 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[7px] h-[7px] sm:w-[10px] sm:h-[10px] rounded-full border-[1.5px] bg-slate-950 z-20"
+                                                className="absolute left-0 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[7px] h-[7px] sm:w-[8px] sm:h-[8px] rounded-full border-[1.5px] bg-slate-950 z-20"
                                                 style={{ borderColor: step.color }}
                                             />
                                             <motion.div
                                                 initial={{ scale: 0 }}
                                                 animate={{ scale: 1, transition: { delay: 0.7 } }}
-                                                className="absolute right-0 top-1/2 translate-x-1/2 -translate-y-1/2 w-[7px] h-[7px] sm:w-[10px] sm:h-[10px] rounded-full border-[1.5px] bg-slate-950 z-20"
+                                                className="absolute right-0 top-1/2 translate-x-1/2 -translate-y-1/2 w-[7px] h-[7px] sm:w-[8px] sm:h-[8px] rounded-full border-[1.5px] bg-slate-950 z-20"
                                                 style={{ borderColor: step.color }}
                                             />
                                         </>

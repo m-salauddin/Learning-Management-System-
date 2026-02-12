@@ -66,6 +66,7 @@ export interface Category {
     slug: string;
     description: string;
     icon: string;
+    color: string;
     parent_id: string | null;
     course_count: number;
     created_at: string;
@@ -506,11 +507,11 @@ export interface CreateCourseInput {
     preview_video_url?: string;
     requirements?: string[];
     learning_objectives?: string[];
-    target_audience?: string[]; 
+    target_audience?: string[];
     tags?: string[];
-    faqs?: { question: string; answer: string }[]; 
-    projects?: { title: string; description: string }[]; 
-    resources?: { title: string; type: string; url: string }[]; 
+    faqs?: { question: string; answer: string }[];
+    projects?: { title: string; description: string }[];
+    resources?: { title: string; type: string; url: string }[];
 }
 
 export interface UpdateCourseInput extends Partial<CreateCourseInput> {

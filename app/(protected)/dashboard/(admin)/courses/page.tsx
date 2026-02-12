@@ -423,125 +423,107 @@ export default function CourseManagementPage() {
                             </button>
                         </div>
 
-                        <div className="flex flex-wrap items-center gap-3">
-                            <Select value={categoryFilter} onValueChange={setCategoryFilter} disabled={!stats || stats.total === 0}>
-                                <SelectTrigger className="w-full sm:w-fit min-w-[140px]">
-                                    <div className="flex items-center gap-2">
-                                        <Layers className="w-4 h-4" />
-                                        <SelectValue placeholder="Category" />
-                                    </div>
-                                </SelectTrigger>
-                                <SelectContent>
-                                    <SelectItem value="all">Category</SelectItem>
-                                    {categories.map(c => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)}
-                                </SelectContent>
-                            </Select>
+                        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-4 mt-4 lg:mt-0">
 
-                            <Select value={statusFilter} onValueChange={setStatusFilter} disabled={!stats || stats.total === 0}>
-                                <SelectTrigger className="w-full sm:w-fit min-w-[140px]">
-                                    <div className="flex items-center gap-2">
-                                        <BookOpen className="w-4 h-4" />
-                                        <SelectValue placeholder="Status" />
-                                    </div>
-                                </SelectTrigger>
-                                <SelectContent>
-                                    <SelectItem value="all">Status</SelectItem>
-                                    <SelectItem value="published">Published</SelectItem>
-                                    <SelectItem value="draft">Draft</SelectItem>
-                                    <SelectItem value="archived">Archived</SelectItem>
-                                </SelectContent>
-                            </Select>
+                            <div className="flex flex-wrap items-center gap-3">
+                                <Select value={categoryFilter} onValueChange={setCategoryFilter} disabled={!stats || stats.total === 0}>
+                                    <SelectTrigger className="w-full sm:w-fit min-w-[140px]">
+                                        <div className="flex items-center gap-2">
+                                            <Layers className="w-4 h-4" />
+                                            <SelectValue placeholder="Category" />
+                                        </div>
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="all">Category</SelectItem>
+                                        {categories.map(c => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)}
+                                    </SelectContent>
+                                </Select>
 
-                            <Select value={levelFilter} onValueChange={setLevelFilter} disabled={!stats || stats.total === 0}>
-                                <SelectTrigger className="w-full sm:w-fit min-w-[140px]">
-                                    <div className="flex items-center gap-2">
-                                        <BarChart className="w-4 h-4" />
-                                        <SelectValue placeholder="Level" />
-                                    </div>
-                                </SelectTrigger>
-                                <SelectContent>
-                                    <SelectItem value="all">Level</SelectItem>
-                                    <SelectItem value="beginner">Beginner</SelectItem>
-                                    <SelectItem value="intermediate">Intermediate</SelectItem>
-                                    <SelectItem value="advanced">Advanced</SelectItem>
-                                </SelectContent>
-                            </Select>
+                                <Select value={statusFilter} onValueChange={setStatusFilter} disabled={!stats || stats.total === 0}>
+                                    <SelectTrigger className="w-full sm:w-fit min-w-[140px]">
+                                        <div className="flex items-center gap-2">
+                                            <BookOpen className="w-4 h-4" />
+                                            <SelectValue placeholder="Status" />
+                                        </div>
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="all">Status</SelectItem>
+                                        <SelectItem value="published">Published</SelectItem>
+                                        <SelectItem value="draft">Draft</SelectItem>
+                                        <SelectItem value="archived">Archived</SelectItem>
+                                    </SelectContent>
+                                </Select>
 
-                            {(searchTerm || categoryFilter !== 'all' || statusFilter !== 'all' || levelFilter !== 'all') && (
-                                <button
-                                    onClick={() => {
-                                        setSearchTerm('');
-                                        setCategoryFilter('all');
-                                        setStatusFilter('all');
-                                        setLevelFilter('all');
-                                        setCurrentPage(1);
-                                    }}
-                                    className="flex items-center gap-1.5 px-3 py-2 rounded-xl border border-red-500/30 bg-red-500/10 hover:bg-red-500/20 text-red-500 text-sm font-medium transition-colors"
-                                >
-                                    <X className="w-3.5 h-3.5" />
-                                    Clear Filters
-                                </button>
-                            )}
+                                <Select value={levelFilter} onValueChange={setLevelFilter} disabled={!stats || stats.total === 0}>
+                                    <SelectTrigger className="w-full sm:w-fit min-w-[140px]">
+                                        <div className="flex items-center gap-2">
+                                            <BarChart className="w-4 h-4" />
+                                            <SelectValue placeholder="Level" />
+                                        </div>
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="all">Level</SelectItem>
+                                        <SelectItem value="beginner">Beginner</SelectItem>
+                                        <SelectItem value="intermediate">Intermediate</SelectItem>
+                                        <SelectItem value="advanced">Advanced</SelectItem>
+                                    </SelectContent>
+                                </Select>
 
+                                {(searchTerm || categoryFilter !== 'all' || statusFilter !== 'all' || levelFilter !== 'all') && (
+                                    <button
+                                        onClick={() => {
+                                            setSearchTerm('');
+                                            setCategoryFilter('all');
+                                            setStatusFilter('all');
+                                            setLevelFilter('all');
+                                            setCurrentPage(1);
+                                        }}
+                                        className="flex items-center gap-1.5 px-3 py-2 rounded-xl border border-red-500/30 bg-red-500/10 hover:bg-red-500/20 text-red-500 text-sm font-medium transition-colors"
+                                    >
+                                        <X className="w-3.5 h-3.5" />
+                                        Clear Filters
+                                    </button>
+                                )}
+                            </div>
                         </div>
                     </div>
                 </div>
 
 
-                <div className="overflow-hidden overflow-x-auto [&::-webkit-scrollbar]:h-1.5 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-muted-foreground/20 [&::-webkit-scrollbar-thumb]:rounded-full hover:[&::-webkit-scrollbar-thumb]:bg-primary/50">
-                    <Table>
-                        <TableHeader>
-                            <TableRow className="hover:bg-transparent border-b border-border/40">
-                                <TableHead className="w-[50px] px-6 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                                    <AnimatedCheckbox id="select-all" checked={selectedCourses.size === courses.length && courses.length > 0} onChange={toggleSelectAll} />
-                                </TableHead>
-                                <TableHead className="px-6 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Course</TableHead>
-                                <TableHead className="px-6 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Price</TableHead>
-                                <TableHead className="px-6 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Status</TableHead>
-                                <TableHead className="px-6 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Level</TableHead>
-                                <TableHead className="px-6 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Students</TableHead>
-                                <TableHead className="px-6 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider text-right">Actions</TableHead>
-                            </TableRow>
-                        </TableHeader>
-                        <TableBody className="divide-y divide-border/20">
-                            {isLoading ? (
-                                [...Array(5)].map((_, i) => (
-                                    <TableRow key={i} className="border-b border-border/30 bg-linear-to-r from-transparent via-muted/5 to-transparent">
-                                        <TableCell className="px-6 py-4">
-                                            <div className="w-5 h-5 bg-linear-to-r from-muted/30 via-muted/50 to-muted/30 rounded-md animate-pulse" />
-                                        </TableCell>
-                                        <TableCell className="px-6 py-4">
-                                            <div className="flex items-center gap-3">
-                                                <div className="w-12 h-8 rounded-lg bg-linear-to-r from-muted/30 via-muted/50 to-muted/30 animate-pulse" />
-                                                <div className="space-y-2">
-                                                    <div className="h-4 w-32 bg-linear-to-r from-muted/30 via-muted/50 to-muted/30 rounded-md animate-pulse" />
-                                                    <div className="h-3 w-24 bg-linear-to-r from-muted/30 via-muted/50 to-muted/30 rounded-md animate-pulse" />
-                                                </div>
-                                            </div>
-                                        </TableCell>
-                                        <TableCell className="px-6 py-4"><div className="h-4 w-16 bg-linear-to-r from-muted/30 via-muted/50 to-muted/30 rounded-md animate-pulse" /></TableCell>
-                                        <TableCell className="px-6 py-4"><div className="h-6 w-20 bg-linear-to-r from-muted/30 via-muted/50 to-muted/30 rounded-full animate-pulse" /></TableCell>
-                                        <TableCell className="px-6 py-4"><div className="h-6 w-24 bg-linear-to-r from-muted/30 via-muted/50 to-muted/30 rounded-full animate-pulse" /></TableCell>
-                                        <TableCell className="px-6 py-4"><div className="h-4 w-10 bg-linear-to-r from-muted/30 via-muted/50 to-muted/30 rounded-md animate-pulse" /></TableCell>
-                                        <TableCell className="px-6 py-4"><div className="h-8 w-8 bg-linear-to-r from-muted/30 via-muted/50 to-muted/30 rounded-lg ml-auto animate-pulse" /></TableCell>
-                                    </TableRow>
-                                ))
-                            ) : courses.length === 0 ? (
-                                <TableRow>
-                                    <TableCell colSpan={7} className="h-24 text-center">
-                                        <div className="flex flex-col items-center gap-3 py-12">
-                                            <div className="bg-muted/50 p-4 rounded-xl border border-border/50">
-                                                <BookOpen className="w-8 h-8 text-muted-foreground/70" strokeWidth={1.5} />
-                                            </div>
-                                            <div className="space-y-1">
-                                                <p className="font-medium text-foreground">No courses found</p>
-                                                <p className="text-sm text-muted-foreground">Try adjusting your search or filters</p>
-                                            </div>
-                                        </div>
-                                    </TableCell>
+                {/* Dynamic Content Rendering */}
+                {isLoading ? (
+                    <div className="py-20 text-center">
+                        <RefreshCw className="w-8 h-8 animate-spin text-primary mx-auto mb-4" />
+                        <p className="text-muted-foreground animate-pulse">Fetching course catalog...</p>
+                    </div>
+                ) : courses.length === 0 ? (
+                    <div className="py-20 text-center">
+                        <div className="bg-muted/50 w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-4 border border-border/50">
+                            <BookOpen className="w-8 h-8 text-muted-foreground/50" />
+                        </div>
+                        <h3 className="text-lg font-bold">No courses found</h3>
+                        <p className="text-sm text-muted-foreground max-w-xs mx-auto mt-1">
+                            We couldn&apos;t find any results matching your search or filter criteria.
+                        </p>
+                    </div>
+                ) : (
+                    <div className="overflow-hidden overflow-x-auto [&::-webkit-scrollbar]:h-1.5 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-muted-foreground/20 [&::-webkit-scrollbar-thumb]:rounded-full hover:[&::-webkit-scrollbar-thumb]:bg-primary/50">
+                        <Table>
+                            <TableHeader>
+                                <TableRow className="hover:bg-transparent border-b border-border/40">
+                                    <TableHead className="w-[50px] px-6 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                                        <AnimatedCheckbox id="select-all" checked={selectedCourses.size === courses.length && courses.length > 0} onChange={toggleSelectAll} />
+                                    </TableHead>
+                                    <TableHead className="px-6 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Course</TableHead>
+                                    <TableHead className="px-6 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Price</TableHead>
+                                    <TableHead className="px-6 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Status</TableHead>
+                                    <TableHead className="px-6 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Level</TableHead>
+                                    <TableHead className="px-6 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Students</TableHead>
+                                    <TableHead className="px-6 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider text-right">Actions</TableHead>
                                 </TableRow>
-                            ) : (
-                                courses.map((course) => (
+                            </TableHeader>
+                            <TableBody className="divide-y divide-border/20">
+                                {courses.map((course) => (
                                     <TableRow key={course.id} className="border-b border-border/30 transition-all duration-200 group">
                                         <TableCell className="px-6 py-4">
                                             <AnimatedCheckbox
@@ -563,7 +545,16 @@ export default function CourseManagementPage() {
                                                     <Link href={`/courses/${course.slug}`} className="font-semibold text-foreground group-hover:text-primary transition-colors line-clamp-1 max-w-[200px]">
                                                         {course.title}
                                                     </Link>
-                                                    <div className="text-xs text-muted-foreground">{course.category?.name || 'Uncategorized'}</div>
+                                                    <div
+                                                        className="text-[10px] font-black uppercase tracking-wider px-1.5 py-0.5 rounded border mt-1 w-fit transition-all"
+                                                        style={{
+                                                            backgroundColor: `${course.category?.color || '#6366f1'}15`,
+                                                            color: course.category?.color || '#6366f1',
+                                                            borderColor: `${course.category?.color || '#6366f1'}30`
+                                                        }}
+                                                    >
+                                                        {course.category?.name || 'Uncategorized'}
+                                                    </div>
                                                 </div>
                                             </div>
                                         </TableCell>
@@ -611,29 +602,32 @@ export default function CourseManagementPage() {
                                             </DropdownMenu>
                                         </TableCell>
                                     </TableRow>
-                                ))
-                            )}
-                        </TableBody>
-                    </Table>
-                </div>
-
-
-                {!isLoading && totalCourses > 0 && (
-                    <div className="p-6 border-t border-border/40 bg-muted/10">
-                        <Pagination
-                            currentPage={currentPage}
-                            totalItems={totalCourses}
-                            pageSize={pageSize}
-                            totalPages={Math.ceil(totalCourses / pageSize)}
-                            onPageChange={setCurrentPage}
-                            onPageSizeChange={(size) => {
-                                setPageSize(size);
-                                setCurrentPage(1);
-                            }}
-                        />
+                                ))}
+                            </TableBody>
+                        </Table>
                     </div>
                 )}
-            </div>
+
+
+
+                {
+                    !isLoading && totalCourses > 0 && (
+                        <div className="p-6 border-t border-border/40 bg-muted/10">
+                            <Pagination
+                                currentPage={currentPage}
+                                totalItems={totalCourses}
+                                pageSize={pageSize}
+                                totalPages={Math.ceil(totalCourses / pageSize)}
+                                onPageChange={setCurrentPage}
+                                onPageSizeChange={(size) => {
+                                    setPageSize(size);
+                                    setCurrentPage(1);
+                                }}
+                            />
+                        </div>
+                    )
+                }
+            </div >
 
 
             <AnimatePresence>
@@ -666,29 +660,31 @@ export default function CourseManagementPage() {
             </AnimatePresence>
 
 
-            {exportModal && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
-                    <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="w-full max-w-md bg-card border border-border rounded-2xl p-6 shadow-2xl">
-                        <h2 className="text-xl font-bold mb-2">Export Courses</h2>
-                        <p className="text-muted-foreground text-sm mb-6">Choose a format to download your course data.</p>
-                        <div className="grid grid-cols-1 gap-3">
-                            <button onClick={handleExportCSV} className="flex items-center gap-3 p-4 rounded-xl border border-border/50 bg-muted/20 hover:bg-primary/5 hover:border-primary/30 transition-all group text-left">
-                                <div className="p-2 rounded-lg bg-green-500/10 text-green-500"><Download className="w-5 h-5" /></div>
-                                <div><div className="font-semibold text-foreground">Export as CSV</div><div className="text-xs text-muted-foreground">Best for spreadsheet software</div></div>
-                            </button>
-                            <button onClick={handleExportJSON} className="flex items-center gap-3 p-4 rounded-xl border border-border/50 bg-muted/20 hover:bg-primary/5 hover:border-primary/30 transition-all group text-left">
-                                <div className="p-2 rounded-lg bg-yellow-500/10 text-yellow-500"><Download className="w-5 h-5" /></div>
-                                <div><div className="font-semibold text-foreground">Export as JSON</div><div className="text-xs text-muted-foreground">For developer use</div></div>
-                            </button>
-                            <button onClick={handleExportPDF} className="flex items-center gap-3 p-4 rounded-xl border border-border/50 bg-muted/20 hover:bg-primary/5 hover:border-primary/30 transition-all group text-left">
-                                <div className="p-2 rounded-lg bg-red-500/10 text-red-500"><Download className="w-5 h-5" /></div>
-                                <div><div className="font-semibold text-foreground">Export as PDF</div><div className="text-xs text-muted-foreground">Formatted report</div></div>
-                            </button>
-                        </div>
-                        <button onClick={() => setExportModal(false)} className="mt-6 w-full py-2.5 rounded-xl border border-border/50 hover:bg-muted font-medium transition-colors">Cancel</button>
-                    </motion.div>
-                </div>
-            )}
-        </motion.div>
+            {
+                exportModal && (
+                    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+                        <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="w-full max-w-md bg-card border border-border rounded-2xl p-6 shadow-2xl">
+                            <h2 className="text-xl font-bold mb-2">Export Courses</h2>
+                            <p className="text-muted-foreground text-sm mb-6">Choose a format to download your course data.</p>
+                            <div className="grid grid-cols-1 gap-3">
+                                <button onClick={handleExportCSV} className="flex items-center gap-3 p-4 rounded-xl border border-border/50 bg-muted/20 hover:bg-primary/5 hover:border-primary/30 transition-all group text-left">
+                                    <div className="p-2 rounded-lg bg-green-500/10 text-green-500"><Download className="w-5 h-5" /></div>
+                                    <div><div className="font-semibold text-foreground">Export as CSV</div><div className="text-xs text-muted-foreground">Best for spreadsheet software</div></div>
+                                </button>
+                                <button onClick={handleExportJSON} className="flex items-center gap-3 p-4 rounded-xl border border-border/50 bg-muted/20 hover:bg-primary/5 hover:border-primary/30 transition-all group text-left">
+                                    <div className="p-2 rounded-lg bg-yellow-500/10 text-yellow-500"><Download className="w-5 h-5" /></div>
+                                    <div><div className="font-semibold text-foreground">Export as JSON</div><div className="text-xs text-muted-foreground">For developer use</div></div>
+                                </button>
+                                <button onClick={handleExportPDF} className="flex items-center gap-3 p-4 rounded-xl border border-border/50 bg-muted/20 hover:bg-primary/5 hover:border-primary/30 transition-all group text-left">
+                                    <div className="p-2 rounded-lg bg-red-500/10 text-red-500"><Download className="w-5 h-5" /></div>
+                                    <div><div className="font-semibold text-foreground">Export as PDF</div><div className="text-xs text-muted-foreground">Formatted report</div></div>
+                                </button>
+                            </div>
+                            <button onClick={() => setExportModal(false)} className="mt-6 w-full py-2.5 rounded-xl border border-border/50 hover:bg-muted font-medium transition-colors">Cancel</button>
+                        </motion.div>
+                    </div>
+                )
+            }
+        </motion.div >
     );
 }

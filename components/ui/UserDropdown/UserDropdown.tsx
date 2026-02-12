@@ -18,6 +18,7 @@ import { createClient } from "@/lib/supabase/client";
 import { AuthUser, logout } from "@/lib/store/features/auth/authSlice";
 import { useAppDispatch } from "@/lib/store/hooks";
 import { Modal } from "@/components/ui/Modal";
+import { cn } from "@/lib/utils";
 
 interface UserDropdownProps {
     user: AuthUser;
@@ -107,7 +108,10 @@ export function UserDropdown({ user, onOpen }: UserDropdownProps) {
                 }}
                 className="flex cursor-pointer items-center gap-2 sm:gap-3 pl-1 pr-1 sm:pl-1 sm:pr-4 py-1 rounded-full border border-border/50 bg-muted/50 hover:bg-muted/80 transition-all duration-200 group"
             >
-                <div className="w-8 h-8 rounded-full bg-primary/10 text-primary flex items-center justify-center text-xs font-bold ring-2 ring-transparent group-hover:ring-primary/20 transition-all overflow-hidden relative">
+                <div className={cn(
+                    "w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold ring-2 ring-transparent group-hover:ring-primary/20 transition-all overflow-hidden relative",
+                    !user.avatarUrl && (user.avatarColor || "bg-primary/10 text-primary")
+                )}>
                     {user.avatarUrl && !imageError ? (
                         <>
                             {!imageLoaded && (
