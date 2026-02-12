@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { useId } from 'react';
 
 interface LogoProps {
     className?: string;
@@ -10,25 +10,26 @@ interface LogoProps {
 }
 
 export const Logo = ({ className = "", showText = true, size = "md", textClassName = "" }: LogoProps) => {
+    const id = useId();
     const sizeConfig = {
-        sm: { icon: 36, text: "text-lg", gap: "gap-2" },
+        sm: { icon: 34, text: "text-base", gap: "gap-2" },
         md: { icon: 44, text: "text-xl", gap: "gap-2.5" },
         lg: { icon: 56, text: "text-2xl", gap: "gap-3" },
         xl: { icon: 72, text: "text-3xl", gap: "gap-4" }
     };
 
     const config = sizeConfig[size];
-    const gradId = 'logo-premiumGradient';
-    const gradDarkId = 'logo-premiumGradientDark';
-    const shineId = 'logo-metallicShine';
-    const depthId = 'logo-innerDepth';
-    const shadowId = 'logo-shadow';
-    const clipId = 'logo-roundedSquare';
+    const gradId = `logo-grad-${id.replace(/:/g, '')}`;
+    const gradDarkId = `logo-gradDark-${id.replace(/:/g, '')}`;
+    const shineId = `logo-shine-${id.replace(/:/g, '')}`;
+    const depthId = `logo-depth-${id.replace(/:/g, '')}`;
+    const shadowId = `logo-shadow-${id.replace(/:/g, '')}`;
+    const clipId = `logo-clip-${id.replace(/:/g, '')}`;
 
     return (
         <div className={`flex items-center ${config.gap} ${className}`}>
 
-            <div className="relative transition-transform duration-200 hover:scale-105 active:scale-95">
+            <div className="relative transition-transform duration-200 hover:scale-105 active:scale-95 shrink-0">
                 <svg
                     width={config.icon}
                     height={config.icon}
@@ -124,12 +125,12 @@ export const Logo = ({ className = "", showText = true, size = "md", textClassNa
 
 
             {showText && (
-                <div className={`flex flex-col ${textClassName}`}>
+                <div className={`flex flex-col whitespace-nowrap ${textClassName}`}>
                     <div className={`${config.text} font-bold tracking-tight leading-none flex items-baseline`}>
                         <span className="bg-linear-to-r from-primary via-accent to-secondary bg-clip-text text-transparent dark:from-primary dark:via-secondary dark:to-accent">
                             Dokkhota
                         </span>
-                        <span className="ml-1 text-[0.5em] font-black tracking-wider text-white bg-linear-to-r from-primary to-accent px-1.5 py-0.5 rounded-md shadow-sm">
+                        <span className="ml-1 text-[0.45em] font-black tracking-wider text-white bg-linear-to-r from-primary to-accent px-1.5 py-0.5 rounded-md shadow-sm">
                             IT
                         </span>
                     </div>
@@ -144,6 +145,12 @@ export const Logo = ({ className = "", showText = true, size = "md", textClassNa
 
 
 export const LogoIcon = ({ size = 40, className = "" }: { size?: number; className?: string }) => {
+    const id = useId();
+    const gradId = `icon-grad-${id.replace(/:/g, '')}`;
+    const gradDarkId = `icon-gradDark-${id.replace(/:/g, '')}`;
+    const shineId = `icon-shine-${id.replace(/:/g, '')}`;
+    const shadowId = `icon-shadow-${id.replace(/:/g, '')}`;
+
     return (
         <svg
             width={size}
@@ -155,44 +162,44 @@ export const LogoIcon = ({ size = 40, className = "" }: { size?: number; classNa
             aria-label="DokkhotaIT"
         >
             <defs>
-                <linearGradient id="iconGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                <linearGradient id={gradId} x1="0%" y1="0%" x2="100%" y2="100%">
                     <stop offset="0%" stopColor="#0036F9" />
                     <stop offset="35%" stopColor="#4F46E5" />
                     <stop offset="65%" stopColor="#7C3AED" />
                     <stop offset="100%" stopColor="#A855F7" />
                 </linearGradient>
-                <linearGradient id="iconGradDark" x1="0%" y1="0%" x2="100%" y2="100%">
+                <linearGradient id={gradDarkId} x1="0%" y1="0%" x2="100%" y2="100%">
                     <stop offset="0%" stopColor="#FCB900" />
                     <stop offset="40%" stopColor="#F59E0B" />
                     <stop offset="70%" stopColor="#22D3EE" />
                     <stop offset="100%" stopColor="#06B6D4" />
                 </linearGradient>
-                <linearGradient id="iconShine" x1="0%" y1="0%" x2="100%" y2="100%">
+                <linearGradient id={shineId} x1="0%" y1="0%" x2="100%" y2="100%">
                     <stop offset="0%" stopColor="white" stopOpacity="0.35" />
                     <stop offset="50%" stopColor="white" stopOpacity="0" />
                     <stop offset="100%" stopColor="white" stopOpacity="0.1" />
                 </linearGradient>
-                <filter id="iconShadow" x="-20%" y="-20%" width="140%" height="140%">
+                <filter id={shadowId} x="-20%" y="-20%" width="140%" height="140%">
                     <feDropShadow dx="0" dy="2" stdDeviation="3" floodColor="#4F46E5" floodOpacity="0.35" />
                 </filter>
             </defs>
 
-            <g filter="url(#iconShadow)">
+            <g filter={`url(#${shadowId})`}>
                 <rect
                     x="4" y="4"
                     width="56" height="56"
                     rx="16"
-                    fill="url(#iconGrad)"
+                    fill={`url(#${gradId})`}
                     className="dark:hidden"
                 />
                 <rect
                     x="4" y="4"
                     width="56" height="56"
                     rx="16"
-                    fill="url(#iconGradDark)"
+                    fill={`url(#${gradDarkId})`}
                     className="hidden dark:block"
                 />
-                <rect x="4" y="4" width="56" height="56" rx="16" fill="url(#iconShine)" />
+                <rect x="4" y="4" width="56" height="56" rx="16" fill={`url(#${shineId})`} />
             </g>
 
             <path

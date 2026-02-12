@@ -71,7 +71,7 @@ export function Sidebar({ role }: SidebarProps) {
         <aside className="hidden lg:flex flex-col w-64 h-screen sticky top-0 border-r border-border/50 bg-background/30 backdrop-blur-2xl z-40">
             <div className="p-6">
                 <Link href="/">
-                    <Logo />
+                    <Logo size="sm" />
                 </Link>
             </div>
 
