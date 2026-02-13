@@ -1,15 +1,37 @@
 "use client";
 
 import {
-    BookOpen, Trash2, Edit, MoreHorizontal, TrendingUp,
-    Plus, Download, CheckCircle2, Eye, RefreshCw, Archive, Layers, BarChart, DollarSign, X
+    Plus, Search, Edit2, Trash2, MoreHorizontal, Layers,
+    Globe, Smartphone, Palette, TrendingUp, Briefcase,
+    Database, Code, Shield, Cloud, Info, X,
+    RefreshCw, Download, ChevronDown, GripVertical, CheckCircle2, Eye, RefreshCw as RefreshIcon, Archive, BarChart, DollarSign, BookOpen
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { jsPDF } from "jspdf";
 import autoTable from "jspdf-autotable";
 import { motion, AnimatePresence } from "motion/react";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { cn } from "@/lib/utils";
+import Image from "next/image";
+import Link from "next/link";
+
+import {
+    closestCenter,
+    DndContext,
+    KeyboardSensor,
+    PointerSensor,
+    useSensor,
+    useSensors,
+    type DragEndEvent,
+} from "@dnd-kit/core";
+import { restrictToVerticalAxis } from "@dnd-kit/modifiers";
+import {
+    arrayMove,
+    SortableContext,
+    useSortable,
+    verticalListSortingStrategy,
+} from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
 
 import {
     CourseWithInstructor, CourseStatus
@@ -40,16 +62,165 @@ import {
 import { Pagination } from "@/components/ui/Pagination";
 import { useToast } from "@/components/ui/toast";
 import { AnimatedCheckbox } from "@/components/ui/AnimatedCheckbox";
-import Link from "next/link";
-import Image from "next/image";
+import { useAppDispatch } from "@/lib/store/hooks";
+import { reorderCourses } from "@/lib/store/features/courses/coursesSlice";
 
-// Import reusable admin components
 import { SearchInput } from "@/components/dashboard/shared/SearchInput";
 import { StatusBadge, LevelBadge } from "@/components/dashboard/shared/Badges";
+
+function CourseRow({
+    course,
+    isSelected,
+    onSelect,
+    onDelete,
+    onTogglePublish,
+    router
+}: {
+    course: CourseWithInstructor,
+    isSelected: boolean,
+    onSelect: () => void,
+    onDelete: (id: string) => void,
+    onTogglePublish: (course: CourseWithInstructor) => void,
+    router: any
+}) {
+    const {
+        attributes,
+        listeners,
+        setNodeRef,
+        transform,
+        transition,
+        isDragging,
+    } = useSortable({ id: course.id });
+
+    const style = {
+        transform: CSS.Transform.toString(transform),
+        transition,
+        zIndex: isDragging ? 50 : 'auto',
+    };
+
+    return (
+        <div
+            ref={setNodeRef}
+            style={style}
+            className={cn(
+                "grid grid-cols-[48px_48px_60px_2.5fr_1fr_120px_100px_100px_80px] px-6 py-4 items-center hover:bg-muted/10 group transition-all duration-300",
+                isDragging && "bg-card shadow-2xl relative z-50 border-y border-primary/20",
+                !isDragging && "border-b border-border/5"
+            )}
+        >
+            <div className="flex justify-center">
+                <button
+                    {...attributes}
+                    {...listeners}
+                    className="p-2 cursor-grab active:cursor-grabbing text-muted-foreground/30 hover:text-primary transition-colors"
+                >
+                    <GripVertical className="w-4 h-4" />
+                </button>
+            </div>
+            <div className="flex justify-center">
+                <AnimatedCheckbox
+                    id={`select-${course.id}`}
+                    checked={isSelected}
+                    onChange={onSelect}
+                />
+            </div>
+            <div className="px-4 text-center">
+                <span className="text-xs font-mono font-bold text-muted-foreground/60 bg-muted/30 px-2 py-0.5 rounded-md border border-border/10">
+                    {course.serial_number || 0}
+                </span>
+            </div>
+            <div className="px-4 flex items-center gap-4 min-w-0">
+                <div className="w-16 h-11 rounded-xl bg-muted overflow-hidden shrink-0 border border-border/20 shadow-sm relative group-hover:scale-105 transition-transform duration-500">
+                    {course.thumbnail_url ? (
+                        <Image src={course.thumbnail_url} alt="" fill className="object-cover" />
+                    ) : (
+                        <div className="w-full h-full flex items-center justify-center bg-muted text-[10px] font-black text-muted-foreground uppercase tracking-widest">N/A</div>
+                    )}
+                </div>
+                <div className="min-w-0">
+                    <Link href={`/courses/${course.slug}`} className="font-bold text-foreground group-hover:text-primary transition-colors line-clamp-1 text-sm tracking-tight capitalize">
+                        {course.title}
+                    </Link>
+                    <div className="flex items-center gap-2 mt-1">
+                        <span
+                            className="text-[9px] font-black uppercase tracking-tighter px-1.5 py-0.5 rounded border"
+                            style={{
+                                backgroundColor: `${course.category?.color || '#6366f1'}15`,
+                                color: course.category?.color || '#6366f1',
+                                borderColor: `${course.category?.color || '#6366f1'}30`
+                            }}
+                        >
+                            {course.category?.name || 'GENERIC'}
+                        </span>
+                        <span className="text-[9px] text-muted-foreground/40 font-mono uppercase tracking-widest text-[9px]">ID: {course.id.slice(0, 8)}</span>
+                    </div>
+                </div>
+            </div>
+            <div className="px-4">
+                {course.price > 0 ? (
+                    <span className="text-sm font-black tracking-tighter">৳{course.price.toLocaleString()}</span>
+                ) : (
+                    <span className="text-xs font-black uppercase tracking-widest text-emerald-500 bg-emerald-500/10 px-2 py-0.5 rounded-lg border border-emerald-500/20">Scholarship</span>
+                )}
+            </div>
+            <div className="px-4">
+                <StatusBadge status={course.status} />
+            </div>
+            <div className="px-4 text-center">
+                <LevelBadge level={course.level || 'beginner'} />
+            </div>
+            <div className="px-4 text-center">
+                <div className="inline-flex flex-col items-center">
+                    <span className="text-sm font-black tracking-tight">{course.total_students || 0}</span>
+                    <span className="text-[9px] text-muted-foreground font-black uppercase tracking-widest opacity-40">Engaged</span>
+                </div>
+            </div>
+            <div className="px-4 text-right">
+                <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                        <button className="p-2 rounded-xl hover:bg-muted text-muted-foreground hover:text-foreground transition-all">
+                            <MoreHorizontal className="w-4 h-4" />
+                        </button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end" className="w-48 p-2 rounded-2xl bg-card/85 backdrop-blur-xl border-border/40 shadow-2xl">
+                        <DropdownMenuItem className="rounded-xl gap-3 cursor-pointer p-2.5 focus:bg-primary/10 focus:text-primary" onClick={() => router.push(`/courses/${course.slug}`)}>
+                            <Eye className="w-4 h-4" />
+                            <span className="font-bold text-sm italic">Deep View</span>
+                        </DropdownMenuItem>
+                        <DropdownMenuItem className="rounded-xl gap-3 cursor-pointer p-2.5 focus:bg-primary/10 focus:text-primary" onClick={() => router.push(`/dashboard/courses/${course.id}/edit`)}>
+                            <Edit2 className="w-4 h-4" />
+                            <span className="font-bold text-sm italic">Architect</span>
+                        </DropdownMenuItem>
+                        <DropdownMenuSeparator className="bg-border/20 my-1.5" />
+                        <DropdownMenuItem className="rounded-xl gap-3 cursor-pointer p-2.5 focus:bg-primary/10 focus:text-primary" onClick={() => onTogglePublish(course)}>
+                            {course.status === 'published' ? <Archive className="w-4 h-4" /> : <Plus className="w-4 h-4" />}
+                            <span className="font-bold text-sm">{course.status === 'published' ? 'Archive catalog' : 'Deploy catalog'}</span>
+                        </DropdownMenuItem>
+                        <DropdownMenuSeparator className="bg-border/20 my-1.5" />
+                        <DropdownMenuItem onClick={() => onDelete(course.id)} className="rounded-xl gap-3 cursor-pointer p-2.5 focus:bg-destructive/10 focus:text-destructive text-destructive">
+                            <Trash2 className="w-4 h-4" />
+                            <span className="font-bold text-sm">Purge Data</span>
+                        </DropdownMenuItem>
+                    </DropdownMenuContent>
+                </DropdownMenu>
+            </div>
+        </div>
+    );
+}
 
 export default function CourseManagementPage() {
     const toast = useToast();
     const router = useRouter();
+    const dispatch = useAppDispatch();
+
+    const sensors = useSensors(
+        useSensor(PointerSensor, {
+            activationConstraint: {
+                distance: 8,
+            },
+        }),
+        useSensor(KeyboardSensor)
+    );
 
     const [courses, setCourses] = useState<CourseWithInstructor[]>([]);
     const [stats, setStats] = useState<any | null>(null);
@@ -76,7 +247,8 @@ export default function CourseManagementPage() {
                 status: statusFilter as any,
                 level: levelFilter,
                 page: currentPage,
-                pageSize
+                pageSize,
+                sort: 'serial'
             });
 
             if (result.data) {
@@ -178,6 +350,20 @@ export default function CourseManagementPage() {
         setSelectedCourses(new Set());
         fetchCoursesData();
         fetchStatsData();
+    };
+
+    const handleDragEnd = (event: DragEndEvent) => {
+        const { active, over } = event;
+
+        if (over && active.id !== over.id) {
+            const oldIndex = courses.findIndex((item) => item.id === active.id);
+            const newIndex = courses.findIndex((item) => item.id === over.id);
+
+            const newOrder = arrayMove(courses, oldIndex, newIndex);
+            setCourses(newOrder);
+
+            dispatch(reorderCourses(newOrder as any));
+        }
     };
 
     const togglePublishStatus = async (course: CourseWithInstructor) => {
@@ -456,12 +642,14 @@ export default function CourseManagementPage() {
                         </div>
                     </div>
                 ) : (
-                    <div className="min-w-[1000px]">
+                    <div className="min-w-[1100px]">
                         {/* Grid Head */}
-                        <div className="grid grid-cols-[48px_2.5fr_1fr_120px_100px_100px_80px] px-6 py-4 bg-muted/5 border-b border-border/20 items-center">
+                        <div className="grid grid-cols-[48px_48px_60px_2.5fr_1fr_120px_100px_100px_80px] px-6 py-4 bg-muted/5 border-b border-border/20 items-center">
+                            <div className="px-4 text-[10px] font-black uppercase tracking-widest text-muted-foreground/60 flex justify-center italic">Drag</div>
                             <div className="flex justify-center">
                                 <AnimatedCheckbox id="select-all" checked={selectedCourses.size === courses.length && courses.length > 0} onChange={toggleSelectAll} />
                             </div>
+                            <div className="px-4 text-[10px] font-black uppercase tracking-widest text-muted-foreground/60 text-center">Serial</div>
                             <div className="px-4 text-[10px] font-black uppercase tracking-widest text-muted-foreground/60">Course / Identity</div>
                             <div className="px-4 text-[10px] font-black uppercase tracking-widest text-muted-foreground/60">Monetization</div>
                             <div className="px-4 text-[10px] font-black uppercase tracking-widest text-muted-foreground/60">Lifecycle</div>
@@ -470,95 +658,32 @@ export default function CourseManagementPage() {
                             <div className="px-4 text-[10px] font-black uppercase tracking-widest text-muted-foreground/60 text-right">Action</div>
                         </div>
 
-                        {/* Grid Body */}
-                        <div className="divide-y divide-border/10">
-                            {courses.map((course) => (
-                                <div key={course.id} className="grid grid-cols-[48px_2.5fr_1fr_120px_100px_100px_80px] px-6 py-4 items-center hover:bg-muted/10 group transition-all duration-300">
-                                    <div className="flex justify-center">
-                                        <AnimatedCheckbox
-                                            id={`select-${course.id}`}
-                                            checked={selectedCourses.has(course.id)}
-                                            onChange={() => toggleSelectCourse(course.id)}
+                        {/* Grid Body with DND */}
+                        <DndContext
+                            sensors={sensors}
+                            collisionDetection={closestCenter}
+                            onDragEnd={handleDragEnd}
+                            modifiers={[restrictToVerticalAxis]}
+                        >
+                            <SortableContext
+                                items={courses.map((c) => c.id)}
+                                strategy={verticalListSortingStrategy}
+                            >
+                                <div className="divide-y divide-border/10">
+                                    {courses.map((course) => (
+                                        <CourseRow
+                                            key={course.id}
+                                            course={course}
+                                            isSelected={selectedCourses.has(course.id)}
+                                            onSelect={() => toggleSelectCourse(course.id)}
+                                            onDelete={handleDeleteCourse}
+                                            onTogglePublish={togglePublishStatus}
+                                            router={router}
                                         />
-                                    </div>
-                                    <div className="px-4 flex items-center gap-4 min-w-0">
-                                        <div className="w-16 h-11 rounded-xl bg-muted overflow-hidden shrink-0 border border-border/20 shadow-sm relative group-hover:scale-105 transition-transform duration-500">
-                                            {course.thumbnail_url ? (
-                                                <Image src={course.thumbnail_url} alt="" fill className="object-cover" />
-                                            ) : (
-                                                <div className="w-full h-full flex items-center justify-center bg-muted text-[10px] font-black text-muted-foreground uppercase tracking-widest">N/A</div>
-                                            )}
-                                        </div>
-                                        <div className="min-w-0">
-                                            <Link href={`/courses/${course.slug}`} className="font-bold text-foreground group-hover:text-primary transition-colors line-clamp-1 text-sm tracking-tight capitalize">
-                                                {course.title}
-                                            </Link>
-                                            <div className="flex items-center gap-2 mt-1">
-                                                <span
-                                                    className="text-[9px] font-black uppercase tracking-tighter px-1.5 py-0.5 rounded border"
-                                                    style={{
-                                                        backgroundColor: `${course.category?.color || '#6366f1'}15`,
-                                                        color: course.category?.color || '#6366f1',
-                                                        borderColor: `${course.category?.color || '#6366f1'}30`
-                                                    }}
-                                                >
-                                                    {course.category?.name || 'GENERIC'}
-                                                </span>
-                                                <span className="text-[9px] text-muted-foreground/40 font-mono uppercase tracking-widest">ID: {course.id.slice(0, 8)}</span>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div className="px-4">
-                                        {course.price > 0 ? (
-                                            <span className="text-sm font-black tracking-tighter">৳{course.price.toLocaleString()}</span>
-                                        ) : (
-                                            <span className="text-xs font-black uppercase tracking-widest text-emerald-500 bg-emerald-500/10 px-2 py-0.5 rounded-lg border border-emerald-500/20">Scholarship</span>
-                                        )}
-                                    </div>
-                                    <div className="px-4">
-                                        <StatusBadge status={course.status} />
-                                    </div>
-                                    <div className="px-4 text-center">
-                                        <LevelBadge level={course.level || 'beginner'} />
-                                    </div>
-                                    <div className="px-4 text-center">
-                                        <div className="inline-flex flex-col items-center">
-                                            <span className="text-sm font-black tracking-tight">{course.total_students || 0}</span>
-                                            <span className="text-[9px] text-muted-foreground font-black uppercase tracking-widest opacity-40">Engaged</span>
-                                        </div>
-                                    </div>
-                                    <div className="px-4 text-right">
-                                        <DropdownMenu>
-                                            <DropdownMenuTrigger asChild>
-                                                <button className="p-2 rounded-xl hover:bg-muted text-muted-foreground hover:text-foreground transition-all">
-                                                    <MoreHorizontal className="w-4 h-4" />
-                                                </button>
-                                            </DropdownMenuTrigger>
-                                            <DropdownMenuContent align="end" className="w-48 p-2 rounded-2xl bg-card/85 backdrop-blur-xl border-border/40 shadow-2xl">
-                                                <DropdownMenuItem className="rounded-xl gap-3 cursor-pointer p-2.5 focus:bg-primary/10 focus:text-primary" onClick={() => router.push(`/courses/${course.slug}`)}>
-                                                    <Eye className="w-4 h-4" />
-                                                    <span className="font-bold text-sm italic">Deep View</span>
-                                                </DropdownMenuItem>
-                                                <DropdownMenuItem className="rounded-xl gap-3 cursor-pointer p-2.5 focus:bg-primary/10 focus:text-primary" onClick={() => router.push(`/dashboard/courses/${course.id}/edit`)}>
-                                                    <Edit className="w-4 h-4" />
-                                                    <span className="font-bold text-sm italic">Architect</span>
-                                                </DropdownMenuItem>
-                                                <DropdownMenuSeparator className="bg-border/20 my-1.5" />
-                                                <DropdownMenuItem className="rounded-xl gap-3 cursor-pointer p-2.5 focus:bg-primary/10 focus:text-primary" onClick={() => togglePublishStatus(course)}>
-                                                    {course.status === 'published' ? <Archive className="w-4 h-4" /> : <CheckCircle2 className="w-4 h-4" />}
-                                                    <span className="font-bold text-sm">{course.status === 'published' ? 'Archive catalog' : 'Deploy catalog'}</span>
-                                                </DropdownMenuItem>
-                                                <DropdownMenuSeparator className="bg-border/20 my-1.5" />
-                                                <DropdownMenuItem onClick={() => handleDeleteCourse(course.id)} className="rounded-xl gap-3 cursor-pointer p-2.5 focus:bg-destructive/10 focus:text-destructive text-destructive">
-                                                    <Trash2 className="w-4 h-4" />
-                                                    <span className="font-bold text-sm">Purge Data</span>
-                                                </DropdownMenuItem>
-                                            </DropdownMenuContent>
-                                        </DropdownMenu>
-                                    </div>
+                                    ))}
                                 </div>
-                            ))}
-                        </div>
+                            </SortableContext>
+                        </DndContext>
                     </div>
                 )}
 
@@ -649,3 +774,4 @@ export default function CourseManagementPage() {
         </motion.div>
     );
 }
+

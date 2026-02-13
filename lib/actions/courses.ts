@@ -26,7 +26,7 @@ export interface GetCoursesParams {
     instructor?: string;
     search?: string;
     level?: string;
-    sort?: 'newest' | 'popular' | 'rating' | 'price_low' | 'price_high';
+    sort?: 'newest' | 'popular' | 'rating' | 'price_low' | 'price_high' | 'serial';
 }
 
 export async function getCourses(params: GetCoursesParams = {}): Promise<PaginatedResponse<CourseWithInstructor>> {
@@ -91,8 +91,12 @@ export async function getCourses(params: GetCoursesParams = {}): Promise<Paginat
         case 'price_high':
             query = query.order('price', { ascending: false });
             break;
+        case 'serial':
+            query = query.order('serial_number', { ascending: true });
+            break;
         default:
-            query = query.order('created_at', { ascending: false });
+            query = query.order('serial_number', { ascending: true })
+                .order('created_at', { ascending: false });
     }
 
     // Apply pagination
@@ -710,3 +714,34 @@ export async function exportCoursesToJSON(filters: any = {}): Promise<{ json?: s
 
     return { json: JSON.stringify(data, null, 2) };
 }
+
+export async function updateCourseOrder(updates: { id: string; serial_number: number }[]): Promise<ApiResponse<null>> {
+    const supabase = await createClient();
+
+    const { data: { user }, error: authError } = await supabase.auth.getUser();
+    if (authError || !user) {
+        return { success: false, error: 'Unauthorized' };
+    }
+
+    const { data: profile } = await supabase
+        .from('users')
+        .select('role')
+        .eq('id', user.id)
+        .single();
+
+    if (!profile || profile.role !== 'admin') {
+        return { success: false, error: 'Unauthorized' };
+    }
+
+    const { error } = await supabase.from('courses').upsert(
+        updates.map(u => ({ id: u.id, serial_number: u.serial_number }))
+    );
+
+    if (error) {
+        return { success: false, error: error.message };
+    }
+
+    revalidatePath('/dashboard/courses');
+    return { success: true };
+}
+

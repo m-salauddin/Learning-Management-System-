@@ -103,6 +103,7 @@ export interface Course {
     learning_objectives: string[];
     tags: string[];
     batch_no: number | null;
+    serial_number: number;
     created_at: string;
     updated_at: string;
 }
