@@ -19,7 +19,8 @@ import {
     closestCenter,
     DndContext,
     KeyboardSensor,
-    PointerSensor,
+    MouseSensor,
+    TouchSensor,
     useSensor,
     useSensors,
     type DragEndEvent,
@@ -152,7 +153,7 @@ function CourseRow({
                         >
                             {course.category?.name || 'GENERIC'}
                         </span>
-                        <span className="text-[9px] text-muted-foreground/40 font-mono uppercase tracking-widest text-[9px]">ID: {course.id.slice(0, 8)}</span>
+                        <span className="text-[9px] text-muted-foreground/40 font-mono uppercase tracking-widest">ID: {course.id.slice(0, 8)}</span>
                     </div>
                 </div>
             </div>
@@ -214,9 +215,15 @@ export default function CourseManagementPage() {
     const dispatch = useAppDispatch();
 
     const sensors = useSensors(
-        useSensor(PointerSensor, {
+        useSensor(MouseSensor, {
             activationConstraint: {
-                distance: 8,
+                distance: 10,
+            },
+        }),
+        useSensor(TouchSensor, {
+            activationConstraint: {
+                delay: 250,
+                tolerance: 5,
             },
         }),
         useSensor(KeyboardSensor)
@@ -352,7 +359,7 @@ export default function CourseManagementPage() {
         fetchStatsData();
     };
 
-    const handleDragEnd = (event: DragEndEvent) => {
+    const handleDragEnd = async (event: DragEndEvent) => {
         const { active, over } = event;
 
         if (over && active.id !== over.id) {
@@ -360,9 +367,22 @@ export default function CourseManagementPage() {
             const newIndex = courses.findIndex((item) => item.id === over.id);
 
             const newOrder = arrayMove(courses, oldIndex, newIndex);
-            setCourses(newOrder);
 
-            dispatch(reorderCourses(newOrder as any));
+            // Re-calculate serial numbers locally for immediate visual feedback
+            const localOrder = newOrder.map((c, i) => ({
+                ...c,
+                serial_number: i + 1 + (currentPage - 1) * pageSize
+            }));
+
+            setCourses(localOrder);
+
+            const resultAction = await dispatch(reorderCourses(localOrder as any));
+            if (reorderCourses.rejected.match(resultAction)) {
+                toast.error(resultAction.payload as string || "Failed to synchronize order");
+                fetchCoursesData(); // Revert to server state
+            } else {
+                toast.success("Order synchronized successfully");
+            }
         }
     };
 

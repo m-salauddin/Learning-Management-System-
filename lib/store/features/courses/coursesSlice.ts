@@ -6,7 +6,7 @@
 
 import { createSlice, createAsyncThunk, PayloadAction } from "@reduxjs/toolkit";
 import {
-    CourseWithDetails, CourseWithModules, Category, CourseStatus
+    CourseWithInstructor, CourseWithModules, Category, CourseStatus
 } from "@/types/lms";
 import * as courseActions from "@/lib/actions/courses";
 
@@ -16,7 +16,7 @@ import * as courseActions from "@/lib/actions/courses";
 
 interface CoursesState {
     // Course list
-    courses: CourseWithDetails[];
+    courses: CourseWithInstructor[];
     totalCourses: number;
     currentPage: number;
     pageSize: number;
@@ -36,7 +36,7 @@ interface CoursesState {
     currentCourse: CourseWithModules | null;
 
     // Instructor's courses
-    instructorCourses: CourseWithDetails[];
+    instructorCourses: CourseWithInstructor[];
 
     // Categories
     categories: Category[];
@@ -244,23 +244,11 @@ export const unpublishCourse = createAsyncThunk(
 
 export const reorderCourses = createAsyncThunk(
     "courses/reorder",
-    async (newOrder: CourseWithDetails[], { dispatch, rejectWithValue }) => {
+    async (newOrder: CourseWithInstructor[], { dispatch, rejectWithValue }) => {
         try {
-            const updatedCourses = newOrder.map((course, index) => ({
-                ...course,
-                serial_number: (course.serial_number || 0) > 0 ? course.serial_number : index + 1
-            }));
+            dispatch(setCoursesLocally(newOrder));
 
-            const finalOrder = [...newOrder].sort((a, b) => (a.serial_number || 0) - (b.serial_number || 0));
-
-            const reindexed = newOrder.map((course, index) => ({
-                ...course,
-                serial_number: index + 1
-            }));
-
-            dispatch(setCoursesLocally(reindexed as CourseWithDetails[]));
-
-            const updates = reindexed.map((course) => ({
+            const updates = newOrder.map((course) => ({
                 id: course.id,
                 serial_number: course.serial_number
             }));
@@ -273,6 +261,7 @@ export const reorderCourses = createAsyncThunk(
         }
     }
 );
+
 
 
 // ============================================================================
@@ -292,7 +281,7 @@ const coursesSlice = createSlice({
         setCurrentPage(state, action: PayloadAction<number>) {
             state.currentPage = action.payload;
         },
-        setCoursesLocally(state, action: PayloadAction<CourseWithDetails[]>) {
+        setCoursesLocally(state, action: PayloadAction<CourseWithInstructor[]>) {
             state.courses = action.payload;
         },
         clearCurrentCourse(state) {
@@ -365,7 +354,7 @@ const coursesSlice = createSlice({
             })
             .addCase(fetchInstructorCourses.fulfilled, (state, action) => {
                 state.loading.list = false;
-                state.instructorCourses = (action.payload.data || []) as CourseWithDetails[];
+                state.instructorCourses = (action.payload.data || []) as CourseWithInstructor[];
             })
             .addCase(fetchInstructorCourses.rejected, (state) => {
                 state.loading.list = false;
@@ -395,7 +384,7 @@ const coursesSlice = createSlice({
             .addCase(createCourse.fulfilled, (state, action) => {
                 state.loading.create = false;
                 if (action.payload) {
-                    state.instructorCourses.unshift(action.payload as CourseWithDetails);
+                    state.instructorCourses.unshift(action.payload as CourseWithInstructor);
                 }
             })
             .addCase(createCourse.rejected, (state, action) => {
