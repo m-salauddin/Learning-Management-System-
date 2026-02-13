@@ -733,9 +733,15 @@ export async function updateCourseOrder(updates: { id: string; serial_number: nu
         return { success: false, error: 'Unauthorized' };
     }
 
-    const { error } = await supabase.from('courses').upsert(
-        updates.map(u => ({ id: u.id, serial_number: u.serial_number }))
+    const results = await Promise.all(
+        updates.map(u =>
+            supabase.from('courses')
+                .update({ serial_number: u.serial_number })
+                .eq('id', u.id)
+        )
     );
+
+    const error = results.find(r => r.error)?.error;
 
     if (error) {
         return { success: false, error: error.message };
