@@ -9,7 +9,7 @@ import {
 import { useRouter } from "next/navigation";
 import { jsPDF } from "jspdf";
 import autoTable from "jspdf-autotable";
-import { motion, AnimatePresence, useReducedMotion } from "motion/react";
+import { motion, AnimatePresence } from "motion/react";
 import { useEffect, useState, useMemo } from "react";
 import { cn } from "@/lib/utils";
 import Image from "next/image";
@@ -86,7 +86,6 @@ function CourseRow({
     onTogglePublish: (course: CourseWithInstructor) => void,
     router: any
 }) {
-    const shouldReduceMotion = useReducedMotion();
     const {
         attributes,
         listeners,
@@ -103,14 +102,14 @@ function CourseRow({
 
     return (
         <motion.div
-            layout={!shouldReduceMotion}
+            layout
             ref={setNodeRef}
             style={style}
             initial={false}
             animate={{
                 opacity: isDragging ? 0 : 1,
             }}
-            transition={shouldReduceMotion ? { duration: 0 } : {
+            transition={{
                 layout: { duration: 0.3, ease: [0.4, 0, 0.2, 1] },
                 opacity: { duration: 0.2 }
             }}
@@ -135,9 +134,9 @@ function CourseRow({
                     onChange={onSelect}
                 />
             </div>
-            <div className="px-4">
-                <span className="px-3 py-1 rounded-lg bg-primary/10 border border-primary/20 text-[10px] font-black text-primary tracking-widest">
-                    {String(course.serial_number || 0).padStart(2, '0')}
+            <div className="px-4 text-center">
+                <span className="text-xs font-mono font-bold text-muted-foreground/60 bg-muted/30 px-2 py-0.5 rounded-md border border-border/10">
+                    {course.serial_number || 0}
                 </span>
             </div>
             <div className="px-4 flex items-center gap-4 min-w-0">
@@ -149,7 +148,7 @@ function CourseRow({
                     )}
                 </div>
                 <div className="min-w-0">
-                    <Link href={`/courses/${course.slug}`} className="font-black text-sm italic uppercase tracking-tight text-foreground group-hover:text-primary transition-colors line-clamp-1">
+                    <Link href={`/courses/${course.slug}`} className="font-bold text-foreground group-hover:text-primary transition-colors line-clamp-1 text-sm tracking-tight capitalize">
                         {course.title}
                     </Link>
                     <div className="flex items-center gap-2 mt-1">
@@ -163,7 +162,7 @@ function CourseRow({
                         >
                             {course.category?.name || 'GENERIC'}
                         </span>
-                        <span className="text-[9px] font-black text-muted-foreground/40 font-mono truncate uppercase tracking-widest">ID: {course.id.slice(0, 8)}</span>
+                        <span className="text-[9px] text-muted-foreground/40 font-mono uppercase tracking-widest">ID: {course.id.slice(0, 8)}</span>
                     </div>
                 </div>
             </div>
@@ -193,26 +192,24 @@ function CourseRow({
                             <MoreHorizontal className="w-4 h-4" />
                         </button>
                     </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end" className="w-52 p-2 rounded-2xl bg-card/85 backdrop-blur-2xl border-border/40 shadow-2xl">
-                        <DropdownMenuItem className="rounded-xl gap-3 cursor-pointer p-3 focus:bg-primary/10 focus:text-primary" onClick={() => router.push(`/courses/${course.slug}`)}>
+                    <DropdownMenuContent align="end" className="w-48 p-2 rounded-2xl bg-card/85 backdrop-blur-xl border-border/40 shadow-2xl">
+                        <DropdownMenuItem className="rounded-xl gap-3 cursor-pointer p-2.5 focus:bg-primary/10 focus:text-primary" onClick={() => router.push(`/courses/${course.slug}`)}>
                             <Eye className="w-4 h-4" />
-                            <span className="font-black text-xs uppercase tracking-widest italic">Deep View</span>
+                            <span className="font-bold text-sm italic">Deep View</span>
                         </DropdownMenuItem>
-                        <DropdownMenuItem className="rounded-xl gap-3 cursor-pointer p-3 focus:bg-primary/10 focus:text-primary" onClick={() => router.push(`/dashboard/courses/${course.id}/edit`)}>
+                        <DropdownMenuItem className="rounded-xl gap-3 cursor-pointer p-2.5 focus:bg-primary/10 focus:text-primary" onClick={() => router.push(`/dashboard/courses/${course.id}/edit`)}>
                             <Edit2 className="w-4 h-4" />
-                            <span className="font-black text-xs uppercase tracking-widest italic">Modify</span>
+                            <span className="font-bold text-sm italic">Architect</span>
                         </DropdownMenuItem>
-                        <DropdownMenuSeparator className="bg-border/20 mx-1 my-1.5" />
-                        <DropdownMenuItem className="rounded-xl gap-3 cursor-pointer p-3 focus:bg-primary/10 focus:text-primary" onClick={() => onTogglePublish(course)}>
+                        <DropdownMenuSeparator className="bg-border/20 my-1.5" />
+                        <DropdownMenuItem className="rounded-xl gap-3 cursor-pointer p-2.5 focus:bg-primary/10 focus:text-primary" onClick={() => onTogglePublish(course)}>
                             {course.status === 'published' ? <Archive className="w-4 h-4" /> : <Plus className="w-4 h-4" />}
-                            <span className="font-black text-xs uppercase tracking-widest italic">
-                                {course.status === 'published' ? 'Archive' : 'Deploy'}
-                            </span>
+                            <span className="font-bold text-sm">{course.status === 'published' ? 'Archive catalog' : 'Deploy catalog'}</span>
                         </DropdownMenuItem>
-                        <DropdownMenuSeparator className="bg-border/20 mx-1 my-1.5" />
-                        <DropdownMenuItem onClick={() => onDelete(course.id)} className="rounded-xl gap-3 cursor-pointer p-3 focus:bg-destructive/10 focus:text-destructive text-destructive">
+                        <DropdownMenuSeparator className="bg-border/20 my-1.5" />
+                        <DropdownMenuItem onClick={() => onDelete(course.id)} className="rounded-xl gap-3 cursor-pointer p-2.5 focus:bg-destructive/10 focus:text-destructive text-destructive">
                             <Trash2 className="w-4 h-4" />
-                            <span className="font-black text-xs uppercase tracking-widest italic">Purge</span>
+                            <span className="font-bold text-sm">Purge Data</span>
                         </DropdownMenuItem>
                     </DropdownMenuContent>
                 </DropdownMenu>
@@ -682,11 +679,11 @@ export default function CourseManagementPage() {
                             <div className="flex justify-center">
                                 <AnimatedCheckbox id="select-all" checked={selectedCourses.size === courses.length && courses.length > 0} onChange={toggleSelectAll} />
                             </div>
-                            <div className="px-4 text-[10px] font-black uppercase tracking-widest text-muted-foreground/60">Serial</div>
-                            <div className="px-4 text-[10px] font-black uppercase tracking-widest text-muted-foreground/60">Identity</div>
-                            <div className="px-4 text-[10px] font-black uppercase tracking-widest text-muted-foreground/60">Pricing</div>
-                            <div className="px-4 text-[10px] font-black uppercase tracking-widest text-muted-foreground/60 text-center">Lifecycle</div>
-                            <div className="px-4 text-[10px] font-black uppercase tracking-widest text-muted-foreground/60 text-center">Depth</div>
+                            <div className="px-4 text-[10px] font-black uppercase tracking-widest text-muted-foreground/60 text-center">Serial</div>
+                            <div className="px-4 text-[10px] font-black uppercase tracking-widest text-muted-foreground/60">Course / Identity</div>
+                            <div className="px-4 text-[10px] font-black uppercase tracking-widest text-muted-foreground/60">Monetization</div>
+                            <div className="px-4 text-[10px] font-black uppercase tracking-widest text-muted-foreground/60">Lifecycle</div>
+                            <div className="px-4 text-[10px] font-black uppercase tracking-widest text-muted-foreground/60 text-center">Proficiency</div>
                             <div className="px-4 text-[10px] font-black uppercase tracking-widest text-muted-foreground/60 text-center">Impact</div>
                             <div className="px-4 text-[10px] font-black uppercase tracking-widest text-muted-foreground/60 text-right">Action</div>
                         </div>
@@ -730,9 +727,9 @@ export default function CourseManagementPage() {
                                                 onChange={() => { }}
                                             />
                                         </div>
-                                        <div className="px-4">
-                                            <span className="px-3 py-1 rounded-lg bg-primary/10 border border-primary/20 text-[10px] font-black text-primary tracking-widest">
-                                                {String(activeCourse.serial_number || 0).padStart(2, '0')}
+                                        <div className="px-4 text-center">
+                                            <span className="text-xs font-mono font-bold text-muted-foreground/60 bg-muted/30 px-2 py-0.5 rounded-md border border-border/10">
+                                                {activeCourse.serial_number || 0}
                                             </span>
                                         </div>
                                         <div className="px-4 flex items-center gap-4 min-w-0">
@@ -744,17 +741,25 @@ export default function CourseManagementPage() {
                                                 )}
                                             </div>
                                             <div className="min-w-0">
-                                                <div className="font-black text-sm italic uppercase tracking-tight text-primary line-clamp-1">
+                                                <div className="font-bold text-foreground line-clamp-1 text-sm tracking-tight capitalize">
                                                     {activeCourse.title}
+                                                </div>
+                                                <div className="flex items-center gap-2 mt-1">
+                                                    <span
+                                                        className="text-[9px] font-black uppercase tracking-tighter px-1.5 py-0.5 rounded border"
+                                                        style={{
+                                                            backgroundColor: `${activeCourse.category?.color || '#6366f1'}15`,
+                                                            color: activeCourse.category?.color || '#6366f1',
+                                                            borderColor: `${activeCourse.category?.color || '#6366f1'}30`
+                                                        }}
+                                                    >
+                                                        {activeCourse.category?.name || 'GENERIC'}
+                                                    </span>
                                                 </div>
                                             </div>
                                         </div>
                                         <div className="px-4">
-                                            {activeCourse.price > 0 ? (
-                                                <span className="text-sm font-black tracking-tighter">৳{activeCourse.price.toLocaleString()}</span>
-                                            ) : (
-                                                <span className="text-xs font-black uppercase tracking-widest text-emerald-500">Scholarship</span>
-                                            )}
+                                            <span className="text-sm font-black tracking-tighter text-foreground">৳{activeCourse.price.toLocaleString()}</span>
                                         </div>
                                         <div className="px-4">
                                             <StatusBadge status={activeCourse.status} />
@@ -762,13 +767,11 @@ export default function CourseManagementPage() {
                                         <div className="px-4 text-center">
                                             <LevelBadge level={activeCourse.level || 'beginner'} />
                                         </div>
-                                        <div className="px-4 text-center">
-                                            <div className="inline-flex flex-col items-center">
-                                                <span className="text-sm font-black tracking-tight">{activeCourse.total_students || 0}</span>
-                                            </div>
+                                        <div className="px-4 text-center font-black">
+                                            {activeCourse.total_students || 0}
                                         </div>
                                         <div className="px-4 text-right">
-                                            <MoreHorizontal className="w-4 h-4 text-muted-foreground" />
+                                            <MoreHorizontal className="w-4 h-4 text-muted-foreground/40" />
                                         </div>
                                     </div>
                                 ) : null}
