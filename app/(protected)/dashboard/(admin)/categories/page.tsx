@@ -3,29 +3,22 @@
 import {
     Plus, Search, Edit2, Trash2, MoreHorizontal, Layers,
     Globe, Smartphone, Palette, TrendingUp, Briefcase,
-    Database, Code, Shield, Cloud, Info, X, Save,
-    RefreshCw, Download, CheckCircle2, ChevronDown, Filter
+    Database, Code, Shield, Cloud, Info, X,
+    RefreshCw, Download, ChevronDown, GripVertical
 } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import Link from "next/link";
 import { useToast } from "@/components/ui/toast";
 import { cn } from "@/lib/utils";
-import {
-    Category, getCategoriesAdmin, deleteCategory
-} from "@/lib/actions/categories";
+import { Category } from "@/types/lms";
+import { useAppDispatch, useAppSelector } from "@/lib/store/hooks";
+import { fetchAdminCategories, reorderCategories } from "@/lib/store/features/admin/categoriesSlice";
+import { deleteCategory } from "@/lib/actions/categories";
 import {
     Dialog, DialogHeader, DialogTitle, DialogDescription,
-    DialogFooter
+    DialogFooter, DialogBody
 } from "@/components/ui/Dialog";
-import {
-    Table,
-    TableBody,
-    TableCell,
-    TableHead,
-    TableHeader,
-    TableRow,
-} from "@/components/ui/table";
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -33,9 +26,26 @@ import {
     DropdownMenuTrigger,
     DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
-import { SearchInput } from "@/components/dashboard/shared/SearchInput";
 import { AnimatedCheckbox } from "@/components/ui/AnimatedCheckbox";
 import { Pagination } from "@/components/ui/Pagination";
+import {
+    closestCenter,
+    DndContext,
+    KeyboardSensor,
+    MouseSensor,
+    TouchSensor,
+    useSensor,
+    useSensors,
+    type DragEndEvent,
+} from "@dnd-kit/core"
+import { restrictToVerticalAxis } from "@dnd-kit/modifiers"
+import {
+    arrayMove,
+    SortableContext,
+    useSortable,
+    verticalListSortingStrategy,
+} from "@dnd-kit/sortable"
+import { CSS } from "@dnd-kit/utilities"
 
 const iconMap: Record<string, any> = {
     'Globe': Globe,
@@ -49,40 +59,64 @@ const iconMap: Record<string, any> = {
     'Cloud': Cloud,
     'Layers': Layers,
     'Info': Info,
-    'book': Globe,
-    'code': Code,
-    'palette': Palette
 };
 
 export default function CategoryManagementPage() {
     const toast = useToast();
-    const [categories, setCategories] = useState<Category[]>([]);
-    const [isLoading, setIsLoading] = useState(true);
+    const dispatch = useAppDispatch();
+    const { categories, isLoading, error } = useAppSelector(state => state.categories);
     const [searchTerm, setSearchTerm] = useState("");
     const [selectedCategories, setSelectedCategories] = useState<Set<string>>(new Set());
-
-    // Modals
     const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
     const [exportModal, setExportModal] = useState(false);
-
-    // Pagination State
     const [currentPage, setCurrentPage] = useState(1);
     const [pageSize, setPageSize] = useState(10);
-
-    const fetchCategories = async () => {
-        setIsLoading(true);
-        const result = await getCategoriesAdmin();
-        if (result.success && result.data) {
-            setCategories(result.data);
-        } else {
-            toast.error("Failed to fetch categories");
-        }
-        setIsLoading(false);
-    };
+    const [localCategories, setLocalCategories] = useState<Category[]>([]);
 
     useEffect(() => {
-        fetchCategories();
-    }, []);
+        dispatch(fetchAdminCategories());
+    }, [dispatch]);
+
+    useEffect(() => {
+        if (error) {
+            toast.error(error);
+        }
+    }, [error, toast]);
+
+    const filteredCategories = useMemo(() => {
+        return categories.filter(c =>
+            c.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            c.slug.toLowerCase().includes(searchTerm.toLowerCase())
+        );
+    }, [categories, searchTerm]);
+
+    const paginatedCategories = useMemo(() => {
+        return filteredCategories.slice((currentPage - 1) * pageSize, currentPage * pageSize);
+    }, [filteredCategories, currentPage, pageSize]);
+
+    useEffect(() => {
+        setLocalCategories(paginatedCategories);
+    }, [paginatedCategories]);
+
+    const sensors = useSensors(
+        useSensor(MouseSensor, {}),
+        useSensor(TouchSensor, {}),
+        useSensor(KeyboardSensor, {})
+    );
+
+    const handleDragEnd = (event: DragEndEvent) => {
+        const { active, over } = event;
+        if (active && over && active.id !== over.id) {
+            const oldIndex = localCategories.findIndex(c => c.id === active.id);
+            const newIndex = localCategories.findIndex(c => c.id === over.id);
+            const newOrder = arrayMove(localCategories, oldIndex, newIndex);
+            setLocalCategories(newOrder);
+            const startIndex = (currentPage - 1) * pageSize;
+            const updatedFullList = [...categories];
+            updatedFullList.splice(startIndex, newOrder.length, ...newOrder);
+            dispatch(reorderCategories(updatedFullList));
+        }
+    };
 
     const handleDelete = async () => {
         if (!deleteConfirmId) return;
@@ -90,16 +124,11 @@ export default function CategoryManagementPage() {
         if (result.success) {
             toast.success("Category deleted");
             setDeleteConfirmId(null);
-            fetchCategories();
+            dispatch(fetchAdminCategories());
         } else {
             toast.error(result.error || "Failed to delete");
         }
     };
-
-    const filteredCategories = categories.filter(c =>
-        c.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        c.slug.toLowerCase().includes(searchTerm.toLowerCase())
-    );
 
     const toggleSelectAll = () => {
         if (selectedCategories.size === filteredCategories.length) {
@@ -119,12 +148,12 @@ export default function CategoryManagementPage() {
         setSelectedCategories(newSelected);
     };
 
-    const clearSelection = () => setSelectedCategories(new Set());
+    const totalPages = Math.max(1, Math.ceil(filteredCategories.length / pageSize));
 
-    const totalPages = Math.ceil(filteredCategories.length / pageSize);
-    const paginatedCategories = filteredCategories.slice((currentPage - 1) * pageSize, currentPage * pageSize);
+    useEffect(() => {
+        setCurrentPage(1);
+    }, [searchTerm, pageSize]);
 
-    // Stats
     const totalCourses = categories.reduce((sum, c) => sum + (c.course_count || 0), 0);
     const avgCourses = categories.length > 0 ? (totalCourses / categories.length).toFixed(1) : 0;
 
@@ -134,15 +163,14 @@ export default function CategoryManagementPage() {
             animate={{ opacity: 1 }}
             className="space-y-6 pb-10 font-sans"
         >
-            {/* Header Section */}
             <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-6">
                 <div>
                     <motion.h1
                         initial={{ opacity: 0, x: -20 }}
                         animate={{ opacity: 1, x: 0 }}
-                        className="text-3xl font-bold tracking-tight text-white uppercase italic"
+                        className="text-2xl md:text-3xl font-bold tracking-tight"
                     >
-                        Category <span className="text-primary italic font-black">Management</span>
+                        Category Management
                     </motion.h1>
                     <motion.p
                         initial={{ opacity: 0, x: -20 }}
@@ -155,26 +183,24 @@ export default function CategoryManagementPage() {
                 </div>
 
                 <div className="flex flex-wrap items-center gap-3">
-                    <motion.button
-                        whileHover={{ scale: 1.02 }}
-                        whileTap={{ scale: 0.98 }}
+                    <button
                         onClick={() => setExportModal(true)}
                         className="px-4 py-2.5 rounded-xl border border-border/50 bg-muted/40 hover:bg-muted/60 text-sm font-semibold transition-all flex items-center gap-2"
                     >
                         <Download className="w-4 h-4" />
                         <span>Export</span>
-                    </motion.button>
-                    <Link
-                        href="/dashboard/categories/new"
-                        className="bg-primary text-primary-foreground px-5 py-2.5 rounded-xl text-sm font-bold hover:bg-primary/90 transition-all shadow-lg shadow-primary/20 hover:shadow-primary/30 flex items-center gap-2 uppercase tracking-tighter"
-                    >
-                        <Plus className="w-5 h-5 font-black" />
-                        <span>Add Category</span>
+                    </button>
+                    <Link href="/dashboard/categories/new">
+                        <button
+                            className="bg-primary text-primary-foreground px-5 py-2.5 rounded-xl text-sm font-semibold hover:bg-primary/90 transition-all shadow-lg shadow-primary/20 hover:shadow-primary/30 flex items-center gap-2"
+                        >
+                            <Plus className="w-4 h-4" />
+                            <span>Add Category</span>
+                        </button>
                     </Link>
                 </div>
             </div>
 
-            {/* Stats Cards */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                 {isLoading ? (
                     [...Array(4)].map((_, i) => (
@@ -192,21 +218,21 @@ export default function CategoryManagementPage() {
                             initial={{ opacity: 0, y: 20 }}
                             animate={{ opacity: 1, y: 0 }}
                             transition={{ delay: idx * 0.1 }}
-                            className="p-6 rounded-2xl border border-border/40 bg-card/30 backdrop-blur-xl"
+                            className="p-6 rounded-2xl border border-border/40 bg-card/30 backdrop-blur-xl shadow-sm"
                         >
                             <div className="flex items-center justify-between">
                                 <div>
-                                    <p className="text-[10px] font-black uppercase tracking-[0.2em] text-white/40">{stat.label}</p>
-                                    <p className="text-3xl font-bold mt-2 text-white">{stat.value}</p>
+                                    <p className="text-[10px] text-muted-foreground font-black uppercase tracking-widest">{stat.label}</p>
+                                    <p className="text-2xl font-bold mt-1 tracking-tight">{stat.value}</p>
                                 </div>
                                 <div className={cn(
                                     "p-3 rounded-xl",
-                                    stat.color === 'blue' && "bg-blue-500/10 text-blue-600",
-                                    stat.color === 'emerald' && "bg-emerald-500/10 text-emerald-600",
-                                    stat.color === 'violet' && "bg-violet-500/10 text-violet-600",
-                                    stat.color === 'amber' && "bg-amber-500/10 text-amber-600"
+                                    stat.color === 'blue' && "bg-blue-500/10 text-blue-500",
+                                    stat.color === 'emerald' && "bg-emerald-500/10 text-emerald-500",
+                                    stat.color === 'violet' && "bg-violet-500/10 text-violet-500",
+                                    stat.color === 'amber' && "bg-amber-500/10 text-amber-500"
                                 )}>
-                                    <stat.icon className="w-6 h-6" />
+                                    <stat.icon className="w-5 h-5" />
                                 </div>
                             </div>
                         </motion.div>
@@ -214,235 +240,254 @@ export default function CategoryManagementPage() {
                 )}
             </div>
 
-            {/* Table Container */}
-            <div className="rounded-2xl border border-border/40 bg-card/30 backdrop-blur-xl overflow-hidden shadow-sm shadow-black/5">
-                {/* Toolbar */}
-                <div className="p-4 md:p-6 border-b border-border/40 bg-card/30 backdrop-blur-xl">
-                    <div className="flex flex-col lg:flex-row gap-4 justify-between">
-                        <div className="flex items-center gap-2 w-full lg:max-w-md focus-within:ring-0">
-                            <SearchInput
-                                value={searchTerm}
-                                onChange={(val) => { setSearchTerm(val); setCurrentPage(1); }}
-                                placeholder="Search categories..."
-                                debounceMs={300}
-                                isSearching={isLoading}
-                                className="flex-1"
-                            />
+            <div className="bg-card/30 backdrop-blur-xl border border-border/40 rounded-3xl overflow-hidden shadow-xl">
+                <div className="p-6 border-b border-border/20 flex flex-col md:flex-row md:items-center justify-between gap-4">
+                    <div className="relative flex-1 max-w-md">
+                        <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                        <input
+                            type="text"
+                            placeholder="Filter categories..."
+                            value={searchTerm}
+                            onChange={(e) => setSearchTerm(e.target.value)}
+                            className="w-full bg-muted/20 border border-border/30 rounded-xl pl-10 pr-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 hover:bg-muted/30 transition-all font-medium"
+                        />
+                    </div>
+
+                    <div className="flex items-center gap-3">
+                        {selectedCategories.size > 0 && (
                             <button
-                                onClick={fetchCategories}
-                                className="h-11 w-11 flex items-center justify-center shrink-0 rounded-xl border border-border/50 bg-background/50 hover:bg-muted/50 transition-all focus:outline-none"
+                                className="px-4 py-2 rounded-xl bg-destructive text-white text-xs font-bold transition-all hover:bg-destructive/90 shadow-lg shadow-destructive/20 flex items-center gap-2"
                             >
-                                <RefreshCw className={cn("w-4 h-4", isLoading && "animate-spin")} />
+                                <Trash2 className="w-3.5 h-3.5" />
+                                <span>Delete Selected ({selectedCategories.size})</span>
                             </button>
-                        </div>
-
-                        <div className="flex items-center gap-4">
-
-                            <div className="text-xs text-muted-foreground px-3 py-1.5 rounded-lg border border-border/50 bg-muted/20 hidden sm:block">
-                                {filteredCategories.length} Categories
-                            </div>
-                        </div>
+                        )}
+                        <button
+                            onClick={() => dispatch(fetchAdminCategories())}
+                            className="p-2.5 rounded-xl border border-border/30 hover:bg-muted/50 transition-all text-muted-foreground"
+                            title="Refresh"
+                        >
+                            <RefreshCw className={cn("w-4 h-4", isLoading && "animate-spin")} />
+                        </button>
                     </div>
                 </div>
 
-                {/* Content Rendering */}
-                {isLoading ? (
-                    <div className="p-12 text-center">
-                        <RefreshCw className="w-8 h-8 animate-spin text-primary mx-auto mb-4" />
-                        <p className="text-muted-foreground animate-pulse">Synchronizing categories...</p>
+                <div className="min-w-[800px] overflow-x-auto">
+                    <div className="grid grid-cols-[48px_48px_2fr_1fr_100px_120px_80px] px-6 py-4 bg-muted/5 border-b border-border/20">
+                        <div className="flex items-center justify-center"></div>
+                        <div className="flex items-center justify-center">
+                            <AnimatedCheckbox
+                                id="select-all"
+                                checked={selectedCategories.size > 0 && selectedCategories.size === filteredCategories.length}
+                                onChange={toggleSelectAll}
+                            />
+                        </div>
+                        <div className="px-4 text-[10px] uppercase tracking-widest font-black text-muted-foreground/60">Category</div>
+                        <div className="px-4 text-[10px] uppercase tracking-widest font-black text-muted-foreground/60">Slug Handle</div>
+                        <div className="px-4 text-[10px] uppercase tracking-widest font-black text-muted-foreground/60">Serial</div>
+                        <div className="px-4 text-[10px] uppercase tracking-widest font-black text-muted-foreground/60">Courses</div>
+                        <div className="px-4 text-[10px] uppercase tracking-widest font-black text-muted-foreground/60 text-right">Action</div>
                     </div>
-                ) : (
-                    <div className="overflow-hidden overflow-x-auto">
-                        <Table>
-                            <TableHeader>
-                                <TableRow className="hover:bg-transparent border-b border-border/40">
-                                    <TableHead className="w-[50px] px-6 py-3">
-                                        <AnimatedCheckbox
-                                            id="select-all"
-                                            checked={selectedCategories.size === filteredCategories.length && filteredCategories.length > 0}
-                                            onChange={toggleSelectAll}
-                                        />
-                                    </TableHead>
-                                    <TableHead className="px-6 py-3 text-[10px] font-black text-white/40 uppercase tracking-[0.2em]">Category</TableHead>
-                                    <TableHead className="px-6 py-3 text-[10px] font-black text-white/40 uppercase tracking-[0.2em]">Slug</TableHead>
-                                    <TableHead className="px-6 py-3 text-[10px] font-black text-white/40 uppercase tracking-[0.2em]">Courses</TableHead>
-                                    <TableHead className="px-6 py-3 text-[10px] font-black text-white/40 uppercase tracking-[0.2em]">Last Updated</TableHead>
-                                    <TableHead className="px-6 py-3 text-[10px] font-black text-white/40 uppercase tracking-[0.2em] text-right">Actions</TableHead>
-                                </TableRow>
-                            </TableHeader>
-                            <TableBody className="divide-y divide-border/20">
-                                {paginatedCategories.length === 0 ? (
-                                    <TableRow>
-                                        <TableCell colSpan={6} className="h-64 text-center">
-                                            <div className="flex flex-col items-center justify-center gap-3">
-                                                <div className="bg-muted/50 p-4 rounded-2xl border border-border/50">
-                                                    <Layers className="w-8 h-8 text-muted-foreground/50" />
-                                                </div>
-                                                <div className="space-y-1">
-                                                    <p className="font-semibold text-white">No categories found</p>
-                                                    <p className="text-sm text-muted-foreground">Try adjusting your search terms</p>
-                                                </div>
-                                            </div>
-                                        </TableCell>
-                                    </TableRow>
-                                ) : (
-                                    paginatedCategories.map((category) => {
-                                        const Icon = iconMap[category.icon || 'Layers'] || Layers;
-                                        return (
-                                            <TableRow key={category.id} className="border-b border-border/30 transition-all duration-200 group">
-                                                <TableCell className="px-6 py-4">
-                                                    <AnimatedCheckbox
-                                                        id={`select-${category.id}`}
-                                                        checked={selectedCategories.has(category.id)}
-                                                        onChange={() => toggleSelectCategory(category.id)}
-                                                    />
-                                                </TableCell>
-                                                <TableCell className="px-6 py-4">
-                                                    <div className="flex items-center gap-3">
-                                                        <div
-                                                            className="w-10 h-10 rounded-xl border flex items-center justify-center shadow-inner transition-all"
-                                                            style={{
-                                                                backgroundColor: `${category.color || '#6366f1'}20`,
-                                                                borderColor: `${category.color || '#6366f1'}40`,
-                                                                color: category.color || '#6366f1'
-                                                            }}
-                                                        >
-                                                            <Icon className="w-5 h-5" />
-                                                        </div>
-                                                        <Link
-                                                            href={`/dashboard/categories/${category.id}/edit`}
-                                                            className="font-bold text-white group-hover:text-primary transition-colors italic"
-                                                        >
-                                                            {category.name}
-                                                        </Link>
-                                                    </div>
-                                                </TableCell>
-                                                <TableCell className="px-6 py-4 font-mono text-xs text-muted-foreground">
-                                                    {category.slug}
-                                                </TableCell>
-                                                <TableCell className="px-6 py-4">
-                                                    <span className="px-2.5 py-1 rounded-full bg-white/5 border border-white/5 text-xs text-muted-foreground font-semibold">
-                                                        {category.course_count || 0}
-                                                    </span>
-                                                </TableCell>
-                                                <TableCell className="px-6 py-4 text-xs text-muted-foreground">
-                                                    {new Date(category.updated_at).toLocaleDateString()}
-                                                </TableCell>
-                                                <TableCell className="px-6 py-4 text-right">
-                                                    <div className="flex items-center justify-end gap-2">
-                                                        <Link
-                                                            href={`/dashboard/categories/${category.id}/edit`}
-                                                            className="p-2 rounded-lg hover:bg-primary/10 hover:text-primary transition-all text-muted-foreground"
-                                                        >
-                                                            <Edit2 className="w-4 h-4" />
-                                                        </Link>
-                                                        <DropdownMenu>
-                                                            <DropdownMenuTrigger asChild>
-                                                                <button className="p-2 rounded-lg hover:bg-muted/50 transition-colors outline-none">
-                                                                    <MoreHorizontal className="w-4 h-4 text-muted-foreground" />
-                                                                </button>
-                                                            </DropdownMenuTrigger>
-                                                            <DropdownMenuContent align="end" className="w-48 p-1.5 rounded-xl border border-border/50 bg-slate-900/95 backdrop-blur-xl shadow-2xl">
-                                                                <DropdownMenuItem asChild>
-                                                                    <Link href={`/dashboard/categories/${category.id}/edit`} className="rounded-lg cursor-pointer text-sm gap-2.5 text-slate-200 focus:bg-white/10">
-                                                                        <Edit2 className="w-4 h-4" /> Edit Category
-                                                                    </Link>
-                                                                </DropdownMenuItem>
-                                                                <DropdownMenuItem className="rounded-lg cursor-pointer text-sm gap-2.5 text-slate-200 focus:bg-white/10">
-                                                                    <Plus className="w-4 h-4" /> Add Sub-category
-                                                                </DropdownMenuItem>
-                                                                <DropdownMenuSeparator className="my-1 bg-white/5" />
-                                                                <DropdownMenuItem onClick={() => setDeleteConfirmId(category.id)} className="rounded-lg cursor-pointer text-sm gap-2.5 text-red-400 focus:bg-red-500/10">
-                                                                    <Trash2 className="w-4 h-4" /> Delete Category
-                                                                </DropdownMenuItem>
-                                                            </DropdownMenuContent>
-                                                        </DropdownMenu>
-                                                    </div>
-                                                </TableCell>
-                                            </TableRow>
-                                        );
-                                    })
-                                )}
-                            </TableBody>
-                        </Table>
-                    </div>
-                )}
 
-                {/* Pagination */}
+                    {isLoading && localCategories.length === 0 ? (
+                        <div className="p-24 flex flex-col items-center justify-center space-y-4 text-center">
+                            <div className="w-12 h-12 border-4 border-primary/20 border-t-primary rounded-full animate-spin" />
+                            <p className="text-xs font-black uppercase tracking-widest text-muted-foreground opacity-60">Initializing registry...</p>
+                        </div>
+                    ) : localCategories.length === 0 ? (
+                        <div className="p-24 text-center">
+                            <div className="flex flex-col items-center justify-center space-y-4 opacity-40">
+                                <Search className="w-12 h-12" />
+                                <h3 className="font-bold text-xl uppercase italic tracking-tighter">No clusters found</h3>
+                                {searchTerm && <button onClick={() => setSearchTerm("")} className="px-5 py-2 rounded-xl bg-primary/10 text-primary text-xs font-black uppercase">Clear Filters</button>}
+                            </div>
+                        </div>
+                    ) : (
+                        <DndContext
+                            collisionDetection={closestCenter}
+                            modifiers={[restrictToVerticalAxis]}
+                            onDragEnd={handleDragEnd}
+                            sensors={sensors}
+                        >
+                            <div className="divide-y divide-border/20">
+                                <SortableContext items={localCategories.map(c => c.id)} strategy={verticalListSortingStrategy}>
+                                    {localCategories.map((category) => (
+                                        <CategoryRowItem
+                                            key={category.id}
+                                            category={category}
+                                            selected={selectedCategories.has(category.id)}
+                                            onToggleSelect={() => toggleSelectCategory(category.id)}
+                                            onDelete={() => setDeleteConfirmId(category.id)}
+                                        />
+                                    ))}
+                                </SortableContext>
+                            </div>
+                        </DndContext>
+                    )}
+                </div>
+
                 {!isLoading && filteredCategories.length > 0 && (
-                    <div className="p-6 border-t border-border/40 bg-muted/10">
+                    <div className="p-6 border-t border-border/20 bg-muted/5">
                         <Pagination
                             currentPage={currentPage}
                             totalPages={totalPages}
                             onPageChange={setCurrentPage}
                             pageSize={pageSize}
-                            onPageSizeChange={(size) => { setPageSize(size); setCurrentPage(1); }}
+                            onPageSizeChange={setPageSize}
                             totalItems={filteredCategories.length}
                         />
                     </div>
                 )}
             </div>
 
-            {/* Floating Bulk Actions Bar */}
-            <AnimatePresence>
-                {selectedCategories.size > 0 && (
-                    <motion.div
-                        initial={{ opacity: 0, y: 100 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0, y: 100 }}
-                        className="fixed bottom-8 left-1/2 -translate-x-1/2 z-50 flex items-center gap-1 p-1.5 pr-4 pl-4 rounded-full border border-border bg-card/95 text-foreground shadow-xl backdrop-blur-md"
-                    >
-                        <span className="text-sm font-semibold mr-2 whitespace-nowrap pl-1 text-white">{selectedCategories.size} selected</span>
-                        <div className="h-4 w-px bg-border mx-1" />
-                        <div className="flex items-center gap-1">
-                            <button className="p-2 rounded-full hover:bg-muted transition-colors text-red-500" title="Delete Selected">
-                                <Trash2 className="w-4 h-4" />
-                            </button>
-                        </div>
-                        <div className="h-4 w-px bg-border mx-1" />
-                        <button onClick={clearSelection} className="p-2 rounded-full hover:bg-muted transition-colors ml-1 text-muted-foreground hover:text-white">
-                            <X className="w-4 h-4" />
-                        </button>
-                    </motion.div>
-                )}
-            </AnimatePresence>
-
-            {/* Delete Modal */}
             <Dialog open={!!deleteConfirmId} onClose={() => setDeleteConfirmId(null)} size="sm">
-                <DialogHeader className="text-center">
-                    <div className="w-16 h-16 rounded-full bg-red-500/10 flex items-center justify-center text-red-500 mx-auto mb-4 border border-red-500/20">
-                        <Trash2 className="w-8 h-8" />
+                <div className="p-8 text-center space-y-6">
+                    <div className="w-24 h-24 rounded-full bg-rose-500/10 text-rose-500 flex items-center justify-center mx-auto ring-8 ring-rose-500/5"><X className="w-10 h-10" /></div>
+                    <div className="space-y-3">
+                        <h2 className="text-3xl font-black tracking-tighter italic uppercase">Confirm Purge</h2>
+                        <p className="text-sm font-bold text-muted-foreground opacity-60">Are you sure you want to delete this category? This action cannot be undone and will destabilize associated taxonomies.</p>
                     </div>
-                    <DialogTitle className="text-xl font-bold text-white uppercase italic">Destroy <span className="text-red-500">Category?</span></DialogTitle>
-                    <DialogDescription className="text-muted-foreground text-sm font-medium">This will remove the category permanently. Course links will be lost.</DialogDescription>
-                </DialogHeader>
-                <DialogFooter className="flex gap-4 pt-4 border-none px-6 pb-6">
-                    <button onClick={() => setDeleteConfirmId(null)} className="flex-1 py-3 rounded-xl border border-border text-white/40 font-bold hover:text-white transition-all text-sm uppercase tracking-tighter">Abort</button>
-                    <button onClick={handleDelete} className="flex-1 py-3 rounded-xl bg-red-500 text-white font-black hover:bg-red-600 transition-all shadow-lg shadow-red-500/20 text-sm uppercase tracking-tighter">Delete</button>
+                </div>
+                <DialogFooter className="grid grid-cols-2 gap-4 p-8 pt-0">
+                    <button onClick={() => setDeleteConfirmId(null)} className="h-14 bg-muted/20 rounded-2xl font-black text-[10px] uppercase tracking-widest hover:bg-muted/40 transition-all border border-border/10">Abort</button>
+                    <button onClick={handleDelete} className="h-14 bg-rose-500 text-white rounded-2xl font-black text-[10px] uppercase tracking-widest hover:bg-rose-600 transition-all shadow-xl shadow-rose-500/30">Delete</button>
                 </DialogFooter>
             </Dialog>
 
-            {/* Export Modal */}
-            {exportModal && (
-                <div className="fixed inset-0 z-100 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
-                    <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="w-full max-w-md bg-slate-900 border border-border rounded-3xl p-8 shadow-2xl">
-                        <h2 className="text-2xl font-bold text-white mb-2 uppercase italic">Export <span className="text-primary italic font-black">Categories</span></h2>
-                        <p className="text-muted-foreground text-sm mb-8 font-medium">Download all categories and metadata.</p>
-                        <div className="space-y-3">
-                            {['CSV', 'JSON', 'PDF'].map(ext => (
-                                <button key={ext} className="w-full flex items-center gap-4 p-4 rounded-2xl border border-border/50 bg-white/5 hover:bg-primary/10 hover:border-primary/50 transition-all group">
-                                    <div className="p-3 rounded-xl bg-primary/10 text-primary group-hover:bg-primary group-hover:text-white transition-all"><Download className="w-5 h-5" /></div>
-                                    <div className="text-left">
-                                        <div className="font-bold text-white">Export as {ext}</div>
-                                        <div className="text-[10px] text-muted-foreground uppercase font-black tracking-widest">Ready for download</div>
-                                    </div>
-                                </button>
-                            ))}
-                        </div>
-                        <button onClick={() => setExportModal(false)} className="mt-8 w-full py-4 text-white/40 font-bold hover:text-white transition-all text-xs uppercase tracking-widest">Cancel</button>
-                    </motion.div>
-                </div>
-            )}
+            <Dialog open={exportModal} onClose={() => setExportModal(false)} size="sm">
+                <DialogHeader>
+                    <DialogTitle className="italic">Matrix Extraction</DialogTitle>
+                    <DialogDescription>De-serialize categorical topology into portable formats.</DialogDescription>
+                </DialogHeader>
+                <DialogBody className="space-y-3">
+                    {['CSV', 'JSON', 'PDF'].map(ext => (
+                        <button
+                            key={ext}
+                            className="w-full flex items-center gap-5 p-5 rounded-2xl border border-border/50 bg-muted/20 hover:bg-primary/5 hover:border-primary/30 transition-all group text-left"
+                            onClick={() => setExportModal(false)}
+                        >
+                            <div className="p-3 rounded-xl bg-primary/10 text-primary group-hover:bg-primary group-hover:text-white transition-all">
+                                <Download className="w-5 h-5" />
+                            </div>
+                            <div>
+                                <div className="font-black text-sm italic uppercase tracking-tight">Export as {ext}</div>
+                                <div className="text-[10px] text-muted-foreground uppercase tracking-widest font-bold opacity-40">Standard Format</div>
+                            </div>
+                        </button>
+                    ))}
+                </DialogBody>
+            </Dialog>
         </motion.div>
+    );
+}
+
+function CategoryRowItem({ category, selected, onToggleSelect, onDelete }: {
+    category: Category;
+    selected: boolean;
+    onToggleSelect: () => void;
+    onDelete: () => void;
+}) {
+    const { transform, transition, setNodeRef, isDragging, attributes, listeners } = useSortable({
+        id: category.id,
+    });
+
+    const Icon = iconMap[category.icon || 'Layers'] || Layers;
+
+    const style = {
+        transform: CSS.Transform.toString(transform),
+        transition,
+    };
+
+    return (
+        <div
+            ref={setNodeRef}
+            style={style}
+            className={cn(
+                "grid grid-cols-[48px_48px_2fr_1fr_100px_120px_80px] items-center px-6 py-5 transition-colors group bg-card/10 select-none",
+                isDragging ? "z-50 bg-muted/90 backdrop-blur-xl shadow-2xl ring-2 ring-primary/40" : "hover:bg-muted/10"
+            )}
+        >
+            <div className="flex items-center justify-center">
+                <div
+                    {...attributes}
+                    {...listeners}
+                    className="cursor-grab active:cursor-grabbing text-muted-foreground/20 group-hover:text-primary transition-colors p-2"
+                >
+                    <GripVertical className="w-4 h-4" />
+                </div>
+            </div>
+            <div className="flex items-center justify-center">
+                <AnimatedCheckbox
+                    id={`select-${category.id}`}
+                    checked={selected}
+                    onChange={onToggleSelect}
+                />
+            </div>
+            <div className="px-4 flex items-center gap-4 min-w-0">
+                <div
+                    className="w-10 h-10 rounded-xl border flex items-center justify-center shrink-0 shadow-sm group-hover:scale-110 transition-transform duration-500"
+                    style={{
+                        backgroundColor: `${category.color || '#6366f1'}15`,
+                        borderColor: `${category.color || '#6366f1'}30`,
+                        color: category.color || '#6366f1'
+                    }}
+                >
+                    <Icon className="w-5 h-5" />
+                </div>
+                <div className="flex flex-col min-w-0">
+                    <Link
+                        href={`/dashboard/categories/${category.id}/edit`}
+                        className="font-black text-sm italic uppercase tracking-tight text-foreground group-hover:text-primary transition-colors truncate"
+                    >
+                        {category.name}
+                    </Link>
+                    <span className="text-[9px] font-black text-muted-foreground/40 font-mono truncate uppercase tracking-widest hidden md:block">
+                        {category.id}
+                    </span>
+                </div>
+            </div>
+            <div className="px-4">
+                <div className="text-[10px] font-black font-mono text-muted-foreground opacity-40 truncate uppercase tracking-widest bg-muted/20 px-2 py-1 rounded w-fit">
+                    {category.slug}
+                </div>
+            </div>
+            <div className="px-4">
+                <span className="px-3 py-1 rounded-lg bg-amber-500/10 border border-amber-500/20 text-[10px] font-black text-amber-500 tracking-widest">
+                    {String(category.serial_number || 0).padStart(2, '0')}
+                </span>
+            </div>
+            <div className="px-4">
+                <span className="px-2.5 py-1 rounded-full bg-muted/30 border border-border/20 text-[10px] text-muted-foreground font-black uppercase tracking-tighter">
+                    {category.course_count || 0} Entities
+                </span>
+            </div>
+            <div className="px-4 text-right">
+                <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                        <button className="p-2.5 rounded-xl hover:bg-muted font-medium transition-all text-muted-foreground hover:text-foreground">
+                            <MoreHorizontal className="w-4 h-4" />
+                        </button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end" className="w-48 p-2 rounded-2xl border-border/40 bg-card/85 backdrop-blur-2xl shadow-2xl">
+                        <DropdownMenuItem asChild className="rounded-xl focus:bg-primary/10 focus:text-primary cursor-pointer p-3">
+                            <Link href={`/dashboard/categories/${category.id}/edit`} className="flex items-center gap-3">
+                                <Edit2 className="w-4 h-4" />
+                                <span className="font-black text-xs uppercase tracking-widest italic">Modify</span>
+                            </Link>
+                        </DropdownMenuItem>
+                        <DropdownMenuSeparator className="bg-border/20 mx-1 my-1.5" />
+                        <DropdownMenuItem
+                            onClick={onDelete}
+                            className="rounded-xl focus:bg-destructive/10 focus:text-destructive text-destructive cursor-pointer p-3"
+                        >
+                            <div className="flex items-center gap-3">
+                                <Trash2 className="w-4 h-4" />
+                                <span className="font-black text-xs uppercase tracking-widest">Purge</span>
+                            </div>
+                        </DropdownMenuItem>
+                    </DropdownMenuContent>
+                </DropdownMenu>
+            </div>
+        </div>
     );
 }

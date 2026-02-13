@@ -9,7 +9,8 @@ import { useRouter } from "next/navigation";
 import { motion } from "motion/react";
 import { useToast } from "@/components/ui/toast";
 import { cn } from "@/lib/utils";
-import { Category, createCategory, updateCategory } from "@/lib/actions/categories";
+import { Category } from "@/types/lms";
+import { createCategory, updateCategory } from "@/lib/actions/categories";
 
 const iconOptions = [
     { name: 'Globe', icon: Globe },
@@ -83,9 +84,9 @@ export function CategoryForm({ initialData, isEditing = false }: CategoryFormPro
 
     return (
         <form onSubmit={handleSubmit} className="space-y-8 max-w-4xl">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
                 {/* Name Field */}
-                <div className="space-y-3">
+                <div className="space-y-3 md:col-span-2">
                     <label className="text-[10px] font-black uppercase tracking-[0.2em] text-white/40">Category Name</label>
                     <input
                         type="text" required value={formData.name}
@@ -107,7 +108,7 @@ export function CategoryForm({ initialData, isEditing = false }: CategoryFormPro
                 </div>
 
                 {/* Icon Selection */}
-                <div className="md:col-span-2 space-y-4">
+                <div className="md:col-span-3 space-y-4">
                     <label className="text-[10px] font-black uppercase tracking-[0.2em] text-white/40 block">Visual Representation (Icon)</label>
                     <div className="grid grid-cols-4 sm:grid-cols-6 md:grid-cols-11 gap-3 p-6 bg-slate-950/50 rounded-3xl border border-border/50">
                         {iconOptions.map((opt) => (
@@ -128,7 +129,7 @@ export function CategoryForm({ initialData, isEditing = false }: CategoryFormPro
                 </div>
 
                 {/* Color Selection */}
-                <div className="md:col-span-2 space-y-4">
+                <div className="md:col-span-3 space-y-4">
                     <label className="text-[10px] font-black uppercase tracking-[0.2em] text-white/40 block">Thematic Color Accent</label>
                     <div className="flex flex-wrap gap-4 p-6 bg-slate-950/50 rounded-3xl border border-border/50">
                         {colorOptions.map((opt) => (
@@ -170,7 +171,7 @@ export function CategoryForm({ initialData, isEditing = false }: CategoryFormPro
                 </div>
 
                 {/* Description Field */}
-                <div className="md:col-span-2 space-y-3">
+                <div className="md:col-span-3 space-y-3">
                     <label className="text-[10px] font-black uppercase tracking-[0.2em] text-white/40">Narrative (Description)</label>
                     <textarea
                         rows={5} value={formData.description}

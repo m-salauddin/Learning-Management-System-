@@ -1,6 +1,5 @@
 "use client"
 
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Badge } from "@/components/ui/Badge"
 import { Button } from "@/components/ui/Button"
 import { cn } from "@/lib/utils"
@@ -71,121 +70,131 @@ const courses = [
 
 export function TopCoursesTable() {
     return (
-        <Table>
-            <TableHeader>
-                <TableRow className="hover:bg-transparent">
-                    <TableHead>Course</TableHead>
-                    <TableHead className="hidden md:table-cell">Instructor</TableHead>
-                    <TableHead className="text-center">Students</TableHead>
-                    <TableHead className="text-center hidden sm:table-cell">Rating</TableHead>
-                    <TableHead className="text-right">Revenue</TableHead>
-                    <TableHead className="text-center hidden lg:table-cell">Trend</TableHead>
-                    <TableHead className="text-center">Actions</TableHead>
-                </TableRow>
-            </TableHeader>
-            <TableBody>
-                {courses.map((course) => (
-                    <TableRow key={course.id}>
-                        {/* Course Info */}
-                        <TableCell>
-                            <div className="flex items-center gap-3">
-                                <div className="w-10 h-10 rounded-lg bg-muted flex items-center justify-center text-lg shrink-0">
-                                    {course.thumbnail}
+        <div className="w-full bg-card/30 backdrop-blur-xl border border-border/40 rounded-3xl overflow-hidden shadow-xl overflow-x-auto min-w-0">
+            <div className="min-w-[800px] divide-y divide-border/20">
+                {/* Header */}
+                <div className="grid grid-cols-[2fr_1fr_120px_100px_120px_100px_120px] px-6 py-4 bg-muted/10 border-b border-border/10">
+                    <div className="px-4 text-[10px] font-black uppercase tracking-widest text-muted-foreground/70">Course</div>
+                    <div className="px-4 text-[10px] font-black uppercase tracking-widest text-muted-foreground/70 hidden md:block">Instructor</div>
+                    <div className="px-4 text-[10px] font-black uppercase tracking-widest text-muted-foreground/70 text-center">Students</div>
+                    <div className="px-4 text-[10px] font-black uppercase tracking-widest text-muted-foreground/70 text-center hidden sm:block">Rating</div>
+                    <div className="px-4 text-[10px] font-black uppercase tracking-widest text-muted-foreground/70 text-right">Revenue</div>
+                    <div className="px-4 text-[10px] font-black uppercase tracking-widest text-muted-foreground/70 text-center hidden lg:block">Trend</div>
+                    <div className="px-4 text-[10px] font-black uppercase tracking-widest text-muted-foreground/70 text-center">Actions</div>
+                </div>
+
+                {/* Body */}
+                <div className="divide-y divide-border/20">
+                    {courses.map((course) => (
+                        <div
+                            key={course.id}
+                            className="grid grid-cols-[2fr_1fr_120px_100px_120px_100px_120px] px-6 py-4 items-center transition-colors hover:bg-muted/10 group bg-card/5"
+                        >
+                            {/* Course Info */}
+                            <div className="px-4">
+                                <div className="flex items-center gap-3">
+                                    <div className="w-10 h-10 rounded-lg bg-muted flex items-center justify-center text-lg shrink-0">
+                                        {course.thumbnail}
+                                    </div>
+                                    <div className="min-w-0 space-y-1">
+                                        <p className="font-bold text-sm tracking-tight text-foreground truncate max-w-52">
+                                            {course.title}
+                                        </p>
+                                        <Badge
+                                            variant="outline"
+                                            className={cn(
+                                                "text-[9px] px-1.5 py-0 font-black uppercase tracking-widest",
+                                                course.status === "published"
+                                                    ? "bg-emerald-500/10 text-emerald-500 border-emerald-500/30"
+                                                    : "bg-amber-500/10 text-amber-500 border-amber-500/30"
+                                            )}
+                                        >
+                                            {course.status}
+                                        </Badge>
+                                    </div>
                                 </div>
-                                <div className="min-w-0 space-y-1">
-                                    <p className="font-medium text-sm truncate max-w-52">
-                                        {course.title}
-                                    </p>
-                                    <Badge
-                                        variant="outline"
-                                        className={cn(
-                                            "text-[10px] px-1.5 py-0 font-medium",
-                                            course.status === "published"
-                                                ? "bg-success/10 text-success border-success/30"
-                                                : "bg-warning/10 text-warning border-warning/30"
-                                        )}
+                            </div>
+
+                            {/* Instructor */}
+                            <div className="px-4 hidden md:block">
+                                <span className="text-sm font-medium text-muted-foreground">
+                                    {course.instructor}
+                                </span>
+                            </div>
+
+                            {/* Students */}
+                            <div className="px-4 text-center">
+                                <div className="inline-flex items-center gap-1.5">
+                                    <Users className="w-4 h-4 text-muted-foreground/60" />
+                                    <span className="text-sm font-bold tracking-tight">{course.students.toLocaleString()}</span>
+                                </div>
+                            </div>
+
+                            {/* Rating */}
+                            <div className="px-4 text-center hidden sm:block">
+                                <div className="inline-flex items-center gap-1">
+                                    <Star className="w-4 h-4 text-amber-500 fill-amber-500" />
+                                    <span className="text-sm font-black text-foreground">{course.rating}</span>
+                                </div>
+                            </div>
+
+                            {/* Revenue */}
+                            <div className="px-4 text-right">
+                                <span className="text-sm font-black tracking-tighter text-foreground">
+                                    ৳{course.revenue.toLocaleString()}
+                                </span>
+                            </div>
+
+                            {/* Trend */}
+                            <div className="px-4 text-center hidden lg:block">
+                                <Badge
+                                    variant="outline"
+                                    className={cn(
+                                        "gap-1 text-[10px] font-black",
+                                        course.trend === "up"
+                                            ? "bg-emerald-500/10 text-emerald-500 border-emerald-500/30"
+                                            : "bg-destructive/10 text-destructive border-destructive/30"
+                                    )}
+                                >
+                                    {course.trend === "up" ? (
+                                        <TrendingUp className="w-3 h-3" />
+                                    ) : (
+                                        <TrendingDown className="w-3 h-3" />
+                                    )}
+                                    {course.trendValue}%
+                                </Badge>
+                            </div>
+
+                            {/* Actions */}
+                            <div className="px-4 text-center">
+                                <div className="flex items-center justify-center gap-1">
+                                    <Button
+                                        variant="ghost"
+                                        size="icon"
+                                        className="h-8 w-8 rounded-lg hover:bg-primary/10 hover:text-primary transition-all shadow-none"
                                     >
-                                        {course.status}
-                                    </Badge>
+                                        <Eye className="w-4 h-4" />
+                                    </Button>
+                                    <Button
+                                        variant="ghost"
+                                        size="icon"
+                                        className="h-8 w-8 rounded-lg hover:bg-primary/10 hover:text-primary transition-all shadow-none"
+                                    >
+                                        <Pencil className="w-4 h-4" />
+                                    </Button>
+                                    <Button
+                                        variant="ghost"
+                                        size="icon"
+                                        className="h-8 w-8 rounded-lg hover:bg-destructive/10 hover:text-destructive transition-all shadow-none"
+                                    >
+                                        <Trash2 className="w-4 h-4" />
+                                    </Button>
                                 </div>
                             </div>
-                        </TableCell>
-
-                        {/* Instructor */}
-                        <TableCell className="hidden md:table-cell text-muted-foreground">
-                            {course.instructor}
-                        </TableCell>
-
-                        {/* Students */}
-                        <TableCell className="text-center">
-                            <div className="inline-flex items-center gap-1.5">
-                                <Users className="w-4 h-4 text-muted-foreground" />
-                                <span className="font-medium">{course.students.toLocaleString()}</span>
-                            </div>
-                        </TableCell>
-
-                        {/* Rating */}
-                        <TableCell className="text-center hidden sm:table-cell">
-                            <div className="inline-flex items-center gap-1">
-                                <Star className="w-4 h-4 text-warning fill-warning" />
-                                <span className="font-medium">{course.rating}</span>
-                            </div>
-                        </TableCell>
-
-                        {/* Revenue */}
-                        <TableCell className="text-right font-semibold">
-                            ৳{course.revenue.toLocaleString()}
-                        </TableCell>
-
-                        {/* Trend */}
-                        <TableCell className="text-center hidden lg:table-cell">
-                            <Badge
-                                variant="outline"
-                                className={cn(
-                                    "gap-1 text-xs font-medium",
-                                    course.trend === "up"
-                                        ? "bg-success/10 text-success border-success/30"
-                                        : "bg-destructive/10 text-destructive border-destructive/30"
-                                )}
-                            >
-                                {course.trend === "up" ? (
-                                    <TrendingUp className="w-3 h-3" />
-                                ) : (
-                                    <TrendingDown className="w-3 h-3" />
-                                )}
-                                {course.trendValue}%
-                            </Badge>
-                        </TableCell>
-
-                        {/* Actions */}
-                        <TableCell>
-                            <div className="flex items-center justify-center gap-1">
-                                <Button
-                                    variant="ghost"
-                                    size="sm"
-                                    className="h-8 w-8 p-0"
-                                >
-                                    <Eye className="w-4 h-4" />
-                                </Button>
-                                <Button
-                                    variant="ghost"
-                                    size="sm"
-                                    className="h-8 w-8 p-0"
-                                >
-                                    <Pencil className="w-4 h-4" />
-                                </Button>
-                                <Button
-                                    variant="ghost"
-                                    size="sm"
-                                    className="h-8 w-8 p-0 hover:bg-destructive/10 hover:text-destructive"
-                                >
-                                    <Trash2 className="w-4 h-4" />
-                                </Button>
-                            </div>
-                        </TableCell>
-                    </TableRow>
-                ))}
-            </TableBody>
-        </Table>
+                        </div>
+                    ))}
+                </div>
+            </div>
+        </div>
     )
 }

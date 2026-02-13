@@ -68,34 +68,42 @@ export function AdminUsersTable() {
         {
             header: "User",
             accessorKey: "name",
+            width: "2fr",
             cell: (row) => (
                 <div className="flex flex-col">
-                    <span className="font-medium text-foreground">{row.name}</span>
-                    <span className="text-xs text-muted-foreground">{row.email}</span>
+                    <span className="font-bold text-foreground tracking-tight">{row.name}</span>
+                    <span className="text-[10px] uppercase font-black text-muted-foreground tracking-tighter opacity-70">{row.email}</span>
                 </div>
             )
         },
         {
             header: "Role",
             accessorKey: "role",
+            width: "1fr",
             cell: (row) => (
                 <Badge
                     variant="outline"
-                    className={
-                        row.role === 'admin' ? 'bg-destructive/10 text-destructive border-destructive/20' :
-                            row.role === 'teacher' ? 'bg-primary/10 text-primary border-primary/20' :
-                                'bg-secondary/50 text-secondary-foreground border-secondary'
-                    }
+                    className={cn(
+                        "text-[10px] font-black uppercase tracking-widest px-2 py-0",
+                        row.role === 'admin' ? 'bg-rose-500/10 text-rose-500 border-rose-500/20' :
+                            row.role === 'teacher' ? 'bg-indigo-500/10 text-indigo-500 border-indigo-500/20' :
+                                'bg-slate-500/10 text-slate-500 border-slate-500/20'
+                    )}
                 >
                     {row.role}
                 </Badge>
             )
         },
         {
-            header: "Joined",
+            header: "Joined Date",
             accessorKey: "created_at",
+            width: "120px",
             className: "text-right",
-            cell: (row) => new Date(row.created_at).toLocaleDateString()
+            cell: (row) => (
+                <span className="text-xs font-black tracking-tighter text-muted-foreground/80">
+                    {new Date(row.created_at).toLocaleDateString()}
+                </span>
+            )
         }
     ];
 

@@ -67,6 +67,7 @@ export interface Category {
     description: string;
     icon: string;
     color: string;
+    serial_number: number;
     parent_id: string | null;
     course_count: number;
     created_at: string;

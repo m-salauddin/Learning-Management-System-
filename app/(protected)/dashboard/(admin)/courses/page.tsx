@@ -27,20 +27,16 @@ import {
     SelectValue,
 } from "@/components/ui/select";
 import {
-    Table,
-    TableBody,
-    TableCell,
-    TableHead,
-    TableHeader,
-    TableRow,
-} from "@/components/ui/table";
-import {
     DropdownMenu,
     DropdownMenuContent,
     DropdownMenuItem,
     DropdownMenuSeparator,
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import {
+    Dialog, DialogHeader, DialogTitle, DialogDescription,
+    DialogFooter, DialogBody
+} from "@/components/ui/Dialog";
 import { Pagination } from "@/components/ui/Pagination";
 import { useToast } from "@/components/ui/toast";
 import { AnimatedCheckbox } from "@/components/ui/AnimatedCheckbox";
@@ -52,19 +48,14 @@ import { SearchInput } from "@/components/dashboard/shared/SearchInput";
 import { StatusBadge, LevelBadge } from "@/components/dashboard/shared/Badges";
 
 export default function CourseManagementPage() {
-
     const toast = useToast();
-
-
     const router = useRouter();
-
 
     const [courses, setCourses] = useState<CourseWithInstructor[]>([]);
     const [stats, setStats] = useState<any | null>(null);
     const [categories, setCategories] = useState<{ id: string, name: string }[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [selectedCourses, setSelectedCourses] = useState<Set<string>>(new Set());
-
 
     const [searchTerm, setSearchTerm] = useState("");
     const [categoryFilter, setCategoryFilter] = useState("all");
@@ -74,9 +65,7 @@ export default function CourseManagementPage() {
     const [pageSize, setPageSize] = useState(10);
     const [totalCourses, setTotalCourses] = useState(0);
 
-
     const [exportModal, setExportModal] = useState(false);
-
 
     const fetchCoursesData = async () => {
         setIsLoading(true);
@@ -90,16 +79,9 @@ export default function CourseManagementPage() {
                 pageSize
             });
 
-
-
-            if (result.data && result.data.length > 0) {
+            if (result.data) {
                 setCourses(result.data);
                 setTotalCourses(result.total);
-            } else if (result.data) {
-                // Data exists but is empty array
-                setCourses([]);
-                setTotalCourses(0);
-
             } else {
                 toast.error('Failed to fetch courses');
             }
@@ -133,9 +115,8 @@ export default function CourseManagementPage() {
         fetchCategoriesData();
     }, []);
 
-
     const toggleSelectAll = () => {
-        if (selectedCourses.size === courses.length) {
+        if (selectedCourses.size === courses.length && courses.length > 0) {
             setSelectedCourses(new Set());
         } else {
             setSelectedCourses(new Set(courses.map(c => c.id)));
@@ -156,7 +137,6 @@ export default function CourseManagementPage() {
         setSelectedCourses(new Set());
     };
 
-
     const handleDeleteCourse = async (courseId: string) => {
         if (!confirm("Are you sure you want to delete this course?")) return;
 
@@ -166,7 +146,7 @@ export default function CourseManagementPage() {
             fetchCoursesData();
             fetchStatsData();
         } else {
-            toast.error('Failed to delete course', result.error || 'An error occurred');
+            toast.error('Failed to delete course');
         }
     };
 
@@ -212,7 +192,6 @@ export default function CourseManagementPage() {
             toast.error(`Failed to update status`);
         }
     };
-
 
     const handleExportCSV = async () => {
         const result = await exportCoursesToCSV({ search: searchTerm, category: categoryFilter, status: statusFilter as any });
@@ -307,9 +286,6 @@ export default function CourseManagementPage() {
             animate={{ opacity: 1 }}
             className="space-y-6 pb-10 font-sans"
         >
-
-
-
             <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-6">
                 <div>
                     <motion.h1
@@ -352,14 +328,10 @@ export default function CourseManagementPage() {
                 </div>
             </div>
 
-
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                 {!stats ? (
                     [...Array(4)].map((_, i) => (
-                        <div key={`skel-${i}`} className="p-6 rounded-2xl border border-border/40 bg-card/30 backdrop-blur-xl animate-pulse">
-                            <div className="h-4 w-24 bg-muted/40 rounded mb-3" />
-                            <div className="h-8 w-16 bg-muted/40 rounded" />
-                        </div>
+                        <div key={`skel-${i}`} className="p-6 rounded-2xl border border-border/40 bg-card/30 backdrop-blur-xl animate-pulse h-28" />
                     ))
                 ) : (
                     [
@@ -378,14 +350,13 @@ export default function CourseManagementPage() {
                             <div className="flex items-center justify-between">
                                 <div>
                                     <p className="text-sm text-muted-foreground font-medium">{stat.label}</p>
-                                    <p className="text-3xl font-bold mt-2">{stat.value}</p>
+                                    <p className="text-2xl font-black mt-1 tracking-tight">{stat.value}</p>
                                 </div>
                                 <div className={cn(
                                     "p-3 rounded-xl",
-                                    stat.color === 'blue' && "bg-blue-500/10 text-blue-600",
-                                    stat.color === 'emerald' && "bg-emerald-500/10 text-emerald-600",
-                                    stat.color === 'violet' && "bg-violet-500/10 text-violet-600",
-                                    stat.color === 'rose' && "bg-rose-500/10 text-rose-600"
+                                    stat.color === 'blue' && "bg-blue-500/10 text-blue-500",
+                                    stat.color === 'emerald' && "bg-emerald-500/10 text-emerald-500",
+                                    stat.color === 'violet' && "bg-violet-500/10 text-violet-500"
                                 )}>
                                     <stat.icon className="w-6 h-6" />
                                 </div>
@@ -395,240 +366,218 @@ export default function CourseManagementPage() {
                 )}
             </div>
 
+            <div className="rounded-3xl border border-border/40 bg-card/30 backdrop-blur-xl overflow-hidden shadow-xl">
+                <div className="p-6 border-b border-border/20 flex flex-col lg:flex-row gap-4 justify-between">
+                    <div className="flex items-center gap-2 w-full lg:max-w-md">
+                        <SearchInput
+                            value={searchTerm}
+                            onChange={(value) => { setSearchTerm(value); setCurrentPage(1); }}
+                            placeholder="Search courses..."
+                            debounceMs={300}
+                            isSearching={isLoading}
+                            disabled={!stats || stats.total === 0}
+                            className="flex-1"
+                        />
+                        <button
+                            onClick={fetchCoursesData}
+                            className="h-11 w-11 flex items-center justify-center shrink-0 rounded-xl border border-border/30 hover:bg-muted/50 transition-all text-muted-foreground group"
+                            title="Refresh"
+                        >
+                            <RefreshCw className={cn("w-4 h-4", isLoading && "animate-spin")} />
+                        </button>
+                    </div>
 
-            <div className="rounded-2xl border border-border/40 bg-card/30 backdrop-blur-xl overflow-hidden shadow-sm shadow-black/5">
+                    <div className="flex flex-wrap items-center gap-3">
+                        <Select value={categoryFilter} onValueChange={setCategoryFilter}>
+                            <SelectTrigger className="w-full sm:w-fit min-w-[140px] rounded-xl">
+                                <SelectValue placeholder="Category" />
+                            </SelectTrigger>
+                            <SelectContent className="rounded-xl">
+                                <SelectItem value="all">All Categories</SelectItem>
+                                {categories.map(c => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)}
+                            </SelectContent>
+                        </Select>
 
+                        <Select value={statusFilter} onValueChange={setStatusFilter}>
+                            <SelectTrigger className="w-full sm:w-fit min-w-[140px] rounded-xl">
+                                <SelectValue placeholder="Status" />
+                            </SelectTrigger>
+                            <SelectContent className="rounded-xl">
+                                <SelectItem value="all">All Status</SelectItem>
+                                <SelectItem value="published">Published</SelectItem>
+                                <SelectItem value="draft">Draft</SelectItem>
+                                <SelectItem value="archived">Archived</SelectItem>
+                            </SelectContent>
+                        </Select>
 
-                <div className="p-4 md:p-6 border-b border-border/40 bg-card/30 backdrop-blur-xl">
-                    <div className="flex flex-col lg:flex-row gap-4 justify-between">
+                        <Select value={levelFilter} onValueChange={setLevelFilter}>
+                            <SelectTrigger className="w-full sm:w-fit min-w-[140px] rounded-xl">
+                                <SelectValue placeholder="Level" />
+                            </SelectTrigger>
+                            <SelectContent className="rounded-xl">
+                                <SelectItem value="all">All Levels</SelectItem>
+                                <SelectItem value="beginner">Beginner</SelectItem>
+                                <SelectItem value="intermediate">Intermediate</SelectItem>
+                                <SelectItem value="advanced">Advanced</SelectItem>
+                            </SelectContent>
+                        </Select>
 
-                        <div className="flex items-center gap-2 w-full lg:max-w-md">
-                            <SearchInput
-                                value={searchTerm}
-                                onChange={(value) => { setSearchTerm(value); setCurrentPage(1); }}
-                                placeholder="Search courses..."
-                                debounceMs={300}
-                                isSearching={isLoading}
-                                disabled={!stats || stats.total === 0}
-                                className="flex-1"
-                            />
-
-
+                        {(searchTerm || categoryFilter !== 'all' || statusFilter !== 'all' || levelFilter !== 'all') && (
                             <button
-                                onClick={fetchCoursesData}
-                                className="h-11 w-11 flex items-center justify-center shrink-0 rounded-xl border border-input-dark-border bg-input-dark hover:bg-input-dark-hover hover:text-foreground focus:shadow-[0_0_0_2px_var(--input-dark-glow)] focus:outline-none transition-all duration-200 text-input-dark-text"
-                                title="Refresh list"
+                                onClick={() => {
+                                    setSearchTerm('');
+                                    setCategoryFilter('all');
+                                    setStatusFilter('all');
+                                    setLevelFilter('all');
+                                    setCurrentPage(1);
+                                }}
+                                className="flex items-center gap-2 px-4 py-2 rounded-xl bg-destructive/10 text-destructive text-xs font-bold hover:bg-destructive/20 transition-all"
                             >
-                                <RefreshCw className={cn("w-4 h-4", isLoading && "animate-spin")} />
+                                <X className="w-3.5 h-3.5" />
+                                Clear
                             </button>
-                        </div>
-
-                        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-4 mt-4 lg:mt-0">
-
-                            <div className="flex flex-wrap items-center gap-3">
-                                <Select value={categoryFilter} onValueChange={setCategoryFilter} disabled={!stats || stats.total === 0}>
-                                    <SelectTrigger className="w-full sm:w-fit min-w-[140px]">
-                                        <div className="flex items-center gap-2">
-                                            <Layers className="w-4 h-4" />
-                                            <SelectValue placeholder="Category" />
-                                        </div>
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        <SelectItem value="all">Category</SelectItem>
-                                        {categories.map(c => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)}
-                                    </SelectContent>
-                                </Select>
-
-                                <Select value={statusFilter} onValueChange={setStatusFilter} disabled={!stats || stats.total === 0}>
-                                    <SelectTrigger className="w-full sm:w-fit min-w-[140px]">
-                                        <div className="flex items-center gap-2">
-                                            <BookOpen className="w-4 h-4" />
-                                            <SelectValue placeholder="Status" />
-                                        </div>
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        <SelectItem value="all">Status</SelectItem>
-                                        <SelectItem value="published">Published</SelectItem>
-                                        <SelectItem value="draft">Draft</SelectItem>
-                                        <SelectItem value="archived">Archived</SelectItem>
-                                    </SelectContent>
-                                </Select>
-
-                                <Select value={levelFilter} onValueChange={setLevelFilter} disabled={!stats || stats.total === 0}>
-                                    <SelectTrigger className="w-full sm:w-fit min-w-[140px]">
-                                        <div className="flex items-center gap-2">
-                                            <BarChart className="w-4 h-4" />
-                                            <SelectValue placeholder="Level" />
-                                        </div>
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        <SelectItem value="all">Level</SelectItem>
-                                        <SelectItem value="beginner">Beginner</SelectItem>
-                                        <SelectItem value="intermediate">Intermediate</SelectItem>
-                                        <SelectItem value="advanced">Advanced</SelectItem>
-                                    </SelectContent>
-                                </Select>
-
-                                {(searchTerm || categoryFilter !== 'all' || statusFilter !== 'all' || levelFilter !== 'all') && (
-                                    <button
-                                        onClick={() => {
-                                            setSearchTerm('');
-                                            setCategoryFilter('all');
-                                            setStatusFilter('all');
-                                            setLevelFilter('all');
-                                            setCurrentPage(1);
-                                        }}
-                                        className="flex items-center gap-1.5 px-3 py-2 rounded-xl border border-red-500/30 bg-red-500/10 hover:bg-red-500/20 text-red-500 text-sm font-medium transition-colors"
-                                    >
-                                        <X className="w-3.5 h-3.5" />
-                                        Clear Filters
-                                    </button>
-                                )}
-                            </div>
-                        </div>
+                        )}
                     </div>
                 </div>
 
-
-                {/* Dynamic Content Rendering */}
                 {isLoading ? (
-                    <div className="py-20 text-center">
-                        <RefreshCw className="w-8 h-8 animate-spin text-primary mx-auto mb-4" />
-                        <p className="text-muted-foreground animate-pulse">Fetching course catalog...</p>
+                    <div className="py-24 text-center flex flex-col items-center justify-center space-y-4">
+                        <RefreshCw className="w-10 h-10 animate-spin text-primary/40" />
+                        <p className="text-sm font-black text-muted-foreground uppercase tracking-wider">Synchronizing Catalog...</p>
                     </div>
                 ) : courses.length === 0 ? (
-                    <div className="py-20 text-center">
-                        <div className="bg-muted/50 w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-4 border border-border/50">
-                            <BookOpen className="w-8 h-8 text-muted-foreground/50" />
+                    <div className="py-24 text-center flex flex-col items-center justify-center space-y-4">
+                        <div className="p-6 rounded-full bg-muted/20 ring-8 ring-muted/5">
+                            <BookOpen className="w-10 h-10 text-muted-foreground/40" />
                         </div>
-                        <h3 className="text-lg font-bold">No courses found</h3>
-                        <p className="text-sm text-muted-foreground max-w-xs mx-auto mt-1">
-                            We couldn&apos;t find any results matching your search or filter criteria.
-                        </p>
+                        <div>
+                            <h3 className="text-xl font-bold tracking-tight">Empty Course Database</h3>
+                            <p className="text-sm text-muted-foreground mt-1 max-w-xs mx-auto font-medium">No results match your current filter topology.</p>
+                        </div>
                     </div>
                 ) : (
-                    <div className="overflow-hidden overflow-x-auto [&::-webkit-scrollbar]:h-1.5 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-muted-foreground/20 [&::-webkit-scrollbar-thumb]:rounded-full hover:[&::-webkit-scrollbar-thumb]:bg-primary/50">
-                        <Table>
-                            <TableHeader>
-                                <TableRow className="hover:bg-transparent border-b border-border/40">
-                                    <TableHead className="w-[50px] px-6 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                                        <AnimatedCheckbox id="select-all" checked={selectedCourses.size === courses.length && courses.length > 0} onChange={toggleSelectAll} />
-                                    </TableHead>
-                                    <TableHead className="px-6 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Course</TableHead>
-                                    <TableHead className="px-6 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Price</TableHead>
-                                    <TableHead className="px-6 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Status</TableHead>
-                                    <TableHead className="px-6 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Level</TableHead>
-                                    <TableHead className="px-6 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Students</TableHead>
-                                    <TableHead className="px-6 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider text-right">Actions</TableHead>
-                                </TableRow>
-                            </TableHeader>
-                            <TableBody className="divide-y divide-border/20">
-                                {courses.map((course) => (
-                                    <TableRow key={course.id} className="border-b border-border/30 transition-all duration-200 group">
-                                        <TableCell className="px-6 py-4">
-                                            <AnimatedCheckbox
-                                                id={`select-${course.id}`}
-                                                checked={selectedCourses.has(course.id)}
-                                                onChange={() => toggleSelectCourse(course.id)}
-                                            />
-                                        </TableCell>
-                                        <TableCell className="px-6 py-4">
-                                            <div className="flex items-center gap-3">
-                                                <div className="w-14 h-10 rounded-lg bg-muted overflow-hidden shrink-0 border border-border/20 shadow-sm group-hover:scale-105 transition-transform">
-                                                    {course.thumbnail_url ? (
-                                                        <Image src={course.thumbnail_url} alt="" width={56} height={40} className="w-full h-full object-cover" />
-                                                    ) : (
-                                                        <div className="w-full h-full flex items-center justify-center bg-muted text-xs text-muted-foreground">No Img</div>
-                                                    )}
-                                                </div>
-                                                <div>
-                                                    <Link href={`/courses/${course.slug}`} className="font-semibold text-foreground group-hover:text-primary transition-colors line-clamp-1 max-w-[200px]">
-                                                        {course.title}
-                                                    </Link>
-                                                    <div
-                                                        className="text-[10px] font-black uppercase tracking-wider px-1.5 py-0.5 rounded border mt-1 w-fit transition-all"
-                                                        style={{
-                                                            backgroundColor: `${course.category?.color || '#6366f1'}15`,
-                                                            color: course.category?.color || '#6366f1',
-                                                            borderColor: `${course.category?.color || '#6366f1'}30`
-                                                        }}
-                                                    >
-                                                        {course.category?.name || 'Uncategorized'}
-                                                    </div>
-                                                </div>
+                    <div className="min-w-[1000px]">
+                        {/* Grid Head */}
+                        <div className="grid grid-cols-[48px_2.5fr_1fr_120px_100px_100px_80px] px-6 py-4 bg-muted/5 border-b border-border/20 items-center">
+                            <div className="flex justify-center">
+                                <AnimatedCheckbox id="select-all" checked={selectedCourses.size === courses.length && courses.length > 0} onChange={toggleSelectAll} />
+                            </div>
+                            <div className="px-4 text-[10px] font-black uppercase tracking-widest text-muted-foreground/60">Course / Identity</div>
+                            <div className="px-4 text-[10px] font-black uppercase tracking-widest text-muted-foreground/60">Monetization</div>
+                            <div className="px-4 text-[10px] font-black uppercase tracking-widest text-muted-foreground/60">Lifecycle</div>
+                            <div className="px-4 text-[10px] font-black uppercase tracking-widest text-muted-foreground/60 text-center">Proficiency</div>
+                            <div className="px-4 text-[10px] font-black uppercase tracking-widest text-muted-foreground/60 text-center">Impact</div>
+                            <div className="px-4 text-[10px] font-black uppercase tracking-widest text-muted-foreground/60 text-right">Action</div>
+                        </div>
+
+                        {/* Grid Body */}
+                        <div className="divide-y divide-border/10">
+                            {courses.map((course) => (
+                                <div key={course.id} className="grid grid-cols-[48px_2.5fr_1fr_120px_100px_100px_80px] px-6 py-4 items-center hover:bg-muted/10 group transition-all duration-300">
+                                    <div className="flex justify-center">
+                                        <AnimatedCheckbox
+                                            id={`select-${course.id}`}
+                                            checked={selectedCourses.has(course.id)}
+                                            onChange={() => toggleSelectCourse(course.id)}
+                                        />
+                                    </div>
+                                    <div className="px-4 flex items-center gap-4 min-w-0">
+                                        <div className="w-16 h-11 rounded-xl bg-muted overflow-hidden shrink-0 border border-border/20 shadow-sm relative group-hover:scale-105 transition-transform duration-500">
+                                            {course.thumbnail_url ? (
+                                                <Image src={course.thumbnail_url} alt="" fill className="object-cover" />
+                                            ) : (
+                                                <div className="w-full h-full flex items-center justify-center bg-muted text-[10px] font-black text-muted-foreground uppercase tracking-widest">N/A</div>
+                                            )}
+                                        </div>
+                                        <div className="min-w-0">
+                                            <Link href={`/courses/${course.slug}`} className="font-bold text-foreground group-hover:text-primary transition-colors line-clamp-1 text-sm tracking-tight capitalize">
+                                                {course.title}
+                                            </Link>
+                                            <div className="flex items-center gap-2 mt-1">
+                                                <span
+                                                    className="text-[9px] font-black uppercase tracking-tighter px-1.5 py-0.5 rounded border"
+                                                    style={{
+                                                        backgroundColor: `${course.category?.color || '#6366f1'}15`,
+                                                        color: course.category?.color || '#6366f1',
+                                                        borderColor: `${course.category?.color || '#6366f1'}30`
+                                                    }}
+                                                >
+                                                    {course.category?.name || 'GENERIC'}
+                                                </span>
+                                                <span className="text-[9px] text-muted-foreground/40 font-mono uppercase tracking-widest">ID: {course.id.slice(0, 8)}</span>
                                             </div>
-                                        </TableCell>
-                                        <TableCell className="px-6 py-4 font-mono text-sm">
-                                            {course.price > 0 ? `৳${course.price.toLocaleString()}` : <span className="text-emerald-500 font-bold">Free</span>}
-                                        </TableCell>
-                                        <TableCell className="px-6 py-4">
-                                            <StatusBadge status={course.status} />
-                                        </TableCell>
-                                        <TableCell className="px-6 py-4">
-                                            <LevelBadge level={course.level || 'beginner'} />
-                                        </TableCell>
-                                        <TableCell className="px-6 py-4 text-muted-foreground text-sm">
-                                            {course.total_students || 0}
-                                        </TableCell>
-                                        <TableCell className="px-6 py-4 text-right">
-                                            <DropdownMenu>
-                                                <DropdownMenuTrigger asChild>
-                                                    <button className="p-2 rounded-lg hover:bg-muted/50 transition-colors outline-none"><MoreHorizontal className="w-4 h-4" /></button>
-                                                </DropdownMenuTrigger>
-                                                <DropdownMenuContent align="end" className="w-44 p-1.5 rounded-xl border border-border/50 dark:border-white/10 bg-white dark:bg-[#040a14] shadow-xl dark:shadow-2xl">
-                                                    <DropdownMenuItem className="rounded-lg cursor-pointer text-sm gap-2.5 text-slate-700 dark:text-slate-200 focus:bg-slate-100 dark:focus:bg-white/10 focus:text-slate-900 dark:focus:text-white" onClick={() => router.push(`/courses/${course.slug}`)}>
-                                                        <Eye className="w-4 h-4" />
-                                                        View Course
-                                                    </DropdownMenuItem>
-                                                    <DropdownMenuItem className="rounded-lg cursor-pointer text-sm gap-2.5 text-slate-700 dark:text-slate-200 focus:bg-slate-100 dark:focus:bg-white/10 focus:text-slate-900 dark:focus:text-white" onClick={() => router.push(`/dashboard/courses/${course.id}/edit`)}>
-                                                        <Edit className="w-4 h-4" />
-                                                        Edit Course
-                                                    </DropdownMenuItem>
-
-                                                    <DropdownMenuSeparator className="my-1 bg-slate-200 dark:bg-white/10" />
-
-                                                    <DropdownMenuItem className="rounded-lg cursor-pointer text-sm gap-2.5 text-slate-700 dark:text-slate-200 focus:bg-slate-100 dark:focus:bg-white/10 focus:text-slate-900 dark:focus:text-white" onClick={() => togglePublishStatus(course)}>
-                                                        {course.status === 'published' ? <Archive className="w-4 h-4" /> : <CheckCircle2 className="w-4 h-4" />}
-                                                        {course.status === 'published' ? 'Unpublish' : 'Publish'}
-                                                    </DropdownMenuItem>
-
-                                                    <DropdownMenuSeparator className="my-1 bg-slate-200 dark:bg-white/10" />
-
-                                                    <DropdownMenuItem onClick={() => handleDeleteCourse(course.id)} className="rounded-lg cursor-pointer text-sm gap-2.5 text-red-500 dark:text-red-400 focus:bg-red-50 dark:focus:bg-red-500/15 focus:text-red-600 dark:focus:text-red-300">
-                                                        <Trash2 className="w-4 h-4 text-red-500 dark:text-red-400" />
-                                                        Delete Course
-                                                    </DropdownMenuItem>
-                                                </DropdownMenuContent>
-                                            </DropdownMenu>
-                                        </TableCell>
-                                    </TableRow>
-                                ))}
-                            </TableBody>
-                        </Table>
+                                        </div>
+                                    </div>
+                                    <div className="px-4">
+                                        {course.price > 0 ? (
+                                            <span className="text-sm font-black tracking-tighter">৳{course.price.toLocaleString()}</span>
+                                        ) : (
+                                            <span className="text-xs font-black uppercase tracking-widest text-emerald-500 bg-emerald-500/10 px-2 py-0.5 rounded-lg border border-emerald-500/20">Scholarship</span>
+                                        )}
+                                    </div>
+                                    <div className="px-4">
+                                        <StatusBadge status={course.status} />
+                                    </div>
+                                    <div className="px-4 text-center">
+                                        <LevelBadge level={course.level || 'beginner'} />
+                                    </div>
+                                    <div className="px-4 text-center">
+                                        <div className="inline-flex flex-col items-center">
+                                            <span className="text-sm font-black tracking-tight">{course.total_students || 0}</span>
+                                            <span className="text-[9px] text-muted-foreground font-black uppercase tracking-widest opacity-40">Engaged</span>
+                                        </div>
+                                    </div>
+                                    <div className="px-4 text-right">
+                                        <DropdownMenu>
+                                            <DropdownMenuTrigger asChild>
+                                                <button className="p-2 rounded-xl hover:bg-muted text-muted-foreground hover:text-foreground transition-all">
+                                                    <MoreHorizontal className="w-4 h-4" />
+                                                </button>
+                                            </DropdownMenuTrigger>
+                                            <DropdownMenuContent align="end" className="w-48 p-2 rounded-2xl bg-card/85 backdrop-blur-xl border-border/40 shadow-2xl">
+                                                <DropdownMenuItem className="rounded-xl gap-3 cursor-pointer p-2.5 focus:bg-primary/10 focus:text-primary" onClick={() => router.push(`/courses/${course.slug}`)}>
+                                                    <Eye className="w-4 h-4" />
+                                                    <span className="font-bold text-sm italic">Deep View</span>
+                                                </DropdownMenuItem>
+                                                <DropdownMenuItem className="rounded-xl gap-3 cursor-pointer p-2.5 focus:bg-primary/10 focus:text-primary" onClick={() => router.push(`/dashboard/courses/${course.id}/edit`)}>
+                                                    <Edit className="w-4 h-4" />
+                                                    <span className="font-bold text-sm italic">Architect</span>
+                                                </DropdownMenuItem>
+                                                <DropdownMenuSeparator className="bg-border/20 my-1.5" />
+                                                <DropdownMenuItem className="rounded-xl gap-3 cursor-pointer p-2.5 focus:bg-primary/10 focus:text-primary" onClick={() => togglePublishStatus(course)}>
+                                                    {course.status === 'published' ? <Archive className="w-4 h-4" /> : <CheckCircle2 className="w-4 h-4" />}
+                                                    <span className="font-bold text-sm">{course.status === 'published' ? 'Archive catalog' : 'Deploy catalog'}</span>
+                                                </DropdownMenuItem>
+                                                <DropdownMenuSeparator className="bg-border/20 my-1.5" />
+                                                <DropdownMenuItem onClick={() => handleDeleteCourse(course.id)} className="rounded-xl gap-3 cursor-pointer p-2.5 focus:bg-destructive/10 focus:text-destructive text-destructive">
+                                                    <Trash2 className="w-4 h-4" />
+                                                    <span className="font-bold text-sm">Purge Data</span>
+                                                </DropdownMenuItem>
+                                            </DropdownMenuContent>
+                                        </DropdownMenu>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
                     </div>
                 )}
 
-
-
-                {
-                    !isLoading && totalCourses > 0 && (
-                        <div className="p-6 border-t border-border/40 bg-muted/10">
-                            <Pagination
-                                currentPage={currentPage}
-                                totalItems={totalCourses}
-                                pageSize={pageSize}
-                                totalPages={Math.ceil(totalCourses / pageSize)}
-                                onPageChange={setCurrentPage}
-                                onPageSizeChange={(size) => {
-                                    setPageSize(size);
-                                    setCurrentPage(1);
-                                }}
-                            />
-                        </div>
-                    )
-                }
-            </div >
-
+                {!isLoading && totalCourses > pageSize && (
+                    <div className="p-6 border-t border-border/20 bg-muted/5">
+                        <Pagination
+                            currentPage={currentPage}
+                            totalItems={totalCourses}
+                            pageSize={pageSize}
+                            totalPages={Math.ceil(totalCourses / pageSize)}
+                            onPageChange={setCurrentPage}
+                            onPageSizeChange={(size) => {
+                                setPageSize(size);
+                                setCurrentPage(1);
+                            }}
+                        />
+                    </div>
+                )}
+            </div>
 
             <AnimatePresence>
                 {selectedCourses.size > 0 && (
@@ -636,55 +585,67 @@ export default function CourseManagementPage() {
                         initial={{ opacity: 0, y: 100 }}
                         animate={{ opacity: 1, y: 0 }}
                         exit={{ opacity: 0, y: 100 }}
-                        className="fixed bottom-8 left-1/2 -translate-x-1/2 z-50 flex items-center gap-1 p-1.5 pr-4 pl-4 rounded-full border border-border bg-card/95 text-foreground shadow-xl backdrop-blur-md"
+                        className="fixed bottom-8 left-1/2 -translate-x-1/2 z-50 flex items-center gap-4 p-2.5 rounded-2xl border border-primary/20 bg-card/90 text-foreground shadow-2xl backdrop-blur-2xl ring-4 ring-primary/5"
                     >
-                        <span className="text-sm font-semibold mr-2 whitespace-nowrap pl-1">{selectedCourses.size} selected</span>
-                        <div className="h-4 w-px bg-border mx-1" />
-                        <div className="flex items-center gap-1">
-                            <button onClick={() => handleBulkAction('publish')} className="p-2 rounded-full hover:bg-muted transition-colors text-emerald-500" title="Publish Selected">
-                                <CheckCircle2 className="w-4 h-4" />
+                        <div className="flex items-center gap-3 pl-2">
+                            <div className="w-8 h-8 rounded-lg bg-primary/10 text-primary flex items-center justify-center font-black text-xs">{selectedCourses.size}</div>
+                            <span className="text-xs font-black uppercase tracking-widest">Active Selections</span>
+                        </div>
+                        <div className="h-4 w-px bg-border/40" />
+                        <div className="flex items-center gap-2">
+                            <button onClick={() => handleBulkAction('publish')} className="p-2.5 rounded-xl hover:bg-emerald-500/10 transition-all text-emerald-500 group" title="Batch Publish">
+                                <CheckCircle2 className="w-5 h-5" />
                             </button>
-                            <button onClick={() => handleBulkAction('unpublish')} className="p-2 rounded-full hover:bg-muted transition-colors text-amber-500" title="Unpublish Selected">
-                                <Archive className="w-4 h-4" />
+                            <button onClick={() => handleBulkAction('unpublish')} className="p-2.5 rounded-xl hover:bg-amber-500/10 transition-all text-amber-500 group" title="Batch Archive">
+                                <Archive className="w-5 h-5" />
                             </button>
-                            <button onClick={() => handleBulkAction('delete')} className="p-2 rounded-full hover:bg-muted transition-colors text-red-500" title="Delete Selected">
-                                <Trash2 className="w-4 h-4" />
+                            <button onClick={() => handleBulkAction('delete')} className="p-2.5 rounded-xl hover:bg-rose-500/10 transition-all text-rose-500 group" title="Batch Purge">
+                                <Trash2 className="w-5 h-5" />
                             </button>
                         </div>
-                        <div className="h-4 w-px bg-border mx-1" />
-                        <button onClick={clearSelection} className="p-2 rounded-full hover:bg-muted transition-colors ml-1 text-muted-foreground hover:text-foreground" title="Clear Selection">
-                            <X className="w-4 h-4" />
+                        <div className="h-4 w-px bg-border/40" />
+                        <button onClick={clearSelection} className="p-2.5 rounded-xl hover:bg-muted transition-all text-muted-foreground hover:text-foreground" title="Deselect All">
+                            <X className="w-5 h-5" />
                         </button>
                     </motion.div>
                 )}
             </AnimatePresence>
 
-
-            {
-                exportModal && (
-                    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
-                        <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="w-full max-w-md bg-card border border-border rounded-2xl p-6 shadow-2xl">
-                            <h2 className="text-xl font-bold mb-2">Export Courses</h2>
-                            <p className="text-muted-foreground text-sm mb-6">Choose a format to download your course data.</p>
-                            <div className="grid grid-cols-1 gap-3">
-                                <button onClick={handleExportCSV} className="flex items-center gap-3 p-4 rounded-xl border border-border/50 bg-muted/20 hover:bg-primary/5 hover:border-primary/30 transition-all group text-left">
-                                    <div className="p-2 rounded-lg bg-green-500/10 text-green-500"><Download className="w-5 h-5" /></div>
-                                    <div><div className="font-semibold text-foreground">Export as CSV</div><div className="text-xs text-muted-foreground">Best for spreadsheet software</div></div>
-                                </button>
-                                <button onClick={handleExportJSON} className="flex items-center gap-3 p-4 rounded-xl border border-border/50 bg-muted/20 hover:bg-primary/5 hover:border-primary/30 transition-all group text-left">
-                                    <div className="p-2 rounded-lg bg-yellow-500/10 text-yellow-500"><Download className="w-5 h-5" /></div>
-                                    <div><div className="font-semibold text-foreground">Export as JSON</div><div className="text-xs text-muted-foreground">For developer use</div></div>
-                                </button>
-                                <button onClick={handleExportPDF} className="flex items-center gap-3 p-4 rounded-xl border border-border/50 bg-muted/20 hover:bg-primary/5 hover:border-primary/30 transition-all group text-left">
-                                    <div className="p-2 rounded-lg bg-red-500/10 text-red-500"><Download className="w-5 h-5" /></div>
-                                    <div><div className="font-semibold text-foreground">Export as PDF</div><div className="text-xs text-muted-foreground">Formatted report</div></div>
-                                </button>
+            <Dialog open={exportModal} onClose={() => setExportModal(false)} size="sm">
+                <DialogHeader>
+                    <DialogTitle>Export Academic Catalog</DialogTitle>
+                    <DialogDescription>Choose a high-fidelity format to migrate or report your course taxonomy.</DialogDescription>
+                </DialogHeader>
+                <DialogBody className="space-y-3">
+                    {[
+                        { name: 'CSV', desc: 'Spreadsheet Intelligence', color: 'emerald', action: handleExportCSV },
+                        { name: 'JSON', desc: 'Developer Grade Schema', color: 'amber', action: handleExportJSON },
+                        { name: 'PDF', desc: 'Print Ready Performance', color: 'rose', action: handleExportPDF }
+                    ].map(type => (
+                        <button
+                            key={type.name}
+                            onClick={type.action}
+                            className="w-full flex items-center gap-4 p-4 rounded-2xl border border-border/50 bg-muted/20 hover:bg-primary/5 hover:border-primary/30 transition-all group text-left outline-none"
+                        >
+                            <div className={cn(
+                                "p-3 rounded-xl transition-all group-hover:scale-110",
+                                type.color === 'emerald' && "bg-emerald-500/10 text-emerald-500",
+                                type.color === 'amber' && "bg-amber-500/10 text-amber-500",
+                                type.color === 'rose' && "bg-rose-500/10 text-rose-500"
+                            )}>
+                                <Download className="w-5 h-5" />
                             </div>
-                            <button onClick={() => setExportModal(false)} className="mt-6 w-full py-2.5 rounded-xl border border-border/50 hover:bg-muted font-medium transition-colors">Cancel</button>
-                        </motion.div>
-                    </div>
-                )
-            }
-        </motion.div >
+                            <div>
+                                <div className="font-bold text-foreground text-sm tracking-tight italic">Export as {type.name}</div>
+                                <div className="text-[10px] text-muted-foreground font-black uppercase tracking-widest opacity-60">{type.desc}</div>
+                            </div>
+                        </button>
+                    ))}
+                </DialogBody>
+                <DialogFooter>
+                    <button onClick={() => setExportModal(false)} className="w-full py-3 rounded-xl border border-border/50 hover:bg-muted font-black text-xs uppercase tracking-widest transition-all">Dismiss Interface</button>
+                </DialogFooter>
+            </Dialog>
+        </motion.div>
     );
 }

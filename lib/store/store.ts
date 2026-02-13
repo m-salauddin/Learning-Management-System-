@@ -4,6 +4,7 @@ import coursesReducer from './features/courses/coursesSlice';
 import enrollmentsReducer from './features/enrollments/enrollmentsSlice';
 import adminReducer from './features/admin/adminSlice';
 import couponsReducer from './features/admin/couponsSlice';
+import categoriesReducer from './features/admin/categoriesSlice';
 import coursePageReducer from './features/coursePage/coursePageSlice';
 import lessonPlayerReducer from './features/lessonPlayer/lessonPlayerSlice';
 
@@ -13,7 +14,8 @@ export const store = configureStore({
         courses: coursesReducer,
         enrollments: enrollmentsReducer,
         admin: adminReducer,
-        coupons: couponsReducer, // Added coupons slice
+        coupons: couponsReducer,
+        categories: categoriesReducer, // Added categories slice
         coursePage: coursePageReducer,
         lessonPlayer: lessonPlayerReducer,
     },

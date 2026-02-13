@@ -2,9 +2,11 @@
 
 import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
-import { Plus, Trash2, Calendar, Tag, Percent, DollarSign, Search, Filter } from "lucide-react";
+import { Plus, Trash2, Calendar, Tag, Percent, DollarSign, Search, Filter, RefreshCw, X } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import { useToast } from "@/components/ui/toast";
+import { cn } from "@/lib/utils";
+import { Dialog, DialogHeader, DialogTitle, DialogDescription, DialogBody, DialogFooter } from "@/components/ui/Dialog";
 
 interface Course {
     id: string;
@@ -49,19 +51,13 @@ export default function DiscountsPage() {
     const fetchData = async () => {
         try {
             setIsLoading(true);
-
-            // Fetch Discounts
             const { data: discountsData, error: discountsError } = await (supabase as any)
                 .from('course_discounts')
-                .select(`
-          *,
-          course:courses(id, title, price)
-        `)
+                .select(`*, course:courses(id, title, price)`)
                 .order('created_at', { ascending: false });
 
             if (discountsError) throw discountsError;
 
-            // Fetch Courses (for dropdown)
             const { data: coursesData, error: coursesError } = await (supabase as any)
                 .from('courses')
                 .select('id, title, price')
@@ -71,9 +67,7 @@ export default function DiscountsPage() {
 
             setDiscounts(discountsData || []);
             setCourses(coursesData || []);
-
         } catch (error) {
-            console.error('Error fetching data:', error);
             toastError("Failed to load data");
         } finally {
             setIsLoading(false);
@@ -97,23 +91,13 @@ export default function DiscountsPage() {
                 is_active: true
             };
 
-            const { error } = await (supabase as any)
-                .from('course_discounts')
-                .insert(payload);
-
+            const { error } = await (supabase as any).from('course_discounts').insert(payload);
             if (error) throw error;
 
-            success("Discount created successfully");
+            success("Discount generated successfully");
             setIsCreating(false);
-            setFormData({
-                course_id: "",
-                type: "percentage",
-                value: "",
-                starts_at: "",
-                ends_at: "",
-            });
+            setFormData({ course_id: "", type: "percentage", value: "", starts_at: "", ends_at: "" });
             fetchData();
-
         } catch (error: any) {
             toastError(error.message || "Failed to create discount");
         }
@@ -121,16 +105,9 @@ export default function DiscountsPage() {
 
     const toggleActive = async (id: string, currentState: boolean) => {
         try {
-            const { error } = await (supabase as any)
-                .from('course_discounts')
-                .update({ is_active: !currentState })
-                .eq('id', id);
-
+            const { error } = await (supabase as any).from('course_discounts').update({ is_active: !currentState }).eq('id', id);
             if (error) throw error;
-
-            setDiscounts(discounts.map(d =>
-                d.id === id ? { ...d, is_active: !currentState } : d
-            ));
+            setDiscounts(discounts.map(d => d.id === id ? { ...d, is_active: !currentState } : d));
             success("Status updated");
         } catch (error) {
             toastError("Failed to update status");
@@ -139,229 +116,194 @@ export default function DiscountsPage() {
 
     const handleDelete = async (id: string) => {
         if (!confirm("Are you sure you want to delete this discount?")) return;
-
         try {
-            const { error } = await (supabase as any)
-                .from('course_discounts')
-                .delete()
-                .eq('id', id);
-
+            const { error } = await (supabase as any).from('course_discounts').delete().eq('id', id);
             if (error) throw error;
-
             setDiscounts(discounts.filter(d => d.id !== id));
-            success("Discount deleted");
+            success("Discount purged from matrix");
         } catch (error) {
             toastError("Failed to delete discount");
         }
     };
 
     return (
-        <div className="space-y-6 max-w-7xl mx-auto">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-6 pb-10 font-sans text-foreground">
+            {/* Header */}
+            <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-6">
                 <div>
-                    <h1 className="text-2xl font-bold tracking-tight">Discounts</h1>
-                    <p className="text-muted-foreground">Manage automatic course discounts.</p>
+                    <h1 className="text-3xl font-black tracking-tight uppercase italic">Monetization Adjustments</h1>
+                    <p className="text-muted-foreground mt-1 text-sm font-bold uppercase tracking-widest opacity-60">Manage dynamic price overrides and seasonal campaigns</p>
                 </div>
                 <button
-                    onClick={() => setIsCreating(!isCreating)}
-                    className="inline-flex items-center justify-center gap-2 px-4 py-2 rounded-xl bg-primary text-primary-foreground font-medium hover:bg-primary/90 transition-colors cursor-pointer"
+                    onClick={() => setIsCreating(true)}
+                    className="bg-primary text-primary-foreground px-6 py-2.5 rounded-xl text-xs font-black uppercase tracking-widest hover:bg-primary/90 transition-all shadow-xl shadow-primary/20 inline-flex items-center gap-2"
                 >
-                    {isCreating ? <Trash2 className="w-4 h-4" /> : <Plus className="w-4 h-4" />}
-                    {isCreating ? "Cancel" : "Add Discount"}
+                    <Plus className="w-4 h-4" /> New Adjustment
                 </button>
             </div>
 
-            <AnimatePresence>
-                {isCreating && (
-                    <motion.div
-                        initial={{ opacity: 0, height: 0 }}
-                        animate={{ opacity: 1, height: "auto" }}
-                        exit={{ opacity: 0, height: 0 }}
-                        className="overflow-hidden"
-                    >
-                        <div className="bg-card border border-border rounded-2xl p-6 shadow-xs">
-                            <h2 className="text-lg font-semibold mb-4">Create New Discount</h2>
-                            <form onSubmit={handleSubmit} className="grid gap-6">
-                                <div className="grid md:grid-cols-2 gap-4">
-                                    <div className="space-y-2">
-                                        <label className="text-sm font-medium">Target Course</label>
-                                        <select
-                                            className="w-full h-10 px-3 rounded-lg border border-input bg-background text-sm"
-                                            value={formData.course_id}
-                                            onChange={(e) => setFormData({ ...formData, course_id: e.target.value })}
-                                            required
-                                        >
-                                            <option value="">Select a course...</option>
-                                            {courses.map(course => (
-                                                <option key={course.id} value={course.id}>
-                                                    {course.title} (${course.price})
-                                                </option>
-                                            ))}
-                                        </select>
-                                    </div>
-
-                                    <div className="grid grid-cols-2 gap-4">
-                                        <div className="space-y-2">
-                                            <label className="text-sm font-medium">Type</label>
-                                            <div className="flex rounded-lg border border-input p-1 bg-muted/50">
-                                                <button
-                                                    type="button"
-                                                    onClick={() => setFormData({ ...formData, type: 'percentage' })}
-                                                    className={`flex-1 flex items-center justify-center text-sm py-1.5 rounded-md transition-all cursor-pointer ${formData.type === 'percentage'
-                                                        ? 'bg-background shadow-sm font-medium text-foreground'
-                                                        : 'text-muted-foreground hover:text-foreground'
-                                                        }`}
-                                                >
-                                                    <Percent className="w-3.5 h-3.5 mr-1.5" /> %
-                                                </button>
-                                                <button
-                                                    type="button"
-                                                    onClick={() => setFormData({ ...formData, type: 'fixed' })}
-                                                    className={`flex-1 flex items-center justify-center text-sm py-1.5 rounded-md transition-all cursor-pointer ${formData.type === 'fixed'
-                                                        ? 'bg-background shadow-sm font-medium text-foreground'
-                                                        : 'text-muted-foreground hover:text-foreground'
-                                                        }`}
-                                                >
-                                                    <DollarSign className="w-3.5 h-3.5 mr-1.5" /> Fixed
-                                                </button>
-                                            </div>
-                                        </div>
-                                        <div className="space-y-2">
-                                            <label className="text-sm font-medium">Value</label>
-                                            <input
-                                                type="number"
-                                                min="0"
-                                                className="w-full h-10 px-3 rounded-lg border border-input bg-background text-sm"
-                                                placeholder={formData.type === 'percentage' ? "e.g. 20" : "e.g. 500"}
-                                                value={formData.value}
-                                                onChange={(e) => setFormData({ ...formData, value: e.target.value })}
-                                                required
-                                            />
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <div className="grid md:grid-cols-2 gap-4">
-                                    <div className="space-y-2">
-                                        <label className="text-sm font-medium">Start Date (Optional)</label>
-                                        <input
-                                            type="datetime-local"
-                                            className="w-full h-10 px-3 rounded-lg border border-input bg-background text-sm"
-                                            value={formData.starts_at}
-                                            onChange={(e) => setFormData({ ...formData, starts_at: e.target.value })}
-                                        />
-                                    </div>
-                                    <div className="space-y-2">
-                                        <label className="text-sm font-medium">End Date (Optional)</label>
-                                        <input
-                                            type="datetime-local"
-                                            className="w-full h-10 px-3 rounded-lg border border-input bg-background text-sm"
-                                            value={formData.ends_at}
-                                            onChange={(e) => setFormData({ ...formData, ends_at: e.target.value })}
-                                        />
-                                    </div>
-                                </div>
-
-                                <div className="flex justify-end pt-2">
-                                    <button
-                                        type="submit"
-                                        className="px-6 py-2.5 rounded-xl bg-primary text-primary-foreground font-medium hover:bg-primary/90 transition-all cursor-pointer shadow-sm hover:shadow-md"
-                                    >
-                                        Create Discount
-                                    </button>
-                                </div>
-                            </form>
-                        </div>
-                    </motion.div>
-                )}
-            </AnimatePresence>
-
             {/* List */}
-            <div className="bg-card border border-border rounded-2xl overflow-hidden shadow-xs">
-                <div className="overflow-x-auto">
-                    <table className="w-full text-sm text-left">
-                        <thead className="bg-muted/50 text-muted-foreground border-b border-border">
-                            <tr>
-                                <th className="px-6 py-4 font-medium">Course</th>
-                                <th className="px-6 py-4 font-medium">Discount</th>
-                                <th className="px-6 py-4 font-medium">Status</th>
-                                <th className="px-6 py-4 font-medium">Period</th>
-                                <th className="px-6 py-4 font-medium text-right">Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody className="divide-y divide-border">
-                            {isLoading ? (
-                                <tr>
-                                    <td colSpan={5} className="px-6 py-8 text-center text-muted-foreground">
-                                        Loading discounts...
-                                    </td>
-                                </tr>
-                            ) : discounts.length === 0 ? (
-                                <tr>
-                                    <td colSpan={5} className="px-6 py-8 text-center text-muted-foreground">
-                                        No discounts found. Create one to get started.
-                                    </td>
-                                </tr>
-                            ) : (
-                                discounts.map((discount) => (
-                                    <tr key={discount.id} className="hover:bg-muted/30 transition-colors">
-                                        <td className="px-6 py-4">
-                                            {discount.course ? (
-                                                <div>
-                                                    <p className="font-medium text-foreground">{discount.course.title}</p>
-                                                    <p className="text-xs text-muted-foreground">${discount.course.price}</p>
-                                                </div>
-                                            ) : (
-                                                <span className="text-destructive">Deleted Course</span>
-                                            )}
-                                        </td>
-                                        <td className="px-6 py-4">
-                                            <div className="flex items-center gap-2">
-                                                <span className={`inline-flex items-center px-2 py-1 rounded-md text-xs font-medium ${discount.type === 'percentage'
-                                                    ? 'bg-blue-500/10 text-blue-600 dark:text-blue-400'
-                                                    : 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400'
-                                                    }`}>
-                                                    {discount.type === 'percentage' ? (
-                                                        <Percent className="w-3 h-3 mr-1" />
-                                                    ) : (
-                                                        <DollarSign className="w-3 h-3 mr-1" />
-                                                    )}
-                                                    {discount.value}{discount.type === 'percentage' ? '%' : ''} Off
-                                                </span>
-                                            </div>
-                                        </td>
-                                        <td className="px-6 py-4">
-                                            <button
-                                                onClick={() => toggleActive(discount.id, discount.is_active)}
-                                                className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border transition-all cursor-pointer ${discount.is_active
-                                                    ? "bg-green-500/10 text-green-600 border-green-500/20 hover:bg-green-500/20"
-                                                    : "bg-zinc-500/10 text-zinc-600 border-zinc-500/20 hover:bg-zinc-500/20 dark:text-zinc-400"
-                                                    }`}
-                                            >
-                                                {discount.is_active ? "Active" : "Inactive"}
-                                            </button>
-                                        </td>
-                                        <td className="px-6 py-4 text-muted-foreground text-xs">
-                                            {discount.starts_at ? new Date(discount.starts_at).toLocaleDateString() : "Now"}
-                                            {" → "}
-                                            {discount.ends_at ? new Date(discount.ends_at).toLocaleDateString() : "Forever"}
-                                        </td>
-                                        <td className="px-6 py-4 text-right">
-                                            <button
-                                                onClick={() => handleDelete(discount.id)}
-                                                className="p-2 text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded-lg transition-colors cursor-pointer"
-                                                title="Delete Discount"
-                                            >
-                                                <Trash2 className="w-4 h-4" />
-                                            </button>
-                                        </td>
-                                    </tr>
-                                ))
-                            )}
-                        </tbody>
-                    </table>
+            <div className="rounded-[2.5rem] border border-border/40 bg-card/30 backdrop-blur-xl overflow-hidden shadow-2xl">
+                <div className="p-6 bg-muted/5 border-b border-border/20 flex justify-between items-center">
+                    <h2 className="text-xs font-black uppercase tracking-[0.2em] text-muted-foreground opacity-60 px-2">Operational Overrides / {discounts.length} Active</h2>
+                    <button onClick={fetchData} className="p-2.5 rounded-xl hover:bg-muted text-muted-foreground transition-all">
+                        <RefreshCw className={cn("w-4 h-4", isLoading && "animate-spin")} />
+                    </button>
                 </div>
+
+                {isLoading ? (
+                    <div className="py-24 text-center">
+                        <RefreshCw className="w-10 h-10 animate-spin text-primary/30 mx-auto" />
+                        <p className="mt-4 text-[10px] font-black uppercase tracking-widest text-muted-foreground opacity-60">Syncing price map...</p>
+                    </div>
+                ) : discounts.length === 0 ? (
+                    <div className="py-24 text-center space-y-4">
+                        <div className="p-6 rounded-full bg-muted/20 w-fit mx-auto"><Tag className="w-10 h-10 text-muted-foreground/30" /></div>
+                        <h3 className="text-lg font-black uppercase tracking-tighter italic opacity-70">No Overrides Found</h3>
+                    </div>
+                ) : (
+                    <div className="min-w-[900px]">
+                        {/* Grid Head */}
+                        <div className="grid grid-cols-[1.5fr_1fr_120px_1fr_80px] px-8 py-5 bg-muted/5 border-b border-border/20 items-center">
+                            <div className="px-4 text-[10px] font-black uppercase tracking-widest text-muted-foreground/60">Target Course Identity</div>
+                            <div className="px-4 text-[10px] font-black uppercase tracking-widest text-muted-foreground/60">Value Delta</div>
+                            <div className="px-4 text-[10px] font-black uppercase tracking-widest text-muted-foreground/60 text-center">Lifecycle State</div>
+                            <div className="px-4 text-[10px] font-black uppercase tracking-widest text-muted-foreground/60 text-center">Temporal Bounds</div>
+                            <div className="px-4 text-[10px] font-black uppercase tracking-widest text-muted-foreground/60 text-right">Action</div>
+                        </div>
+
+                        {/* Grid Body */}
+                        <div className="divide-y divide-border/10">
+                            {discounts.map((discount) => (
+                                <div key={discount.id} className="grid grid-cols-[1.5fr_1fr_120px_1fr_80px] px-8 py-5 items-center hover:bg-primary/5 transition-all duration-300 group">
+                                    <div className="px-4 flex items-center gap-4">
+                                        <div className="w-12 h-12 rounded-2xl bg-muted border border-border/20 flex items-center justify-center text-primary/40 group-hover:text-primary transition-all group-hover:scale-105 duration-500">
+                                            <Tag className="w-5 h-5" />
+                                        </div>
+                                        <div className="min-w-0">
+                                            {discount.course ? (
+                                                <>
+                                                    <p className="font-black text-sm tracking-tight capitalize truncate">{discount.course.title}</p>
+                                                    <p className="text-[10px] font-bold text-muted-foreground/60 tracking-tight font-mono">BASE PRICE: ৳{discount.course.price}</p>
+                                                </>
+                                            ) : (
+                                                <p className="text-destructive text-xs font-black italic">ORPHANED_DATA</p>
+                                            )}
+                                        </div>
+                                    </div>
+                                    <div className="px-4">
+                                        <div className={cn(
+                                            "inline-flex items-center gap-2 px-3 py-1.5 rounded-xl border font-black text-xs italic tracking-tighter shadow-xs",
+                                            discount.type === 'percentage' ? "bg-indigo-500/10 text-indigo-500 border-indigo-500/20" : "bg-emerald-500/10 text-emerald-500 border-emerald-500/20"
+                                        )}>
+                                            {discount.type === 'percentage' ? <Percent className="w-3.5 h-3.5" /> : <DollarSign className="w-3.5 h-3.5" />}
+                                            {discount.value}{discount.type === 'percentage' ? '%' : ''} REDUCTION
+                                        </div>
+                                    </div>
+                                    <div className="px-4 text-center">
+                                        <button
+                                            onClick={() => toggleActive(discount.id, discount.is_active)}
+                                            className={cn(
+                                                "px-4 py-1 rounded-full text-[10px] font-black uppercase tracking-widest border transition-all",
+                                                discount.is_active ? "bg-emerald-500/10 text-emerald-500 border-emerald-500/20 hover:bg-emerald-500/20" : "bg-muted text-muted-foreground border-border/50 opacity-40 hover:opacity-100"
+                                            )}
+                                        >
+                                            {discount.is_active ? "Live" : "Halted"}
+                                        </button>
+                                    </div>
+                                    <div className="px-4 text-center">
+                                        <div className="flex items-center justify-center gap-2 text-[10px] font-bold text-muted-foreground/60 font-mono">
+                                            <span>{discount.starts_at ? new Date(discount.starts_at).toLocaleDateString() : "INF"}</span>
+                                            <span className="opacity-30">→</span>
+                                            <span>{discount.ends_at ? new Date(discount.ends_at).toLocaleDateString() : "INF"}</span>
+                                        </div>
+                                    </div>
+                                    <div className="px-4 text-right">
+                                        <button
+                                            onClick={() => handleDelete(discount.id)}
+                                            className="p-3 rounded-xl hover:bg-destructive/10 text-muted-foreground hover:text-destructive transition-all"
+                                        >
+                                            <Trash2 className="w-4 h-4" />
+                                        </button>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                )}
             </div>
-        </div>
+
+            {/* Creation Modal */}
+            <Dialog open={isCreating} onClose={() => setIsCreating(false)} size="md">
+                <DialogHeader>
+                    <DialogTitle className="italic">Forge Adjustment</DialogTitle>
+                    <DialogDescription>Define new high-impact price overrides for the academic catalog.</DialogDescription>
+                </DialogHeader>
+                <form onSubmit={handleSubmit}>
+                    <DialogBody className="space-y-6">
+                        <div className="space-y-2">
+                            <label className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground ml-1">Target Identity</label>
+                            <select
+                                className="w-full h-12 px-4 rounded-xl border border-border/50 bg-card/50 text-sm font-bold focus:ring-2 focus:ring-primary/20 outline-none transition-all"
+                                value={formData.course_id}
+                                onChange={(e) => setFormData({ ...formData, course_id: e.target.value })}
+                                required
+                            >
+                                <option value="" className="bg-card">Select Entity...</option>
+                                {courses.map(course => (
+                                    <option key={course.id} value={course.id} className="bg-card">
+                                        {course.title} (৳{course.price})
+                                    </option>
+                                ))}
+                            </select>
+                        </div>
+
+                        <div className="grid grid-cols-2 gap-4">
+                            <div className="space-y-2">
+                                <label className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground ml-1">Algorithm</label>
+                                <div className="flex h-12 p-1 rounded-xl bg-muted/30 border border-border/50">
+                                    <button
+                                        type="button"
+                                        onClick={() => setFormData({ ...formData, type: 'percentage' })}
+                                        className={cn("flex-1 rounded-lg text-xs font-black uppercase tracking-widest transition-all", formData.type === 'percentage' ? "bg-card shadow-lg text-primary" : "text-muted-foreground opacity-50")}
+                                    >Percentage</button>
+                                    <button
+                                        type="button"
+                                        onClick={() => setFormData({ ...formData, type: 'fixed' })}
+                                        className={cn("flex-1 rounded-lg text-xs font-black uppercase tracking-widest transition-all", formData.type === 'fixed' ? "bg-card shadow-lg text-primary" : "text-muted-foreground opacity-50")}
+                                    >Fixed</button>
+                                </div>
+                            </div>
+                            <div className="space-y-2">
+                                <label className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground ml-1">Magnitude</label>
+                                <input
+                                    type="number"
+                                    className="w-full h-12 px-4 rounded-xl border border-border/50 bg-card/50 text-sm font-bold outline-none ring-primary/20 focus:ring-2"
+                                    placeholder={formData.type === 'percentage' ? "Magnitude %" : "Magnitude ৳"}
+                                    value={formData.value}
+                                    onChange={(e) => setFormData({ ...formData, value: e.target.value })}
+                                    required
+                                />
+                            </div>
+                        </div>
+
+                        <div className="grid grid-cols-2 gap-4">
+                            <div className="space-y-2">
+                                <label className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground ml-1">Temporal Start</label>
+                                <input type="datetime-local" className="w-full h-12 px-4 rounded-xl border border-border/50 bg-card/50 text-xs font-mono outline-none" value={formData.starts_at} onChange={(e) => setFormData({ ...formData, starts_at: e.target.value })} />
+                            </div>
+                            <div className="space-y-2">
+                                <label className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground ml-1">Temporal End</label>
+                                <input type="datetime-local" className="w-full h-12 px-4 rounded-xl border border-border/50 bg-card/50 text-xs font-mono outline-none" value={formData.ends_at} onChange={(e) => setFormData({ ...formData, ends_at: e.target.value })} />
+                            </div>
+                        </div>
+                    </DialogBody>
+                    <DialogFooter className="grid grid-cols-2 gap-3 p-6">
+                        <button type="button" onClick={() => setIsCreating(false)} className="py-4 bg-muted/20 rounded-2xl font-black text-[10px] uppercase tracking-widest hover:bg-muted/40 transition-all border border-border/20">Abort</button>
+                        <button type="submit" className="py-4 bg-primary text-primary-foreground rounded-2xl font-black text-[10px] uppercase tracking-widest hover:bg-primary/90 transition-all shadow-xl shadow-primary/30">Commit Override</button>
+                    </DialogFooter>
+                </form>
+            </Dialog>
+        </motion.div>
     );
 }

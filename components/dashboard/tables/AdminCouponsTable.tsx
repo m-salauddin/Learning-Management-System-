@@ -10,6 +10,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/Badge";
 import { Plus, Trash2 } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 interface AdminCouponsTableProps {
     onCreate?: () => void;
@@ -47,54 +48,63 @@ export function AdminCouponsTable({ onCreate }: AdminCouponsTableProps) {
     // Columns
     const columns: ColumnDef<Coupon>[] = [
         {
-            header: "Code",
+            header: "Coupon Code",
             accessorKey: "code",
-            className: "font-mono font-bold",
-            cell: (row) => <span className="font-mono text-primary">{row.code}</span>
+            width: "1.5fr",
+            className: "font-mono font-bold uppercase tracking-widest",
+            cell: (row) => <span className="font-mono text-primary bg-primary/5 px-2 py-0.5 rounded border border-primary/10">{row.code}</span>
         },
         {
             header: "Discount",
-            className: "w-[120px]",
+            width: "120px",
             cell: (row) => (
                 <Badge
                     variant="outline"
-                    className={row.discount_type === 'percentage'
-                        ? 'bg-blue-500/10 text-blue-600 border-blue-500/20'
-                        : 'bg-orange-500/10 text-orange-600 border-orange-500/20'}
+                    className={cn(
+                        "text-[10px] font-black uppercase tracking-widest",
+                        row.discount_type === 'percentage'
+                            ? 'bg-blue-500/10 text-blue-500 border-blue-500/20'
+                            : 'bg-amber-500/10 text-amber-500 border-amber-500/20'
+                    )}
                 >
                     {row.discount_type === 'percentage' ? `${row.discount_value}%` : `$${row.discount_value}`}
                 </Badge>
             )
         },
         {
-            header: "Usage",
-            className: "w-[100px]",
-            cell: (row) => `${row.usage_count} uses`
+            header: "Total Usage",
+            width: "100px",
+            cell: (row) => <span className="text-xs font-bold tracking-tighter text-muted-foreground">{row.usage_count} uses</span>
         },
         {
             header: "Status",
-            className: "w-[100px]",
+            width: "100px",
             cell: (row) => (
                 <Badge
                     variant="outline"
-                    className={row.is_active
-                        ? 'bg-emerald-500/10 text-emerald-600 border-emerald-500/20'
-                        : 'bg-zinc-500/10 text-zinc-600 border-zinc-500/20'}
+                    className={cn(
+                        "text-[10px] font-black uppercase tracking-widest",
+                        row.is_active
+                            ? 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20'
+                            : 'bg-zinc-500/10 text-zinc-500 border-zinc-500/20'
+                    )}
                 >
                     {row.is_active ? 'Active' : 'Inactive'}
                 </Badge>
             )
         },
         {
-            header: "Created",
+            header: "Created On",
+            width: "120px",
             className: "text-right",
-            cell: (row) => new Date(row.created_at).toLocaleDateString()
+            cell: (row) => <span className="text-[10px] font-black text-muted-foreground/60 tracking-widest uppercase">{new Date(row.created_at).toLocaleDateString()}</span>
         },
         {
-            header: "Actions",
+            header: "Action",
+            width: "80px",
             className: "text-right",
             cell: (row) => (
-                <Button variant="ghost" size="sm" className="h-8 w-8 p-0 text-muted-foreground hover:text-destructive">
+                <Button variant="ghost" size="icon" className="h-8 w-8 p-0 text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded-lg transition-all">
                     <Trash2 className="w-4 h-4" />
                 </Button>
             )

@@ -34,15 +34,11 @@ export function Pagination({
 
     return (
         <div className={cn("flex flex-col-reverse md:flex-row items-center justify-between gap-4 text-sm select-none", className)}>
-            {/* Simple Info */}
             <div className="text-input-dark-text font-medium">
                 {startItem}-{endItem} of {totalItems}
             </div>
 
-            {/* Controls Container */}
             <div className="flex flex-col sm:flex-row items-center gap-4 sm:gap-6 w-full md:w-auto">
-
-                {/* Rows Per Page */}
                 <div className="flex items-center gap-3">
                     <span className="text-input-dark-text text-xs font-medium uppercase tracking-wider">Rows</span>
                     <Select
@@ -62,7 +58,6 @@ export function Pagination({
                     </Select>
                 </div>
 
-                {/* Pagination Buttons */}
                 <div className="flex items-center gap-1 bg-input-dark p-1 rounded-xl border border-input-dark-border">
                     <button
                         onClick={() => onPageChange(1)}

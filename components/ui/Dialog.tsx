@@ -37,7 +37,6 @@ export function Dialog({ open, onClose, children, className, size = 'md' }: Dial
         <AnimatePresence>
             {open && (
                 <>
-                    {/* Backdrop */}
                     <motion.div
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
@@ -47,7 +46,6 @@ export function Dialog({ open, onClose, children, className, size = 'md' }: Dial
                         style={{ height: '100dvh' }}
                     />
 
-                    {/* Dialog Wrapper */}
                     <div className="fixed inset-0 z-70 flex items-center justify-center p-4 sm:p-6 overflow-y-auto w-full h-dvh">
                         <motion.div
                             initial={{ opacity: 0, scale: 0.95, y: 20 }}
