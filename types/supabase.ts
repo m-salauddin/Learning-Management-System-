@@ -15,9 +15,21 @@ export interface Database {
                     name: string
                     email: string
                     avatar_url: string
+                    avatar_color: string | null
                     courses_enrolled: string[]
                     role: 'student' | 'teacher' | 'moderator' | 'admin'
                     providers: ('google' | 'github' | 'password')[]
+                    status: 'active' | 'inactive' | 'suspended' | 'pending' | null
+                    bio: string | null
+                    phone: string | null
+                    location: string | null
+                    website: string | null
+                    completed_courses: number | null
+                    certificates_earned: number | null
+                    is_deleted: boolean
+                    deleted_at: string | null
+                    is_banned: boolean
+                    social_links: Json | null
                     created_at: string
                     updated_at: string
                 }
@@ -26,9 +38,21 @@ export interface Database {
                     name?: string
                     email: string
                     avatar_url?: string
+                    avatar_color?: string | null
                     courses_enrolled?: string[]
                     role?: 'student' | 'teacher' | 'moderator' | 'admin'
                     providers?: ('google' | 'github' | 'password')[]
+                    status?: 'active' | 'inactive' | 'suspended' | 'pending' | null
+                    bio?: string | null
+                    phone?: string | null
+                    location?: string | null
+                    website?: string | null
+                    completed_courses?: number | null
+                    certificates_earned?: number | null
+                    is_deleted?: boolean
+                    deleted_at?: string | null
+                    is_banned?: boolean
+                    social_links?: Json | null
                     created_at?: string
                     updated_at?: string
                 }
@@ -37,9 +61,21 @@ export interface Database {
                     name?: string
                     email?: string
                     avatar_url?: string
+                    avatar_color?: string | null
                     courses_enrolled?: string[]
                     role?: 'student' | 'teacher' | 'moderator' | 'admin'
                     providers?: ('google' | 'github' | 'password')[]
+                    status?: 'active' | 'inactive' | 'suspended' | 'pending' | null
+                    bio?: string | null
+                    phone?: string | null
+                    location?: string | null
+                    website?: string | null
+                    completed_courses?: number | null
+                    certificates_earned?: number | null
+                    is_deleted?: boolean
+                    deleted_at?: string | null
+                    is_banned?: boolean
+                    social_links?: Json | null
                     created_at?: string
                     updated_at?: string
                 }

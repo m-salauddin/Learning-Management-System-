@@ -9,6 +9,7 @@ export interface UserProfile {
     email: string;
     name: string;
     avatar_url: string;
+    avatar_color?: string | null;
     role: UserRole;
     courses_enrolled: string[];
     providers: AuthProvider[];

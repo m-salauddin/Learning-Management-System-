@@ -8,6 +8,7 @@ export interface AuthUser {
     fullName: string | undefined;
     role: UserRole;
     avatarUrl?: string;
+    avatarColor?: string | null;
     coursesEnrolled: string[];
     providers: AuthProvider[];
 }

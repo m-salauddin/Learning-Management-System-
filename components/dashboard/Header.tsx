@@ -1,7 +1,14 @@
 "use client";
 
 import { usePathname } from "next/navigation";
-import { Bell, Menu, Search } from "lucide-react";
+import {
+    Bell, Menu, Search, Layers, BookOpen, Users, Settings,
+    FileText, Flag, Ticket, Tags, BarChart3, Award, DollarSign,
+    GraduationCap, Plus, Edit, Hash, UserPlus, FilePlus, PlusCircle, LayoutDashboard, AlignLeft,
+    PanelLeftClose
+} from "lucide-react";
+import { motion } from "motion/react";
+import Breadcrumbs from "@/components/ui/Breadcrumbs";
 import { UserDropdown } from "@/components/ui/UserDropdown/UserDropdown";
 import { useAppSelector } from "@/lib/store/hooks";
 import { ThemeToggleCompact } from "@/components/ui/theme-toggle";
@@ -19,70 +26,112 @@ const AuthSkeleton = () => (
     </Skeleton>
 );
 
-export function Header({ onMobileMenuOpen }: { onMobileMenuOpen: () => void }) {
+interface HeaderProps {
+    onMobileMenuOpen: () => void;
+    isSidebarCollapsed: boolean;
+    onSidebarToggle: () => void;
+}
+
+export function Header({ onMobileMenuOpen, isSidebarCollapsed, onSidebarToggle }: HeaderProps) {
     const pathname = usePathname();
     const { user, isLoading } = useAppSelector((state) => state.auth);
 
-    // Parse breadcrumb
-    const pathSegments = pathname?.split("/").filter(Boolean) || [];
-    const title = pathSegments[pathSegments.length - 1];
-    const formattedTitle = title === "dashboard" ? "Overview" : title.charAt(0).toUpperCase() + title.slice(1).replace(/-/g, " ");
+    // Generate breadcrumbs from path
+    const pathSegments = pathname?.split("/").filter(p => p !== "" && p !== "dashboard") || [];
+
+    const breadcrumbItems = pathSegments.map((segment, index) => {
+        const href = `/dashboard/${pathSegments.slice(0, index + 1).join("/")}`;
+        const IconMap: Record<string, any> = {
+            "courses": Layers,
+            "my-courses": BookOpen,
+            "instructor-courses": GraduationCap,
+            "users": Users,
+            "settings": Settings,
+            "earnings": DollarSign,
+            "reports": Flag,
+            "reviews": FileText,
+            "discounts": Tags,
+            "coupons": Ticket,
+            "analytics": BarChart3,
+            "certificates": Award,
+            "edit": Edit
+        };
+
+        let icon = IconMap[segment] || Hash;
+        let label = segment.split("-").map(s => s.charAt(0).toUpperCase() + s.slice(1)).join(" ");
+
+        // Handle 'new' segments specifically
+        if (segment === "new" && index > 0) {
+            const parent = pathSegments[index - 1];
+            // Simple singularization: remove trailing 's' if present
+            const parentSingular = parent.endsWith('s') ? parent.slice(0, -1) : parent;
+            const entityName = parentSingular.charAt(0).toUpperCase() + parentSingular.slice(1);
+
+            label = `Create ${entityName}`;
+
+            // Context-aware icons for creation
+            if (parent === "users") icon = UserPlus;
+            else if (parent === "courses") icon = FilePlus;
+            else icon = PlusCircle;
+        }
+
+        // Disable link for current page
+        const isLast = index === pathSegments.length - 1;
+
+        return {
+            label,
+            href: isLast ? undefined : href,
+            icon,
+            active: isLast
+        };
+    });
 
     return (
         <header className="h-20 px-6 flex items-center justify-between border-b border-border/50 bg-background/50 backdrop-blur-xl sticky top-0 z-30">
             <div className="flex items-center gap-4">
                 <button
                     onClick={onMobileMenuOpen}
-                    className="lg:hidden p-2 -ml-2 text-muted-foreground hover:text-foreground rounded-lg hover:bg-muted/50 transition-colors cursor-pointer"
+                    className="lg:hidden w-10 h-10 flex items-center justify-center -ml-2 text-muted-foreground hover:text-primary rounded-xl bg-muted/40 border border-white/5 hover:bg-muted/60 transition-all cursor-pointer shadow-sm group"
                 >
-                    <Menu className="w-6 h-6" />
+                    <AlignLeft className="w-5 h-5 group-hover:scale-110 transition-transform" />
                 </button>
 
-                <h2 className="text-xl font-bold capitalize text-foreground/90 tracking-tight">
-                    {formattedTitle}
-                </h2>
+                <Breadcrumbs
+                    items={breadcrumbItems}
+                    showHomeIcon={true}
+                    rootLabel="Dashboard"
+                    rootHref="/dashboard"
+                    className="text-lg font-semibold"
+                    rootIcon={LayoutDashboard}
+                />
             </div>
 
             <div className="flex items-center gap-2 sm:gap-4">
                 {isLoading ? (
                     <>
-                        {/* Search Skeleton */}
-                        <Skeleton className="hidden md:flex h-10 w-64 rounded-xl items-center px-4">
-                            <div className="h-4 w-4 rounded-full bg-muted-foreground/20 mr-3" />
-                            <div className="h-3 w-24 bg-muted-foreground/20 rounded-md" />
-                        </Skeleton>
-
-                        <div className="h-8 w-px bg-border/50 mx-1 hidden sm:block" />
-
-                        {/* Theme Toggle Skeleton */}
-                        <Skeleton className="w-10 h-10 rounded-xl flex items-center justify-center">
-                            <div className="w-5 h-5 rounded-md bg-muted-foreground/20" />
-                        </Skeleton>
-
-                        {/* Notification Skeleton */}
-                        <Skeleton className="w-10 h-10 rounded-xl flex items-center justify-center">
-                            <div className="w-5 h-5 rounded-md bg-muted-foreground/20" />
-                        </Skeleton>
-
+                        <Skeleton className="w-10 h-10 rounded-xl" />
+                        <Skeleton className="w-10 h-10 rounded-xl" />
+                        <Skeleton className="w-10 h-10 rounded-xl" />
                         <AuthSkeleton />
                     </>
                 ) : (
                     <>
-                        <div className="hidden md:flex items-center px-3 py-2 rounded-xl bg-muted/30 border border-white/5 focus-within:ring-2 focus-within:ring-primary/20 transition-all w-64">
-                            <Search className="w-4 h-4 text-muted-foreground" />
-                            <input
-                                type="text"
-                                placeholder="Search courses..."
-                                className="bg-transparent border-none outline-none text-sm ml-2 w-full text-foreground placeholder:text-muted-foreground"
-                            />
-                        </div>
-
-                        <div className="h-8 w-px bg-border/50 mx-1 hidden sm:block" />
+                        {/* Sidebar Toggle Button (Desktop) */}
+                        <motion.button
+                            whileTap={{ scale: 0.95 }}
+                            onClick={onSidebarToggle}
+                            className="hidden lg:flex w-10 h-10 items-center justify-center rounded-xl bg-muted/40 border border-white/5 text-muted-foreground hover:text-primary transition-all cursor-pointer shadow-sm group hover:bg-muted/60"
+                        >
+                            <motion.div
+                                animate={{ rotate: isSidebarCollapsed ? 180 : 0 }}
+                                transition={{ type: "spring", stiffness: 300, damping: 20 }}
+                            >
+                                <PanelLeftClose className="w-5 h-5 group-hover:scale-110 transition-transform" />
+                            </motion.div>
+                        </motion.button>
 
                         <ThemeToggleCompact />
-
                         <NotificationPanel />
-
                         {user && <UserDropdown user={user} />}
                     </>
                 )}
@@ -90,4 +139,3 @@ export function Header({ onMobileMenuOpen }: { onMobileMenuOpen: () => void }) {
         </header>
     );
 }
-

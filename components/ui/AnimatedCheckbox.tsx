@@ -32,11 +32,10 @@ export function AnimatedCheckbox({
     };
 
     const handleLabelClick = (e: React.MouseEvent) => {
-        // Prevent toggle if clicking a link
         if ((e.target as HTMLElement).closest('a')) {
             return;
         }
-        e.preventDefault(); // Prevent default label behavior to avoid double toggles if htmlFor is used
+        e.preventDefault();
         handleToggle();
     };
 
@@ -76,7 +75,6 @@ export function AnimatedCheckbox({
                     </AnimatePresence>
                 </motion.div>
 
-                {/* Ripple effect on click */}
                 <motion.div
                     className="absolute inset-0 rounded-md bg-primary/20 pointer-events-none"
                     initial={{ scale: 0, opacity: 0.5 }}
@@ -98,7 +96,6 @@ export function AnimatedCheckbox({
     );
 }
 
-// Controlled version for use with react-hook-form
 interface ControlledCheckboxProps extends Omit<AnimatedCheckboxProps, 'checked' | 'onChange'> {
     value?: boolean;
     onValueChange?: (checked: boolean) => void;
@@ -107,7 +104,6 @@ interface ControlledCheckboxProps extends Omit<AnimatedCheckboxProps, 'checked' 
 export const ControlledAnimatedCheckbox = React.forwardRef<HTMLInputElement, ControlledCheckboxProps & {
     onChange?: (e: { target: { value: boolean } }) => void
 }>(({ value, onChange, onValueChange, ...props }, ref) => {
-    // Hidden input for form compatibility
     const inputRef = React.useRef<HTMLInputElement>(null);
 
     React.useImperativeHandle(ref, () => inputRef.current!);

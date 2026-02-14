@@ -259,7 +259,7 @@ CREATE TABLE IF NOT EXISTS public.courses (
   title TEXT NOT NULL,
   description TEXT DEFAULT '',
   price INT NOT NULL,
-
+  batch_no INTEGER NOT NULL DEFAULT 1,
   instructor_id UUID NOT NULL
     REFERENCES public.instructor_profiles(id)
     ON DELETE RESTRICT,

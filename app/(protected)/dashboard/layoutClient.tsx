@@ -57,6 +57,7 @@ import { useAppSelector } from "@/lib/store/hooks";
 
 export function DashboardLayoutClient({ children, role: serverRole }: DashboardLayoutClientProps) {
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+    const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
     const pathname = usePathname();
     const { user } = useAppSelector((state) => state.auth);
 
@@ -68,11 +69,15 @@ export function DashboardLayoutClient({ children, role: serverRole }: DashboardL
     return (
         <div className="flex min-h-screen bg-background">
             {/* Desktop Sidebar */}
-            <Sidebar role={role} />
+            <Sidebar role={role} isCollapsed={isSidebarCollapsed} onToggle={() => setIsSidebarCollapsed(!isSidebarCollapsed)} />
 
             {/* Main Content */}
             <div className="flex-1 flex flex-col min-w-0">
-                <Header onMobileMenuOpen={() => setIsMobileMenuOpen(true)} />
+                <Header
+                    onMobileMenuOpen={() => setIsMobileMenuOpen(true)}
+                    isSidebarCollapsed={isSidebarCollapsed}
+                    onSidebarToggle={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
+                />
 
                 <main className="flex-1 p-4 sm:p-6 lg:p-8 overflow-y-auto dashboard-scrollbar">
                     {children}
@@ -97,10 +102,13 @@ export function DashboardLayoutClient({ children, role: serverRole }: DashboardL
                             transition={{ type: "spring", stiffness: 300, damping: 30 }}
                             className="fixed inset-y-0 left-0 w-64 bg-background border-r border-border/50 z-50 lg:hidden flex flex-col shadow-2xl"
                         >
-                            <div className="p-6 flex items-center justify-between">
-                                <Logo />
-                                <button onClick={() => setIsMobileMenuOpen(false)} className="p-2 -mr-2 text-muted-foreground hover:text-foreground">
-                                    <X className="w-5 h-5" />
+                            <div className="p-5 flex items-center justify-between border-b border-white/5 bg-slate-900/40 backdrop-blur-md sticky top-0 z-10">
+                                <Logo size="sm" />
+                                <button
+                                    onClick={() => setIsMobileMenuOpen(false)}
+                                    className="w-10 h-10 flex items-center justify-center rounded-xl bg-muted/40 border border-white/5 text-muted-foreground hover:text-primary transition-all cursor-pointer shadow-sm group"
+                                >
+                                    <X className="w-5 h-5 group-hover:scale-110 transition-transform" />
                                 </button>
                             </div>
 

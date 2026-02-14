@@ -6,7 +6,7 @@
 
 import { createSlice, createAsyncThunk, PayloadAction } from "@reduxjs/toolkit";
 import {
-    CourseWithDetails, CourseWithModules, Category, CourseStatus
+    CourseWithInstructor, CourseWithModules, Category, CourseStatus
 } from "@/types/lms";
 import * as courseActions from "@/lib/actions/courses";
 
@@ -16,12 +16,12 @@ import * as courseActions from "@/lib/actions/courses";
 
 interface CoursesState {
     // Course list
-    courses: CourseWithDetails[];
+    courses: CourseWithInstructor[];
     totalCourses: number;
     currentPage: number;
     pageSize: number;
     totalPages: number;
-    
+
     // Filters
     filters: {
         status?: CourseStatus | 'all';
@@ -31,16 +31,16 @@ interface CoursesState {
         sortBy?: string;
         sortOrder?: 'asc' | 'desc';
     };
-    
+
     // Single course (for editing/viewing)
     currentCourse: CourseWithModules | null;
-    
+
     // Instructor's courses
-    instructorCourses: CourseWithDetails[];
-    
+    instructorCourses: CourseWithInstructor[];
+
     // Categories
     categories: Category[];
-    
+
     // Loading states
     loading: {
         list: boolean;
@@ -50,7 +50,7 @@ interface CoursesState {
         delete: boolean;
         categories: boolean;
     };
-    
+
     // Error states
     errors: {
         list: string | null;
@@ -242,6 +242,28 @@ export const unpublishCourse = createAsyncThunk(
     }
 );
 
+export const reorderCourses = createAsyncThunk(
+    "courses/reorder",
+    async (newOrder: CourseWithInstructor[], { dispatch, rejectWithValue }) => {
+        try {
+            dispatch(setCoursesLocally(newOrder));
+
+            const updates = newOrder.map((course) => ({
+                id: course.id,
+                serial_number: course.serial_number
+            }));
+
+            const result = await courseActions.updateCourseOrder(updates);
+            if (!result.success) return rejectWithValue(result.error);
+            return result;
+        } catch (error) {
+            return rejectWithValue("Failed to sync order");
+        }
+    }
+);
+
+
+
 // ============================================================================
 // SLICE
 // ============================================================================
@@ -258,6 +280,9 @@ const coursesSlice = createSlice({
         },
         setCurrentPage(state, action: PayloadAction<number>) {
             state.currentPage = action.payload;
+        },
+        setCoursesLocally(state, action: PayloadAction<CourseWithInstructor[]>) {
+            state.courses = action.payload;
         },
         clearCurrentCourse(state) {
             state.currentCourse = null;
@@ -291,7 +316,7 @@ const coursesSlice = createSlice({
                 state.loading.list = false;
                 state.errors.list = action.payload as string;
             });
-        
+
         // Fetch course by slug
         builder
             .addCase(fetchCourseBySlug.pending, (state) => {
@@ -306,7 +331,7 @@ const coursesSlice = createSlice({
                 state.loading.single = false;
                 state.errors.single = action.payload as string;
             });
-        
+
         // Fetch course by ID
         builder
             .addCase(fetchCourseById.pending, (state) => {
@@ -321,7 +346,7 @@ const coursesSlice = createSlice({
                 state.loading.single = false;
                 state.errors.single = action.payload as string;
             });
-        
+
         // Fetch instructor courses
         builder
             .addCase(fetchInstructorCourses.pending, (state) => {
@@ -329,12 +354,12 @@ const coursesSlice = createSlice({
             })
             .addCase(fetchInstructorCourses.fulfilled, (state, action) => {
                 state.loading.list = false;
-                state.instructorCourses = (action.payload.data || []) as CourseWithDetails[];
+                state.instructorCourses = (action.payload.data || []) as CourseWithInstructor[];
             })
             .addCase(fetchInstructorCourses.rejected, (state) => {
                 state.loading.list = false;
             });
-        
+
         // Fetch categories
         builder
             .addCase(fetchCategories.pending, (state) => {
@@ -349,7 +374,7 @@ const coursesSlice = createSlice({
             .addCase(fetchCategories.rejected, (state) => {
                 state.loading.categories = false;
             });
-        
+
         // Create course
         builder
             .addCase(createCourse.pending, (state) => {
@@ -359,14 +384,14 @@ const coursesSlice = createSlice({
             .addCase(createCourse.fulfilled, (state, action) => {
                 state.loading.create = false;
                 if (action.payload) {
-                    state.instructorCourses.unshift(action.payload as CourseWithDetails);
+                    state.instructorCourses.unshift(action.payload as CourseWithInstructor);
                 }
             })
             .addCase(createCourse.rejected, (state, action) => {
                 state.loading.create = false;
                 state.errors.create = action.payload as string;
             });
-        
+
         // Update course
         builder
             .addCase(updateCourse.pending, (state) => {
@@ -388,7 +413,7 @@ const coursesSlice = createSlice({
                 state.loading.update = false;
                 state.errors.update = action.payload as string;
             });
-        
+
         // Delete course
         builder
             .addCase(deleteCourse.pending, (state) => {
@@ -404,7 +429,7 @@ const coursesSlice = createSlice({
                 state.loading.delete = false;
                 state.errors.delete = action.payload as string;
             });
-        
+
         // Publish/Unpublish
         builder
             .addCase(publishCourse.fulfilled, (state, action) => {
@@ -425,7 +450,8 @@ export const {
     clearFilters,
     setCurrentPage,
     clearCurrentCourse,
-    clearErrors
+    clearErrors,
+    setCoursesLocally
 } = coursesSlice.actions;
 
 export default coursesSlice.reducer;

@@ -1,7 +1,7 @@
 "use client";
 
 import { usePathname } from "next/navigation";
-import { Bell, Menu, Search } from "lucide-react";
+import { Bell, Menu, Search, AlignLeft } from "lucide-react";
 import { UserDropdown } from "@/components/ui/UserDropdown/UserDropdown";
 import { useAppSelector } from "@/lib/store/hooks";
 
@@ -18,9 +18,9 @@ export function AdminHeader({ onMobileMenuOpen }: { onMobileMenuOpen: () => void
             <div className="flex items-center gap-4">
                 <button
                     onClick={onMobileMenuOpen}
-                    className="lg:hidden p-2 -ml-2 text-muted-foreground hover:text-foreground rounded-lg hover:bg-muted/50 transition-colors cursor-pointer"
+                    className="lg:hidden w-10 h-10 flex items-center justify-center -ml-2 text-muted-foreground hover:text-primary rounded-xl bg-muted/40 border border-white/5 hover:bg-muted/60 transition-all cursor-pointer shadow-sm group"
                 >
-                    <Menu className="w-6 h-6" />
+                    <AlignLeft className="w-5 h-5 group-hover:scale-110 transition-transform" />
                 </button>
 
                 <h2 className="text-xl font-bold capitalize text-foreground/90 tracking-tight flex items-center gap-2">

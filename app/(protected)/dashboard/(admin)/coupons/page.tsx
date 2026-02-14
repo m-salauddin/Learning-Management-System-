@@ -2,36 +2,23 @@
 
 import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
-import { Plus, Trash2, Ticket, Users, Copy, Check, Search } from "lucide-react";
+import { Plus, Trash2, Ticket, Users, Copy, Check, Search, Download, RefreshCw, X } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import { useToast } from "@/components/ui/toast";
 import { AdminCouponsTable } from "@/components/dashboard/tables/AdminCouponsTable";
 import { useAppDispatch } from "@/lib/store/hooks";
 import { fetchCoupons } from "@/lib/store/features/admin/couponsSlice";
-import Breadcrumbs from "@/components/ui/Breadcrumbs";
+import { Dialog, DialogHeader, DialogTitle, DialogDescription, DialogBody, DialogFooter } from "@/components/ui/Dialog";
+import { cn } from "@/lib/utils";
 
 interface Course {
     id: string;
     title: string;
 }
 
-interface Coupon {
-    id: string;
-    code: string;
-    type: 'percentage' | 'fixed';
-    value: number;
-    max_uses: number | null;
-    used_count: number;
-    starts_at: string | null;
-    ends_at: string | null;
-    is_active: boolean;
-    coupon_courses?: { course_id: string }[]; // Joined
-}
-
 export default function CouponsPage() {
     const dispatch = useAppDispatch();
     const [courses, setCourses] = useState<Course[]>([]);
-    // const [coupons, setCoupons] = useState<Coupon[]>([]); // Removed local coupons state
     const [isLoading, setIsLoading] = useState(true);
     const [isCreating, setIsCreating] = useState(false);
 
@@ -57,25 +44,15 @@ export default function CouponsPage() {
     const fetchData = async () => {
         try {
             setIsLoading(true);
-
-            // Fetch Coupons with course mappings - MOVED TO REDUX
-            // const { data: couponsData, error: couponsError } = await (supabase as any)
-            //     .from('coupon_codes') ...
-
-            // Fetch Courses (for selection)
             const { data: coursesData, error: coursesError } = await (supabase as any)
                 .from('courses')
                 .select('id, title')
                 .order('title');
 
             if (coursesError) throw coursesError;
-
-            // setCoupons(couponsData || []);
             setCourses(coursesData || []);
-
         } catch (error) {
-            console.error('Error fetching data:', error);
-            toastError("Failed to load data");
+            toastError("Failed to load catalog data");
         } finally {
             setIsLoading(false);
         }
@@ -84,21 +61,18 @@ export default function CouponsPage() {
     const generateCode = () => {
         const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
         let result = "";
-        for (let i = 0; i < 8; i++) {
-            result += chars.charAt(Math.floor(Math.random() * chars.length));
-        }
+        for (let i = 0; i < 8; i++) result += chars.charAt(Math.floor(Math.random() * chars.length));
         setFormData(prev => ({ ...prev, code: result }));
     };
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         if (!formData.code || !formData.value) {
-            toastError("Please fill in required fields");
+            toastError("Required parameters missing");
             return;
         }
 
         try {
-            // 1. Create Coupon
             const { data: newCoupon, error: couponError } = await (supabase as any)
                 .from('coupon_codes')
                 .insert({
@@ -115,235 +89,183 @@ export default function CouponsPage() {
 
             if (couponError) throw couponError;
 
-            // 2. Create Mappings (if specific)
             if (formData.apply_to === 'specific' && formData.selected_courses.length > 0) {
                 const mappings = formData.selected_courses.map(courseId => ({
                     coupon_id: newCoupon.id,
                     course_id: courseId
                 }));
-
-                const { error: mappingError } = await (supabase as any)
-                    .from('coupon_courses')
-                    .insert(mappings);
-
+                const { error: mappingError } = await (supabase as any).from('coupon_courses').insert(mappings);
                 if (mappingError) throw mappingError;
             }
 
-            success("Coupon created successfully");
+            success("Protocol accepted. Coupon established.");
             setIsCreating(false);
-            setFormData({
-                code: "",
-                type: "percentage",
-                value: "",
-                max_uses: "",
-                starts_at: "",
-                ends_at: "",
-                apply_to: "all",
-                selected_courses: [],
-            });
+            setFormData({ code: "", type: "percentage", value: "", max_uses: "", starts_at: "", ends_at: "", apply_to: "all", selected_courses: [] });
             fetchData();
-            dispatch(fetchCoupons()); // Refresh Redux Table
-
+            dispatch(fetchCoupons());
         } catch (error: any) {
-            toastError(error.message || "Failed to create coupon");
+            toastError(error.message || "Protocol failure: Could not record coupon");
         }
     };
 
     const toggleCourseSelection = (courseId: string) => {
         setFormData(prev => {
             const exists = prev.selected_courses.includes(courseId);
-            if (exists) {
-                return { ...prev, selected_courses: prev.selected_courses.filter(id => id !== courseId) };
-            } else {
-                return { ...prev, selected_courses: [...prev.selected_courses, courseId] };
-            }
+            return {
+                ...prev,
+                selected_courses: exists
+                    ? prev.selected_courses.filter(id => id !== courseId)
+                    : [...prev.selected_courses, courseId]
+            };
         });
     };
 
-    /* Handlers removed as they are moved to Redux or AdminCouponsTable logic 
-    const toggleActive = async (id: string, currentState: boolean) => { ... }
-    const handleDelete = async (id: string) => { ... }
-    const copyCode = (code: string) => { ... }
-    */
-
     return (
-        <div className="space-y-6 max-w-7xl mx-auto">
-            <Breadcrumbs
-                items={[{ label: "Coupons", icon: Ticket }]}
-                showHomeIcon={true}
-                rootLabel="Dashboard"
-                rootHref="/dashboard"
-                className="mb-8"
-            />
-
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-6 pb-10 font-sans text-foreground">
+            {/* Header */}
+            <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-6">
                 <div>
-                    <h1 className="text-2xl font-bold tracking-tight">Coupons</h1>
-                    <p className="text-muted-foreground">Manage promo codes and campaigns.</p>
+                    <h1 className="text-3xl font-black tracking-tight uppercase italic text-foreground">Token Repository</h1>
+                    <p className="text-muted-foreground mt-1 text-sm font-bold uppercase tracking-widest opacity-60">Architect and deploy promotional access vectors</p>
                 </div>
+                <button
+                    onClick={() => setIsCreating(true)}
+                    className="bg-primary text-primary-foreground px-6 py-2.5 rounded-xl text-xs font-black uppercase tracking-widest hover:bg-primary/90 transition-all shadow-xl shadow-primary/20 inline-flex items-center gap-2"
+                >
+                    <Plus className="w-4 h-4" /> Forge Token
+                </button>
             </div>
 
-            <AnimatePresence>
-                {isCreating && (
-                    <motion.div
-                        initial={{ opacity: 0, height: 0 }}
-                        animate={{ opacity: 1, height: "auto" }}
-                        exit={{ opacity: 0, height: 0 }}
-                        className="overflow-hidden"
-                    >
-                        <div className="bg-card border border-border rounded-2xl p-6 shadow-xs">
-                            <h2 className="text-lg font-semibold mb-4">New Coupon Code</h2>
-                            <form onSubmit={handleSubmit} className="grid gap-6">
-
-                                {/* Code & Type */}
-                                <div className="grid md:grid-cols-3 gap-4">
-                                    <div className="space-y-2">
-                                        <label className="text-sm font-medium">Coupon Code</label>
-                                        <div className="flex gap-2">
-                                            <input
-                                                type="text"
-                                                className="flex-1 h-10 px-3 rounded-lg border border-input bg-background text-sm uppercase font-mono"
-                                                placeholder="SAVE50"
-                                                value={formData.code}
-                                                onChange={(e) => setFormData({ ...formData, code: e.target.value.toUpperCase() })}
-                                                required
-                                            />
-                                            <button
-                                                type="button"
-                                                onClick={generateCode}
-                                                className="px-3 h-10 border border-input rounded-lg hover:bg-muted text-xs font-medium cursor-pointer"
-                                            >
-                                                Generate
-                                            </button>
-                                        </div>
-                                    </div>
-
-                                    <div className="space-y-2">
-                                        <label className="text-sm font-medium">Discount Type</label>
-                                        <select
-                                            className="w-full h-10 px-3 rounded-lg border border-input bg-background text-sm"
-                                            value={formData.type}
-                                            onChange={(e) => setFormData({ ...formData, type: e.target.value as any })}
-                                        >
-                                            <option value="percentage">Percentage (%)</option>
-                                            <option value="fixed">Fixed Amount ($)</option>
-                                        </select>
-                                    </div>
-
-                                    <div className="space-y-2">
-                                        <label className="text-sm font-medium">Value</label>
-                                        <input
-                                            type="number"
-                                            min="0"
-                                            className="w-full h-10 px-3 rounded-lg border border-input bg-background text-sm"
-                                            placeholder={formData.type === 'percentage' ? "e.g. 20" : "e.g. 50"}
-                                            value={formData.value}
-                                            onChange={(e) => setFormData({ ...formData, value: e.target.value })}
-                                            required
-                                        />
-                                    </div>
-                                </div>
-
-                                {/* Scope */}
-                                <div className="space-y-3">
-                                    <label className="text-sm font-medium">Applies To</label>
-                                    <div className="flex gap-4">
-                                        <label className="flex items-center gap-2 text-sm cursor-pointer">
-                                            <input
-                                                type="radio"
-                                                name="apply_to"
-                                                checked={formData.apply_to === 'all'}
-                                                onChange={() => setFormData({ ...formData, apply_to: 'all' })}
-                                                className="text-primary"
-                                            />
-                                            All Courses (Global)
-                                        </label>
-                                        <label className="flex items-center gap-2 text-sm cursor-pointer">
-                                            <input
-                                                type="radio"
-                                                name="apply_to"
-                                                checked={formData.apply_to === 'specific'}
-                                                onChange={() => setFormData({ ...formData, apply_to: 'specific' })}
-                                                className="text-primary"
-                                            />
-                                            Specific Courses
-                                        </label>
-                                    </div>
-
-                                    {formData.apply_to === 'specific' && (
-                                        <div className="mt-2 border border-input rounded-xl p-3 max-h-48 overflow-y-auto bg-muted/30">
-                                            {courses.length === 0 ? (
-                                                <p className="text-xs text-muted-foreground p-2">No courses available.</p>
-                                            ) : (
-                                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                                                    {courses.map(course => (
-                                                        <label key={course.id} className="flex items-center gap-2 text-sm p-1.5 hover:bg-background rounded-lg transition-colors cursor-pointer">
-                                                            <input
-                                                                type="checkbox"
-                                                                checked={formData.selected_courses.includes(course.id)}
-                                                                onChange={() => toggleCourseSelection(course.id)}
-                                                                className="rounded border-input text-primary focus:ring-primary"
-                                                            />
-                                                            <span className="truncate">{course.title}</span>
-                                                        </label>
-                                                    ))}
-                                                </div>
-                                            )}
-                                        </div>
-                                    )}
-                                </div>
-
-                                {/* Limits & Dates */}
-                                <div className="grid md:grid-cols-3 gap-4">
-                                    <div className="space-y-2">
-                                        <label className="text-sm font-medium">Usage Limit (Optional)</label>
-                                        <input
-                                            type="number"
-                                            min="1"
-                                            className="w-full h-10 px-3 rounded-lg border border-input bg-background text-sm"
-                                            placeholder="Unlimited"
-                                            value={formData.max_uses}
-                                            onChange={(e) => setFormData({ ...formData, max_uses: e.target.value })}
-                                        />
-                                    </div>
-                                    <div className="space-y-2">
-                                        <label className="text-sm font-medium">Start Date</label>
-                                        <input
-                                            type="datetime-local"
-                                            className="w-full h-10 px-3 rounded-lg border border-input bg-background text-sm"
-                                            value={formData.starts_at}
-                                            onChange={(e) => setFormData({ ...formData, starts_at: e.target.value })}
-                                        />
-                                    </div>
-                                    <div className="space-y-2">
-                                        <label className="text-sm font-medium">End Date</label>
-                                        <input
-                                            type="datetime-local"
-                                            className="w-full h-10 px-3 rounded-lg border border-input bg-background text-sm"
-                                            value={formData.ends_at}
-                                            onChange={(e) => setFormData({ ...formData, ends_at: e.target.value })}
-                                        />
-                                    </div>
-                                </div>
-
-                                <div className="flex justify-end pt-2">
-                                    <button
-                                        type="submit"
-                                        className="px-6 py-2.5 rounded-xl bg-primary text-primary-foreground font-medium hover:bg-primary/90 transition-all cursor-pointer shadow-sm hover:shadow-md"
-                                    >
-                                        Create Coupon
-                                    </button>
-                                </div>
-                            </form>
-                        </div>
-                    </motion.div>
-                )}
-            </AnimatePresence>
-
             {/* List */}
-            <AdminCouponsTable onCreate={() => setIsCreating(true)} />
+            <div className="rounded-[2.5rem] border border-border/40 bg-card/30 backdrop-blur-xl overflow-hidden shadow-2xl">
+                <AdminCouponsTable onCreate={() => setIsCreating(true)} />
+            </div>
 
-            {/* Old Table Removed */}
-        </div >
+            {/* Creation Modal */}
+            <Dialog open={isCreating} onClose={() => setIsCreating(false)} size="lg">
+                <DialogHeader>
+                    <DialogTitle className="italic">Forge New Token</DialogTitle>
+                    <DialogDescription>Define usage parameters and value extraction mechanics.</DialogDescription>
+                </DialogHeader>
+                <form onSubmit={handleSubmit}>
+                    <DialogBody className="space-y-8">
+                        {/* Token Identity */}
+                        <div className="grid md:grid-cols-2 gap-6">
+                            <div className="space-y-2">
+                                <label className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground ml-1">Unique Identifier</label>
+                                <div className="flex gap-2">
+                                    <input
+                                        type="text"
+                                        className="flex-1 h-12 px-4 rounded-xl border border-border/50 bg-card/50 text-sm font-black tracking-widest placeholder:opacity-30 outline-none focus:ring-2 focus:ring-primary/20 transition-all uppercase font-mono"
+                                        placeholder="TOKEN_ID_X"
+                                        value={formData.code}
+                                        onChange={(e) => setFormData({ ...formData, code: e.target.value.toUpperCase() })}
+                                        required
+                                    />
+                                    <button
+                                        type="button"
+                                        onClick={generateCode}
+                                        className="px-4 h-12 border border-border/50 rounded-xl hover:bg-muted text-[10px] font-black uppercase tracking-widest transition-all"
+                                    >Generate</button>
+                                </div>
+                            </div>
+                            <div className="grid grid-cols-2 gap-4">
+                                <div className="space-y-2">
+                                    <label className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground ml-1">Type</label>
+                                    <select
+                                        className="w-full h-12 px-4 rounded-xl border border-border/50 bg-card/50 text-xs font-black uppercase tracking-widest outline-none transition-all"
+                                        value={formData.type}
+                                        onChange={(e) => setFormData({ ...formData, type: e.target.value as any })}
+                                    >
+                                        <option value="percentage">Percentage</option>
+                                        <option value="fixed">Fixed</option>
+                                    </select>
+                                </div>
+                                <div className="space-y-2">
+                                    <label className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground ml-1">Magnitude</label>
+                                    <input
+                                        type="number"
+                                        className="w-full h-12 px-4 rounded-xl border border-border/50 bg-card/50 text-sm font-black outline-none focus:ring-2 focus:ring-primary/20 transition-all"
+                                        placeholder="0.00"
+                                        value={formData.value}
+                                        onChange={(e) => setFormData({ ...formData, value: e.target.value })}
+                                        required
+                                    />
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Scope Selection */}
+                        <div className="space-y-4">
+                            <label className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground ml-1">Application Scope</label>
+                            <div className="flex gap-6 px-1">
+                                <label className="flex items-center gap-3 cursor-pointer group">
+                                    <div
+                                        className={cn("w-5 h-5 rounded-full border-2 flex items-center justify-center transition-all", formData.apply_to === 'all' ? "border-primary bg-primary/10" : "border-border/60")}
+                                        onClick={() => setFormData({ ...formData, apply_to: 'all' })}
+                                    >
+                                        {formData.apply_to === 'all' && <div className="w-2 h-2 rounded-full bg-primary" />}
+                                    </div>
+                                    <span className={cn("text-xs font-black uppercase tracking-widest transition-all", formData.apply_to === 'all' ? "text-foreground" : "text-muted-foreground")}>Global Catalog</span>
+                                </label>
+                                <label className="flex items-center gap-3 cursor-pointer group">
+                                    <div
+                                        className={cn("w-5 h-5 rounded-full border-2 flex items-center justify-center transition-all", formData.apply_to === 'specific' ? "border-primary bg-primary/10" : "border-border/60")}
+                                        onClick={() => setFormData({ ...formData, apply_to: 'specific' })}
+                                    >
+                                        {formData.apply_to === 'specific' && <div className="w-2 h-2 rounded-full bg-primary" />}
+                                    </div>
+                                    <span className={cn("text-xs font-black uppercase tracking-widest transition-all", formData.apply_to === 'specific' ? "text-foreground" : "text-muted-foreground")}>Targeted Entities</span>
+                                </label>
+                            </div>
+
+                            <AnimatePresence>
+                                {formData.apply_to === 'specific' && (
+                                    <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }} className="overflow-hidden">
+                                        <div className="mt-4 p-5 rounded-[2rem] border border-border/50 bg-muted/10 grid grid-cols-1 sm:grid-cols-2 gap-3 max-h-60 overflow-y-auto custom-scrollbar">
+                                            {courses.map(course => (
+                                                <div
+                                                    key={course.id}
+                                                    onClick={() => toggleCourseSelection(course.id)}
+                                                    className={cn(
+                                                        "flex items-center gap-3 p-3 rounded-2xl border transition-all cursor-pointer group",
+                                                        formData.selected_courses.includes(course.id) ? "border-primary/40 bg-primary/5 ring-1 ring-primary/20" : "border-border/30 hover:border-border/60 bg-card/30"
+                                                    )}
+                                                >
+                                                    <div className={cn("w-4 h-4 rounded border flex items-center justify-center transition-all", formData.selected_courses.includes(course.id) ? "bg-primary border-primary" : "border-border/60")}>
+                                                        {formData.selected_courses.includes(course.id) && <Check className="w-3 h-3 text-white" />}
+                                                    </div>
+                                                    <span className="text-xs font-bold truncate tracking-tight">{course.title}</span>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </motion.div>
+                                )}
+                            </AnimatePresence>
+                        </div>
+
+                        {/* Limits & Scheduling */}
+                        <div className="grid md:grid-cols-3 gap-6">
+                            <div className="space-y-2">
+                                <label className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground ml-1">Usage Ceiling</label>
+                                <input type="number" className="w-full h-12 px-4 rounded-xl border border-border/50 bg-card/50 text-xs font-bold outline-none" placeholder="INF" value={formData.max_uses} onChange={(e) => setFormData({ ...formData, max_uses: e.target.value })} />
+                            </div>
+                            <div className="space-y-2">
+                                <label className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground ml-1">Lifecycle Start</label>
+                                <input type="datetime-local" className="w-full h-12 px-4 rounded-xl border border-border/50 bg-card/50 text-[10px] font-mono outline-none" value={formData.starts_at} onChange={(e) => setFormData({ ...formData, starts_at: e.target.value })} />
+                            </div>
+                            <div className="space-y-2">
+                                <label className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground ml-1">Lifecycle Terminus</label>
+                                <input type="datetime-local" className="w-full h-12 px-4 rounded-xl border border-border/50 bg-card/50 text-[10px] font-mono outline-none" value={formData.ends_at} onChange={(e) => setFormData({ ...formData, ends_at: e.target.value })} />
+                            </div>
+                        </div>
+                    </DialogBody>
+                    <DialogFooter className="grid grid-cols-2 gap-3 p-6">
+                        <button type="button" onClick={() => setIsCreating(false)} className="py-4 bg-muted/20 rounded-2xl font-black text-[10px] uppercase tracking-widest hover:bg-muted/40 transition-all border border-border/20">Abort Process</button>
+                        <button type="submit" className="py-4 bg-primary text-primary-foreground rounded-2xl font-black text-[10px] uppercase tracking-widest hover:bg-primary/90 transition-all shadow-xl shadow-primary/30">Commit Token</button>
+                    </DialogFooter>
+                </form>
+            </Dialog>
+        </motion.div>
     );
 }
