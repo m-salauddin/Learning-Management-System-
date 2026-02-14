@@ -12,9 +12,10 @@ import { CreateCourseInput } from "@/types/lms";
 interface StepFinalizationProps {
     formData: CreateCourseInput;
     setFormData: React.Dispatch<React.SetStateAction<CreateCourseInput>>;
+    errors: Record<string, string>;
 }
 
-export const StepFinalization = ({ formData, setFormData }: StepFinalizationProps) => {
+export const StepFinalization = ({ formData, setFormData, errors }: StepFinalizationProps) => {
     const [projectInput, setProjectInput] = useState({ title: "", description: "" });
     const [faqInput, setFaqInput] = useState({ question: "", answer: "" });
     const [resourceInput, setResourceInput] = useState({ title: "", url: "", type: "link" });

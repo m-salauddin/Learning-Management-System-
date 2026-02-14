@@ -3,10 +3,8 @@
 import * as React from "react";
 import Link from "next/link";
 import { motion } from "motion/react";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { z } from "zod";
-import { Mail, ArrowRight, Loader2, ArrowLeft } from "lucide-react";
+import { z, ZodError } from "zod";
+import { Mail, ArrowRight, Loader2, ArrowLeft, AlertCircle } from "lucide-react";
 import { fadeInUp } from "@/lib/motion";
 import { forgotPassword } from "@/lib/actions/auth";
 import { useToast } from "@/components/ui/toast";
@@ -24,48 +22,65 @@ type ForgotPasswordFormData = z.infer<typeof forgotPasswordSchema>;
 export default function ForgotPasswordPage() {
     const [isLoading, setIsLoading] = React.useState(false);
     const [isSuccess, setIsSuccess] = React.useState(false);
+    const [formData, setFormData] = React.useState<ForgotPasswordFormData>({
+        email: "",
+    });
+    const [errors, setErrors] = React.useState<Record<string, string>>({});
+    const [isSubmitted, setIsSubmitted] = React.useState(false);
     const toast = useToast();
 
-    const {
-        register,
-        handleSubmit,
-        setError,
-        formState: { errors },
-    } = useForm<ForgotPasswordFormData>({
-        resolver: zodResolver(forgotPasswordSchema),
-        defaultValues: {
-            email: "",
-        },
-    });
+    // Real-time validation (Watch Mode) - Debounced for performance
+    React.useEffect(() => {
+        if (isSubmitted) {
+            const timer = setTimeout(() => {
+                const result = forgotPasswordSchema.safeParse(formData);
+                if (!result.success) {
+                    const newErrors: Record<string, string> = {};
+                    result.error.issues.forEach((issue) => {
+                        if (issue.path[0]) newErrors[issue.path[0] as string] = issue.message;
+                    });
+                    setErrors(newErrors);
+                } else {
+                    setErrors({});
+                }
+            }, 300);
+            return () => clearTimeout(timer);
+        }
+    }, [formData, isSubmitted]);
 
-    const onSubmit = async (data: ForgotPasswordFormData) => {
+    const onSubmit = async (e: React.FormEvent) => {
+        e.preventDefault();
+        setIsSubmitted(true);
+        setErrors({});
         setIsLoading(true);
         try {
-            const result = await forgotPassword(data.email);
+            forgotPasswordSchema.parse(formData);
+            const result = await forgotPassword(formData.email);
             if (result?.error) {
                 let errorMessage = result.error;
-
 
                 if (errorMessage.toLowerCase().includes("rate limit")) {
                     errorMessage = "Too many attempts. Please wait a minute before trying again.";
                 }
 
-                setError("root", {
-                    type: "manual",
-                    message: errorMessage
-                });
+                setErrors({ root: errorMessage });
                 toast.error("Request Failed", errorMessage);
             } else {
                 setIsSuccess(true);
                 toast.success("Email Sent", "Check your inbox for the reset link.");
             }
-        } catch (error) {
-            const fallbackError = "Something went wrong. Please try again.";
-            setError("root", {
-                type: "manual",
-                message: fallbackError
-            });
-            toast.error("Error", fallbackError);
+        } catch (error: any) {
+            if (error instanceof ZodError) {
+                const newErrors: Record<string, string> = {};
+                error.issues.forEach((issue) => {
+                    if (issue.path[0]) newErrors[issue.path[0] as string] = issue.message;
+                });
+                setErrors(newErrors);
+            } else {
+                const fallbackError = "Something went wrong. Please try again.";
+                setErrors({ root: fallbackError });
+                toast.error("Error", fallbackError);
+            }
         } finally {
             setIsLoading(false);
         }
@@ -110,36 +125,40 @@ export default function ForgotPasswordPage() {
                             </div>
                         ) : (
 
-                            <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
+                            <form onSubmit={onSubmit} className="space-y-5">
 
                                 <div className="space-y-2">
                                     <label htmlFor="email" className="block text-sm font-medium">
                                         Email Address
                                     </label>
-                                    <div className="relative">
-                                        <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
-                                        <input
-                                            {...register("email")}
-                                            type="email"
-                                            id="email"
-                                            placeholder="name@example.com"
-                                            className={`w-full pl-10 pr-4 py-3 rounded-xl bg-muted/50 border ${errors.email
-                                                ? "border-destructive focus:ring-destructive"
-                                                : "border-border/50 focus:ring-primary"
-                                                } focus:outline-none focus:ring-2 transition-all duration-200`}
-                                        />
+                                    <div className="space-y-1">
+                                        <div className="relative">
+                                            <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
+                                            <input
+                                                value={formData.email}
+                                                onChange={(e) => setFormData(prev => ({ ...prev, email: e.target.value }))}
+                                                type="email"
+                                                id="email"
+                                                placeholder="name@example.com"
+                                                className={`w-full pl-10 pr-4 py-3 rounded-xl bg-muted/50 border ${errors.email
+                                                    ? "border-destructive focus:ring-destructive"
+                                                    : "border-border/50 focus:ring-primary"
+                                                    } focus:outline-none focus:ring-2 transition-all duration-200`}
+                                            />
+                                        </div>
+                                        {errors.email && (
+                                            <p className="text-destructive text-xs flex items-center gap-1">
+                                                <AlertCircle className="w-3.5 h-3.5" />
+                                                {errors.email}
+                                            </p>
+                                        )}
                                     </div>
-                                    {errors.email && (
-                                        <p className="text-destructive text-xs mt-1">
-                                            {errors.email.message}
-                                        </p>
-                                    )}
                                 </div>
 
 
                                 {errors.root && (
                                     <div className="p-3 rounded-lg bg-destructive/10 border border-destructive/20 text-destructive text-sm text-center">
-                                        {errors.root.message}
+                                        {errors.root}
                                     </div>
                                 )}
 

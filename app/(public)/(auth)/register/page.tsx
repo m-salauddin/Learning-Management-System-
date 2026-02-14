@@ -4,10 +4,8 @@ import * as React from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { motion } from "motion/react";
-import { useForm, Controller } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { z } from "zod";
-import { Eye, EyeOff, Mail, Lock, User, ArrowRight, Loader2, CheckCircle2 } from "lucide-react";
+import { z, ZodError } from "zod";
+import { Eye, EyeOff, Mail, Lock, User, ArrowRight, Loader2, CheckCircle2, AlertCircle } from "lucide-react";
 import { Logo } from "@/components/ui/Logo";
 import { fadeInUp } from "@/lib/motion";
 import { AnimatedCheckbox } from "@/components/ui/AnimatedCheckbox";
@@ -67,34 +65,49 @@ export default function RegisterPage() {
     const [showConfirmPassword, setShowConfirmPassword] = React.useState(false);
     const [isLoading, setIsLoading] = React.useState(false);
     const [isSuccess, setIsSuccess] = React.useState(false);
+    const [formData, setFormData] = React.useState<RegisterFormData>({
+        fullName: "",
+        email: "",
+        password: "",
+        confirmPassword: "",
+        agreeToTerms: false,
+    });
+    const [errors, setErrors] = React.useState<Record<string, string>>({});
+    const [isSubmitted, setIsSubmitted] = React.useState(false);
     const toast = useToast();
 
-    const {
-        register,
-        handleSubmit,
-        watch,
-        control,
-        setError,
-        formState: { errors },
-    } = useForm<RegisterFormData>({
-        resolver: zodResolver(registerSchema),
-        defaultValues: {
-            fullName: "",
-            email: "",
-            password: "",
-            confirmPassword: "",
-            agreeToTerms: false,
-        },
-    });
+    // Real-time validation (Watch Mode) - Debounced for performance
+    React.useEffect(() => {
+        if (isSubmitted) {
+            const timer = setTimeout(() => {
+                const result = registerSchema.safeParse(formData);
+                if (!result.success) {
+                    const newErrors: Record<string, string> = {};
+                    result.error.issues.forEach((issue) => {
+                        if (issue.path[0]) newErrors[issue.path[0] as string] = issue.message;
+                    });
+                    setErrors(newErrors);
+                } else {
+                    setErrors({});
+                }
+            }, 300);
+            return () => clearTimeout(timer);
+        }
+    }, [formData, isSubmitted]);
 
-    const password = watch("password", "");
-    const passwordStrength = getPasswordStrength(password);
+    const passwordStrength = getPasswordStrength(formData.password);
 
-    const onSubmit = async (data: RegisterFormData) => {
+    const onSubmit = async (e: React.FormEvent) => {
+        e.preventDefault();
+        setIsSubmitted(true);
+        setErrors({});
         setIsLoading(true);
         const loadingToastId = toast.loading("Creating Account...", "Please wait while we set up your account.");
+
         try {
-            const result = await signup(data);
+            registerSchema.parse(formData);
+
+            const result = await signup(formData);
             if (result?.error) {
                 toast.dismiss(loadingToastId);
                 let errorMessage = result.error;
@@ -105,17 +118,23 @@ export default function RegisterPage() {
             } else if (result?.session && result?.user) {
                 toast.dismiss(loadingToastId);
                 toast.success("Welcome to DokkhotaIT!", `Account created for ${result.user.user_metadata?.full_name || result.user.email}`);
-
-                // Removed manual dispatch to rely on AuthListener
                 router.push('/');
                 router.refresh();
             } else {
                 toast.dismiss(loadingToastId);
                 setIsSuccess(true);
             }
-        } catch (error) {
+        } catch (error: any) {
             toast.dismiss(loadingToastId);
-            toast.error("An error occurred", "Something went wrong. Please try again.");
+            if (error instanceof ZodError) {
+                const newErrors: Record<string, string> = {};
+                error.issues.forEach((issue) => {
+                    if (issue.path[0]) newErrors[issue.path[0] as string] = issue.message;
+                });
+                setErrors(newErrors);
+            } else {
+                toast.error("An error occurred", "Something went wrong. Please try again.");
+            }
         } finally {
             setIsLoading(false);
         }
@@ -154,7 +173,7 @@ export default function RegisterPage() {
                                 </div>
                                 <h3 className="font-bold text-xl">Check your email</h3>
                                 <p className="text-muted-foreground">
-                                    We've sent a verification link to <span className="font-medium text-foreground">{watch("email")}</span>.
+                                    We've sent a verification link to <span className="font-medium text-foreground">{formData.email}</span>.
                                 </p>
                                 <Link
                                     href="/login"
@@ -165,30 +184,34 @@ export default function RegisterPage() {
                             </div>
                         ) : (
                             <>
-                                <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+                                <form onSubmit={onSubmit} className="space-y-4">
 
                                     <div className="space-y-2">
                                         <label htmlFor="fullName" className="block text-sm font-medium">
                                             Full Name
                                         </label>
-                                        <div className="relative">
-                                            <User className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
-                                            <input
-                                                {...register("fullName")}
-                                                type="text"
-                                                id="fullName"
-                                                placeholder="John Doe"
-                                                className={`w-full pl-10 pr-4 py-3 rounded-xl bg-muted/50 border ${errors.fullName
-                                                    ? "border-destructive focus:ring-destructive"
-                                                    : "border-border/50 focus:ring-primary"
-                                                    } focus:outline-none focus:ring-2 transition-all duration-200`}
-                                            />
+                                        <div className="space-y-1">
+                                            <div className="relative">
+                                                <User className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
+                                                <input
+                                                    value={formData.fullName}
+                                                    onChange={(e) => setFormData(prev => ({ ...prev, fullName: e.target.value }))}
+                                                    type="text"
+                                                    id="fullName"
+                                                    placeholder="John Doe"
+                                                    className={`w-full pl-10 pr-4 py-3 rounded-xl bg-muted/50 border ${errors.fullName
+                                                        ? "border-destructive focus:ring-destructive"
+                                                        : "border-border/50 focus:ring-primary"
+                                                        } focus:outline-none focus:ring-2 transition-all duration-200`}
+                                                />
+                                            </div>
+                                            {errors.fullName && (
+                                                <p className="text-destructive text-xs flex items-center gap-1">
+                                                    <AlertCircle className="w-3.5 h-3.5" />
+                                                    {errors.fullName}
+                                                </p>
+                                            )}
                                         </div>
-                                        {errors.fullName && (
-                                            <p className="text-destructive text-xs mt-1">
-                                                {errors.fullName.message}
-                                            </p>
-                                        )}
                                     </div>
 
 
@@ -196,24 +219,28 @@ export default function RegisterPage() {
                                         <label htmlFor="email" className="block text-sm font-medium">
                                             Email Address
                                         </label>
-                                        <div className="relative">
-                                            <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
-                                            <input
-                                                {...register("email")}
-                                                type="email"
-                                                id="email"
-                                                placeholder="name@example.com"
-                                                className={`w-full pl-10 pr-4 py-3 rounded-xl bg-muted/50 border ${errors.email
-                                                    ? "border-destructive focus:ring-destructive"
-                                                    : "border-border/50 focus:ring-primary"
-                                                    } focus:outline-none focus:ring-2 transition-all duration-200`}
-                                            />
+                                        <div className="space-y-1">
+                                            <div className="relative">
+                                                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
+                                                <input
+                                                    value={formData.email}
+                                                    onChange={(e) => setFormData(prev => ({ ...prev, email: e.target.value }))}
+                                                    type="email"
+                                                    id="email"
+                                                    placeholder="name@example.com"
+                                                    className={`w-full pl-10 pr-4 py-3 rounded-xl bg-muted/50 border ${errors.email
+                                                        ? "border-destructive focus:ring-destructive"
+                                                        : "border-border/50 focus:ring-primary"
+                                                        } focus:outline-none focus:ring-2 transition-all duration-200`}
+                                                />
+                                            </div>
+                                            {errors.email && (
+                                                <p className="text-destructive text-xs flex items-center gap-1">
+                                                    <AlertCircle className="w-3.5 h-3.5" />
+                                                    {errors.email}
+                                                </p>
+                                            )}
                                         </div>
-                                        {errors.email && (
-                                            <p className="text-destructive text-xs mt-1">
-                                                {errors.email.message}
-                                            </p>
-                                        )}
                                     </div>
 
 
@@ -221,53 +248,57 @@ export default function RegisterPage() {
                                         <label htmlFor="password" className="block text-sm font-medium">
                                             Password
                                         </label>
-                                        <div className="relative">
-                                            <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
-                                            <input
-                                                {...register("password")}
-                                                type={showPassword ? "text" : "password"}
-                                                id="password"
-                                                placeholder="Create a strong password"
-                                                className={`w-full pl-10 pr-12 py-3 rounded-xl bg-muted/50 border ${errors.password
-                                                    ? "border-destructive focus:ring-destructive"
-                                                    : "border-border/50 focus:ring-primary"
-                                                    } focus:outline-none focus:ring-2 transition-all duration-200`}
-                                            />
-                                            <button
-                                                type="button"
-                                                onClick={() => setShowPassword(!showPassword)}
-                                                className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
-                                            >
-                                                {showPassword ? (
-                                                    <EyeOff className="w-5 h-5" />
-                                                ) : (
-                                                    <Eye className="w-5 h-5" />
-                                                )}
-                                            </button>
-                                        </div>
-                                        {password && (
-                                            <div className="space-y-1">
-                                                <div className="flex gap-1">
-                                                    {[1, 2, 3, 4, 5].map((level) => (
-                                                        <div
-                                                            key={level}
-                                                            className={`h-1 flex-1 rounded-full transition-colors ${level <= passwordStrength.strength
-                                                                ? passwordStrength.color
-                                                                : "bg-muted"
-                                                                }`}
-                                                        />
-                                                    ))}
-                                                </div>
-                                                <p className="text-xs text-muted-foreground">
-                                                    Password strength: <span className="font-medium">{passwordStrength.label}</span>
-                                                </p>
+                                        <div className="space-y-1">
+                                            <div className="relative">
+                                                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
+                                                <input
+                                                    value={formData.password}
+                                                    onChange={(e) => setFormData(prev => ({ ...prev, password: e.target.value }))}
+                                                    type={showPassword ? "text" : "password"}
+                                                    id="password"
+                                                    placeholder="Create a strong password"
+                                                    className={`w-full pl-10 pr-12 py-3 rounded-xl bg-muted/50 border ${errors.password
+                                                        ? "border-destructive focus:ring-destructive"
+                                                        : "border-border/50 focus:ring-primary"
+                                                        } focus:outline-none focus:ring-2 transition-all duration-200`}
+                                                />
+                                                <button
+                                                    type="button"
+                                                    onClick={() => setShowPassword(!showPassword)}
+                                                    className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+                                                >
+                                                    {showPassword ? (
+                                                        <EyeOff className="w-5 h-5" />
+                                                    ) : (
+                                                        <Eye className="w-5 h-5" />
+                                                    )}
+                                                </button>
                                             </div>
-                                        )}
-                                        {errors.password && (
-                                            <p className="text-destructive text-xs mt-1">
-                                                {errors.password.message}
-                                            </p>
-                                        )}
+                                            {formData.password && (
+                                                <div className="space-y-1">
+                                                    <div className="flex gap-1">
+                                                        {[1, 2, 3, 4, 5].map((level) => (
+                                                            <div
+                                                                key={level}
+                                                                className={`h-1 flex-1 rounded-full transition-colors ${level <= passwordStrength.strength
+                                                                    ? passwordStrength.color
+                                                                    : "bg-muted"
+                                                                    }`}
+                                                            />
+                                                        ))}
+                                                    </div>
+                                                    <p className="text-xs text-muted-foreground">
+                                                        Password strength: <span className="font-medium">{passwordStrength.label}</span>
+                                                    </p>
+                                                </div>
+                                            )}
+                                            {errors.password && (
+                                                <p className="text-destructive text-xs flex items-center gap-1">
+                                                    <AlertCircle className="w-3.5 h-3.5" />
+                                                    {errors.password}
+                                                </p>
+                                            )}
+                                        </div>
                                     </div>
 
 
@@ -275,35 +306,39 @@ export default function RegisterPage() {
                                         <label htmlFor="confirmPassword" className="block text-sm font-medium">
                                             Confirm Password
                                         </label>
-                                        <div className="relative">
-                                            <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
-                                            <input
-                                                {...register("confirmPassword")}
-                                                type={showConfirmPassword ? "text" : "password"}
-                                                id="confirmPassword"
-                                                placeholder="Confirm your password"
-                                                className={`w-full pl-10 pr-12 py-3 rounded-xl bg-muted/50 border ${errors.confirmPassword
-                                                    ? "border-destructive focus:ring-destructive"
-                                                    : "border-border/50 focus:ring-primary"
-                                                    } focus:outline-none focus:ring-2 transition-all duration-200`}
-                                            />
-                                            <button
-                                                type="button"
-                                                onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                                                className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
-                                            >
-                                                {showConfirmPassword ? (
-                                                    <EyeOff className="w-5 h-5" />
-                                                ) : (
-                                                    <Eye className="w-5 h-5" />
-                                                )}
-                                            </button>
+                                        <div className="space-y-1">
+                                            <div className="relative">
+                                                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
+                                                <input
+                                                    value={formData.confirmPassword}
+                                                    onChange={(e) => setFormData(prev => ({ ...prev, confirmPassword: e.target.value }))}
+                                                    type={showConfirmPassword ? "text" : "password"}
+                                                    id="confirmPassword"
+                                                    placeholder="Confirm your password"
+                                                    className={`w-full pl-10 pr-12 py-3 rounded-xl bg-muted/50 border ${errors.confirmPassword
+                                                        ? "border-destructive focus:ring-destructive"
+                                                        : "border-border/50 focus:ring-primary"
+                                                        } focus:outline-none focus:ring-2 transition-all duration-200`}
+                                                />
+                                                <button
+                                                    type="button"
+                                                    onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                                                    className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+                                                >
+                                                    {showConfirmPassword ? (
+                                                        <EyeOff className="w-5 h-5" />
+                                                    ) : (
+                                                        <Eye className="w-5 h-5" />
+                                                    )}
+                                                </button>
+                                            </div>
+                                            {errors.confirmPassword && (
+                                                <p className="text-destructive text-xs flex items-center gap-1">
+                                                    <AlertCircle className="w-3.5 h-3.5" />
+                                                    {errors.confirmPassword}
+                                                </p>
+                                            )}
                                         </div>
-                                        {errors.confirmPassword && (
-                                            <p className="text-destructive text-xs mt-1">
-                                                {errors.confirmPassword.message}
-                                            </p>
-                                        )}
                                     </div>
 
 
@@ -311,10 +346,10 @@ export default function RegisterPage() {
                                         <p className="text-xs font-medium text-muted-foreground mb-2">Password must contain:</p>
                                         <div className="grid grid-cols-2 gap-1">
                                             {[
-                                                { label: "8+ characters", valid: password.length >= 8 },
-                                                { label: "Uppercase letter", valid: /[A-Z]/.test(password) },
-                                                { label: "Lowercase letter", valid: /[a-z]/.test(password) },
-                                                { label: "Number", valid: /[0-9]/.test(password) },
+                                                { label: "8+ characters", valid: formData.password.length >= 8 },
+                                                { label: "Uppercase letter", valid: /[A-Z]/.test(formData.password) },
+                                                { label: "Lowercase letter", valid: /[a-z]/.test(formData.password) },
+                                                { label: "Number", valid: /[0-9]/.test(formData.password) },
                                             ].map((req) => (
                                                 <div key={req.label} className="flex items-center gap-1 text-xs">
                                                     <CheckCircle2
@@ -331,32 +366,27 @@ export default function RegisterPage() {
 
 
                                     <div className="space-y-1">
-                                        <Controller
-                                            name="agreeToTerms"
-                                            control={control}
-                                            render={({ field: { value, onChange } }) => (
-                                                <AnimatedCheckbox
-                                                    id="agreeToTerms"
-                                                    checked={value}
-                                                    onChange={onChange}
-                                                    label={
-                                                        <span>
-                                                            I agree to the{" "}
-                                                            <Link href="/terms" className="text-primary hover:underline">
-                                                                Terms of Service
-                                                            </Link>{" "}
-                                                            and{" "}
-                                                            <Link href="/privacy" className="text-primary hover:underline">
-                                                                Privacy Policy
-                                                            </Link>
-                                                        </span>
-                                                    }
-                                                />
-                                            )}
+                                        <AnimatedCheckbox
+                                            id="agreeToTerms"
+                                            checked={formData.agreeToTerms}
+                                            onChange={(checked) => setFormData(prev => ({ ...prev, agreeToTerms: checked }))}
+                                            label={
+                                                <span>
+                                                    I agree to the{" "}
+                                                    <Link href="/terms" className="text-primary hover:underline">
+                                                        Terms of Service
+                                                    </Link>{" "}
+                                                    and{" "}
+                                                    <Link href="/privacy" className="text-primary hover:underline">
+                                                        Privacy Policy
+                                                    </Link>
+                                                </span>
+                                            }
                                         />
                                         {errors.agreeToTerms && (
-                                            <p className="text-destructive text-xs ml-8">
-                                                {errors.agreeToTerms.message}
+                                            <p className="text-destructive text-xs mt-1 flex items-center gap-1 ml-8">
+                                                <AlertCircle className="w-3.5 h-3.5" />
+                                                {errors.agreeToTerms}
                                             </p>
                                         )}
                                     </div>

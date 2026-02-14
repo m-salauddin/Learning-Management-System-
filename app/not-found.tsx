@@ -5,9 +5,7 @@ import { motion, AnimatePresence } from "motion/react";
 import { Home, ArrowLeft, X, Send, AlertCircle } from "lucide-react";
 import { Logo } from "@/components/ui/Logo";
 import { useState } from "react";
-import { z } from "zod";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
+import { z, ZodError } from "zod";
 
 
 const feedbackSchema = z.object({
@@ -19,27 +17,34 @@ type FeedbackFormValues = z.infer<typeof feedbackSchema>;
 export default function NotFound() {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [isSubmitted, setIsSubmitted] = useState(false);
+    const [isSubmitting, setIsSubmitting] = useState(false);
+    const [formData, setFormData] = useState<FeedbackFormValues>({ message: "" });
+    const [errors, setErrors] = useState<Record<string, string>>({});
 
-    const {
-        register,
-        handleSubmit,
-        reset,
-        watch,
-        formState: { errors, isSubmitting },
-    } = useForm<FeedbackFormValues>({
-        resolver: zodResolver(feedbackSchema),
-    });
-
-    const onSubmit = async (data: FeedbackFormValues) => {
-
-        await new Promise((resolve) => setTimeout(resolve, 1500));
-
-        setIsSubmitted(true);
-        reset();
-        setTimeout(() => {
-            setIsSubmitted(false);
-            setIsModalOpen(false);
-        }, 2000);
+    const onSubmit = async (e: React.FormEvent) => {
+        e.preventDefault();
+        setErrors({});
+        setIsSubmitting(true);
+        try {
+            feedbackSchema.parse(formData);
+            await new Promise((resolve) => setTimeout(resolve, 1500));
+            setIsSubmitted(true);
+            setFormData({ message: "" });
+            setTimeout(() => {
+                setIsSubmitted(false);
+                setIsModalOpen(false);
+            }, 2000);
+        } catch (error: any) {
+            if (error instanceof ZodError) {
+                const newErrors: Record<string, string> = {};
+                error.issues.forEach((issue) => {
+                    if (issue.path[0]) newErrors[issue.path[0] as string] = issue.message;
+                });
+                setErrors(newErrors);
+            }
+        } finally {
+            setIsSubmitting(false);
+        }
     };
 
     return (
@@ -207,7 +212,7 @@ export default function NotFound() {
                                             </div>
                                         </motion.div>
                                     ) : (
-                                        <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+                                        <form onSubmit={onSubmit} className="space-y-6">
                                             <div className="space-y-3">
                                                 <div className="flex justify-between items-baseline">
                                                     <label htmlFor="message" className="text-sm font-semibold text-slate-300">
@@ -217,7 +222,8 @@ export default function NotFound() {
                                                 </div>
                                                 <div className="relative group">
                                                     <textarea
-                                                        {...register("message")}
+                                                        value={formData.message}
+                                                        onChange={(e) => setFormData({ message: e.target.value })}
                                                         id="message"
                                                         rows={4}
                                                         className="w-full bg-black/20 border border-border rounded-lg p-4 text-sm text-slate-200 placeholder:text-slate-600 focus:outline-none focus:border-[#FBBC05]/50 focus:ring-1 focus:ring-[#FBBC05]/50 transition-all resize-none shadow-inner"
@@ -225,13 +231,13 @@ export default function NotFound() {
                                                         maxLength={100}
                                                     />
                                                     <div className="absolute bottom-3 right-3 text-[10px] text-slate-600 font-mono">
-                                                        {watch("message")?.length || 0}/100
+                                                        {formData.message.length}/100
                                                     </div>
                                                 </div>
                                                 {errors.message && (
-                                                    <p className="text-red-400 text-xs font-medium flex items-center gap-1.5">
-                                                        <span className="w-1 h-1 rounded-full bg-red-400" />
-                                                        {errors.message.message}
+                                                    <p className="text-red-400 text-xs font-medium flex items-center gap-1.5 mt-2">
+                                                        <AlertCircle className="w-3 h-3" />
+                                                        {errors.message}
                                                     </p>
                                                 )}
                                             </div>

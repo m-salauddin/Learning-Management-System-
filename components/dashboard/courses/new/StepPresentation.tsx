@@ -1,7 +1,7 @@
 "use client";
 
 import { motion } from "motion/react";
-import { DollarSign, Video, Image as ImageIcon, Upload, X, Loader2 } from "lucide-react";
+import { DollarSign, Video, Image as ImageIcon, Upload, X, Loader2, AlertCircle } from "lucide-react";
 import Image from "next/image";
 import { cn } from "@/lib/utils";
 import { inputClasses, labelClasses } from "./constants";
@@ -19,6 +19,7 @@ interface StepPresentationProps {
     handleDrop: (e: React.DragEvent) => void;
     handleFileChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
     removeThumbnail: () => void;
+    errors: Record<string, string>;
 }
 
 export const StepPresentation = ({
@@ -32,7 +33,8 @@ export const StepPresentation = ({
     handleDragLeave,
     handleDrop,
     handleFileChange,
-    removeThumbnail
+    removeThumbnail,
+    errors
 }: StepPresentationProps) => {
     return (
         <motion.div
@@ -78,28 +80,44 @@ export const StepPresentation = ({
                         <div className="space-y-4">
                             <div className="space-y-2">
                                 <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider ml-1">Regular Price</p>
-                                <div className="relative">
-                                    <span className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground font-bold">$</span>
-                                    <input
-                                        type="number"
-                                        value={formData.price}
-                                        onChange={(e) => setFormData(prev => ({ ...prev, price: parseInt(e.target.value) || 0 }))}
-                                        className={cn(inputClasses, "pl-8")}
-                                        placeholder="0"
-                                    />
+                                <div className="space-y-1">
+                                    <div className="relative">
+                                        <span className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground font-bold">$</span>
+                                        <input
+                                            type="number"
+                                            value={formData.price}
+                                            onChange={(e) => setFormData(prev => ({ ...prev, price: parseInt(e.target.value) || 0 }))}
+                                            className={cn(inputClasses, "pl-8", errors.price && "border-red-500/50 focus:border-red-500")}
+                                            placeholder="0"
+                                        />
+                                    </div>
+                                    {errors.price && (
+                                        <p className="text-[10px] text-red-500 font-bold ml-1 flex items-center gap-1">
+                                            <AlertCircle className="w-3 h-3" />
+                                            {errors.price}
+                                        </p>
+                                    )}
                                 </div>
                             </div>
                             <div className="space-y-2">
                                 <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider ml-1">Discount Price (Optional)</p>
-                                <div className="relative">
-                                    <span className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground font-bold">$</span>
-                                    <input
-                                        type="number"
-                                        value={formData.discount_price || ""}
-                                        onChange={(e) => setFormData(prev => ({ ...prev, discount_price: e.target.value ? parseInt(e.target.value) : null }))}
-                                        className={cn(inputClasses, "pl-8")}
-                                        placeholder="0"
-                                    />
+                                <div className="space-y-1">
+                                    <div className="relative">
+                                        <span className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground font-bold">$</span>
+                                        <input
+                                            type="number"
+                                            value={formData.discount_price || ""}
+                                            onChange={(e) => setFormData(prev => ({ ...prev, discount_price: e.target.value ? parseInt(e.target.value) : null }))}
+                                            className={cn(inputClasses, "pl-8", errors.discount_price && "border-red-500/50 focus:border-red-500")}
+                                            placeholder="0"
+                                        />
+                                    </div>
+                                    {errors.discount_price && (
+                                        <p className="text-[10px] text-red-500 font-bold ml-1 flex items-center gap-1">
+                                            <AlertCircle className="w-3 h-3" />
+                                            {errors.discount_price}
+                                        </p>
+                                    )}
                                 </div>
                             </div>
                             <div className="space-y-2 pt-2">
@@ -124,35 +142,43 @@ export const StepPresentation = ({
                             <ImageIcon className="w-4 h-4 text-muted-foreground" />
                             Course Thumbnail
                         </label>
-                        <div
-                            onClick={() => fileInputRef.current?.click()}
-                            onDragOver={handleDragOver}
-                            onDragLeave={handleDragLeave}
-                            onDrop={handleDrop}
-                            className={cn(
-                                "relative aspect-video rounded-2xl overflow-hidden border border-dashed transition-all cursor-pointer",
-                                isDragging ? "border-primary bg-primary/5" : "border-border/50 bg-muted/20 hover:bg-muted/30"
-                            )}
-                        >
-                            {(formData.thumbnail_url || thumbnailPreview) ? (
-                                <>
-                                    <Image src={thumbnailPreview || formData.thumbnail_url || ""} alt="Thumbnail" fill className="object-cover" />
-                                    <div className="absolute inset-0 bg-black/60 opacity-0 hover:opacity-100 transition-opacity flex items-center justify-center gap-4">
-                                        <div className="p-3 rounded-full bg-white/10 text-white"><Upload className="w-5 h-5" /></div>
-                                        <div onClick={(e) => { e.stopPropagation(); removeThumbnail(); }} className="p-3 rounded-full bg-red-500/20 text-red-500"><X className="w-5 h-5" /></div>
+                        <div className="space-y-1">
+                            <div
+                                onClick={() => fileInputRef.current?.click()}
+                                onDragOver={handleDragOver}
+                                onDragLeave={handleDragLeave}
+                                onDrop={handleDrop}
+                                className={cn(
+                                    "relative aspect-video rounded-2xl overflow-hidden border border-dashed transition-all cursor-pointer",
+                                    isDragging ? "border-primary bg-primary/5" : (errors.thumbnail_url ? "border-red-500/50 bg-red-500/5 hover:bg-red-500/10" : "border-border/50 bg-muted/20 hover:bg-muted/30")
+                                )}
+                            >
+                                {(formData.thumbnail_url || thumbnailPreview) ? (
+                                    <>
+                                        <Image src={thumbnailPreview || formData.thumbnail_url || ""} alt="Thumbnail" fill className="object-cover" />
+                                        <div className="absolute inset-0 bg-black/60 opacity-0 hover:opacity-100 transition-opacity flex items-center justify-center gap-4">
+                                            <div className="p-3 rounded-full bg-white/10 text-white"><Upload className="w-5 h-5" /></div>
+                                            <div onClick={(e) => { e.stopPropagation(); removeThumbnail(); }} className="p-3 rounded-full bg-red-500/20 text-red-500"><X className="w-5 h-5" /></div>
+                                        </div>
+                                    </>
+                                ) : (
+                                    <div className="absolute inset-0 flex flex-col items-center justify-center text-center p-6">
+                                        <Upload className="w-8 h-8 text-muted-foreground mb-3" />
+                                        <p className="text-sm font-semibold text-foreground">Click or drag to upload</p>
+                                        <p className="text-[10px] text-muted-foreground mt-1 uppercase tracking-tight">Recommendation: 1280x720px</p>
                                     </div>
-                                </>
-                            ) : (
-                                <div className="absolute inset-0 flex flex-col items-center justify-center text-center p-6">
-                                    <Upload className="w-8 h-8 text-muted-foreground mb-3" />
-                                    <p className="text-sm font-semibold text-foreground">Click or drag to upload</p>
-                                    <p className="text-[10px] text-muted-foreground mt-1 uppercase tracking-tight">Recommendation: 1280x720px</p>
-                                </div>
-                            )}
-                            {isUploadingThumbnail && (
-                                <div className="absolute inset-0 bg-background/80 backdrop-blur-sm flex items-center justify-center">
-                                    <Loader2 className="w-8 h-8 text-primary animate-spin" />
-                                </div>
+                                )}
+                                {isUploadingThumbnail && (
+                                    <div className="absolute inset-0 bg-background/80 backdrop-blur-sm flex items-center justify-center">
+                                        <Loader2 className="w-8 h-8 text-primary animate-spin" />
+                                    </div>
+                                )}
+                            </div>
+                            {errors.thumbnail_url && (
+                                <p className="text-[10px] text-red-500 font-bold ml-1 flex items-center gap-1">
+                                    <AlertCircle className="w-3 h-3" />
+                                    {errors.thumbnail_url}
+                                </p>
                             )}
                         </div>
                         <input type="file" ref={fileInputRef} className="hidden" accept="image/*" onChange={handleFileChange} />

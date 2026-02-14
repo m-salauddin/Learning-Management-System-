@@ -8,6 +8,13 @@ import { createClient } from "@/lib/supabase/client";
 import { useToast } from "@/components/ui/toast";
 import { createCourse, getCategories, getTeachers } from "@/lib/actions/courses";
 import { CourseLevel, CreateCourseInput } from "@/types/lms";
+import {
+    courseStep1Schema,
+    courseStep2Schema,
+    courseStep3Schema,
+    courseStep4Schema
+} from "@/lib/validations/course";
+import { ZodError } from "zod";
 
 // Extracted Components
 import { StepIndicator } from "@/components/dashboard/courses/new/StepIndicator";
@@ -39,6 +46,8 @@ export default function CreateCoursePage() {
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [categories, setCategories] = useState<Category[]>([]);
     const [teachers, setTeachers] = useState<Teacher[]>([]);
+    const [errors, setErrors] = useState<Record<string, string>>({});
+    const [submittedSteps, setSubmittedSteps] = useState<Set<number>>(new Set());
 
     // Form state
     const [currentStep, setCurrentStep] = useState(1);
@@ -59,10 +68,38 @@ export default function CreateCoursePage() {
         learning_objectives: [] as string[],
         target_audience: [] as string[],
         tags: [] as string[],
+        batch_no: undefined,
         projects: [] as { title: string; description: string }[],
         faqs: [] as { question: string; answer: string }[],
         resources: [] as { title: string; type: string; url: string }[]
     });
+
+    // Real-time validation (Watch Mode) - Debounced for performance
+    useEffect(() => {
+        if (submittedSteps.has(currentStep)) {
+            const timer = setTimeout(() => {
+                let schema;
+                if (currentStep === 1) schema = courseStep1Schema;
+                else if (currentStep === 2) schema = courseStep2Schema;
+                else if (currentStep === 3) schema = courseStep3Schema;
+                else if (currentStep === 4) schema = courseStep4Schema;
+
+                if (schema) {
+                    const result = schema.safeParse(formData);
+                    if (!result.success) {
+                        const newErrors: Record<string, string> = {};
+                        result.error.issues.forEach((issue) => {
+                            if (issue.path[0]) newErrors[issue.path[0] as string] = issue.message;
+                        });
+                        setErrors(newErrors);
+                    } else {
+                        setErrors({});
+                    }
+                }
+            }, 300);
+            return () => clearTimeout(timer);
+        }
+    }, [formData, currentStep, submittedSteps]);
 
     // Media states
     const [thumbnailPreview, setThumbnailPreview] = useState<string | null>(null);
@@ -155,14 +192,29 @@ export default function CreateCoursePage() {
     // --- Submission ---
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        setIsSubmitting(true);
+        setSubmittedSteps(prev => new Set(prev).add(4));
+        setErrors({});
 
         try {
-            await createCourse(formData);
-            toast.success("Course created successfully!");
-            router.push("/dashboard/courses");
-        } catch (error: any) {
-            toast.error(error.message || "Failed to create course");
+            courseStep4Schema.parse(formData);
+            setIsSubmitting(true);
+            const result = await createCourse(formData);
+            if (result.success) {
+                toast.success("Course created successfully!");
+                router.push("/dashboard/courses");
+            } else {
+                toast.error(result.error || "Failed to create course");
+            }
+        } catch (errorDetail: any) {
+            if (errorDetail instanceof ZodError) {
+                const newErrors: Record<string, string> = {};
+                errorDetail.issues.forEach((issue) => {
+                    if (issue.path[0]) newErrors[issue.path[0] as string] = issue.message;
+                });
+                setErrors(newErrors);
+            } else {
+                toast.error(errorDetail.message || "Failed to create course");
+            }
         } finally {
             setIsSubmitting(false);
         }
@@ -170,13 +222,28 @@ export default function CreateCoursePage() {
 
     // --- Navigation ---
     const nextStep = () => {
-        if (currentStep === 1 && !formData.title) return toast.error("Title is mandatory");
-        if (currentStep === 1 && !formData.category_id) return toast.error("Select a category");
-        setCurrentStep(prev => Math.min(prev + 1, totalSteps));
-        window.scrollTo({ top: 0, behavior: 'smooth' });
+        setSubmittedSteps(prev => new Set(prev).add(currentStep));
+        setErrors({});
+        try {
+            if (currentStep === 1) courseStep1Schema.parse(formData);
+            if (currentStep === 2) courseStep2Schema.parse(formData);
+            if (currentStep === 3) courseStep3Schema.parse(formData);
+
+            setCurrentStep(prev => Math.min(prev + 1, totalSteps));
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        } catch (errorDetail: any) {
+            if (errorDetail instanceof ZodError) {
+                const newErrors: Record<string, string> = {};
+                errorDetail.issues.forEach((issue) => {
+                    if (issue.path[0]) newErrors[issue.path[0] as string] = issue.message;
+                });
+                setErrors(newErrors);
+            }
+        }
     };
 
     const prevStep = () => {
+        setErrors({});
         setCurrentStep(prev => Math.max(prev - 1, 1));
         window.scrollTo({ top: 0, behavior: 'smooth' });
     };
@@ -201,12 +268,14 @@ export default function CreateCoursePage() {
                                     setFormData={setFormData}
                                     categories={categories}
                                     teachers={teachers}
+                                    errors={errors}
                                 />
                             )}
                             {currentStep === 2 && (
                                 <StepNarratives
                                     formData={formData}
                                     setFormData={setFormData}
+                                    errors={errors}
                                 />
                             )}
                             {currentStep === 3 && (
@@ -222,12 +291,14 @@ export default function CreateCoursePage() {
                                     handleDrop={handleDrop}
                                     handleFileChange={handleFileChange}
                                     removeThumbnail={removeThumbnail}
+                                    errors={errors}
                                 />
                             )}
                             {currentStep === 4 && (
                                 <StepFinalization
                                     formData={formData}
                                     setFormData={setFormData}
+                                    errors={errors}
                                 />
                             )}
                         </AnimatePresence>

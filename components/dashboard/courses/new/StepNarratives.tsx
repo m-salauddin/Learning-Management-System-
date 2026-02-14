@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { motion } from "motion/react";
 import {
-    PencilLine, ListChecks, FileText, Target, Plus, X, Users, Tags
+    PencilLine, ListChecks, FileText, Target, Plus, X, Users, Tags, AlertCircle
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { inputClasses, labelClasses } from "./constants";
@@ -12,9 +12,10 @@ import { CreateCourseInput } from "@/types/lms";
 interface StepNarrativesProps {
     formData: CreateCourseInput;
     setFormData: React.Dispatch<React.SetStateAction<CreateCourseInput>>;
+    errors: Record<string, string>;
 }
 
-export const StepNarratives = ({ formData, setFormData }: StepNarrativesProps) => {
+export const StepNarratives = ({ formData, setFormData, errors }: StepNarrativesProps) => {
     const [objectiveInput, setObjectiveInput] = useState("");
     const [requirementInput, setRequirementInput] = useState("");
     const [audienceInput, setAudienceInput] = useState("");
@@ -85,7 +86,7 @@ export const StepNarratives = ({ formData, setFormData }: StepNarrativesProps) =
                                 onChange={(e) => setObjectiveInput(e.target.value)}
                                 onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), addArrayItem('learning_objectives', objectiveInput, setObjectiveInput))}
                                 placeholder="Add objective..."
-                                className={cn(inputClasses, "py-2")}
+                                className={cn(inputClasses, "py-2", errors.learning_objectives && "border-red-500/50 focus:border-red-500")}
                             />
                             <button
                                 type="button"
@@ -103,6 +104,12 @@ export const StepNarratives = ({ formData, setFormData }: StepNarrativesProps) =
                                 </div>
                             ))}
                         </div>
+                        {errors.learning_objectives && (
+                            <p className="text-[10px] text-red-500 font-bold ml-1 flex items-center gap-1">
+                                <AlertCircle className="w-3 h-3" />
+                                {errors.learning_objectives}
+                            </p>
+                        )}
                     </div>
 
                     {/* Requirements */}
@@ -118,7 +125,7 @@ export const StepNarratives = ({ formData, setFormData }: StepNarrativesProps) =
                                 onChange={(e) => setRequirementInput(e.target.value)}
                                 onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), addArrayItem('requirements', requirementInput, setRequirementInput))}
                                 placeholder="Add requirement..."
-                                className={cn(inputClasses, "py-2")}
+                                className={cn(inputClasses, "py-2", errors.requirements && "border-red-500/50 focus:border-red-500")}
                             />
                             <button
                                 type="button"
@@ -136,6 +143,12 @@ export const StepNarratives = ({ formData, setFormData }: StepNarrativesProps) =
                                 </div>
                             ))}
                         </div>
+                        {errors.requirements && (
+                            <p className="text-[10px] text-red-500 font-bold ml-1 flex items-center gap-1">
+                                <AlertCircle className="w-3 h-3" />
+                                {errors.requirements}
+                            </p>
+                        )}
                     </div>
 
                     {/* Target Audience */}
@@ -151,7 +164,7 @@ export const StepNarratives = ({ formData, setFormData }: StepNarrativesProps) =
                                 onChange={(e) => setAudienceInput(e.target.value)}
                                 onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), addArrayItem('target_audience', audienceInput, setAudienceInput))}
                                 placeholder="Who is this for?"
-                                className={cn(inputClasses, "py-2")}
+                                className={cn(inputClasses, "py-2", errors.target_audience && "border-red-500/50 focus:border-red-500")}
                             />
                             <button
                                 type="button"
@@ -169,6 +182,12 @@ export const StepNarratives = ({ formData, setFormData }: StepNarrativesProps) =
                                 </div>
                             ))}
                         </div>
+                        {errors.target_audience && (
+                            <p className="text-[10px] text-red-500 font-bold ml-1 flex items-center gap-1">
+                                <AlertCircle className="w-3 h-3" />
+                                {errors.target_audience}
+                            </p>
+                        )}
                     </div>
 
                     {/* Tags */}

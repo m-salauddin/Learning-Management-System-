@@ -1,15 +1,17 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { motion } from "motion/react";
 import {
     User, Mail, Lock, Shield, Loader2,
-    Award, Settings, UserPlus, Users
+    Award, Settings, UserPlus, Users, AlertCircle
 } from "lucide-react";
 import { createUser } from "@/lib/actions/users";
 import { UserRole } from "@/types/user";
 import { useToast } from "@/components/ui/toast";
+import { userCreateSchema } from "@/lib/validations/user";
+import { ZodError } from "zod";
 
 import {
     Select,
@@ -30,27 +32,57 @@ export default function AddUserPage() {
         password: "",
         role: "student" as UserRole
     });
+    const [errors, setErrors] = useState<Record<string, string>>({});
+    const [isSubmitted, setIsSubmitted] = useState(false);
 
-
+    // Real-time validation (Watch Mode) - Debounced for performance
+    useEffect(() => {
+        if (isSubmitted) {
+            const timer = setTimeout(() => {
+                const result = userCreateSchema.safeParse(userData);
+                if (!result.success) {
+                    const newErrors: Record<string, string> = {};
+                    result.error.issues.forEach((issue) => {
+                        if (issue.path[0]) newErrors[issue.path[0] as string] = issue.message;
+                    });
+                    setErrors(newErrors);
+                } else {
+                    setErrors({});
+                }
+            }, 300);
+            return () => clearTimeout(timer);
+        }
+    }, [userData, isSubmitted]);
 
     const handleCreateUser = async (e: React.FormEvent) => {
         e.preventDefault();
-
-        if (!userData.name || !userData.email || !userData.password) {
-            toast.error("Missing fields", "Please fill in all fields");
-            return;
-        }
-
+        setIsSubmitted(true);
+        setErrors({});
         setIsCreating(true);
-        const result = await createUser(userData);
-        setIsCreating(false);
 
-        if (result.success) {
-            toast.success("User created", "New user has been added successfully");
-            router.push("/dashboard/users");
-            router.refresh();
-        } else {
-            toast.error("Error", result.error || "Failed to create user");
+        try {
+            userCreateSchema.parse(userData);
+            const result = await createUser(userData);
+
+            if (result.success) {
+                toast.success("User created", "New user has been added successfully");
+                router.push("/dashboard/users");
+                router.refresh();
+            } else {
+                toast.error("Error", result.error || "Failed to create user");
+            }
+        } catch (error: any) {
+            if (error instanceof ZodError) {
+                const newErrors: Record<string, string> = {};
+                error.issues.forEach((issue) => {
+                    if (issue.path[0]) newErrors[issue.path[0] as string] = issue.message;
+                });
+                setErrors(newErrors);
+            } else {
+                toast.error("Error", "An unexpected error occurred");
+            }
+        } finally {
+            setIsCreating(false);
         }
     };
 
@@ -79,14 +111,24 @@ export default function AddUserPage() {
                                     <User className="w-4 h-4 text-muted-foreground" />
                                     Full Name
                                 </label>
-                                <input
-                                    type="text"
-                                    value={userData.name}
-                                    onChange={(e) => setUserData({ ...userData, name: e.target.value })}
-                                    className="w-full px-4 py-3 rounded-xl bg-input-dark border border-input-dark-border text-foreground placeholder:text-input-dark-text focus:border-primary/50 focus:ring-2 focus:ring-primary/20 outline-none transition-all"
-                                    placeholder="John Doe"
-                                    required
-                                />
+                                <div className="space-y-1">
+                                    <input
+                                        type="text"
+                                        value={userData.name}
+                                        onChange={(e) => setUserData({ ...userData, name: e.target.value })}
+                                        className={cn(
+                                            "w-full px-4 py-3 rounded-xl bg-input-dark border border-input-dark-border text-foreground placeholder:text-input-dark-text focus:border-primary/50 focus:ring-2 focus:ring-primary/20 outline-none transition-all",
+                                            errors.name && "border-rose-500/50 focus:border-rose-500 ring-rose-500/10"
+                                        )}
+                                        placeholder="John Doe"
+                                    />
+                                    {errors.name && (
+                                        <p className="text-[11px] text-rose-500 font-medium ml-1 flex items-center gap-1">
+                                            <AlertCircle className="w-3 h-3" />
+                                            {errors.name}
+                                        </p>
+                                    )}
+                                </div>
                             </div>
 
                             {/* Email Address */}
@@ -95,14 +137,24 @@ export default function AddUserPage() {
                                     <Mail className="w-4 h-4 text-muted-foreground" />
                                     Email Address
                                 </label>
-                                <input
-                                    type="email"
-                                    value={userData.email}
-                                    onChange={(e) => setUserData({ ...userData, email: e.target.value })}
-                                    className="w-full px-4 py-3 rounded-xl bg-input-dark border border-input-dark-border text-foreground placeholder:text-input-dark-text focus:border-primary/50 focus:ring-2 focus:ring-primary/20 outline-none transition-all"
-                                    placeholder="john@example.com"
-                                    required
-                                />
+                                <div className="space-y-1">
+                                    <input
+                                        type="email"
+                                        value={userData.email}
+                                        onChange={(e) => setUserData({ ...userData, email: e.target.value })}
+                                        className={cn(
+                                            "w-full px-4 py-3 rounded-xl bg-input-dark border border-input-dark-border text-foreground placeholder:text-input-dark-text focus:border-primary/50 focus:ring-2 focus:ring-primary/20 outline-none transition-all",
+                                            errors.email && "border-rose-500/50 focus:border-rose-500 ring-rose-500/10"
+                                        )}
+                                        placeholder="john@example.com"
+                                    />
+                                    {errors.email && (
+                                        <p className="text-[11px] text-rose-500 font-medium ml-1 flex items-center gap-1">
+                                            <AlertCircle className="w-3 h-3" />
+                                            {errors.email}
+                                        </p>
+                                    )}
+                                </div>
                             </div>
 
                             {/* Password */}
@@ -111,15 +163,24 @@ export default function AddUserPage() {
                                     <Lock className="w-4 h-4 text-muted-foreground" />
                                     Initial Password
                                 </label>
-                                <input
-                                    type="password"
-                                    value={userData.password}
-                                    onChange={(e) => setUserData({ ...userData, password: e.target.value })}
-                                    className="w-full px-4 py-3 rounded-xl bg-input-dark border border-input-dark-border text-foreground placeholder:text-input-dark-text focus:border-primary/50 focus:ring-2 focus:ring-primary/20 outline-none transition-all"
-                                    placeholder="••••••••"
-                                    required
-                                    minLength={6}
-                                />
+                                <div className="space-y-1">
+                                    <input
+                                        type="password"
+                                        value={userData.password}
+                                        onChange={(e) => setUserData({ ...userData, password: e.target.value })}
+                                        className={cn(
+                                            "w-full px-4 py-3 rounded-xl bg-input-dark border border-input-dark-border text-foreground placeholder:text-input-dark-text focus:border-primary/50 focus:ring-2 focus:ring-primary/20 outline-none transition-all",
+                                            errors.password && "border-rose-500/50 focus:border-rose-500 ring-rose-500/10"
+                                        )}
+                                        placeholder="••••••••"
+                                    />
+                                    {errors.password && (
+                                        <p className="text-[11px] text-rose-500 font-medium ml-1 flex items-center gap-1">
+                                            <AlertCircle className="w-3 h-3" />
+                                            {errors.password}
+                                        </p>
+                                    )}
+                                </div>
                             </div>
 
                             {/* Role Selection */}

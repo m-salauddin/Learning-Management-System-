@@ -1,9 +1,13 @@
 "use client";
 
+import { useEffect } from "react";
 import { motion } from "motion/react";
 import {
     BookOpen, Layers, Users, BarChart, Globe, Info, PencilLine, FileText,
-    Smartphone, Palette, TrendingUp, Briefcase, Database, Code, Shield, Cloud
+    Smartphone, Palette, TrendingUp, Briefcase, Database, Code, Shield, Cloud,
+    GraduationCap, UserRound, Hash, AlertCircle,
+    SignalLow, SignalMedium, SignalHigh, BookOpenText, Target,
+    Video, Radio, MonitorPlay
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import {
@@ -15,12 +19,14 @@ import {
 } from "@/components/ui/select";
 import { inputClasses, labelClasses, selectTriggerClasses } from "./constants";
 import { CreateCourseInput } from "@/types/lms";
+import { getNextBatchNumber } from "@/lib/actions/courses";
 
 interface StepFoundationsProps {
     formData: CreateCourseInput;
     setFormData: React.Dispatch<React.SetStateAction<CreateCourseInput>>;
     categories: any[];
     teachers: any[];
+    errors: Record<string, string>;
 }
 
 const iconMap: Record<string, any> = {
@@ -40,7 +46,20 @@ const iconMap: Record<string, any> = {
     'Cloud': Cloud
 };
 
-export const StepFoundations = ({ formData, setFormData, categories, teachers }: StepFoundationsProps) => {
+export const StepFoundations = ({ formData, setFormData, categories, teachers, errors }: StepFoundationsProps) => {
+    useEffect(() => {
+        if (!formData.title.trim()) return;
+
+        const timer = setTimeout(async () => {
+            const result = await getNextBatchNumber(formData.title);
+            if (result.success && result.data !== undefined) {
+                setFormData(prev => ({ ...prev, batch_no: result.data }));
+            }
+        }, 500);
+
+        return () => clearTimeout(timer);
+    }, [formData.title, setFormData]);
+
     return (
         <motion.div
             key="step1"
@@ -82,14 +101,22 @@ export const StepFoundations = ({ formData, setFormData, categories, teachers }:
                             <BookOpen className="w-4 h-4 text-muted-foreground" />
                             Course Title
                         </label>
-                        <input
-                            type="text"
-                            value={formData.title}
-                            onChange={(e) => setFormData(prev => ({ ...prev, title: e.target.value }))}
-                            placeholder="e.g. Master Next.js 14 and Framer Motion"
-                            className={inputClasses}
-                            required
-                        />
+                        <div className="space-y-1">
+                            <input
+                                type="text"
+                                value={formData.title}
+                                onChange={(e) => setFormData(prev => ({ ...prev, title: e.target.value }))}
+                                placeholder="e.g. Master Next.js 14 and Framer Motion"
+                                className={cn(inputClasses, errors.title && "border-red-500/50 focus:border-red-500")}
+                                required
+                            />
+                            {errors.title && (
+                                <p className="text-[10px] text-red-500 font-bold ml-1 flex items-center gap-1">
+                                    <AlertCircle className="w-3 h-3" />
+                                    {errors.title}
+                                </p>
+                            )}
+                        </div>
                     </div>
 
                     {/* Short Description */}
@@ -98,14 +125,22 @@ export const StepFoundations = ({ formData, setFormData, categories, teachers }:
                             <PencilLine className="w-4 h-4 text-muted-foreground" />
                             Short Description
                         </label>
-                        <input
-                            type="text"
-                            value={formData.short_description}
-                            onChange={(e) => setFormData(prev => ({ ...prev, short_description: e.target.value }))}
-                            placeholder="A punchy one-liner that summarizes the value"
-                            className={inputClasses}
-                            required
-                        />
+                        <div className="space-y-1">
+                            <input
+                                type="text"
+                                value={formData.short_description}
+                                onChange={(e) => setFormData(prev => ({ ...prev, short_description: e.target.value }))}
+                                placeholder="A punchy one-liner that summarizes the value"
+                                className={cn(inputClasses, errors.short_description && "border-red-500/50 focus:border-red-500")}
+                                required
+                            />
+                            {errors.short_description && (
+                                <p className="text-[10px] text-red-500 font-bold ml-1 flex items-center gap-1">
+                                    <AlertCircle className="w-3 h-3" />
+                                    {errors.short_description}
+                                </p>
+                            )}
+                        </div>
                     </div>
 
                     {/* Long Description */}
@@ -114,12 +149,20 @@ export const StepFoundations = ({ formData, setFormData, categories, teachers }:
                             <FileText className="w-4 h-4 text-muted-foreground" />
                             Long Description
                         </label>
-                        <textarea
-                            value={formData.description}
-                            onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
-                            placeholder="Dive deep into what makes this course special..."
-                            className={cn(inputClasses, "resize-none h-32 py-3")}
-                        />
+                        <div className="space-y-1">
+                            <textarea
+                                value={formData.description}
+                                onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
+                                placeholder="Dive deep into what makes this course special..."
+                                className={cn(inputClasses, "resize-none h-32 py-3", errors.description && "border-red-500/50 focus:border-red-500")}
+                            />
+                            {errors.description && (
+                                <p className="text-[10px] text-red-500 font-bold ml-1 flex items-center gap-1">
+                                    <AlertCircle className="w-3 h-3" />
+                                    {errors.description}
+                                </p>
+                            )}
+                        </div>
                     </div>
 
                     {/* Category */}
@@ -128,24 +171,55 @@ export const StepFoundations = ({ formData, setFormData, categories, teachers }:
                             <Layers className="w-4 h-4 text-muted-foreground" />
                             Category
                         </label>
-                        <Select value={formData.category_id} onValueChange={(val) => setFormData(prev => ({ ...prev, category_id: val }))}>
-                            <SelectTrigger className={selectTriggerClasses}>
-                                <SelectValue placeholder="Select a category" />
-                            </SelectTrigger>
-                            <SelectContent className="bg-slate-950 border-white/10">
-                                {categories.map(cat => {
-                                    const Icon = iconMap[cat.icon] || Layers;
-                                    return (
-                                        <SelectItem key={cat.id} value={cat.id}>
-                                            <div className="flex items-center gap-2">
-                                                <Icon className="w-4 h-4 text-muted-foreground" />
-                                                <span>{cat.name}</span>
-                                            </div>
-                                        </SelectItem>
-                                    );
-                                })}
-                            </SelectContent>
-                        </Select>
+                        <div className="space-y-1">
+                            <Select value={formData.category_id} onValueChange={(val) => setFormData(prev => ({ ...prev, category_id: val }))}>
+                                <SelectTrigger className={cn(selectTriggerClasses, errors.category_id && "border-red-500/50 focus:border-red-500")}>
+                                    <SelectValue placeholder="Select a category" />
+                                </SelectTrigger>
+                                <SelectContent className="bg-slate-950 border-white/10">
+                                    {categories.map(cat => {
+                                        const Icon = iconMap[cat.icon] || Layers;
+                                        return (
+                                            <SelectItem key={cat.id} value={cat.id}>
+                                                <div className="flex items-center gap-2">
+                                                    <Icon className="w-4 h-4 text-muted-foreground" />
+                                                    <span>{cat.name}</span>
+                                                </div>
+                                            </SelectItem>
+                                        );
+                                    })}
+                                </SelectContent>
+                            </Select>
+                            {errors.category_id && (
+                                <p className="text-[10px] text-red-500 font-bold ml-1 flex items-center gap-1">
+                                    <AlertCircle className="w-3 h-3" />
+                                    {errors.category_id}
+                                </p>
+                            )}
+                        </div>
+                    </div>
+
+                    {/* Batch Number */}
+                    <div className="space-y-2">
+                        <label className={labelClasses}>
+                            <Hash className="w-4 h-4 text-muted-foreground" />
+                            Batch Number
+                        </label>
+                        <div className="space-y-1">
+                            <input
+                                type="number"
+                                value={formData.batch_no || ''}
+                                onChange={(e) => setFormData(prev => ({ ...prev, batch_no: parseInt(e.target.value) || undefined }))}
+                                placeholder="e.g. 1, 2, 3"
+                                className={cn(inputClasses, errors.batch_no && "border-red-500/50 focus:border-red-500")}
+                            />
+                            {errors.batch_no && (
+                                <p className="text-[10px] text-red-500 font-bold ml-1 flex items-center gap-1">
+                                    <AlertCircle className="w-3 h-3" />
+                                    {errors.batch_no}
+                                </p>
+                            )}
+                        </div>
                     </div>
 
                     {/* Instructor */}
@@ -154,14 +228,29 @@ export const StepFoundations = ({ formData, setFormData, categories, teachers }:
                             <Users className="w-4 h-4 text-muted-foreground" />
                             Assigned Instructor
                         </label>
-                        <Select value={formData.instructor_id} onValueChange={(val) => setFormData(prev => ({ ...prev, instructor_id: val }))}>
-                            <SelectTrigger className={selectTriggerClasses}>
-                                <SelectValue placeholder="Choose instructor" />
-                            </SelectTrigger>
-                            <SelectContent className="bg-slate-950 border-white/10">
-                                {teachers.map(teacher => <SelectItem key={teacher.id} value={teacher.id}>{teacher.name}</SelectItem>)}
-                            </SelectContent>
-                        </Select>
+                        <div className="space-y-1">
+                            <Select value={formData.instructor_id} onValueChange={(val) => setFormData(prev => ({ ...prev, instructor_id: val }))}>
+                                <SelectTrigger className={cn(selectTriggerClasses, errors.instructor_id && "border-red-500/50 focus:border-red-500")}>
+                                    <SelectValue placeholder="Choose instructor" />
+                                </SelectTrigger>
+                                <SelectContent className="bg-slate-950 border-white/10">
+                                    {teachers.map(teacher => (
+                                        <SelectItem key={teacher.id} value={teacher.id}>
+                                            <div className="flex items-center gap-2">
+                                                <GraduationCap className="w-4 h-4 text-muted-foreground" />
+                                                <span>{teacher.name}</span>
+                                            </div>
+                                        </SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+                            {errors.instructor_id && (
+                                <p className="text-[10px] text-red-500 font-bold ml-1 flex items-center gap-1">
+                                    <AlertCircle className="w-3 h-3" />
+                                    {errors.instructor_id}
+                                </p>
+                            )}
+                        </div>
                     </div>
 
                     {/* Course Level */}
@@ -170,22 +259,79 @@ export const StepFoundations = ({ formData, setFormData, categories, teachers }:
                             <BarChart className="w-4 h-4 text-muted-foreground" />
                             Difficulty Level
                         </label>
-                        <div className="flex gap-2 p-1 bg-muted/30 rounded-xl border border-border/50">
-                            {['beginner', 'intermediate', 'advanced'].map((lvl) => (
-                                <button
-                                    key={lvl}
-                                    type="button"
-                                    onClick={() => setFormData(prev => ({ ...prev, level: lvl as any }))}
-                                    className={cn(
-                                        "flex-1 py-2 rounded-lg text-xs font-semibold capitalize transition-all",
-                                        formData.level === lvl
-                                            ? "bg-primary text-white shadow-lg shadow-primary/20"
-                                            : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
-                                    )}
-                                >
-                                    {lvl}
-                                </button>
-                            ))}
+                        <div className="space-y-1">
+                            <Select value={formData.level} onValueChange={(val) => setFormData(prev => ({ ...prev, level: val as any }))}>
+                                <SelectTrigger className={cn(selectTriggerClasses, errors.level && "border-red-500/50 focus:border-red-500")}>
+                                    <SelectValue placeholder="Select difficulty" />
+                                </SelectTrigger>
+                                <SelectContent className="bg-slate-950 border-white/10">
+                                    <SelectItem value="beginner">
+                                        <div className="flex items-center gap-2">
+                                            <BookOpenText className="w-4 h-4 text-muted-foreground" />
+                                            <span>Beginner</span>
+                                        </div>
+                                    </SelectItem>
+                                    <SelectItem value="intermediate">
+                                        <div className="flex items-center gap-2">
+                                            <Code className="w-4 h-4 text-muted-foreground" />
+                                            <span>Intermediate</span>
+                                        </div>
+                                    </SelectItem>
+                                    <SelectItem value="advanced">
+                                        <div className="flex items-center gap-2">
+                                            <Target className="w-4 h-4 text-muted-foreground" />
+                                            <span>Advanced</span>
+                                        </div>
+                                    </SelectItem>
+                                </SelectContent>
+                            </Select>
+                            {errors.level && (
+                                <p className="text-[10px] text-red-500 font-bold ml-1 flex items-center gap-1">
+                                    <AlertCircle className="w-3 h-3" />
+                                    {errors.level}
+                                </p>
+                            )}
+                        </div>
+                    </div>
+
+                    {/* Course Type */}
+                    <div className="space-y-2">
+                        <label className={labelClasses}>
+                            <Info className="w-4 h-4 text-muted-foreground" />
+                            Course Type
+                        </label>
+                        <div className="space-y-1">
+                            <Select value={formData.course_type} onValueChange={(val) => setFormData(prev => ({ ...prev, course_type: val as any }))}>
+                                <SelectTrigger className={cn(selectTriggerClasses, errors.course_type && "border-red-500/50 focus:border-red-500")}>
+                                    <SelectValue placeholder="Select type" />
+                                </SelectTrigger>
+                                <SelectContent className="bg-slate-950 border-white/10">
+                                    <SelectItem value="recorded">
+                                        <div className="flex items-center gap-2">
+                                            <Video className="w-4 h-4 text-muted-foreground" />
+                                            <span>Recorded</span>
+                                        </div>
+                                    </SelectItem>
+                                    <SelectItem value="live">
+                                        <div className="flex items-center gap-2">
+                                            <Radio className="w-4 h-4 text-muted-foreground" />
+                                            <span>Live</span>
+                                        </div>
+                                    </SelectItem>
+                                    <SelectItem value="hybrid">
+                                        <div className="flex items-center gap-2">
+                                            <MonitorPlay className="w-4 h-4 text-muted-foreground" />
+                                            <span>Live + Recorded</span>
+                                        </div>
+                                    </SelectItem>
+                                </SelectContent>
+                            </Select>
+                            {errors.course_type && (
+                                <p className="text-[10px] text-red-500 font-bold ml-1 flex items-center gap-1">
+                                    <AlertCircle className="w-3 h-3" />
+                                    {errors.course_type}
+                                </p>
+                            )}
                         </div>
                     </div>
 
@@ -195,22 +341,56 @@ export const StepFoundations = ({ formData, setFormData, categories, teachers }:
                             <Globe className="w-4 h-4 text-muted-foreground" />
                             Course Language
                         </label>
-                        <div className="flex gap-2 p-1 bg-muted/30 rounded-xl border border-border/50">
-                            {['English', 'Bengali'].map((lang) => (
-                                <button
-                                    key={lang}
-                                    type="button"
-                                    onClick={() => setFormData(prev => ({ ...prev, language: lang }))}
-                                    className={cn(
-                                        "flex-1 py-2 rounded-lg text-xs font-semibold transition-all",
-                                        formData.language === lang
-                                            ? "bg-primary text-white shadow-lg shadow-primary/20"
-                                            : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
-                                    )}
-                                >
-                                    {lang}
-                                </button>
-                            ))}
+                        <div className="space-y-1">
+                            <Select value={formData.language} onValueChange={(val) => setFormData(prev => ({ ...prev, language: val }))}>
+                                <SelectTrigger className={selectTriggerClasses}>
+                                    <SelectValue placeholder="Select language" />
+                                </SelectTrigger>
+                                <SelectContent className="bg-slate-950 border-white/10 max-h-[300px]">
+                                    <SelectItem value="English">
+                                        <div className="flex items-center gap-2">
+                                            <Globe className="w-3.5 h-3.5 text-muted-foreground" />
+                                            <span>English</span>
+                                        </div>
+                                    </SelectItem>
+                                    <SelectItem value="Bengali">
+                                        <div className="flex items-center gap-2">
+                                            <Globe className="w-3.5 h-3.5 text-muted-foreground" />
+                                            <span>Bengali</span>
+                                        </div>
+                                    </SelectItem>
+                                    <SelectItem value="Hindi">
+                                        <div className="flex items-center gap-2">
+                                            <Globe className="w-3.5 h-3.5 text-muted-foreground" />
+                                            <span>Hindi</span>
+                                        </div>
+                                    </SelectItem>
+                                    <SelectItem value="Arabic">
+                                        <div className="flex items-center gap-2">
+                                            <Globe className="w-3.5 h-3.5 text-muted-foreground" />
+                                            <span>Arabic</span>
+                                        </div>
+                                    </SelectItem>
+                                    <SelectItem value="Spanish">
+                                        <div className="flex items-center gap-2">
+                                            <Globe className="w-3.5 h-3.5 text-muted-foreground" />
+                                            <span>Spanish</span>
+                                        </div>
+                                    </SelectItem>
+                                    <SelectItem value="French">
+                                        <div className="flex items-center gap-2">
+                                            <Globe className="w-3.5 h-3.5 text-muted-foreground" />
+                                            <span>French</span>
+                                        </div>
+                                    </SelectItem>
+                                </SelectContent>
+                            </Select>
+                            {errors.language && (
+                                <p className="text-[10px] text-red-500 font-bold ml-1 flex items-center gap-1">
+                                    <AlertCircle className="w-3 h-3" />
+                                    {errors.language}
+                                </p>
+                            )}
                         </div>
                     </div>
                 </div>

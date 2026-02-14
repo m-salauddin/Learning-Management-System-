@@ -18,6 +18,7 @@ export type TransactionStatus = 'pending' | 'completed' | 'failed' | 'refunded';
 export type CouponType = 'percentage' | 'fixed';
 export type EnrollmentStatus = 'active' | 'expired' | 'cancelled' | 'refunded';
 export type CourseLevel = 'beginner' | 'intermediate' | 'advanced';
+export type CourseType = 'recorded' | 'live' | 'hybrid';
 
 // ============================================================================
 // USER TYPES
@@ -91,6 +92,7 @@ export interface Course {
     price: number;
     discount_price: number | null;
     level: CourseLevel;
+    course_type: CourseType;
     language: string;
     duration_hours: number;
     total_lessons: number;
@@ -504,6 +506,7 @@ export interface CreateCourseInput {
     category_id?: string;
     instructor_id?: string;
     level?: CourseLevel;
+    course_type?: CourseType;
     language?: string;
     thumbnail_url?: string;
     preview_video_url?: string;
@@ -511,6 +514,7 @@ export interface CreateCourseInput {
     learning_objectives?: string[];
     target_audience?: string[];
     tags?: string[];
+    batch_no?: number;
     faqs?: { question: string; answer: string }[];
     projects?: { title: string; description: string }[];
     resources?: { title: string; type: string; url: string }[];

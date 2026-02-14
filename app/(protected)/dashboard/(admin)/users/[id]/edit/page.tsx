@@ -10,6 +10,8 @@ import {
 import { updateUser, getUserById, changeUserPassword } from "@/lib/actions/users";
 import { UserRole, UserStatus, ExtendedUser } from "@/types/user";
 import { useToast } from "@/components/ui/toast";
+import { userUpdateSchema, userPasswordSchema } from "@/lib/validations/user";
+import { ZodError } from "zod";
 import {
     Select,
     SelectContent,
@@ -40,6 +42,49 @@ export default function EditUserPage() {
         status: "active" as UserStatus
     });
 
+    const [profileErrors, setProfileErrors] = useState<Record<string, string>>({});
+    const [passwordErrors, setPasswordErrors] = useState<Record<string, string>>({});
+    const [isProfileSubmitted, setIsProfileSubmitted] = useState(false);
+    const [isPasswordSubmitted, setIsPasswordSubmitted] = useState(false);
+
+    // Real-time Profile Validation - Debounced
+    useEffect(() => {
+        if (isProfileSubmitted) {
+            const timer = setTimeout(() => {
+                const result = userUpdateSchema.safeParse(formData);
+                if (!result.success) {
+                    const newErrors: Record<string, string> = {};
+                    result.error.issues.forEach((issue) => {
+                        if (issue.path[0]) newErrors[issue.path[0] as string] = issue.message;
+                    });
+                    setProfileErrors(newErrors);
+                } else {
+                    setProfileErrors({});
+                }
+            }, 300);
+            return () => clearTimeout(timer);
+        }
+    }, [formData, isProfileSubmitted]);
+
+    // Real-time Password Validation - Debounced
+    useEffect(() => {
+        if (isPasswordSubmitted) {
+            const timer = setTimeout(() => {
+                const result = userPasswordSchema.safeParse({ password: newPassword });
+                if (!result.success) {
+                    const newErrors: Record<string, string> = {};
+                    result.error.issues.forEach((issue) => {
+                        if (issue.path[0]) newErrors[issue.path[0] as string] = issue.message;
+                    });
+                    setPasswordErrors(newErrors);
+                } else {
+                    setPasswordErrors({});
+                }
+            }, 300);
+            return () => clearTimeout(timer);
+        }
+    }, [newPassword, isPasswordSubmitted]);
+
 
 
     useEffect(() => {
@@ -68,34 +113,64 @@ export default function EditUserPage() {
 
     const handleUpdateUser = async (e: React.FormEvent) => {
         e.preventDefault();
+        setIsProfileSubmitted(true);
+        setProfileErrors({});
         if (!userId) return;
 
         setIsUpdating(true);
-        const result = await updateUser(userId, formData);
-        setIsUpdating(false);
-
-        if (result.user) {
-            toast.success("User updated", "User details have been updated successfully");
-            router.push("/dashboard/users");
-            router.refresh();
-        } else {
-            toast.error("Error", result.error || "Failed to update user");
+        try {
+            userUpdateSchema.parse(formData);
+            const result = await updateUser(userId, formData);
+            if (result.user) {
+                toast.success("User updated", "User details have been updated successfully");
+                router.push("/dashboard/users");
+                router.refresh();
+            } else {
+                toast.error("Error", result.error || "Failed to update user");
+            }
+        } catch (error: any) {
+            if (error instanceof ZodError) {
+                const newErrors: Record<string, string> = {};
+                error.issues.forEach((issue) => {
+                    if (issue.path[0]) newErrors[issue.path[0] as string] = issue.message;
+                });
+                setProfileErrors(newErrors);
+            } else {
+                toast.error("Error", "An unexpected error occurred");
+            }
+        } finally {
+            setIsUpdating(false);
         }
     };
 
     const handlePasswordUpdate = async (e: React.FormEvent) => {
         e.preventDefault();
+        setIsPasswordSubmitted(true);
+        setPasswordErrors({});
         if (!userId || !newPassword) return;
 
         setIsChangingPassword(true);
-        const result = await changeUserPassword(userId, newPassword);
-        setIsChangingPassword(false);
-
-        if (result.success) {
-            toast.success("Password updated", "User password has been changed successfully");
-            setNewPassword("");
-        } else {
-            toast.error("Error", result.error || "Failed to update password");
+        try {
+            userPasswordSchema.parse({ password: newPassword });
+            const result = await changeUserPassword(userId, newPassword);
+            if (result.success) {
+                toast.success("Password updated", "User password has been changed successfully");
+                setNewPassword("");
+            } else {
+                toast.error("Error", result.error || "Failed to update password");
+            }
+        } catch (error: any) {
+            if (error instanceof ZodError) {
+                const newErrors: Record<string, string> = {};
+                error.issues.forEach((issue) => {
+                    if (issue.path[0]) newErrors[issue.path[0] as string] = issue.message;
+                });
+                setPasswordErrors(newErrors);
+            } else {
+                toast.error("Error", "An unexpected error occurred");
+            }
+        } finally {
+            setIsChangingPassword(false);
         }
     };
 
@@ -138,14 +213,24 @@ export default function EditUserPage() {
                                     <label className="text-sm font-medium text-foreground flex items-center gap-2">
                                         Full Name
                                     </label>
-                                    <input
-                                        type="text"
-                                        value={formData.name}
-                                        onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                                        className="w-full px-4 py-3 rounded-xl bg-input-dark border border-input-dark-border text-foreground placeholder:text-input-dark-text focus:border-primary/50 focus:ring-2 focus:ring-primary/20 outline-none transition-all"
-                                        placeholder="John Doe"
-                                        required
-                                    />
+                                    <div className="space-y-1">
+                                        <input
+                                            type="text"
+                                            value={formData.name}
+                                            onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                                            className={cn(
+                                                "w-full px-4 py-3 rounded-xl bg-input-dark border border-input-dark-border text-foreground placeholder:text-input-dark-text focus:border-primary/50 focus:ring-2 focus:ring-primary/20 outline-none transition-all",
+                                                profileErrors.name && "border-rose-500/50 focus:border-rose-500 ring-rose-500/10"
+                                            )}
+                                            placeholder="John Doe"
+                                        />
+                                        {profileErrors.name && (
+                                            <p className="text-[11px] text-rose-500 font-medium ml-1 flex items-center gap-1">
+                                                <AlertCircle className="w-3 h-3" />
+                                                {profileErrors.name}
+                                            </p>
+                                        )}
+                                    </div>
                                 </div>
 
                                 {/* Email */}
@@ -153,14 +238,24 @@ export default function EditUserPage() {
                                     <label className="text-sm font-medium text-foreground flex items-center gap-2">
                                         Email Address
                                     </label>
-                                    <input
-                                        type="email"
-                                        value={formData.email}
-                                        onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                                        className="w-full px-4 py-3 rounded-xl bg-input-dark border border-input-dark-border text-foreground placeholder:text-input-dark-text focus:border-primary/50 focus:ring-2 focus:ring-primary/20 outline-none transition-all"
-                                        placeholder="john@example.com"
-                                        required
-                                    />
+                                    <div className="space-y-1">
+                                        <input
+                                            type="email"
+                                            value={formData.email}
+                                            onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                                            className={cn(
+                                                "w-full px-4 py-3 rounded-xl bg-input-dark border border-input-dark-border text-foreground placeholder:text-input-dark-text focus:border-primary/50 focus:ring-2 focus:ring-primary/20 outline-none transition-all",
+                                                profileErrors.email && "border-rose-500/50 focus:border-rose-500 ring-rose-500/10"
+                                            )}
+                                            placeholder="john@example.com"
+                                        />
+                                        {profileErrors.email && (
+                                            <p className="text-[11px] text-rose-500 font-medium ml-1 flex items-center gap-1">
+                                                <AlertCircle className="w-3 h-3" />
+                                                {profileErrors.email}
+                                            </p>
+                                        )}
+                                    </div>
                                 </div>
 
                                 {/* Role Selection */}
@@ -239,14 +334,24 @@ export default function EditUserPage() {
                                     <label className="text-sm font-medium text-foreground">
                                         New Password
                                     </label>
-                                    <input
-                                        type="password"
-                                        value={newPassword}
-                                        onChange={(e) => setNewPassword(e.target.value)}
-                                        className="w-full px-4 py-3 rounded-xl bg-input-dark border border-input-dark-border text-foreground placeholder:text-input-dark-text focus:border-amber-500/50 focus:ring-2 focus:ring-amber-500/20 outline-none transition-all"
-                                        placeholder="Enter at least 6 characters"
-                                        minLength={6}
-                                    />
+                                    <div className="space-y-1">
+                                        <input
+                                            type="password"
+                                            value={newPassword}
+                                            onChange={(e) => setNewPassword(e.target.value)}
+                                            className={cn(
+                                                "w-full px-4 py-3 rounded-xl bg-input-dark border border-input-dark-border text-foreground placeholder:text-input-dark-text focus:border-amber-500/50 focus:ring-2 focus:ring-amber-500/20 outline-none transition-all",
+                                                passwordErrors.password && "border-rose-500/50 focus:border-rose-500 ring-rose-500/10"
+                                            )}
+                                            placeholder="Enter at least 6 characters"
+                                        />
+                                        {passwordErrors.password && (
+                                            <p className="text-[11px] text-rose-500 font-medium ml-1 flex items-center gap-1">
+                                                <AlertCircle className="w-3 h-3" />
+                                                {passwordErrors.password}
+                                            </p>
+                                        )}
+                                    </div>
                                     <div className="flex items-start gap-2 p-3 rounded-xl bg-amber-500/5 border border-amber-500/10 mt-2">
                                         <AlertCircle className="w-4 h-4 text-amber-500 shrink-0 mt-0.5" />
                                         <p className="text-[11px] text-amber-500/90 leading-relaxed">

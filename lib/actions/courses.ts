@@ -27,6 +27,7 @@ export interface GetCoursesParams {
     search?: string;
     level?: string;
     sort?: 'newest' | 'popular' | 'rating' | 'price_low' | 'price_high' | 'serial';
+    onlyLatestBatch?: boolean;
 }
 
 export async function getCourses(params: GetCoursesParams = {}): Promise<PaginatedResponse<CourseWithInstructor>> {
@@ -40,7 +41,8 @@ export async function getCourses(params: GetCoursesParams = {}): Promise<Paginat
         instructor,
         search,
         level,
-        sort = 'newest'
+        sort = 'newest',
+        onlyLatestBatch = false
     } = params;
 
     const offset = (page - 1) * pageSize;
@@ -99,7 +101,47 @@ export async function getCourses(params: GetCoursesParams = {}): Promise<Paginat
                 .order('created_at', { ascending: false });
     }
 
-    // Apply pagination
+    // If onlyLatestBatch is requested, we need to fetch more data and filter in memory
+    // (Alternative: custom RPC or window functions, but this is simpler for existing scale)
+    if (onlyLatestBatch) {
+        // Fetch a larger set to allow for filtering (limited to 1000 for safety)
+        const { data, count } = await query.range(0, 999);
+
+        if (!data) return { data: [], total: 0, page, pageSize, totalPages: 0 };
+
+        // Group by title and find max batch
+        const latestBatchesMap = new Map<string, any>();
+        data.forEach(course => {
+            const existing = latestBatchesMap.get(course.title);
+            if (!existing || (course.batch_no || 0) > (existing.batch_no || 0)) {
+                latestBatchesMap.set(course.title, course);
+            }
+        });
+
+        const filteredData = Array.from(latestBatchesMap.values());
+        const total = filteredData.length;
+        const pagedData = filteredData.slice(offset, offset + pageSize);
+
+        const transformedData = pagedData.map(course => ({
+            ...course,
+            instructor: course.instructor?.user || {
+                id: course.instructor_id,
+                name: 'Unknown Instructor',
+                email: '',
+                avatar_url: null
+            }
+        }));
+
+        return {
+            data: transformedData as CourseWithInstructor[],
+            total,
+            page,
+            pageSize,
+            totalPages: Math.ceil(total / pageSize)
+        };
+    }
+
+    // Default paginated query
     query = query.range(offset, offset + pageSize - 1);
 
     const { data, error, count } = await query;
@@ -202,6 +244,24 @@ export async function getCourseById(id: string): Promise<ApiResponse<CourseWithM
     return { success: true, data: transformedCourse as CourseWithModules };
 }
 
+export async function getNextBatchNumber(title: string): Promise<ApiResponse<number>> {
+    const supabase = await createClient();
+
+    const { data, error } = await supabase
+        .from('courses')
+        .select('batch_no')
+        .eq('title', title)
+        .order('batch_no', { ascending: false })
+        .limit(1);
+
+    if (error) {
+        return { success: false, error: error.message };
+    }
+
+    const nextBatch = data && data.length > 0 ? (data[0].batch_no || 0) + 1 : 1;
+    return { success: true, data: nextBatch };
+}
+
 // ============================================================================
 // CREATE COURSE
 // ============================================================================
@@ -268,11 +328,31 @@ export async function createCourse(input: CreateCourseInput): Promise<ApiRespons
         // For now, let's keep it simple, but we could add a short ID here.
     }
 
+    // --- Batch Validation ---
+    if (input.batch_no) {
+        const { data: existingBatches } = await supabase
+            .from('courses')
+            .select('batch_no')
+            .eq('title', mainCourseData.title)
+            .order('batch_no', { ascending: false });
+
+        if (existingBatches && existingBatches.length > 0) {
+            const maxBatch = existingBatches[0].batch_no || 0;
+            if (input.batch_no <= maxBatch) {
+                return {
+                    success: false,
+                    error: `A course with this title already exists up to batch ${maxBatch}. Please enter a higher batch number.`
+                };
+            }
+        }
+    }
+
     // Create course
     const { data: course, error } = await supabase
         .from('courses')
         .insert({
             ...mainCourseData,
+            batch_no: input.batch_no,
             slug: finalSlug,
             instructor_id: instructorId,
             status: 'draft',

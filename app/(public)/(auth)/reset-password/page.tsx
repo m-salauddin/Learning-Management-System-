@@ -4,10 +4,8 @@ import * as React from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { motion } from "motion/react";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { z } from "zod";
-import { Lock, ArrowRight, Loader2, Eye, EyeOff, CheckCircle2 } from "lucide-react";
+import { z, ZodError } from "zod";
+import { Lock, ArrowRight, Loader2, Eye, EyeOff, CheckCircle2, AlertCircle } from "lucide-react";
 import { fadeInUp } from "@/lib/motion";
 import { updatePassword } from "@/lib/actions/auth";
 
@@ -47,40 +45,57 @@ export default function ResetPasswordPage() {
     const [isLoading, setIsLoading] = React.useState(false);
     const [showPassword, setShowPassword] = React.useState(false);
     const [showConfirmPassword, setShowConfirmPassword] = React.useState(false);
-
-    const {
-        register,
-        handleSubmit,
-        watch,
-        setError,
-        formState: { errors },
-    } = useForm<ResetPasswordFormData>({
-        resolver: zodResolver(resetPasswordSchema),
-        defaultValues: {
-            password: "",
-            confirmPassword: "",
-        },
+    const [formData, setFormData] = React.useState<ResetPasswordFormData>({
+        password: "",
+        confirmPassword: "",
     });
+    const [errors, setErrors] = React.useState<Record<string, string>>({});
+    const [isSubmitted, setIsSubmitted] = React.useState(false);
 
-    const password = watch("password", "");
-    const passwordStrength = getPasswordStrength(password);
+    // Real-time validation (Watch Mode) - Debounced for performance
+    React.useEffect(() => {
+        if (isSubmitted) {
+            const timer = setTimeout(() => {
+                const result = resetPasswordSchema.safeParse(formData);
+                if (!result.success) {
+                    const newErrors: Record<string, string> = {};
+                    result.error.issues.forEach((issue) => {
+                        if (issue.path[0]) newErrors[issue.path[0] as string] = issue.message;
+                    });
+                    setErrors(newErrors);
+                } else {
+                    setErrors({});
+                }
+            }, 300);
+            return () => clearTimeout(timer);
+        }
+    }, [formData, isSubmitted]);
 
-    const onSubmit = async (data: ResetPasswordFormData) => {
+    const passwordStrength = getPasswordStrength(formData.password);
+
+    const onSubmit = async (e: React.FormEvent) => {
+        e.preventDefault();
+        setIsSubmitted(true);
+        setErrors({});
         setIsLoading(true);
         try {
-            const result = await updatePassword(data.password);
+            resetPasswordSchema.parse(formData);
+            const result = await updatePassword(formData.password);
             if (result?.error) {
-                setError("root", {
-                    type: "manual",
-                    message: result.error
-                });
+                setErrors({ root: result.error });
+            } else {
+                router.push('/login');
             }
-
-        } catch (error) {
-            setError("root", {
-                type: "manual",
-                message: "Something went wrong. Please try again."
-            });
+        } catch (error: any) {
+            if (error instanceof ZodError) {
+                const newErrors: Record<string, string> = {};
+                error.issues.forEach((issue) => {
+                    if (issue.path[0]) newErrors[issue.path[0] as string] = issue.message;
+                });
+                setErrors(newErrors);
+            } else {
+                setErrors({ root: "Something went wrong. Please try again." });
+            }
         } finally {
             setIsLoading(false);
         }
@@ -107,59 +122,63 @@ export default function ResetPasswordPage() {
                         </div>
 
 
-                        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+                        <form onSubmit={onSubmit} className="space-y-4">
 
                             <div className="space-y-2">
                                 <label htmlFor="password" className="block text-sm font-medium">
                                     New Password
                                 </label>
-                                <div className="relative">
-                                    <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
-                                    <input
-                                        {...register("password")}
-                                        type={showPassword ? "text" : "password"}
-                                        id="password"
-                                        placeholder="Enter new password"
-                                        className={`w-full pl-10 pr-12 py-3 rounded-xl bg-muted/50 border ${errors.password
-                                            ? "border-destructive focus:ring-destructive"
-                                            : "border-border/50 focus:ring-primary"
-                                            } focus:outline-none focus:ring-2 transition-all duration-200`}
-                                    />
-                                    <button
-                                        type="button"
-                                        onClick={() => setShowPassword(!showPassword)}
-                                        className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
-                                    >
-                                        {showPassword ? (
-                                            <EyeOff className="w-5 h-5" />
-                                        ) : (
-                                            <Eye className="w-5 h-5" />
-                                        )}
-                                    </button>
-                                </div>
-                                {password && (
-                                    <div className="space-y-1">
-                                        <div className="flex gap-1">
-                                            {[1, 2, 3, 4, 5].map((level) => (
-                                                <div
-                                                    key={level}
-                                                    className={`h-1 flex-1 rounded-full transition-colors ${level <= passwordStrength.strength
-                                                        ? passwordStrength.color
-                                                        : "bg-muted"
-                                                        }`}
-                                                />
-                                            ))}
-                                        </div>
-                                        <p className="text-xs text-muted-foreground">
-                                            Password strength: <span className="font-medium">{passwordStrength.label}</span>
-                                        </p>
+                                <div className="space-y-1">
+                                    <div className="relative">
+                                        <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
+                                        <input
+                                            value={formData.password}
+                                            onChange={(e) => setFormData(prev => ({ ...prev, password: e.target.value }))}
+                                            type={showPassword ? "text" : "password"}
+                                            id="password"
+                                            placeholder="Enter new password"
+                                            className={`w-full pl-10 pr-12 py-3 rounded-xl bg-muted/50 border ${errors.password
+                                                ? "border-destructive focus:ring-destructive"
+                                                : "border-border/50 focus:ring-primary"
+                                                } focus:outline-none focus:ring-2 transition-all duration-200`}
+                                        />
+                                        <button
+                                            type="button"
+                                            onClick={() => setShowPassword(!showPassword)}
+                                            className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+                                        >
+                                            {showPassword ? (
+                                                <EyeOff className="w-5 h-5" />
+                                            ) : (
+                                                <Eye className="w-5 h-5" />
+                                            )}
+                                        </button>
                                     </div>
-                                )}
-                                {errors.password && (
-                                    <p className="text-destructive text-xs mt-1">
-                                        {errors.password.message}
-                                    </p>
-                                )}
+                                    {formData.password && (
+                                        <div className="space-y-1">
+                                            <div className="flex gap-1">
+                                                {[1, 2, 3, 4, 5].map((level) => (
+                                                    <div
+                                                        key={level}
+                                                        className={`h-1 flex-1 rounded-full transition-colors ${level <= passwordStrength.strength
+                                                            ? passwordStrength.color
+                                                            : "bg-muted"
+                                                            }`}
+                                                    />
+                                                ))}
+                                            </div>
+                                            <p className="text-xs text-muted-foreground">
+                                                Password strength: <span className="font-medium">{passwordStrength.label}</span>
+                                            </p>
+                                        </div>
+                                    )}
+                                    {errors.password && (
+                                        <p className="text-destructive text-xs flex items-center gap-1">
+                                            <AlertCircle className="w-3.5 h-3.5" />
+                                            {errors.password}
+                                        </p>
+                                    )}
+                                </div>
                             </div>
 
 
@@ -167,35 +186,39 @@ export default function ResetPasswordPage() {
                                 <label htmlFor="confirmPassword" className="block text-sm font-medium">
                                     Confirm New Password
                                 </label>
-                                <div className="relative">
-                                    <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
-                                    <input
-                                        {...register("confirmPassword")}
-                                        type={showConfirmPassword ? "text" : "password"}
-                                        id="confirmPassword"
-                                        placeholder="Confirm new password"
-                                        className={`w-full pl-10 pr-12 py-3 rounded-xl bg-muted/50 border ${errors.confirmPassword
-                                            ? "border-destructive focus:ring-destructive"
-                                            : "border-border/50 focus:ring-primary"
-                                            } focus:outline-none focus:ring-2 transition-all duration-200`}
-                                    />
-                                    <button
-                                        type="button"
-                                        onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                                        className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
-                                    >
-                                        {showConfirmPassword ? (
-                                            <EyeOff className="w-5 h-5" />
-                                        ) : (
-                                            <Eye className="w-5 h-5" />
-                                        )}
-                                    </button>
+                                <div className="space-y-1">
+                                    <div className="relative">
+                                        <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
+                                        <input
+                                            value={formData.confirmPassword}
+                                            onChange={(e) => setFormData(prev => ({ ...prev, confirmPassword: e.target.value }))}
+                                            type={showConfirmPassword ? "text" : "password"}
+                                            id="confirmPassword"
+                                            placeholder="Confirm new password"
+                                            className={`w-full pl-10 pr-12 py-3 rounded-xl bg-muted/50 border ${errors.confirmPassword
+                                                ? "border-destructive focus:ring-destructive"
+                                                : "border-border/50 focus:ring-primary"
+                                                } focus:outline-none focus:ring-2 transition-all duration-200`}
+                                        />
+                                        <button
+                                            type="button"
+                                            onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                                            className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+                                        >
+                                            {showConfirmPassword ? (
+                                                <EyeOff className="w-5 h-5" />
+                                            ) : (
+                                                <Eye className="w-5 h-5" />
+                                            )}
+                                        </button>
+                                    </div>
+                                    {errors.confirmPassword && (
+                                        <p className="text-destructive text-xs flex items-center gap-1">
+                                            <AlertCircle className="w-3.5 h-3.5" />
+                                            {errors.confirmPassword}
+                                        </p>
+                                    )}
                                 </div>
-                                {errors.confirmPassword && (
-                                    <p className="text-destructive text-xs mt-1">
-                                        {errors.confirmPassword.message}
-                                    </p>
-                                )}
                             </div>
 
 
@@ -203,10 +226,10 @@ export default function ResetPasswordPage() {
                                 <p className="text-xs font-medium text-muted-foreground mb-2">Password must contain:</p>
                                 <div className="grid grid-cols-2 gap-1">
                                     {[
-                                        { label: "8+ characters", valid: password.length >= 8 },
-                                        { label: "Uppercase letter", valid: /[A-Z]/.test(password) },
-                                        { label: "Lowercase letter", valid: /[a-z]/.test(password) },
-                                        { label: "Number", valid: /[0-9]/.test(password) },
+                                        { label: "8+ characters", valid: formData.password.length >= 8 },
+                                        { label: "Uppercase letter", valid: /[A-Z]/.test(formData.password) },
+                                        { label: "Lowercase letter", valid: /[a-z]/.test(formData.password) },
+                                        { label: "Number", valid: /[0-9]/.test(formData.password) },
                                     ].map((req) => (
                                         <div key={req.label} className="flex items-center gap-1 text-xs">
                                             <CheckCircle2
@@ -224,7 +247,7 @@ export default function ResetPasswordPage() {
 
                             {errors.root && (
                                 <div className="p-3 rounded-lg bg-destructive/10 border border-destructive/20 text-destructive text-sm text-center">
-                                    {errors.root.message}
+                                    {errors.root}
                                 </div>
                             )}
 

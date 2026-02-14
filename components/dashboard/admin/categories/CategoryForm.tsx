@@ -2,15 +2,17 @@
 
 import {
     Globe, Smartphone, Palette, TrendingUp, Briefcase,
-    Database, Code, Shield, Cloud, Layers, Info, Save, X
+    Database, Code, Shield, Cloud, Layers, Info, Save, X, AlertCircle
 } from "lucide-react";
-import { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { motion } from "motion/react";
 import { useToast } from "@/components/ui/toast";
 import { cn } from "@/lib/utils";
 import { Category } from "@/types/lms";
 import { createCategory, updateCategory } from "@/lib/actions/categories";
+import { categorySchema } from "@/lib/validations/category";
+import { ZodError } from "zod";
 
 const iconOptions = [
     { name: 'Globe', icon: Globe },
@@ -59,11 +61,37 @@ export function CategoryForm({ initialData, isEditing = false }: CategoryFormPro
         description: initialData?.description || ""
     });
 
+    const [errors, setErrors] = useState<Record<string, string>>({});
+    const [isSubmitted, setIsSubmitted] = useState(false);
+
+    // Real-time validation (Watch Mode) - Debounced for performance
+    useEffect(() => {
+        if (isSubmitted) {
+            const timer = setTimeout(() => {
+                const result = categorySchema.safeParse(formData);
+                if (!result.success) {
+                    const newErrors: Record<string, string> = {};
+                    result.error.issues.forEach((issue) => {
+                        if (issue.path[0]) newErrors[issue.path[0] as string] = issue.message;
+                    });
+                    setErrors(newErrors);
+                } else {
+                    setErrors({});
+                }
+            }, 300);
+            return () => clearTimeout(timer);
+        }
+    }, [formData, isSubmitted]);
+
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+        setIsSubmitted(true);
+        setErrors({});
         setIsSubmitting(true);
 
         try {
+            categorySchema.parse(formData);
+
             const result = isEditing && initialData
                 ? await updateCategory(initialData.id, formData)
                 : await createCategory(formData);
@@ -75,8 +103,16 @@ export function CategoryForm({ initialData, isEditing = false }: CategoryFormPro
             } else {
                 toast.error(result.error || "Operation failed");
             }
-        } catch (error) {
-            toast.error("An unexpected error occurred");
+        } catch (error: any) {
+            if (error instanceof ZodError) {
+                const newErrors: Record<string, string> = {};
+                error.issues.forEach((issue) => {
+                    if (issue.path[0]) newErrors[issue.path[0] as string] = issue.message;
+                });
+                setErrors(newErrors);
+            } else {
+                toast.error("An unexpected error occurred");
+            }
         } finally {
             setIsSubmitting(false);
         }
@@ -88,12 +124,23 @@ export function CategoryForm({ initialData, isEditing = false }: CategoryFormPro
                 {/* Name Field */}
                 <div className="space-y-3 md:col-span-2">
                     <label className="text-[10px] font-black uppercase tracking-[0.2em] text-white/40">Category Name</label>
-                    <input
-                        type="text" required value={formData.name}
-                        onChange={(e) => setFormData(p => ({ ...p, name: e.target.value }))}
-                        placeholder="e.g. Master Web Development"
-                        className="w-full bg-slate-950/50 border border-border/50 rounded-2xl px-5 py-4 text-white outline-none focus:border-primary/50 focus:ring-4 focus:ring-primary/5 transition-all text-sm font-medium"
-                    />
+                    <div className="space-y-1">
+                        <input
+                            type="text" required value={formData.name}
+                            onChange={(e) => setFormData(p => ({ ...p, name: e.target.value }))}
+                            placeholder="e.g. Master Web Development"
+                            className={cn(
+                                "w-full bg-slate-950/50 border border-border/50 rounded-2xl px-5 py-4 text-white outline-none focus:border-primary/50 focus:ring-4 focus:ring-primary/5 transition-all text-sm font-medium",
+                                errors.name && "border-rose-500/50 focus:border-rose-500 ring-rose-500/10"
+                            )}
+                        />
+                        {errors.name && (
+                            <p className="text-[10px] text-rose-500 font-bold ml-1 flex items-center gap-1">
+                                <AlertCircle className="w-3 h-3" />
+                                {errors.name}
+                            </p>
+                        )}
+                    </div>
                 </div>
 
                 {/* Slug Field */}
@@ -173,12 +220,23 @@ export function CategoryForm({ initialData, isEditing = false }: CategoryFormPro
                 {/* Description Field */}
                 <div className="md:col-span-3 space-y-3">
                     <label className="text-[10px] font-black uppercase tracking-[0.2em] text-white/40">Narrative (Description)</label>
-                    <textarea
-                        rows={5} value={formData.description}
-                        onChange={(e) => setFormData(p => ({ ...p, description: e.target.value }))}
-                        placeholder="Briefly describe what this category encompasses and what students will learn..."
-                        className="w-full bg-slate-950/50 border border-border/50 rounded-2xl px-5 py-4 text-white outline-none focus:border-primary/50 transition-all resize-none text-sm leading-relaxed"
-                    />
+                    <div className="space-y-1">
+                        <textarea
+                            rows={5} value={formData.description}
+                            onChange={(e) => setFormData(p => ({ ...p, description: e.target.value }))}
+                            placeholder="Briefly describe what this category encompasses and what students will learn..."
+                            className={cn(
+                                "w-full bg-slate-950/50 border border-border/50 rounded-2xl px-5 py-4 text-white outline-none focus:border-primary/50 transition-all resize-none text-sm leading-relaxed",
+                                errors.description && "border-rose-500/50 focus:border-rose-500"
+                            )}
+                        />
+                        {errors.description && (
+                            <p className="text-[10px] text-rose-500 font-bold ml-1 flex items-center gap-1">
+                                <AlertCircle className="w-3 h-3" />
+                                {errors.description}
+                            </p>
+                        )}
+                    </div>
                 </div>
             </div>
 

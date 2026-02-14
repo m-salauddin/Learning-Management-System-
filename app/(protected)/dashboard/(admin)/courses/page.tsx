@@ -154,6 +154,11 @@ const CourseRow = memo(({
                         >
                             {course.category?.name || 'GENERIC'}
                         </span>
+                        {course.batch_no && (
+                            <span className="text-[9px] font-black uppercase tracking-tighter px-1.5 py-0.5 rounded border border-amber-500/20 bg-amber-500/10 text-amber-500">
+                                Batch {course.batch_no}
+                            </span>
+                        )}
                         <span className="text-[9px] text-muted-foreground/40 font-mono uppercase tracking-widest hidden md:block">
                             ID: {course.id.slice(0, 8)}
                         </span>
@@ -247,6 +252,7 @@ export default function CourseManagementPage() {
     const [currentPage, setCurrentPage] = useState(1);
     const [pageSize, setPageSize] = useState(10);
     const [totalCourses, setTotalCourses] = useState(0);
+    const [onlyLatestBatch, setOnlyLatestBatch] = useState(true);
 
     const [exportModal, setExportModal] = useState(false);
 
@@ -260,7 +266,8 @@ export default function CourseManagementPage() {
                 level: levelFilter,
                 page: currentPage,
                 pageSize,
-                sort: 'serial'
+                sort: 'serial',
+                onlyLatestBatch: onlyLatestBatch
             });
 
             if (result.data) {
@@ -292,7 +299,7 @@ export default function CourseManagementPage() {
 
     useEffect(() => {
         fetchCoursesData();
-    }, [searchTerm, categoryFilter, statusFilter, levelFilter, currentPage, pageSize]);
+    }, [searchTerm, categoryFilter, statusFilter, levelFilter, currentPage, pageSize, onlyLatestBatch]);
 
     useEffect(() => {
         fetchStatsData();
@@ -634,6 +641,19 @@ export default function CourseManagementPage() {
                                 <SelectItem value="advanced">Advanced</SelectItem>
                             </SelectContent>
                         </Select>
+
+                        <button
+                            onClick={() => setOnlyLatestBatch(!onlyLatestBatch)}
+                            className={cn(
+                                "flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all border border-border/30",
+                                onlyLatestBatch
+                                    ? "bg-primary/10 text-primary border-primary/20"
+                                    : "bg-muted/10 text-muted-foreground hover:bg-muted/20"
+                            )}
+                        >
+                            <Layers className="w-3.5 h-3.5" />
+                            <span>Latest Batch {onlyLatestBatch ? 'Active' : 'Disabled'}</span>
+                        </button>
 
                         {(searchTerm || categoryFilter !== 'all' || statusFilter !== 'all' || levelFilter !== 'all') && (
                             <button
