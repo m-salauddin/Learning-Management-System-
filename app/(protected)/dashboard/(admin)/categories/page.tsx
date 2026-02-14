@@ -104,7 +104,7 @@ export default function CategoryManagementPage() {
         useSensor(KeyboardSensor, {})
     );
 
-    const handleDragEnd = (event: DragEndEvent) => {
+    const handleDragEnd = async (event: DragEndEvent) => {
         const { active, over } = event;
         if (active && over && active.id !== over.id) {
             const oldIndex = localCategories.findIndex(c => c.id === active.id);
@@ -114,7 +114,11 @@ export default function CategoryManagementPage() {
             const startIndex = (currentPage - 1) * pageSize;
             const updatedFullList = [...categories];
             updatedFullList.splice(startIndex, newOrder.length, ...newOrder);
-            dispatch(reorderCategories(updatedFullList));
+
+            const loadingId = toast.loading("Serializing...", "Synchronizing taxonomic structure");
+            await dispatch(reorderCategories(updatedFullList));
+            toast.dismiss(loadingId);
+            toast.success("Order synchronized successfully");
         }
     };
 
