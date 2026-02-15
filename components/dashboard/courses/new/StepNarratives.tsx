@@ -16,12 +16,11 @@ interface StepNarrativesProps {
 }
 
 export const StepNarratives = ({ formData, setFormData, errors }: StepNarrativesProps) => {
-    const [objectiveInput, setObjectiveInput] = useState("");
     const [requirementInput, setRequirementInput] = useState("");
     const [audienceInput, setAudienceInput] = useState("");
     const [tagInput, setTagInput] = useState("");
 
-    const addArrayItem = (field: 'requirements' | 'learning_objectives' | 'target_audience' | 'tags', value: string, setter: (v: string) => void) => {
+    const addArrayItem = (field: 'requirements' | 'target_audience' | 'tags', value: string, setter: (v: string) => void) => {
         if (value.trim()) {
             setFormData(prev => ({
                 ...prev,
@@ -31,7 +30,7 @@ export const StepNarratives = ({ formData, setFormData, errors }: StepNarratives
         }
     };
 
-    const removeArrayItem = (field: 'requirements' | 'learning_objectives' | 'target_audience' | 'tags', index: number) => {
+    const removeArrayItem = (field: 'requirements' | 'target_audience' | 'tags', index: number) => {
         setFormData(prev => ({
             ...prev,
             [field]: (prev[field] as string[]).filter((_, i) => i !== index)
@@ -73,44 +72,6 @@ export const StepNarratives = ({ formData, setFormData, errors }: StepNarratives
             </motion.div>
             <div className="p-6 rounded-3xl border border-border/50 bg-card/30 backdrop-blur-xl shadow-xl space-y-8">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    {/* Learning Objectives */}
-                    <div className="space-y-3">
-                        <label className={labelClasses}>
-                            <Target className="w-4 h-4 text-muted-foreground" />
-                            Learning Objectives
-                        </label>
-                        <div className="flex gap-2">
-                            <input
-                                type="text"
-                                value={objectiveInput}
-                                onChange={(e) => setObjectiveInput(e.target.value)}
-                                onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), addArrayItem('learning_objectives', objectiveInput, setObjectiveInput))}
-                                placeholder="Add objective..."
-                                className={cn(inputClasses, "py-2", errors.learning_objectives && "border-red-500/50 focus:border-red-500")}
-                            />
-                            <button
-                                type="button"
-                                onClick={() => addArrayItem('learning_objectives', objectiveInput, setObjectiveInput)}
-                                className="px-4 rounded-xl bg-primary text-white hover:bg-primary/90 transition-all active:scale-95"
-                            >
-                                <Plus className="w-5 h-5" />
-                            </button>
-                        </div>
-                        <div className="flex flex-wrap gap-2">
-                            {formData.learning_objectives?.map((obj, i) => (
-                                <div key={i} className="px-3 py-1.5 rounded-lg bg-primary/10 border border-primary/20 text-[11px] font-semibold text-primary flex items-center gap-2">
-                                    {obj}
-                                    <button onClick={() => removeArrayItem('learning_objectives', i)}><X className="w-3 h-3" /></button>
-                                </div>
-                            ))}
-                        </div>
-                        {errors.learning_objectives && (
-                            <p className="text-[10px] text-red-500 font-bold ml-1 flex items-center gap-1">
-                                <AlertCircle className="w-3 h-3" />
-                                {errors.learning_objectives}
-                            </p>
-                        )}
-                    </div>
 
                     {/* Requirements */}
                     <div className="space-y-3">

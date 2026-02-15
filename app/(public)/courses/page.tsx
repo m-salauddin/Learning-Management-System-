@@ -28,9 +28,9 @@ export default async function CoursesPage() {
             tags,
             level,
             language,
-            learning_objectives,
             requirements,
             status,
+            course_type,
             instructor:instructor_profiles!courses_instructor_id_fkey(
                 users:instructor_profiles_id_fkey(
                     name,
@@ -70,9 +70,9 @@ export default async function CoursesPage() {
             level: c.level || "Beginner",
             language: c.language || "English",
             lastUpdated: new Date().toLocaleDateString(),
-            whatYouLearn: c.learning_objectives || [],
+            whatYouLearn: [],
             curriculum: [],
-            type: "Recorded",
+            type: c.course_type === 'hybrid' ? 'Live + Recorded' : (c.course_type === 'live' ? 'Live' : 'Recorded'),
             priceType: c.price > 0 ? "Paid" : "Free"
         };
     });

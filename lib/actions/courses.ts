@@ -354,7 +354,7 @@ export async function createCourse(input: CreateCourseInput): Promise<ApiRespons
             ...mainCourseData,
             batch_no: input.batch_no,
             slug: finalSlug,
-            instructor_id: instructorId,
+            instructor_id: input.instructor_ids?.[0] || instructorId, // Legacy fallback
             status: 'draft',
             published: false
         })
@@ -366,13 +366,36 @@ export async function createCourse(input: CreateCourseInput): Promise<ApiRespons
         return { success: false, error: error.message };
     }
 
+    // 0. Insert Multiple Instructors
+    const instructorAssignments = [
+        ...(input.instructor_ids || []).map(id => ({
+            course_id: course.id,
+            instructor_id: id,
+            role: 'main' as const
+        })),
+        ...(input.support_instructor_ids || []).map(id => ({
+            course_id: course.id,
+            instructor_id: id,
+            role: 'support' as const
+        }))
+    ];
+
+    if (instructorAssignments.length > 0) {
+        const { error: instError } = await supabase
+            .from('course_instructors')
+            .insert(instructorAssignments);
+
+        if (instError) {
+            console.error('Error assigning instructors:', instError);
+        }
+    }
+
     // 1. Insert into course_details if target_audience or description exists
     if (target_audience?.length || mainCourseData.description) {
         await supabase.from('course_details').insert({
             course_id: course.id,
             target_audience: target_audience || [],
             description_long: mainCourseData.description || "",
-            learning_outcomes: mainCourseData.learning_objectives || [],
             requirements: mainCourseData.requirements || [],
             language: mainCourseData.language || "বাংলা",
         });
@@ -568,12 +591,20 @@ export async function getCategories(): Promise<ApiResponse<{ id: string; name: s
 // GET TEACHERS
 // ============================================================================
 
-export async function getTeachers(): Promise<ApiResponse<{ id: string; name: string; email: string; avatar_url: string | null }[]>> {
+export async function getTeachers(): Promise<ApiResponse<{ id: string; name: string; email: string; avatar_url: string | null; course_count?: number }[]>> {
     const supabase = await createClient();
 
     const { data, error } = await supabase
         .from('users')
-        .select('id, name, email, avatar_url')
+        .select(`
+            id, 
+            name, 
+            email, 
+            avatar_url,
+            instructor_profiles (
+                courses (count)
+            )
+        `)
         .eq('role', 'teacher')
         .order('name');
 
@@ -581,7 +612,23 @@ export async function getTeachers(): Promise<ApiResponse<{ id: string; name: str
         return { success: false, error: error.message };
     }
 
-    return { success: true, data };
+    const teachers = (data || []).map((user: any) => {
+        const instructorProfile = Array.isArray(user.instructor_profiles)
+            ? user.instructor_profiles[0]
+            : user.instructor_profiles;
+
+        const courseCount = instructorProfile?.courses?.[0]?.count || 0;
+
+        return {
+            id: user.id,
+            name: user.name,
+            email: user.email,
+            avatar_url: user.avatar_url,
+            course_count: courseCount
+        };
+    });
+
+    return { success: true, data: teachers };
 }
 export async function getCourseStats(): Promise<{ success: boolean; stats?: { total: number; published: number; totalStudents: number; totalRevenue: number }; error?: string }> {
     const supabase = await createClient();
