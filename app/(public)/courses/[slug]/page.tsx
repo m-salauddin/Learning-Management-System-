@@ -138,10 +138,10 @@ function transformToMappedCourse(pageData: CoursePageData): MappedCourse {
         level: course.level || "Beginner",
         language: details?.language || "English",
         lastUpdated: new Date(course.updated_at).toLocaleDateString(),
-        whatYouLearn: details?.learning_outcomes || course.learning_objectives || [],
+        whatYouLearn: details?.learning_outcomes || [],
         requirements: details?.requirements || course.requirements || [],
         curriculum: curriculum,
-        type: "Recorded",
+        type: course.course_type === 'hybrid' ? 'Live + Recorded' : (course.course_type === 'live' ? 'Live' : 'Recorded'),
         priceType: course.price > 0 ? "Paid" : "Free",
 
         targetAudience: details?.target_audience || [],

@@ -87,7 +87,9 @@ export interface Course {
     short_description: string;
     thumbnail_url: string;
     preview_video_url: string;
-    instructor_id: string;
+    instructor_id: string; // Deprecated, keep for now
+    instructor_ids: string[];
+    support_instructor_ids: string[];
     category_id: string | null;
     price: number;
     discount_price: number | null;
@@ -102,7 +104,6 @@ export interface Course {
     status: CourseStatus;
     published: boolean;
     requirements: string[];
-    learning_objectives: string[];
     tags: string[];
     batch_no: number | null;
     serial_number: number;
@@ -504,14 +505,15 @@ export interface CreateCourseInput {
     price: number;
     discount_price?: number | null;
     category_id?: string;
-    instructor_id?: string;
+    instructor_id?: string; // Primary/Single legacy
+    instructor_ids?: string[];
+    support_instructor_ids?: string[];
     level?: CourseLevel;
     course_type?: CourseType;
     language?: string;
     thumbnail_url?: string;
     preview_video_url?: string;
     requirements?: string[];
-    learning_objectives?: string[];
     target_audience?: string[];
     tags?: string[];
     batch_no?: number;
