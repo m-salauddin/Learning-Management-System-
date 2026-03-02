@@ -7,7 +7,7 @@ import {
     Smartphone, Palette, TrendingUp, Briefcase, Database, Code, Shield, Cloud,
     GraduationCap, UserRound, Hash, AlertCircle,
     SignalLow, SignalMedium, SignalHigh, BookOpenText, Target,
-    Video, Radio, MonitorPlay, X, Search
+    Video, Radio, MonitorPlay, X, Search, Clock
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import {
@@ -409,6 +409,28 @@ export const StepFoundations = ({ formData, setFormData, categories, teachers, e
                                 <p className="text-[10px] text-red-500 font-bold ml-1 flex items-center gap-1">
                                     <AlertCircle className="w-3 h-3" />
                                     {errors.batch_no}
+                                </p>
+                            )}
+                        </div>
+                    </div>
+
+                    {/* Enrollment Ends In */}
+                    <div className="space-y-2">
+                        <label className={labelClasses}>
+                            <Clock className="w-4 h-4 text-muted-foreground" />
+                            Enrollment Ends In
+                        </label>
+                        <div className="space-y-1">
+                            <input
+                                type="datetime-local"
+                                value={formData.discount_expires_at || ''}
+                                onChange={(e) => setFormData(prev => ({ ...prev, discount_expires_at: e.target.value || undefined }))}
+                                className={cn(inputClasses, errors.discount_expires_at && "border-red-500/50 focus:border-red-500")}
+                            />
+                            {errors.discount_expires_at && (
+                                <p className="text-[10px] text-red-500 font-bold ml-1 flex items-center gap-1">
+                                    <AlertCircle className="w-3 h-3" />
+                                    {errors.discount_expires_at}
                                 </p>
                             )}
                         </div>

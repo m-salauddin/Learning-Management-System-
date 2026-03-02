@@ -124,6 +124,7 @@ function transformToMappedCourse(pageData: CoursePageData): MappedCourse {
         discountPrice: course.discount_price && course.discount_price > 0
             ? `৳${course.discount_price.toLocaleString()}`
             : undefined,
+        discountExpiresAt: course.discount_expires_at || undefined,
         duration: durationString,
         students: `${course.total_students || 0}+`,
         rating: course.rating || 0,
