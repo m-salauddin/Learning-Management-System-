@@ -93,6 +93,7 @@ export interface Course {
     category_id: string | null;
     price: number;
     discount_price: number | null;
+    discount_expires_at: string | null;
     level: CourseLevel;
     course_type: CourseType;
     language: string;
@@ -504,6 +505,7 @@ export interface CreateCourseInput {
     short_description?: string;
     price: number;
     discount_price?: number | null;
+    discount_expires_at?: string | null;
     category_id?: string;
     instructor_id?: string; // Primary/Single legacy
     instructor_ids?: string[];

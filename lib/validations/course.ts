@@ -8,6 +8,7 @@ export const courseStep1Schema = z.object({
     instructor_ids: z.array(z.string()).min(1, "Please select at least one main instructor"),
     support_instructor_ids: z.array(z.string()).optional(),
     batch_no: z.number().min(1, "Batch number is required"),
+    discount_expires_at: z.string().nullable().optional(),
     level: z.enum(["beginner", "intermediate", "advanced"]),
     course_type: z.enum(["recorded", "live", "hybrid"]),
     language: z.string().min(1, "Language is required"),

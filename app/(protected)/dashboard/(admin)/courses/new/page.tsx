@@ -58,6 +58,7 @@ export default function CreateCoursePage() {
         description: "",
         price: 0,
         discount_price: null,
+        discount_expires_at: undefined,
         category_id: "",
         instructor_ids: [] as string[],
         support_instructor_ids: [] as string[],

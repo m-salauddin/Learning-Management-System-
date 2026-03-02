@@ -101,12 +101,15 @@ export default function CourseDetailClient({ course, pageData }: CourseDetailCli
     const isLive = !!(course.type?.toLowerCase().includes('live') || pageData?.batches?.some(b => b.is_active));
 
     useEffect(() => {
-        if (!course.discountExpiresAt) {
+        const targetStr = course.discountExpiresAt ||
+            (pageData?.batches?.find(b => b.is_active)?.start_date);
+
+        if (!targetStr) {
             setTimeLeft(null);
             return;
         }
 
-        const targetDate = new Date(course.discountExpiresAt);
+        const targetDate = new Date(targetStr);
         const timer = setInterval(() => {
             const now = new Date().getTime();
             const distance = targetDate.getTime() - now;
@@ -125,7 +128,7 @@ export default function CourseDetailClient({ course, pageData }: CourseDetailCli
         }, 1000);
 
         return () => clearInterval(timer);
-    }, [course.discountExpiresAt]);
+    }, [course.discountExpiresAt, pageData?.batches]);
 
     const shareUrl = typeof window !== 'undefined' ? window.location.href : '';
     const shareText = `Check out this course: ${course.title}`;

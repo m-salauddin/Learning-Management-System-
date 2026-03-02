@@ -1,7 +1,7 @@
 "use client";
 
 import { motion } from "motion/react";
-import { Star, Users, Clock, Zap, Download, Activity, Video, Hash, Rocket, Layers, Award, Target } from "lucide-react";
+import { Star, Users, Clock, Zap, Download, Activity, Video, Hash, Rocket, Layers, Award, Target, BookOpen } from "lucide-react";
 import { Badge } from "@/components/ui/Badge";
 import { PrimaryCTAButton, SecondaryCTAButton } from "@/components/ui/CTAButton";
 import { MappedCourse } from "@/types/mapped-course";
@@ -131,19 +131,19 @@ export default function CourseHero({
 
                 <div className="flex items-center gap-2 text-sm text-muted-foreground">
                     <div className="w-8 h-8 rounded-lg bg-accent/10 flex items-center justify-center">
-                        <Clock className="w-4 h-4 text-accent" />
+                        <BookOpen className="w-4 h-4 text-accent" />
                     </div>
-                    <span className="font-medium">{course.duration} Total</span>
+                    <span className="font-medium">{pageData?.totalLessons || 0} Lessons</span>
                 </div>
 
                 {timeLeft && (
-                    <div className="flex items-center gap-3 px-4 py-2 rounded-xl bg-destructive/5 border border-destructive/20 backdrop-blur-sm group hover:border-destructive/40 transition-all duration-300">
-                        <div className="hidden sm:flex items-center justify-center w-7 h-7 rounded-lg bg-destructive/10 text-destructive">
-                            <Zap className="w-4 h-4 fill-destructive/20" />
+                    <div className="flex items-center gap-3 px-4 py-2 rounded-xl bg-amber-500/5 border border-amber-500/20 backdrop-blur-sm group hover:border-amber-500/40 transition-all duration-300">
+                        <div className="hidden sm:flex items-center justify-center w-7 h-7 rounded-lg bg-amber-500/10 text-amber-500">
+                            <Zap className="w-4 h-4 fill-amber-500/20" />
                         </div>
                         <div className="flex flex-col">
-                            <span className="text-[10px] uppercase font-heavy text-destructive/80 tracking-widest leading-none mb-1">Enrollment ends in</span>
-                            <div className="flex items-center gap-2 font-black text-sm text-destructive tabular-nums">
+                            <span className="text-[10px] uppercase font-heavy text-amber-500/80 tracking-widest leading-none mb-1">Enrollment ends in</span>
+                            <div className="flex items-center gap-2 font-black text-sm text-amber-500 tabular-nums">
                                 <div className="flex items-baseline gap-0.5">
                                     <span className="text-base">{timeLeft.d}</span>
                                     <span className="text-[9px] font-bold opacity-60 uppercase">d</span>
