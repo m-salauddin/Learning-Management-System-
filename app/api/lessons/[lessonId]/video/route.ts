@@ -74,7 +74,10 @@ export async function GET(
 
     if (signError) {
         console.error('Sign error:', signError);
-        return NextResponse.json({ error: 'Failed to generate link' }, { status: 500 });
+        const errorMessage = signError.message?.includes('Bucket not found')
+            ? "The 'course-videos' storage bucket was not found. Please run the storage setup script."
+            : 'Failed to generate link';
+        return NextResponse.json({ error: errorMessage }, { status: 500 });
     }
 
     // Calculate expiry time for client-side cache management
