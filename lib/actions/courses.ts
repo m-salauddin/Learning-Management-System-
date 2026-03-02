@@ -287,22 +287,32 @@ export async function createCourse(input: CreateCourseInput): Promise<ApiRespons
     }
 
     // Extract auxiliary data
-    const { faqs, projects, resources, target_audience, ...mainCourseData } = input;
+    const {
+        faqs,
+        projects,
+        resources,
+        target_audience,
+        instructor_ids,
+        support_instructor_ids,
+        ...mainCourseData
+    } = input;
 
-    const instructorId = mainCourseData.instructor_id === "_default" || !mainCourseData.instructor_id ? user.id : mainCourseData.instructor_id;
+    const fallbackInstructorId = mainCourseData.instructor_id === "_default" || !mainCourseData.instructor_id ? user.id : mainCourseData.instructor_id;
+    // Resolve the actual instructor_id that will be used for the course insert
+    const finalInstructorId = instructor_ids?.[0] || fallbackInstructorId;
 
-    // 0. Ensure instructor profile exists (FK requirement)
+    // 0. Ensure instructor profile exists for the FINAL instructor (FK requirement)
     const { data: existingProfile } = await supabase
         .from('instructor_profiles')
         .select('id')
-        .eq('id', instructorId)
+        .eq('id', finalInstructorId)
         .single();
 
     if (!existingProfile) {
         const { error: profileError } = await supabase
             .from('instructor_profiles')
             .insert({
-                id: instructorId,
+                id: finalInstructorId,
                 bio: "Instructor at Dokkhota IT",
                 expertise: [],
                 social_links: {}
@@ -310,7 +320,30 @@ export async function createCourse(input: CreateCourseInput): Promise<ApiRespons
 
         if (profileError) {
             console.error('Error creating instructor profile:', profileError);
-            // If we can't create a profile, the course creation will fail anyway due to FK
+            return { success: false, error: 'Failed to create instructor profile. Please ensure the selected instructor exists.' };
+        }
+    }
+
+    // Also ensure profiles exist for all additional instructors
+    const allInstructorIds = [...new Set([
+        ...(instructor_ids || []),
+        ...(support_instructor_ids || [])
+    ])].filter(id => id !== finalInstructorId);
+
+    for (const instId of allInstructorIds) {
+        const { data: profile } = await supabase
+            .from('instructor_profiles')
+            .select('id')
+            .eq('id', instId)
+            .single();
+
+        if (!profile) {
+            await supabase.from('instructor_profiles').insert({
+                id: instId,
+                bio: "Instructor at Dokkhota IT",
+                expertise: [],
+                social_links: {}
+            });
         }
     }
 
@@ -347,18 +380,30 @@ export async function createCourse(input: CreateCourseInput): Promise<ApiRespons
         }
     }
 
-    // Create course
+    // Create course using atomic ordering RPC
+    const coursePayload = {
+        ...mainCourseData,
+        batch_no: input.batch_no || 1,
+        course_type: input.course_type || 'recorded',
+        slug: finalSlug,
+        instructor_id: finalInstructorId,
+        status: 'draft',
+        published: false
+    };
+
+    const { data: rpcResult, error: rpcError } = await supabase
+        .rpc('create_course_at_top', { input_data: coursePayload });
+
+    if (rpcError) {
+        console.error('Error creating course (RPC):', rpcError);
+        return { success: false, error: rpcError.message };
+    }
+
+    // Since RPC returns just { id, serial_number }, fetch the full inserted row
     const { data: course, error } = await supabase
         .from('courses')
-        .insert({
-            ...mainCourseData,
-            batch_no: input.batch_no,
-            slug: finalSlug,
-            instructor_id: input.instructor_ids?.[0] || instructorId, // Legacy fallback
-            status: 'draft',
-            published: false
-        })
         .select()
+        .eq('id', rpcResult.id)
         .single();
 
     if (error) {
@@ -471,17 +516,148 @@ export async function updateCourse(input: UpdateCourseInput): Promise<ApiRespons
         return { success: false, error: 'Unauthorized to update this course' };
     }
 
-    const { id, ...updateData } = input;
+    const {
+        id,
+        faqs,
+        projects,
+        resources,
+        target_audience,
+        instructor_ids,
+        support_instructor_ids,
+        ...updateData
+    } = input;
+
+    // Remove fields that don't exist in courses table
+    const { instructor_id: _instId, ...safeUpdateData } = updateData as any;
+
+    // Resolve the instructor_id for the main courses table
+    const finalInstructorId = instructor_ids?.[0] || course.instructor_id;
+
+    // Ensure instructor profile exists
+    const { data: existingProfile } = await supabase
+        .from('instructor_profiles')
+        .select('id')
+        .eq('id', finalInstructorId)
+        .single();
+
+    if (!existingProfile) {
+        await supabase.from('instructor_profiles').insert({
+            id: finalInstructorId,
+            bio: "Instructor at Dokkhota IT",
+            expertise: [],
+            social_links: {}
+        });
+    }
 
     const { data: updated, error } = await supabase
         .from('courses')
-        .update(updateData)
+        .update({
+            ...safeUpdateData,
+            instructor_id: finalInstructorId,
+        })
         .eq('id', id)
         .select()
         .single();
 
     if (error) {
         return { success: false, error: error.message };
+    }
+
+    // Update course_instructors (delete + reinsert)
+    if (instructor_ids || support_instructor_ids) {
+        await supabase.from('course_instructors').delete().eq('course_id', id);
+
+        const instructorAssignments = [
+            ...(instructor_ids || []).map(instId => ({
+                course_id: id,
+                instructor_id: instId,
+                role: 'main' as const
+            })),
+            ...(support_instructor_ids || []).map(instId => ({
+                course_id: id,
+                instructor_id: instId,
+                role: 'support' as const
+            }))
+        ];
+
+        // Ensure profiles exist for all instructors
+        for (const assignment of instructorAssignments) {
+            const { data: p } = await supabase
+                .from('instructor_profiles')
+                .select('id')
+                .eq('id', assignment.instructor_id)
+                .single();
+            if (!p) {
+                await supabase.from('instructor_profiles').insert({
+                    id: assignment.instructor_id,
+                    bio: "Instructor at Dokkhota IT",
+                    expertise: [],
+                    social_links: {}
+                });
+            }
+        }
+
+        if (instructorAssignments.length > 0) {
+            await supabase.from('course_instructors').insert(instructorAssignments);
+        }
+    }
+
+    // Update course_details
+    if (target_audience || updateData.description) {
+        await supabase.from('course_details').upsert({
+            course_id: id,
+            target_audience: target_audience || [],
+            description_long: updateData.description || "",
+            requirements: (updateData as any).requirements || [],
+            language: (updateData as any).language || "বাংলা",
+            updated_at: new Date().toISOString()
+        }, { onConflict: 'course_id' });
+    }
+
+    // Update FAQs (delete + reinsert)
+    if (faqs !== undefined) {
+        await supabase.from('course_faq').delete().eq('course_id', id);
+        if (faqs && faqs.length > 0) {
+            const faqData = faqs.map((f, index) => ({
+                course_id: id,
+                question: f.question,
+                answer: f.answer,
+                order_index: index,
+                is_published: true
+            }));
+            await supabase.from('course_faq').insert(faqData);
+        }
+    }
+
+    // Update Projects (delete + reinsert)
+    if (projects !== undefined) {
+        await supabase.from('course_projects').delete().eq('course_id', id);
+        if (projects && projects.length > 0) {
+            const projectData = projects.map((p, index) => ({
+                course_id: id,
+                title: p.title,
+                description: p.description,
+                order_index: index,
+                is_public: true
+            }));
+            await supabase.from('course_projects').insert(projectData);
+        }
+    }
+
+    // Update Resources (delete + reinsert)
+    if (resources !== undefined) {
+        await supabase.from('course_resources').delete().eq('course_id', id);
+        if (resources && resources.length > 0) {
+            const resourceData = resources.map((r, index) => ({
+                course_id: id,
+                title: r.title,
+                resource_type: r.type,
+                external_url: r.url,
+                order_index: index,
+                is_public: true
+            }));
+            await supabase.from('course_resources').insert(resourceData);
+        }
     }
 
     revalidatePath(`/courses/${updated.slug}`);

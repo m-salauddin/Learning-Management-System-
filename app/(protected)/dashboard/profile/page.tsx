@@ -422,7 +422,12 @@ export default function ProfilePage() {
                     .from('avatars')
                     .upload(filePath, selectedImageFile);
 
-                if (uploadError) throw uploadError;
+                if (uploadError) {
+                    if (uploadError.message?.includes("bucket") || uploadError.message?.includes("Bucket not found")) {
+                        throw new Error("The 'avatars' storage bucket was not found. Please run the storage setup script.");
+                    }
+                    throw uploadError;
+                }
 
                 const { data: { publicUrl } } = supabase.storage
                     .from('avatars')

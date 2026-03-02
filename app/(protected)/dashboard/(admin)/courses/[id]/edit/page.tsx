@@ -1,12 +1,12 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, use } from "react";
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "motion/react";
-import { GraduationCap } from "lucide-react";
+import { GraduationCap, Loader2, ArrowLeft } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { useToast } from "@/components/ui/toast";
-import { createCourse, getCategories, getTeachers } from "@/lib/actions/courses";
+import { updateCourse, getCategories, getTeachers, getCourseById } from "@/lib/actions/courses";
 import { CourseLevel, CreateCourseInput } from "@/types/lms";
 import {
     courseStep1Schema,
@@ -15,8 +15,9 @@ import {
     courseStep4Schema
 } from "@/lib/validations/course";
 import { ZodError } from "zod";
+import Link from "next/link";
 
-// Extracted Components
+// Reuse extracted components from create page
 import { StepIndicator } from "@/components/dashboard/courses/new/StepIndicator";
 import { CoursePreview } from "@/components/dashboard/courses/new/CoursePreview";
 import { StepFoundations } from "@/components/dashboard/courses/new/StepFoundations";
@@ -39,10 +40,13 @@ interface Teacher {
     avatar_url: string | null;
 }
 
-export default function CreateCoursePage() {
+export default function EditCoursePage({ params }: { params: Promise<{ id: string }> }) {
+    const { id: courseId } = use(params);
     const router = useRouter();
     const supabase = createClient();
     const toast = useToast();
+
+    const [isLoading, setIsLoading] = useState(true);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [categories, setCategories] = useState<Category[]>([]);
     const [teachers, setTeachers] = useState<Teacher[]>([]);
@@ -69,12 +73,13 @@ export default function CreateCoursePage() {
         target_audience: [] as string[],
         tags: [] as string[],
         batch_no: undefined,
+        course_type: "recorded" as "recorded" | "live" | "hybrid",
         projects: [] as { title: string; description: string }[],
         faqs: [] as { question: string; answer: string }[],
         resources: [] as { title: string; type: string; url: string }[]
     });
 
-    // Real-time validation (Watch Mode) - Debounced for performance
+    // Real-time validation (Watch Mode)
     useEffect(() => {
         if (submittedSteps.has(currentStep)) {
             const timer = setTimeout(() => {
@@ -107,14 +112,16 @@ export default function CreateCoursePage() {
     const [isDragging, setIsDragging] = useState(false);
     const fileInputRef = useRef<HTMLInputElement>(null);
 
-    // Initial data fetch
+    // Fetch course data + categories + teachers
     useEffect(() => {
         fetchData();
-    }, []);
+    }, [courseId]);
 
     const fetchData = async () => {
+        setIsLoading(true);
         try {
-            const [catsRes, tchsRes] = await Promise.all([
+            const [courseRes, catsRes, tchsRes] = await Promise.all([
+                getCourseById(courseId),
                 getCategories(),
                 getTeachers()
             ]);
@@ -125,8 +132,78 @@ export default function CreateCoursePage() {
             if (tchsRes.success && tchsRes.data) {
                 setTeachers(tchsRes.data);
             }
+
+            if (courseRes.success && courseRes.data) {
+                const course = courseRes.data as any;
+
+                // Also fetch related data (details, instructors, projects, faqs, resources)
+                const [detailsRes, instructorsRes, projectsRes, faqsRes, resourcesRes] = await Promise.all([
+                    supabase.from('course_details').select('*').eq('course_id', courseId).single(),
+                    supabase.from('course_instructors').select('*').eq('course_id', courseId),
+                    supabase.from('course_projects').select('*').eq('course_id', courseId).order('order_index'),
+                    supabase.from('course_faq').select('*').eq('course_id', courseId).order('order_index'),
+                    supabase.from('course_resources').select('*').eq('course_id', courseId).order('order_index')
+                ]);
+
+                const details = detailsRes.data as any;
+                const instructors = instructorsRes.data || [];
+                const projects = projectsRes.data || [];
+                const faqs = faqsRes.data || [];
+                const resources = resourcesRes.data || [];
+
+                const mainInstructorIds = instructors
+                    .filter((i: any) => i.role === 'main')
+                    .map((i: any) => i.instructor_id);
+                const supportInstructorIds = instructors
+                    .filter((i: any) => i.role === 'support')
+                    .map((i: any) => i.instructor_id);
+
+                setFormData({
+                    title: course.title || "",
+                    short_description: course.short_description || "",
+                    description: course.description || details?.description_long || "",
+                    price: course.price || 0,
+                    discount_price: course.discount_price || null,
+                    category_id: course.category_id || "",
+                    instructor_ids: mainInstructorIds.length > 0 ? mainInstructorIds : (course.instructor_id ? [course.instructor_id] : []),
+                    support_instructor_ids: supportInstructorIds,
+                    level: course.level || "beginner",
+                    language: course.language || details?.language || "Bengali",
+                    thumbnail_url: course.thumbnail_url || "",
+                    preview_video_url: course.preview_video_url || "",
+                    requirements: course.requirements || details?.requirements || [],
+                    target_audience: details?.target_audience || [],
+                    tags: course.tags || [],
+                    batch_no: course.batch_no || undefined,
+                    course_type: course.course_type || "recorded",
+                    projects: projects.map((p: any) => ({
+                        title: p.title || "",
+                        description: p.description || ""
+                    })),
+                    faqs: faqs.map((f: any) => ({
+                        question: f.question || "",
+                        answer: f.answer || ""
+                    })),
+                    resources: resources.map((r: any) => ({
+                        title: r.title || "",
+                        type: r.resource_type || "",
+                        url: r.external_url || ""
+                    }))
+                });
+
+                // Set thumbnail preview from existing URL
+                if (course.thumbnail_url) {
+                    setThumbnailPreview(course.thumbnail_url);
+                }
+            } else {
+                toast.error("Course not found");
+                router.push("/dashboard/courses");
+            }
         } catch (error) {
-            toast.error("Failed to fetch initial data");
+            console.error("Failed to fetch course data:", error);
+            toast.error("Failed to load course data");
+        } finally {
+            setIsLoading(false);
         }
     };
 
@@ -158,7 +235,7 @@ export default function CreateCoursePage() {
         } catch (error: any) {
             console.error("Thumbnail upload error:", error);
             if (error.message?.includes("bucket") || error.message?.includes("Bucket not found")) {
-                toast.error("Storage Bucket Missing", "The 'courses' bucket was not found. Please run the storage setup script in your Supabase SQL Editor.");
+                toast.error("Storage Bucket Missing", "The 'courses' bucket was not found. Please run the storage setup script.");
             } else {
                 toast.error(error.message || "Upload failed");
             }
@@ -203,12 +280,15 @@ export default function CreateCoursePage() {
         try {
             courseStep4Schema.parse(formData);
             setIsSubmitting(true);
-            const result = await createCourse(formData);
+            const result = await updateCourse({
+                id: courseId,
+                ...formData
+            });
             if (result.success) {
-                toast.success("Course created successfully!");
+                toast.success("Course updated successfully!");
                 router.push("/dashboard/courses");
             } else {
-                toast.error(result.error || "Failed to create course");
+                toast.error(result.error || "Failed to update course");
             }
         } catch (errorDetail: any) {
             if (errorDetail instanceof ZodError) {
@@ -218,7 +298,7 @@ export default function CreateCoursePage() {
                 });
                 setErrors(newErrors);
             } else {
-                toast.error(errorDetail.message || "Failed to create course");
+                toast.error(errorDetail.message || "Failed to update course");
             }
         } finally {
             setIsSubmitting(false);
@@ -253,13 +333,37 @@ export default function CreateCoursePage() {
         window.scrollTo({ top: 0, behavior: 'smooth' });
     };
 
+    // Loading state
+    if (isLoading) {
+        return (
+            <div className="max-w-6xl mx-auto py-8 px-4 sm:px-6">
+                <div className="flex flex-col items-center justify-center min-h-[60vh] gap-4">
+                    <Loader2 className="w-10 h-10 animate-spin text-primary" />
+                    <p className="text-muted-foreground font-medium text-lg">Loading course data...</p>
+                </div>
+            </div>
+        );
+    }
+
     return (
         <div className="max-w-6xl mx-auto py-8 px-4 sm:px-6">
             <form onSubmit={handleSubmit} className="space-y-8">
                 {/* Header */}
                 <div className="mb-8">
-                    <h1 className="text-3xl font-bold tracking-tight text-white">Initialize New Course</h1>
-                    <p className="text-muted-foreground mt-1 font-medium">Configure the core details, curriculum, and presentation for your new educational program.</p>
+                    <div className="flex items-center gap-3 mb-4">
+                        <Link
+                            href="/dashboard/courses"
+                            className="p-2 rounded-xl hover:bg-muted text-muted-foreground hover:text-foreground transition-colors"
+                        >
+                            <ArrowLeft className="w-5 h-5" />
+                        </Link>
+                        <div>
+                            <h1 className="text-3xl font-bold tracking-tight text-white">Edit Course</h1>
+                            <p className="text-muted-foreground mt-1 font-medium">
+                                Update the details, curriculum, and presentation for <span className="text-primary font-bold">{formData.title}</span>
+                            </p>
+                        </div>
+                    </div>
                 </div>
 
                 <StepIndicator currentStep={currentStep} setCurrentStep={setCurrentStep} />
