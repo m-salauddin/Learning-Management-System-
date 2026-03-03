@@ -30,26 +30,31 @@ export function ThemeToggle() {
         { value: "system", icon: Monitor, label: "System" },
     ]
 
+    // Each button is w-8 (32px), gap-1 (4px gap between items)
+    // Slide distance per step = 32 + 4 = 36px
+    const activeIndex = themes.findIndex(t => t.value === theme)
+
     return (
-        <div className="flex items-center gap-1 p-1 rounded-full bg-muted/50 border border-border/50">
+        <div className="relative flex items-center gap-1 p-1 rounded-full bg-muted/50 border border-border/50">
+            {/* The sliding indicator — uses index math, immune to scroll/layout bugs */}
+            <motion.div
+                className="absolute left-1 top-1 w-8 h-8 bg-primary rounded-full z-0 shadow-sm"
+                initial={false}
+                animate={{ x: activeIndex * 36 }}
+                transition={{ type: "spring", bounce: 0.15, duration: 0.5 }}
+            />
             {themes.map(({ value, icon: Icon, label }) => (
                 <button
                     key={value}
                     onClick={() => setTheme(value)}
                     className={cn(
-                        "relative flex cursor-pointer items-center justify-center w-8 h-8 rounded-full transition-colors",
+                        "relative z-10 flex cursor-pointer items-center justify-center w-8 h-8 rounded-full",
                         "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
-                        theme === value ? "text-primary-foreground" : "text-muted-foreground"
+                        "transition-all duration-300",
+                        theme === value ? "text-primary-foreground" : "text-muted-foreground hover:bg-muted/30 hover:text-foreground"
                     )}
                     aria-label={`Switch to ${label} theme`}
                 >
-                    {theme === value && (
-                        <motion.div
-                            layoutId="theme-toggle-bg"
-                            className="absolute inset-0 bg-primary rounded-full shadow-sm"
-                            transition={{ type: "spring", stiffness: 400, damping: 30 }}
-                        />
-                    )}
                     <Icon className="relative z-10 w-4 h-4" />
                 </button>
             ))}

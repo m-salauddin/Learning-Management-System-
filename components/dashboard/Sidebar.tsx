@@ -114,7 +114,7 @@ export function Sidebar({ role, isCollapsed = false, onToggle }: SidebarProps) {
                             {/* Visual backdrop for active item */}
                             {isActive && (
                                 <motion.div
-                                    layoutId="active-sidebar-pill"
+                                    layoutId="active-sidebar-pill-idk-remove-me"
                                     className="absolute inset-0 bg-primary/10 rounded-xl border border-primary/10"
                                     initial={false}
                                     transition={{ type: "spring", stiffness: 300, damping: 30 }}

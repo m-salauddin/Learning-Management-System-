@@ -274,7 +274,7 @@ function CoursesContent({ initialCourses }: { initialCourses: MappedCourse[] }) 
                                             key={category}
                                             onClick={() => { setSelectedCategory(category); setCurrentPage(1); }}
                                             className={`
-                                                relative px-5 py-2.5 rounded-xl text-sm font-semibold transition-all duration-300 whitespace-nowrap cursor-pointer shrink-0
+                                                relative px-5 py-2.5 rounded-lg text-sm font-semibold transition-all duration-300 whitespace-nowrap cursor-pointer shrink-0
                                                 ${selectedCategory === category
                                                     ? "text-white dark:text-black z-10"
                                                     : "bg-black/5 dark:bg-white/5 text-muted-foreground hover:bg-black/10 dark:hover:bg-white/10 hover:text-foreground"
@@ -284,7 +284,8 @@ function CoursesContent({ initialCourses }: { initialCourses: MappedCourse[] }) 
                                             {selectedCategory === category && (
                                                 <motion.div
                                                     layoutId="activeCategory"
-                                                    className="absolute inset-0 bg-primary rounded-xl z-[-1]"
+                                                    initial={false}
+                                                    className="absolute inset-0 bg-primary rounded-lg z-[-1]"
                                                     transition={{ type: "spring", stiffness: 400, damping: 30 }}
                                                 />
                                             )}
@@ -364,7 +365,7 @@ function CoursesContent({ initialCourses }: { initialCourses: MappedCourse[] }) 
                     <motion.aside
                         className={`
                             ${showMobileFilters ? 'fixed inset-0 z-50 bg-background p-6 overflow-y-auto' : 'hidden'}
-                            lg:block lg:w-64 lg:shrink-0 lg:sticky lg:top-48
+                            lg:block lg:w-64 lg:shrink-0
                         `}
                     >
                         {showMobileFilters && (

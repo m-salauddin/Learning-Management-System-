@@ -54,28 +54,40 @@ export function FloatingNav() {
     return (
         <div className="fixed right-4 top-1/2 -translate-y-1/2 z-50 hidden lg:flex flex-col gap-6">
 
-            <div className="flex flex-col gap-3 p-3 rounded-full bg-white/60 dark:bg-slate-950/50 backdrop-blur-2xl border border-border shadow-xl shadow-black/5 dark:shadow-black/20">
-                {SECTIONS.map(({ id, label, icon: Icon }) => (
-                    <a
-                        key={id}
-                        href={`#${id}`}
-                        aria-label={label}
-                        onClick={(e) => {
-                            e.preventDefault();
-                            document.getElementById(id)?.scrollIntoView({ behavior: "smooth" });
-                        }}
-                        className={cn(
-                            "flex items-center justify-center w-10 h-10 rounded-full transition-all duration-300 group relative",
-                            activeSection === id
-                                ? "text-primary bg-primary/10 shadow-[0_0_15px_rgba(var(--primary),0.3)] scale-110"
-                                : "text-muted-foreground hover:text-foreground hover:bg-muted/50 hover:scale-110"
-                        )}
-                    >
-                        <Icon strokeWidth={2.5} className="w-5 h-5" />
+            <div className="flex flex-col gap-[12px] p-3 rounded-full bg-white/60 dark:bg-slate-950/50 backdrop-blur-2xl border border-border shadow-xl shadow-black/5 dark:shadow-black/20 relative">
 
+                {/* Smooth sliding active indicator driven entirely by CSS offsets (immune to scroll jump physics bugs) */}
+                <div
+                    className="absolute z-0 w-10 h-10 rounded-full bg-primary shadow-[0_0_15px_rgba(var(--primary),0.3)] transition-all duration-300 ease-out"
+                    style={{
+                        top: `12px`,
+                        transform: `translateY(${Math.max(0, SECTIONS.findIndex(s => s.id === activeSection)) * 52}px)`
+                    }}
+                />
 
-                    </a>
-                ))}
+                {SECTIONS.map(({ id, label, icon: Icon }) => {
+                    const isActive = activeSection === id;
+
+                    return (
+                        <a
+                            key={id}
+                            href={`#${id}`}
+                            aria-label={label}
+                            onClick={(e) => {
+                                e.preventDefault();
+                                document.getElementById(id)?.scrollIntoView({ behavior: "smooth" });
+                            }}
+                            className={cn(
+                                "flex items-center justify-center w-10 h-10 rounded-full transition-all duration-300 group relative z-10",
+                                isActive
+                                    ? "text-primary-foreground scale-110"
+                                    : "text-muted-foreground hover:text-foreground hover:bg-muted/50 hover:scale-110"
+                            )}
+                        >
+                            <Icon strokeWidth={2.5} className="w-5 h-5 transition-transform" />
+                        </a>
+                    );
+                })}
             </div>
         </div>
     );

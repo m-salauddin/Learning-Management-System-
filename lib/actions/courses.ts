@@ -1036,17 +1036,12 @@ export async function updateCourseOrder(updates: { id: string; serial_number: nu
         return { success: false, error: 'Unauthorized' };
     }
 
-    const results = await Promise.all(
-        updates.map(u =>
-            supabase.from('courses')
-                .update({ serial_number: u.serial_number })
-                .eq('id', u.id)
-        )
-    );
-
-    const error = results.find(r => r.error)?.error;
+    const { error } = await supabase.rpc('update_courses_order_bulk', {
+        updates: updates
+    });
 
     if (error) {
+        console.error('Error updating course order:', error);
         return { success: false, error: error.message };
     }
 
