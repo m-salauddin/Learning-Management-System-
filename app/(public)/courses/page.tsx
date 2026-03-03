@@ -31,6 +31,7 @@ export default async function CoursesPage() {
             requirements,
             status,
             course_type,
+            batch_no,
             instructor:instructor_profiles!courses_instructor_id_fkey(
                 users:instructor_profiles_id_fkey(
                     name,
@@ -39,7 +40,7 @@ export default async function CoursesPage() {
             )
         `)
         .eq('status', 'published')
-        .order('created_at', { ascending: false });
+        .order('serial_number', { ascending: true });
 
     if (error) {
         console.error("Error fetching courses:", error);
@@ -73,7 +74,8 @@ export default async function CoursesPage() {
             whatYouLearn: [],
             curriculum: [],
             type: c.course_type === 'hybrid' ? 'Live + Recorded' : (c.course_type === 'live' ? 'Live' : 'Recorded'),
-            priceType: c.price > 0 ? "Paid" : "Free"
+            priceType: c.price > 0 ? "Paid" : "Free",
+            batchNo: c.batch_no
         };
     });
 

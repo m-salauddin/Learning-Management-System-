@@ -44,7 +44,7 @@ export function CourseCard({ course }: { course: MappedCourse }) {
 
     return (
         <div className="group relative h-full">
-            <div className="relative h-full flex flex-col bg-card/80 border border-border rounded-2xl overflow-hidden transition-all duration-500 group-hover:border-border group-hover:-translate-y-1">
+            <div className="relative h-full flex flex-col bg-card/80 border border-border rounded-2xl overflow-hidden transition-all duration-500 group-hover:border-border">
 
                 <div className="relative p-3">
                     <div className="relative h-48 rounded-xl overflow-hidden">
@@ -68,9 +68,19 @@ export function CourseCard({ course }: { course: MappedCourse }) {
                                 </div>
                             )}
 
-                            <div className="ml-auto flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/20 dark:bg-black/60 backdrop-blur-md text-white text-xs font-medium border border-white/30 dark:border-white/10 shadow-sm">
-                                <Clock className="w-3 h-3 text-sky-400" />
-                                <span>{course.duration}</span>
+                            <div className="ml-auto flex flex-col items-end gap-1.5">
+                                {course.batchNo && (
+                                    <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/20 dark:bg-black/60 backdrop-blur-md text-white text-xs font-medium border border-white/30 dark:border-white/10 shadow-sm w-fit">
+                                        <Hash className="w-3 h-3 text-amber-400" />
+                                        <span>Batch {course.batchNo < 10 ? `0${course.batchNo}` : course.batchNo}</span>
+                                    </div>
+                                )}
+                                {course.duration && course.duration !== "N/A" && (
+                                    <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/20 dark:bg-black/60 backdrop-blur-md text-white text-xs font-medium border border-white/30 dark:border-white/10 shadow-sm w-fit">
+                                        <Clock className="w-3 h-3 text-sky-400" />
+                                        <span>{course.duration}</span>
+                                    </div>
+                                )}
                             </div>
                         </div>
 
@@ -98,23 +108,17 @@ export function CourseCard({ course }: { course: MappedCourse }) {
                         <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground bg-muted/50 border border-border/50 px-2.5 py-1 rounded-full">
                             {course.type}
                         </span>
-                        {course.batchNo && (
-                            <span className="inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider text-secondary bg-secondary/10 border border-secondary/20 px-2.5 py-1 rounded-full ml-auto">
-                                <Hash className="w-3 h-3" />
-                                Batch {course.batchNo}
-                            </span>
-                        )}
                     </div>
 
                     <h3 className="text-lg font-bold leading-snug mb-2 text-foreground transition-colors duration-300 group-hover:text-primary line-clamp-2 min-h-14">
                         {course.title}
                     </h3>
 
-                    <p className="text-muted-foreground text-sm leading-relaxed mb-4 line-clamp-2">
+                    <p className="text-muted-foreground text-sm leading-relaxed mb-4 line-clamp-2 min-h-[46px]">
                         {course.description}
                     </p>
 
-                    <div className="flex items-center gap-4 py-3 px-4 mb-4 rounded-xl bg-card/50 border border-border/50">
+                    <div className="flex items-center justify-between py-3 px-4 mb-4 rounded-xl bg-card/50 border border-border/50">
                         <div className="flex items-center gap-2">
                             <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-secondary/10">
                                 <Users className="w-3.5 h-3.5 text-secondary" />

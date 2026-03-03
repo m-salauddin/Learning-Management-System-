@@ -42,6 +42,7 @@ export default async function Home() {
       level,
       language,
       status,
+      batch_no,
       instructor:instructor_profiles!courses_instructor_id_fkey(
         users:instructor_profiles_id_fkey(
           name,
@@ -50,7 +51,7 @@ export default async function Home() {
       )
     `)
     .eq('status', 'published')
-    .order('total_students', { ascending: false })
+    .order('serial_number', { ascending: true })
     .limit(6);
 
   if (coursesError) {
@@ -86,7 +87,8 @@ export default async function Home() {
       whatYouLearn: [],
       curriculum: [],
       type: "Recorded",
-      priceType: course.price > 0 ? "Paid" : "Free"
+      priceType: course.price > 0 ? "Paid" : "Free",
+      batchNo: course.batch_no
     };
   });
 

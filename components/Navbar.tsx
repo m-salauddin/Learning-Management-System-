@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { motion, AnimatePresence } from "motion/react";
@@ -26,7 +26,7 @@ const AuthButtons = ({ isMobile = false }: { isMobile?: boolean }) => (
         <Link
             href="/login"
             className={cn(
-                "flex items-center px-5 py-2.5 rounded-2xl text-sm font-bold text-foreground border border-border/50 bg-muted/50 hover:bg-muted/80 transition-all duration-200 cursor-pointer",
+                "flex items-center px-5 py-2.5 rounded-full text-sm font-bold text-foreground border border-border/50 bg-muted/50 hover:bg-muted/80 transition-all duration-200 cursor-pointer",
                 isMobile ? "justify-center py-3" : ""
             )}
         >
@@ -35,7 +35,7 @@ const AuthButtons = ({ isMobile = false }: { isMobile?: boolean }) => (
         <Link
             href="/register"
             className={cn(
-                "flex items-center gap-2 px-5 py-2.5 rounded-xl bg-primary text-primary-foreground font-medium text-sm hover:bg-primary/90 transition-all duration-200 shadow-lg cursor-pointer",
+                "flex items-center gap-2 px-5 py-2.5 rounded-full bg-primary text-primary-foreground font-medium text-sm hover:bg-primary/90 transition-all duration-200 shadow-lg cursor-pointer",
                 isMobile && "justify-center py-3"
             )}
         >
@@ -61,6 +61,25 @@ export function Navbar() {
     const [isSearchOpen, setIsSearchOpen] = useState(false);
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
     const { user, isLoading } = useAppSelector((state) => state.auth);
+    const navRef = useRef<HTMLDivElement>(null);
+    const [activeRect, setActiveRect] = useState({ left: 0, width: 0 });
+
+    useEffect(() => {
+        const updateRect = () => {
+            const activeItem = navRef.current?.querySelector('[data-active="true"]') as HTMLElement;
+            if (activeItem) {
+                setActiveRect({
+                    left: activeItem.offsetLeft,
+                    width: activeItem.offsetWidth,
+                });
+            }
+        };
+
+        updateRect();
+        // Update on window resize to keep it aligned
+        window.addEventListener('resize', updateRect);
+        return () => window.removeEventListener('resize', updateRect);
+    }, [pathname]);
 
 
 
@@ -106,26 +125,33 @@ export function Navbar() {
                     </Link>
 
 
-                    <div className="hidden xl:flex items-center gap-1">
+                    <div ref={navRef} className="hidden xl:flex items-center gap-1 relative">
+                        {/* The sliding indicator */}
+                        <motion.div
+                            className="absolute bg-primary rounded-lg z-0"
+                            initial={false}
+                            animate={{
+                                x: activeRect.left,
+                                width: activeRect.width,
+                                opacity: activeRect.width > 0 ? 1 : 0
+                            }}
+                            transition={{ type: "spring", bounce: 0.15, duration: 0.5 }}
+                            style={{ height: 'calc(100% - 2px)', top: '0px' }}
+                        />
+
                         {navItems.map((item) => {
                             const isActive = pathname === item.href;
                             return (
                                 <Link
-                                    key={item.name}
+                                    key={item.href}
                                     href={item.href}
-                                    onClick={(e) => isActive && e.preventDefault()}
-                                    className="relative px-4 py-2 text-sm font-bold transition-colors duration-200 cursor-pointer"
-                                >
-                                    {isActive && (
-                                        <motion.div
-                                            layoutId="navbar-active"
-                                            className="absolute inset-0 bg-primary/10 dark:bg-primary/20 rounded-xl"
-                                            transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
-                                        />
+                                    data-active={isActive}
+                                    className={cn(
+                                        "relative px-4 py-2 text-sm font-bold transition-all duration-300 cursor-pointer rounded-lg z-10",
+                                        isActive ? "text-primary-foreground" : "text-muted-foreground hover:text-foreground hover:bg-muted/30"
                                     )}
-                                    <span className={`relative z-10 ${isActive ? "text-primary" : "text-muted-foreground hover:text-foreground"}`}>
-                                        {item.name}
-                                    </span>
+                                >
+                                    {item.name}
                                 </Link>
                             );
                         })}
