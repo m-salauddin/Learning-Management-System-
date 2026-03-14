@@ -48,7 +48,6 @@ function PricingCard({ plan }: { plan: PricingPlan }) {
             variants={staggerItem}
             className={`group relative ${plan.popular ? "pt-4" : ""}`}
         >
-            {/* Popular badge - positioned outside the card */}
             {plan.popular && (
                 <div className="absolute top-0 left-1/2 -translate-x-1/2 z-10">
                     <Badge icon={Crown} className="bg-linear-to-r from-primary to-accent dark:from-primary dark:to-secondary text-primary-foreground font-semibold shadow-lg px-5 py-1.5 border-none whitespace-nowrap">
@@ -57,7 +56,7 @@ function PricingCard({ plan }: { plan: PricingPlan }) {
                 </div>
             )}
 
-            <div className={`relative h-full p-8 rounded-3xl backdrop-blur-xl border overflow-hidden transition-all duration-500 group-hover:-translate-y-1 ${plan.popular
+            <div className={`relative h-fit p-8 rounded-3xl backdrop-blur-xl border overflow-hidden transition-all duration-500 group-hover:-translate-y-1 ${plan.popular
                 ? "bg-linear-to-b from-primary/10 via-card/90 to-card/90 dark:from-primary/20 dark:via-card/80 dark:to-card/80 border-primary/50 shadow-xl"
                 : "bg-card/80 dark:bg-card/50 border-border/50 dark:border-white/10 group-hover:border-primary/30 group-hover:shadow-xl"
                 }`}
@@ -133,7 +132,7 @@ export function PricingSection() {
                     initial="hidden"
                     whileInView="visible"
                     viewport={{ once: true }}
-                    className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-5xl mx-auto"
+                    className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-5xl mx-auto items-center"
                 >
                     {PRICING_PLANS.map((plan, index) => (
                         <PricingCard key={index} plan={plan} />

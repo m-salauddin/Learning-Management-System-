@@ -24,7 +24,6 @@ export const metadata: Metadata = {
 export default async function Home() {
   const supabase = await createSupabaseServerClient();
 
-  // Fetch popular courses for Home page
   const { data: coursesData, error: coursesError } = await supabase
     .from('courses')
     .select(`
@@ -59,7 +58,6 @@ export default async function Home() {
   }
 
   const mappedCourses: MappedCourse[] = (coursesData || []).map((course: any) => {
-    // Navigate through instructor_profiles to users
     const instructorProfile = Array.isArray(course.instructor) ? course.instructor[0] : course.instructor;
     const instructorData = Array.isArray(instructorProfile?.users) ? instructorProfile.users[0] : instructorProfile?.users;
 
