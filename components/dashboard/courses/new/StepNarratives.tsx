@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { motion } from "motion/react";
 import {
-    PencilLine, ListChecks, FileText, Target, Plus, X, Users, Tags, AlertCircle
+    PencilLine, ListChecks, FileText, Target, Plus, X, Users, Tags, AlertCircle, HelpCircle
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { inputClasses, labelClasses } from "./constants";
@@ -19,6 +19,7 @@ export const StepNarratives = ({ formData, setFormData, errors }: StepNarratives
     const [requirementInput, setRequirementInput] = useState("");
     const [audienceInput, setAudienceInput] = useState("");
     const [tagInput, setTagInput] = useState("");
+    const [faqInput, setFaqInput] = useState({ question: "", answer: "" });
 
     const addArrayItem = (field: 'requirements' | 'target_audience' | 'tags', value: string, setter: (v: string) => void) => {
         if (value.trim()) {
@@ -35,6 +36,17 @@ export const StepNarratives = ({ formData, setFormData, errors }: StepNarratives
             ...prev,
             [field]: (prev[field] as string[]).filter((_, i) => i !== index)
         }));
+    };
+
+    const addFaq = () => {
+        if (faqInput.question.trim() && faqInput.answer.trim()) {
+            setFormData(prev => ({ ...prev, faqs: [...(prev.faqs || []), faqInput] }));
+            setFaqInput({ question: "", answer: "" });
+        }
+    };
+
+    const removeFaq = (index: number) => {
+        setFormData(prev => ({ ...prev, faqs: (prev.faqs || []).filter((_, i) => i !== index) }));
     };
 
     return (
@@ -181,6 +193,55 @@ export const StepNarratives = ({ formData, setFormData, errors }: StepNarratives
                                     <button onClick={() => removeArrayItem('tags', i)}><X className="w-3 h-3" /></button>
                                 </div>
                             ))}
+                        </div>
+                    </div>
+                </div>
+
+                {/* FAQ Section */}
+                <div className="pt-8 border-t border-border/50 space-y-6">
+                    <label className={labelClasses}>
+                        <HelpCircle className="w-4 h-4 text-muted-foreground" />
+                        Course FAQs
+                    </label>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                        <div className="space-y-4 p-5 rounded-2xl bg-muted/20 border border-border/50">
+                            <input 
+                                value={faqInput.question} 
+                                onChange={(e) => setFaqInput(prev => ({ ...prev, question: e.target.value }))} 
+                                placeholder="Common Student Question..." 
+                                className={cn(inputClasses, "bg-background")} 
+                            />
+                            <textarea 
+                                value={faqInput.answer} 
+                                onChange={(e) => setFaqInput(prev => ({ ...prev, answer: e.target.value }))} 
+                                placeholder="The helpful answer..." 
+                                className={cn(inputClasses, "h-28 resize-none py-3 bg-background")} 
+                            />
+                            <button 
+                                type="button" 
+                                onClick={addFaq} 
+                                className="w-full py-2.5 bg-primary text-white rounded-xl text-xs font-bold uppercase tracking-wider hover:bg-primary/90 transition-all active:scale-95 flex items-center justify-center gap-2"
+                            >
+                                <Plus className="w-4 h-4" /> Add FAQ
+                            </button>
+                        </div>
+                        <div className="space-y-3 max-h-[250px] overflow-y-auto pr-2 custom-scrollbar">
+                            {!formData.faqs?.length ? (
+                                <div className="h-full flex flex-col items-center justify-center text-muted-foreground opacity-40 py-10">
+                                    <HelpCircle className="w-8 h-8 mb-2" />
+                                    <p className="text-[10px] font-bold uppercase tracking-widest">No FAQs Added</p>
+                                </div>
+                            ) : (
+                                formData.faqs.map((f, i) => (
+                                    <div key={i} className="p-4 rounded-xl border border-border/50 bg-background/50 flex justify-between items-start group">
+                                        <div className="space-y-1">
+                                            <p className="text-xs font-bold text-foreground">Q: {f.question}</p>
+                                            <p className="text-[11px] text-muted-foreground line-clamp-2">A: {f.answer}</p>
+                                        </div>
+                                        <button onClick={() => removeFaq(i)} className="p-1.5 rounded-lg text-muted-foreground hover:text-red-500 hover:bg-red-500/10"><X className="w-3.5 h-3.5" /></button>
+                                    </div>
+                                ))
+                            )}
                         </div>
                     </div>
                 </div>

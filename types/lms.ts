@@ -1,14 +1,8 @@
-// ============================================================================
-// LMS COMPLETE TYPES
-// ============================================================================
-// These types match the database schema and are used throughout the application.
-// ============================================================================
+
 
 import { Json } from './supabase';
 
-// ============================================================================
-// ENUMS
-// ============================================================================
+
 
 export type UserRole = 'student' | 'teacher' | 'moderator' | 'admin';
 export type AuthProvider = 'google' | 'github' | 'password';
@@ -20,9 +14,7 @@ export type EnrollmentStatus = 'active' | 'expired' | 'cancelled' | 'refunded';
 export type CourseLevel = 'beginner' | 'intermediate' | 'advanced';
 export type CourseType = 'recorded' | 'live' | 'hybrid';
 
-// ============================================================================
-// USER TYPES
-// ============================================================================
+
 
 export interface User {
     id: string;
@@ -57,9 +49,7 @@ export interface InstructorWithUser extends InstructorProfile {
     user: User;
 }
 
-// ============================================================================
-// CATEGORY TYPES
-// ============================================================================
+
 
 export interface Category {
     id: string;
@@ -75,9 +65,7 @@ export interface Category {
     updated_at: string;
 }
 
-// ============================================================================
-// COURSE TYPES
-// ============================================================================
+
 
 export interface Course {
     id: string;
@@ -121,9 +109,7 @@ export interface CourseWithModules extends CourseWithInstructor {
     modules: ModuleWithLessons[];
 }
 
-// ============================================================================
-// MODULE TYPES
-// ============================================================================
+
 
 export interface Module {
     id: string;
@@ -140,9 +126,7 @@ export interface ModuleWithLessons extends Module {
     lessons: Lesson[];
 }
 
-// ============================================================================
-// LESSON TYPES
-// ============================================================================
+
 
 export interface Lesson {
     id: string;
@@ -180,9 +164,7 @@ export interface LessonWithAsset extends Lesson {
     asset?: LessonAsset;
 }
 
-// ============================================================================
-// ENROLLMENT TYPES
-// ============================================================================
+
 
 export interface Enrollment {
     id: string;
@@ -211,9 +193,7 @@ export interface EnrollmentWithProgress extends Enrollment {
     lesson_progress: LessonProgress[];
 }
 
-// ============================================================================
-// PROGRESS TYPES
-// ============================================================================
+
 
 export interface LessonProgress {
     id: string;
@@ -231,9 +211,7 @@ export interface LessonProgress {
     updated_at: string;
 }
 
-// ============================================================================
-// COUPON TYPES
-// ============================================================================
+
 
 export interface Coupon {
     id: string;
@@ -266,9 +244,7 @@ export interface CouponValidationResult {
     final_price?: number;
 }
 
-// ============================================================================
-// TRANSACTION TYPES
-// ============================================================================
+
 
 export interface Transaction {
     id: string;
@@ -296,9 +272,7 @@ export interface TransactionWithDetails extends Transaction {
     coupon?: Coupon;
 }
 
-// ============================================================================
-// CERTIFICATE TYPES
-// ============================================================================
+
 
 export interface Certificate {
     id: string;
@@ -326,9 +300,7 @@ export interface CertificateVerification {
     issued_at?: string;
 }
 
-// ============================================================================
-// REVIEW TYPES
-// ============================================================================
+
 
 export interface CourseReview {
     id: string;
@@ -349,9 +321,7 @@ export interface CourseReviewWithUser extends CourseReview {
     user: User;
 }
 
-// ============================================================================
-// DASHBOARD STATS TYPES
-// ============================================================================
+
 
 export interface AdminDashboardStats {
     total_users: number;
@@ -385,9 +355,7 @@ export interface StudentDashboardStats {
     avg_progress: number;
 }
 
-// ============================================================================
-// ANALYTICS TYPES
-// ============================================================================
+
 
 export interface DailyStats {
     date: string;
@@ -409,9 +377,7 @@ export interface RevenueStats {
     by_course: { course_id: string; title: string; revenue: number }[];
 }
 
-// ============================================================================
-// AUDIT LOG TYPES
-// ============================================================================
+
 
 export interface AuditLog {
     id: string;
@@ -435,9 +401,7 @@ export interface AuditLogEntry extends AuditLog {
     };
 }
 
-// ============================================================================
-// USER MANAGEMENT TYPES
-// ============================================================================
+
 
 export interface UserManagement extends User {
     instructor_profile?: InstructorProfile;
@@ -462,9 +426,7 @@ export interface CourseProgressSummary {
     completed_at: string | null;
 }
 
-// ============================================================================
-// USER ACTIVITY TYPES
-// ============================================================================
+
 
 export interface UserActivity {
     id: string;
@@ -476,9 +438,7 @@ export interface UserActivity {
     created_at: string;
 }
 
-// ============================================================================
-// API RESPONSE TYPES
-// ============================================================================
+
 
 export interface ApiResponse<T> {
     data?: T;
@@ -494,9 +454,7 @@ export interface PaginatedResponse<T> {
     totalPages: number;
 }
 
-// ============================================================================
-// FORM TYPES
-// ============================================================================
+
 
 export interface CreateCourseInput {
     title: string;
@@ -520,8 +478,9 @@ export interface CreateCourseInput {
     tags?: string[];
     batch_no?: number;
     faqs?: { question: string; answer: string }[];
-    projects?: { title: string; description: string }[];
+    projects?: { title: string; description: string; image_url?: string }[];
     resources?: { title: string; type: string; url: string }[];
+    modules?: { title: string; lessons: { title: string; video_url: string }[] }[];
 }
 
 export interface UpdateCourseInput extends Partial<CreateCourseInput> {

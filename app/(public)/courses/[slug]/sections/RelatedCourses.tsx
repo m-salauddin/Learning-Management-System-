@@ -55,7 +55,7 @@ export default function RelatedCourses({ relatedCourses }: RelatedCoursesProps) 
                                 <div className="flex items-center gap-3">
                                     <div className="flex items-center gap-1">
                                         <Star className="w-3.5 h-3.5 text-primary fill-primary" />
-                                        <span className="text-xs font-black text-slate-400 tabular-nums">{rCourse.rating}</span>
+                                        <span className="text-xs font-black text-slate-400 tabular-nums">{(Number(rCourse.rating) || 0).toFixed(1)}</span>
                                     </div>
                                     <div className="w-1 h-1 rounded-full bg-white/10" />
                                     <div className="flex items-center gap-1.5">

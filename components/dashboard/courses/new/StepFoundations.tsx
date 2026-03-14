@@ -20,6 +20,7 @@ import {
 import { inputClasses, labelClasses, selectTriggerClasses } from "./constants";
 import { CreateCourseInput } from "@/types/lms";
 import { getNextBatchNumber } from "@/lib/actions/courses";
+import { DateTimePicker } from "@/components/ui/date-time-picker";
 
 interface StepFoundationsProps {
     formData: CreateCourseInput;
@@ -421,11 +422,11 @@ export const StepFoundations = ({ formData, setFormData, categories, teachers, e
                             Enrollment Ends In
                         </label>
                         <div className="space-y-1">
-                            <input
-                                type="datetime-local"
-                                value={formData.discount_expires_at || ''}
-                                onChange={(e) => setFormData(prev => ({ ...prev, discount_expires_at: e.target.value || undefined }))}
-                                className={cn(inputClasses, errors.discount_expires_at && "border-red-500/50 focus:border-red-500")}
+                            <DateTimePicker
+                                date={formData.discount_expires_at ? new Date(formData.discount_expires_at) : undefined}
+                                setDate={(date: Date | undefined) => setFormData(prev => ({ ...prev, discount_expires_at: date ? date.toISOString() : undefined }))}
+                                placeholder="mm/dd/yyyy --:-- --"
+                                className={cn(errors.discount_expires_at && "border-red-500/50 focus:border-red-500")}
                             />
                             {errors.discount_expires_at && (
                                 <p className="text-[10px] text-red-500 font-bold ml-1 flex items-center gap-1">
@@ -435,37 +436,6 @@ export const StepFoundations = ({ formData, setFormData, categories, teachers, e
                             )}
                         </div>
                     </div>
-
-                    {/* Main Instructors */}
-                    <InstructorSelect
-                        label="Main Instructors"
-                        icon={Users}
-                        placeholder="Add main instructor"
-                        searchPlaceholder="Search main teachers..."
-                        type="main"
-                        teachers={teachers}
-                        selectedIds={formData.instructor_ids || []}
-                        opponentIds={formData.support_instructor_ids || []}
-                        error={errors.instructor_ids}
-                        onSelect={(id) => setFormData(prev => ({ ...prev, instructor_ids: [...(prev.instructor_ids || []), id] }))}
-                        onRemove={(id) => setFormData(prev => ({ ...prev, instructor_ids: prev.instructor_ids?.filter(tid => tid !== id) }))}
-                        onClearAll={() => setFormData(prev => ({ ...prev, instructor_ids: [] }))}
-                    />
-
-                    {/* Support Instructors */}
-                    <InstructorSelect
-                        label="Support Instructors"
-                        icon={UserRound}
-                        placeholder="Add support instructor"
-                        searchPlaceholder="Search support teachers..."
-                        type="support"
-                        teachers={teachers}
-                        selectedIds={formData.support_instructor_ids || []}
-                        opponentIds={formData.instructor_ids || []}
-                        onSelect={(id) => setFormData(prev => ({ ...prev, support_instructor_ids: [...(prev.support_instructor_ids || []), id] }))}
-                        onRemove={(id) => setFormData(prev => ({ ...prev, support_instructor_ids: prev.support_instructor_ids?.filter(tid => tid !== id) }))}
-                        onClearAll={() => setFormData(prev => ({ ...prev, support_instructor_ids: [] }))}
-                    />
 
                     {/* Course Level */}
                     <div className="space-y-2">
@@ -507,6 +477,37 @@ export const StepFoundations = ({ formData, setFormData, categories, teachers, e
                             )}
                         </div>
                     </div>
+
+                    {/* Main Instructors */}
+                    <InstructorSelect
+                        label="Main Instructors"
+                        icon={Users}
+                        placeholder="Add main instructor"
+                        searchPlaceholder="Search main teachers..."
+                        type="main"
+                        teachers={teachers}
+                        selectedIds={formData.instructor_ids || []}
+                        opponentIds={formData.support_instructor_ids || []}
+                        error={errors.instructor_ids}
+                        onSelect={(id) => setFormData(prev => ({ ...prev, instructor_ids: [...(prev.instructor_ids || []), id] }))}
+                        onRemove={(id) => setFormData(prev => ({ ...prev, instructor_ids: prev.instructor_ids?.filter(tid => tid !== id) }))}
+                        onClearAll={() => setFormData(prev => ({ ...prev, instructor_ids: [] }))}
+                    />
+
+                    {/* Support Instructors */}
+                    <InstructorSelect
+                        label="Support Instructors"
+                        icon={UserRound}
+                        placeholder="Add support instructor"
+                        searchPlaceholder="Search support teachers..."
+                        type="support"
+                        teachers={teachers}
+                        selectedIds={formData.support_instructor_ids || []}
+                        opponentIds={formData.instructor_ids || []}
+                        onSelect={(id) => setFormData(prev => ({ ...prev, support_instructor_ids: [...(prev.support_instructor_ids || []), id] }))}
+                        onRemove={(id) => setFormData(prev => ({ ...prev, support_instructor_ids: prev.support_instructor_ids?.filter(tid => tid !== id) }))}
+                        onClearAll={() => setFormData(prev => ({ ...prev, support_instructor_ids: [] }))}
+                    />
 
                     {/* Course Type */}
                     <div className="space-y-2">

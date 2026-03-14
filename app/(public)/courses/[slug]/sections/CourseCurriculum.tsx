@@ -9,8 +9,6 @@ import { CoursePageData } from "@/types/course-page";
 interface CourseCurriculumProps {
     course: MappedCourse;
     pageData?: CoursePageData;
-    curriculumTab: 'live' | 'recorded';
-    setCurriculumTab: (tab: 'live' | 'recorded') => void;
     showAllModules: boolean;
     setShowAllModules: (show: boolean) => void;
     expandedModules: number[];
@@ -24,8 +22,6 @@ interface CourseCurriculumProps {
 export default function CourseCurriculum({
     course,
     pageData,
-    curriculumTab,
-    setCurriculumTab,
     showAllModules,
     setShowAllModules,
     expandedModules,
@@ -37,7 +33,6 @@ export default function CourseCurriculum({
 }: CourseCurriculumProps) {
     return (
         <div className="mt-12 sm:mt-16 space-y-12">
-            <div className="flex flex-col md:flex-row md:items-end justify-between gap-8">
                 <div className="space-y-4">
                     <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-secondary/10 border border-secondary/20 text-secondary text-[10px] font-black uppercase tracking-widest">
                         < BookOpen className="w-3.5 h-3.5" />
@@ -49,34 +44,6 @@ export default function CourseCurriculum({
                     </p>
                 </div>
 
-                <div className="p-1 px-1.5 rounded-full bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 flex items-center gap-1 transition-colors">
-                    {[
-                        { id: 'recorded' as const, label: 'Recorded' },
-                        { id: 'live' as const, label: 'Live' }
-                    ].map((tab) => (
-                        <button
-                            key={tab.id}
-                            onClick={() => setCurriculumTab(tab.id)}
-                            className={cn(
-                                "relative px-6 py-2.5 rounded-full text-xs font-bold transition-all duration-300 group overflow-hidden",
-                                curriculumTab === tab.id
-                                    ? "text-slate-900 dark:text-white shadow-sm"
-                                    : "text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-200"
-                            )}
-                        >
-                            <span className="relative z-10 tracking-wide">{tab.label}</span>
-                            {curriculumTab === tab.id && (
-                                <motion.div
-                                    layoutId="curriculumTabBG"
-                                    className="absolute inset-0 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-full"
-                                    transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
-                                />
-                            )}
-                        </button>
-                    ))}
-                </div>
-            </div>
-
             {/* Stats Strip */}
             <div className="flex flex-wrap items-center gap-6 p-6 rounded-[2rem] bg-slate-100 dark:bg-slate-900/40 border border-slate-200 dark:border-white/5 transition-colors">
                 <div className="flex items-center gap-3">
@@ -84,7 +51,7 @@ export default function CourseCurriculum({
                         <Layers className="w-5 h-5 text-slate-400" />
                     </div>
                     <div>
-                        <p className="text-[10px] font-black text-slate-500 uppercase">Sections</p>
+                        <p className="text-[10px] font-black text-slate-500 uppercase">Modules</p>
                         <p className="text-sm font-bold text-slate-900 dark:text-white transition-colors">{totalSections}</p>
                     </div>
                 </div>
@@ -96,16 +63,6 @@ export default function CourseCurriculum({
                     <div>
                         <p className="text-[10px] font-black text-slate-500 uppercase">Lectures</p>
                         <p className="text-sm font-bold text-slate-900 dark:text-white transition-colors">{totalLectures}</p>
-                    </div>
-                </div>
-                <div className="w-px h-8 bg-white/10 hidden sm:block" />
-                <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-xl bg-white dark:bg-white/5 border border-slate-200 dark:border-transparent flex items-center justify-center shadow-sm dark:shadow-none transition-all">
-                        <Clock className="w-5 h-5 text-slate-400" />
-                    </div>
-                    <div>
-                        <p className="text-[10px] font-black text-slate-500 uppercase">Total Time</p>
-                        <p className="text-sm font-bold text-slate-900 dark:text-white transition-colors">{course.duration}</p>
                     </div>
                 </div>
             </div>
@@ -120,15 +77,13 @@ export default function CourseCurriculum({
                         >
                             <div className="flex items-center gap-6">
                                 <div className="w-12 h-12 rounded-2xl bg-white dark:bg-white/5 flex flex-col items-center justify-center shrink-0 border border-slate-200 dark:border-white/5 group-hover/btn:border-primary/30 shadow-sm dark:shadow-none transition-all">
-                                    <span className="text-[9px] font-black text-slate-500 uppercase">Sect</span>
+                                    <span className="text-[9px] font-black text-slate-500 uppercase">Mod</span>
                                     <span className="text-sm font-black text-slate-900 dark:text-white transition-colors">{String(idx + 1).padStart(2, '0')}</span>
                                 </div>
                                 <div className="space-y-1">
                                     <h3 className="font-bold text-base sm:text-lg text-slate-900 dark:text-white group-hover/btn:text-primary transition-colors">{module.title}</h3>
                                     <div className="flex items-center gap-3">
                                         <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest">{module.lessons?.length || 0} Lessons</span>
-                                        <div className="w-1 h-1 rounded-full bg-white/20" />
-                                        <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest">{module.duration || '48m'}</span>
                                     </div>
                                 </div>
                             </div>
@@ -157,7 +112,7 @@ export default function CourseCurriculum({
                                                     </div>
                                                     <div>
                                                         <p className="text-sm font-bold text-slate-700 dark:text-slate-300 group-hover/lesson:text-primary dark:group-hover/lesson:text-white transition-colors">{lesson.title}</p>
-                                                        <p className="text-[10px] font-heavy text-slate-400 dark:text-slate-600 uppercase tracking-widest mt-1">Lesson {String(lIdx + 1).padStart(2, '0')} • {lesson.duration || '15:00'}</p>
+                                                        <p className="text-[10px] font-heavy text-slate-400 dark:text-slate-600 uppercase tracking-widest mt-1">Lesson {String(lIdx + 1).padStart(2, '0')}</p>
                                                     </div>
                                                 </div>
                                                 <div className="flex items-center gap-4">
@@ -184,7 +139,7 @@ export default function CourseCurriculum({
                         onClick={() => setShowAllModules(!showAllModules)}
                         className="px-8 py-3 rounded-2xl bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/5 text-sm text-slate-900 dark:text-white hover:bg-slate-200 dark:hover:bg-white/10 transition-all font-black uppercase tracking-widest"
                     >
-                        {showAllModules ? 'Show Less' : `View All ${filteredModules.length} Sections`}
+                        {showAllModules ? 'Show Less' : `View All ${filteredModules.length} Modules`}
                     </button>
                 </div>
             )}

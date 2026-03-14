@@ -1,7 +1,7 @@
 "use client";
 
 import { motion } from "motion/react";
-import { Star, Users, Clock, Zap, Download, Activity, Video, Hash, Rocket, Layers, Award, Target, BookOpen } from "lucide-react";
+import { Star, Users, Clock, Zap, Download, Activity, Video, Hash, Rocket, Layers, Award, Target, BookOpen, Play } from "lucide-react";
 import { Badge } from "@/components/ui/Badge";
 import { PrimaryCTAButton, SecondaryCTAButton } from "@/components/ui/CTAButton";
 import { MappedCourse } from "@/types/mapped-course";
@@ -16,6 +16,7 @@ interface CourseHeroProps {
     timeLeft: { d: number, h: number, m: number, s: number } | null;
     handleEnroll: () => void;
     loading: boolean;
+    setShowVideoModal: (show: boolean) => void;
 }
 
 export default function CourseHero({
@@ -24,7 +25,8 @@ export default function CourseHero({
     isLive,
     timeLeft,
     handleEnroll,
-    loading
+    loading,
+    setShowVideoModal
 }: CourseHeroProps) {
     const levelConfig = useMemo(() => {
         const level = course.level?.toLowerCase() || '';
@@ -119,7 +121,7 @@ export default function CourseHero({
                     <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center">
                         <Star className="w-4 h-4 text-primary fill-primary" />
                     </div>
-                    <span className="font-medium">{course.rating} ({course.reviews} ratings)</span>
+                    <span className="font-medium">{(Number(course.rating) || 0).toFixed(1)} ({course.reviews} ratings)</span>
                 </div>
 
                 <div className="flex items-center gap-2 text-sm text-muted-foreground">
@@ -177,6 +179,16 @@ export default function CourseHero({
                     <div className="flex items-center gap-2">
                         <Download className="w-4 h-4" />
                         <span>Download Outline</span>
+                    </div>
+                </SecondaryCTAButton>
+
+                <SecondaryCTAButton
+                    onClick={() => setShowVideoModal(true)}
+                    className="h-10! sm:h-12!"
+                >
+                    <div className="flex items-center gap-2">
+                        <Play className="w-4 h-4 fill-current" />
+                        <span>Watch Preview</span>
                     </div>
                 </SecondaryCTAButton>
 

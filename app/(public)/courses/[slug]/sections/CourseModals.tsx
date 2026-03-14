@@ -28,6 +28,8 @@ interface CourseModalsProps {
     handleCopyLink: () => void;
     linkCopied: boolean;
     shareUrl: string;
+    showVideoModal: boolean;
+    setShowVideoModal: (show: boolean) => void;
 }
 
 export default function CourseModals({
@@ -50,7 +52,9 @@ export default function CourseModals({
     shareOptions,
     handleCopyLink,
     linkCopied,
-    shareUrl
+    shareUrl,
+    showVideoModal,
+    setShowVideoModal
 }: CourseModalsProps) {
     return (
         <>
@@ -297,6 +301,41 @@ export default function CourseModals({
                     </motion.div>
                 )}
             </AnimatePresence>
+            
+            <Dialog open={showVideoModal} onClose={() => setShowVideoModal(false)} size="xl">
+                <DialogHeader className="border-none absolute top-0 right-0 z-50 p-2">
+                    <DialogTitle className="sr-only">Course Preview Video</DialogTitle>
+                    <button 
+                        onClick={() => setShowVideoModal(false)}
+                        className="w-10 h-10 rounded-full bg-black/60 backdrop-blur-md border border-white/20 text-white flex items-center justify-center hover:bg-black/80 transition-all shadow-2xl"
+                    >
+                        <XIcon className="w-5 h-5" />
+                    </button>
+                    {/* Hide default close if any */}
+                    <div className="hidden">
+                        <DialogClose onClose={() => setShowVideoModal(false)} />
+                    </div>
+                </DialogHeader>
+                <DialogBody className="p-0 overflow-hidden bg-black aspect-video rounded-2xl border border-white/5">
+                    {course.previewVideoUrl ? (
+                        <iframe
+                            src={course.previewVideoUrl.includes('?') 
+                                ? `${course.previewVideoUrl}&autoplay=1` 
+                                : `${course.previewVideoUrl}?autoplay=1`}
+                            className="w-full h-full"
+                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                            allowFullScreen
+                        />
+                    ) : (
+                        <div className="flex flex-col items-center justify-center h-full text-white/40 gap-4">
+                            <div className="w-20 h-20 rounded-full bg-white/5 flex items-center justify-center border border-white/10">
+                                <XIcon className="w-8 h-8 opacity-20" />
+                            </div>
+                            <p className="text-sm font-bold uppercase tracking-widest">No preview video available</p>
+                        </div>
+                    )}
+                </DialogBody>
+            </Dialog>
         </>
     );
 }

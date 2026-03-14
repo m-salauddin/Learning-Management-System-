@@ -165,6 +165,7 @@ export interface InstructorInfo {
     total_courses: number;
     total_students: number;
     rating: number;
+    role?: 'main' | 'support';
 }
 
 // ============================================================================
@@ -231,8 +232,11 @@ export interface CoursePageData {
     course: Course;
     details: CourseDetails | null;
 
-    // Instructor
+    // Instructor (Primary)
     instructor: InstructorInfo;
+
+    // All Instructors (Main + Support)
+    instructors?: InstructorInfo[];
 
     // Curriculum
     modules: ModuleWithLessonsPreview[];

@@ -137,20 +137,11 @@ export default function EditCoursePage({ params }: { params: Promise<{ id: strin
             if (courseRes.success && courseRes.data) {
                 const course = courseRes.data as any;
 
-                // Also fetch related data (details, instructors, projects, faqs, resources)
-                const [detailsRes, instructorsRes, projectsRes, faqsRes, resourcesRes] = await Promise.all([
-                    supabase.from('course_details').select('*').eq('course_id', courseId).single(),
-                    supabase.from('course_instructors').select('*').eq('course_id', courseId),
-                    supabase.from('course_projects').select('*').eq('course_id', courseId).order('order_index'),
-                    supabase.from('course_faq').select('*').eq('course_id', courseId).order('order_index'),
-                    supabase.from('course_resources').select('*').eq('course_id', courseId).order('order_index')
-                ]);
-
-                const details = detailsRes.data as any;
-                const instructors = instructorsRes.data || [];
-                const projects = projectsRes.data || [];
-                const faqs = faqsRes.data || [];
-                const resources = resourcesRes.data || [];
+                const details = course.course_details?.[0] || {};
+                const projects = course.course_projects || [];
+                const faqs = course.course_faq || [];
+                const resources = course.course_resources || [];
+                const instructors = course.course_instructors || [];
 
                 const mainInstructorIds = instructors
                     .filter((i: any) => i.role === 'main')
@@ -180,7 +171,8 @@ export default function EditCoursePage({ params }: { params: Promise<{ id: strin
                     course_type: course.course_type || "recorded",
                     projects: projects.map((p: any) => ({
                         title: p.title || "",
-                        description: p.description || ""
+                        description: p.description || "",
+                        image_url: p.thumbnail_url || ""
                     })),
                     faqs: faqs.map((f: any) => ({
                         question: f.question || "",
@@ -190,7 +182,14 @@ export default function EditCoursePage({ params }: { params: Promise<{ id: strin
                         title: r.title || "",
                         type: r.resource_type || "",
                         url: r.external_url || ""
-                    }))
+                    })),
+                    modules: course.modules?.map((m: any) => ({
+                        title: m.title || "",
+                        lessons: (m.lessons || []).map((l: any) => ({
+                            title: l.title || "",
+                            video_url: l.lesson_assets?.[0]?.video_path || ""
+                        }))
+                    })) || []
                 });
 
                 // Set thumbnail preview from existing URL

@@ -12,7 +12,8 @@ import {
     courseStep1Schema,
     courseStep2Schema,
     courseStep3Schema,
-    courseStep4Schema
+    courseStep4Schema,
+    courseFormSchema
 } from "@/lib/validations/course";
 import { ZodError } from "zod";
 
@@ -72,7 +73,8 @@ export default function CreateCoursePage() {
         batch_no: undefined,
         projects: [] as { title: string; description: string }[],
         faqs: [] as { question: string; answer: string }[],
-        resources: [] as { title: string; type: string; url: string }[]
+        resources: [] as { title: string; type: string; url: string }[],
+        modules: [] as { title: string; lessons: { title: string; video_url: string }[] }[]
     });
 
     // Real-time validation (Watch Mode) - Debounced for performance
@@ -198,11 +200,19 @@ export default function CreateCoursePage() {
     // --- Submission ---
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+
+        // If not on the last step, just trigger nextStep logic
+        if (currentStep < totalSteps) {
+            nextStep();
+            return;
+        }
+
         setSubmittedSteps(prev => new Set(prev).add(4));
         setErrors({});
 
         try {
-            courseStep4Schema.parse(formData);
+            // Final validation of the entire form
+            courseFormSchema.parse(formData);
             setIsSubmitting(true);
             const result = await createCourse(formData);
             if (result.success) {
@@ -215,9 +225,13 @@ export default function CreateCoursePage() {
             if (errorDetail instanceof ZodError) {
                 const newErrors: Record<string, string> = {};
                 errorDetail.issues.forEach((issue) => {
-                    if (issue.path[0]) newErrors[issue.path[0] as string] = issue.message;
+                    const path = issue.path[0] as string;
+                    if (path) newErrors[path] = issue.message;
                 });
                 setErrors(newErrors);
+                
+                // If there are errors in previous steps, jump back to them or at least notify
+                toast.error("Please fix the errors in your course data");
             } else {
                 toast.error(errorDetail.message || "Failed to create course");
             }
