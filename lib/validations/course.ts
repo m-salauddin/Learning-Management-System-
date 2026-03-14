@@ -39,6 +39,7 @@ export const courseStep4Schema = z.object({
     projects: z.array(z.object({
         title: z.string().min(1, "Project title is required"),
         description: z.string().min(1, "Project description is required"),
+        image_url: z.string().optional(),
     })).optional(),
     faqs: z.array(z.object({
         question: z.string().min(1, "Question is required"),
@@ -48,6 +49,13 @@ export const courseStep4Schema = z.object({
         title: z.string().min(1, "Resource title is required"),
         type: z.string(),
         url: z.string().url("Must be a valid URL"),
+    })).optional(),
+    modules: z.array(z.object({
+        title: z.string().min(1, "Module title is required"),
+        lessons: z.array(z.object({
+            title: z.string().min(1, "Lesson title is required"),
+            video_url: z.string().optional(),
+        })).optional(),
     })).optional(),
 });
 

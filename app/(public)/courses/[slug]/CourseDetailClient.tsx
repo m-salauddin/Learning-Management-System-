@@ -36,7 +36,6 @@ export default function CourseDetailClient({ course, pageData }: CourseDetailCli
     const [loading, setLoading] = useState(false);
     const [expandedModules, setExpandedModules] = useState<number[]>([]);
     const [expandedFaq, setExpandedFaq] = useState<number | null>(null);
-    const [curriculumTab, setCurriculumTab] = useState<'live' | 'recorded'>('recorded');
 
     const [showAllModules, setShowAllModules] = useState(false);
     const [showAllReviews, setShowAllReviews] = useState(false);
@@ -44,6 +43,7 @@ export default function CourseDetailClient({ course, pageData }: CourseDetailCli
     const [showLeadModal, setShowLeadModal] = useState(false);
     const [showReviewModal, setShowReviewModal] = useState(false);
     const [showShareModal, setShowShareModal] = useState(false);
+    const [showVideoModal, setShowVideoModal] = useState(false);
     const [submitting, setSubmitting] = useState(false);
     const [leadForm, setLeadForm] = useState({ name: '', email: '', message: '' });
     const [reviewForm, setReviewForm] = useState({ rating: 5, review_text: '' });
@@ -57,7 +57,6 @@ export default function CourseDetailClient({ course, pageData }: CourseDetailCli
     const { success, error, info } = useToast();
 
     const {
-        instructor: instructorInfo,
         projects = [],
         faq = [],
         reviews = [],
@@ -203,16 +202,8 @@ export default function CourseDetailClient({ course, pageData }: CourseDetailCli
     }, [pageData?.courseOutline, course.curriculum]);
 
     const filteredModules = useMemo(() => {
-        return outlineModules.map(mod => ({
-            ...mod,
-            lessons: mod.lessons?.filter(l => {
-                if (curriculumTab === 'live') {
-                    return l.type === 'live';
-                }
-                return l.type !== 'live';
-            }) || []
-        })).filter(mod => mod.lessons && mod.lessons.length > 0);
-    }, [outlineModules, curriculumTab]);
+        return outlineModules;
+    }, [outlineModules]);
 
     const displayedModules = showAllModules ? filteredModules : filteredModules.slice(0, 6);
     const totalLectures = filteredModules.reduce((acc, m) => acc + (m.lessons?.length || 0), 0);
@@ -329,6 +320,7 @@ export default function CourseDetailClient({ course, pageData }: CourseDetailCli
                             timeLeft={timeLeft}
                             handleEnroll={handleEnroll}
                             loading={loading}
+                            setShowVideoModal={setShowVideoModal}
                         />
 
                         {/* All Sections - Sequential View */}
@@ -345,8 +337,6 @@ export default function CourseDetailClient({ course, pageData }: CourseDetailCli
                             <CourseCurriculum
                                 course={course}
                                 pageData={pageData}
-                                curriculumTab={curriculumTab}
-                                setCurriculumTab={setCurriculumTab}
                                 showAllModules={showAllModules}
                                 setShowAllModules={setShowAllModules}
                                 expandedModules={expandedModules}
@@ -359,7 +349,6 @@ export default function CourseDetailClient({ course, pageData }: CourseDetailCli
 
                             <CourseInstructor
                                 course={course}
-                                instructorInfo={instructorInfo}
                             />
 
                             <CourseProjects projects={projects} />
@@ -402,6 +391,7 @@ export default function CourseDetailClient({ course, pageData }: CourseDetailCli
                         handleEnroll={handleEnroll}
                         loading={loading}
                         setShowShareModal={setShowShareModal}
+                        setShowVideoModal={setShowVideoModal}
                     />
                 </div>
             </div>
@@ -427,6 +417,8 @@ export default function CourseDetailClient({ course, pageData }: CourseDetailCli
                 handleCopyLink={handleCopyLink}
                 linkCopied={linkCopied}
                 shareUrl={shareUrl}
+                showVideoModal={showVideoModal}
+                setShowVideoModal={setShowVideoModal}
             />
         </div>
     );

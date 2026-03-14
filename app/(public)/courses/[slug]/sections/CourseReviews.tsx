@@ -44,7 +44,7 @@ export default function CourseReviews({
                 {/* Score Card */}
                 <div className="p-10 rounded-[2.5rem] bg-card/40 border border-slate-300 dark:border-white/10 space-y-6 text-center flex flex-col items-center justify-center transition-all duration-500">
                     <div className="text-[5rem] font-black text-slate-900 dark:text-white tracking-tighter leading-none drop-shadow-2xl">
-                        {ratingBreakdown.average || 4.8}
+                        {(ratingBreakdown.average || 0).toFixed(1)}
                     </div>
                     <div className="flex justify-center gap-2">
                         {[1, 2, 3, 4, 5].map((s) => (
@@ -52,9 +52,9 @@ export default function CourseReviews({
                                 key={s}
                                 className={cn(
                                     "w-7 h-7 transition-all",
-                                    s <= Math.round(ratingBreakdown.average || 5)
+                                    ratingBreakdown.average > 0 && s <= Math.round(ratingBreakdown.average)
                                         ? "fill-amber-400 text-amber-400 drop-shadow-[0_0_10px_rgba(251,191,36,0.4)]"
-                                        : "text-slate-700/50"
+                                        : "text-slate-300 dark:text-slate-700/50"
                                 )}
                             />
                         ))}
@@ -98,7 +98,7 @@ export default function CourseReviews({
 
             {/* Reviews List */}
             <div className="space-y-8">
-                {reviews.length > 0 ? (
+                {reviews.length > 0 && (
                     <>
                         <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6 items-start">
                             {displayedReviews.map((review, i) => (
@@ -185,22 +185,6 @@ export default function CourseReviews({
                             </div>
                         )}
                     </>
-                ) : (
-                    <div className="flex flex-col items-center justify-center p-12 rounded-[2.5rem] border border-dashed border-slate-200 dark:border-white/10 bg-slate-50 dark:bg-white/5 text-center space-y-4 transition-colors">
-                        <div className="w-16 h-16 rounded-full bg-slate-100 dark:bg-white/5 flex items-center justify-center">
-                            <MessageCircle className="w-8 h-8 text-slate-400 dark:text-slate-500" />
-                        </div>
-                        <div className="space-y-2">
-                            <h3 className="text-lg font-bold text-slate-900 dark:text-white transition-colors">No reviews yet</h3>
-                            <p className="text-sm text-slate-500 dark:text-slate-400 max-w-xs transition-colors">Be the first to share your experience with this course and help others.</p>
-                        </div>
-                        <button
-                            onClick={() => setShowReviewModal(true)}
-                            className="px-6 py-2 rounded-xl bg-primary text-primary-foreground text-xs font-black uppercase tracking-widest hover:scale-105 transition-all"
-                        >
-                            Submit First Review
-                        </button>
-                    </div>
                 )}
             </div>
         </div >

@@ -23,6 +23,7 @@ interface CourseSidebarProps {
     handleEnroll: () => void;
     loading: boolean;
     setShowShareModal: (show: boolean) => void;
+    setShowVideoModal: (show: boolean) => void;
 }
 
 export default function CourseSidebar({
@@ -40,7 +41,8 @@ export default function CourseSidebar({
     handleApplyCoupon,
     handleEnroll,
     loading,
-    setShowShareModal
+    setShowShareModal,
+    setShowVideoModal
 }: CourseSidebarProps) {
     return (
         <div className="lg:col-span-5 xl:col-span-4 lg:mt-0 order-first lg:order-0 z-20 lg:sticky lg:top-[110px] h-fit space-y-4 sm:space-y-6">
@@ -56,7 +58,10 @@ export default function CourseSidebar({
 
             <div className="relative overflow-hidden rounded-[2.5rem]! bg-white dark:bg-slate-900/60 border border-slate-300 dark:border-white/10  backdrop-blur-2xl">
                 <div className="p-3 pb-0">
-                    <div className="aspect-video relative group/preview cursor-pointer bg-slate-950 overflow-hidden rounded-[1.75rem] ring-1 ring-white/5">
+                    <div
+                        onClick={() => setShowVideoModal(true)}
+                        className="aspect-video relative group/preview cursor-pointer bg-slate-950 overflow-hidden rounded-[1.75rem] ring-1 ring-white/5"
+                    >
                         <Image
                             src={course.image || '/placeholder-course.jpg'}
                             alt={course.title}

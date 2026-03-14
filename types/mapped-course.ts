@@ -1,8 +1,21 @@
 export interface Instructor {
+    id?: string;
     name: string;
     title: string;
     avatar: string; // URL
     bio: string;
+    expertise?: string[];
+    social_links?: {
+        twitter?: string;
+        linkedin?: string;
+        youtube?: string;
+        website?: string;
+        github?: string;
+    };
+    total_courses?: number;
+    total_students?: number;
+    rating?: number;
+    role?: 'main' | 'support';
 }
 
 export interface LessonItem {
@@ -32,6 +45,7 @@ export interface MappedCourse {
     rating: number;
     reviews: number;
     instructor: Instructor;
+    instructors?: Instructor[];
     tags: string[];
     level: string;
     language: string;
@@ -49,5 +63,6 @@ export interface MappedCourse {
     discountExpiresAt?: string;
     totalLessons?: number;
     batchNo?: number;
+    previewVideoUrl?: string;
 }
 

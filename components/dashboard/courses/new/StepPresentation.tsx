@@ -85,8 +85,8 @@ export const StepPresentation = ({
                                         <span className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground font-bold">$</span>
                                         <input
                                             type="number"
-                                            value={formData.price}
-                                            onChange={(e) => setFormData(prev => ({ ...prev, price: parseInt(e.target.value) || 0 }))}
+                                            value={formData.price === 0 ? "" : formData.price}
+                                            onChange={(e) => setFormData(prev => ({ ...prev, price: e.target.value === "" ? 0 : Number(e.target.value) }))}
                                             className={cn(inputClasses, "pl-8", errors.price && "border-red-500/50 focus:border-red-500")}
                                             placeholder="0"
                                         />
@@ -106,8 +106,8 @@ export const StepPresentation = ({
                                         <span className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground font-bold">$</span>
                                         <input
                                             type="number"
-                                            value={formData.discount_price || ""}
-                                            onChange={(e) => setFormData(prev => ({ ...prev, discount_price: e.target.value ? parseInt(e.target.value) : null }))}
+                                            value={formData.discount_price === null ? "" : formData.discount_price}
+                                            onChange={(e) => setFormData(prev => ({ ...prev, discount_price: e.target.value === "" ? null : Number(e.target.value) }))}
                                             className={cn(inputClasses, "pl-8", errors.discount_price && "border-red-500/50 focus:border-red-500")}
                                             placeholder="0"
                                         />

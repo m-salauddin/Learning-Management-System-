@@ -68,7 +68,13 @@ export async function getCoursePageData(slug: string): Promise<{
             .single();
 
 
-        const { data: instructorData } = await supabase
+        // Initialize admin client to bypass restrictive RLS for instructor info
+        const adminClient = createAdminClient(
+            process.env.NEXT_PUBLIC_SUPABASE_URL!,
+            process.env.SUPABASE_SERVICE_ROLE_KEY || ''
+        );
+
+        const { data: instructorData } = await adminClient
             .from('users')
             .select(`
                 id,
@@ -81,7 +87,7 @@ export async function getCoursePageData(slug: string): Promise<{
             .single();
 
 
-        const { data: instructorProfile } = await supabase
+        const { data: instructorProfile } = await adminClient
             .from('instructor_profiles')
             .select('*')
             .eq('id', course.instructor_id)
@@ -99,6 +105,48 @@ export async function getCoursePageData(slug: string): Promise<{
             total_students: instructorProfile?.total_students || 0,
             rating: instructorProfile?.rating || 0,
         };
+
+        // Fetch all assigned instructors from course_instructors table
+        const { data: ciRows } = await adminClient
+            .from('course_instructors')
+            .select(`
+                instructor_id,
+                role,
+                users:instructor_id (
+                    id,                    name,                    email,                    avatar_url,                    bio,
+                    profile:instructor_profiles(*)
+                )
+            `)
+            .eq('course_id', course.id);
+
+        const instructors: InstructorInfo[] = [];
+
+        if (ciRows && ciRows.length > 0) {
+            ciRows.forEach((row: any) => {
+                const u = row.users;
+                const p = u?.profile;
+                if (u) {
+                    instructors.push({
+                        id: u.id,
+                        name: u.name || 'Unknown',
+                        email: u.email || '',
+                        avatar_url: u.avatar_url || '',
+                        bio: u.bio || p?.bio || null,
+                        expertise: p?.expertise || [],
+                        social_links: p?.social_links || {},
+                        total_courses: p?.total_courses || 0,
+                        total_students: p?.total_students || 0,
+                        rating: p?.rating || 0,
+                        role: row.role as 'main' | 'support'
+                    });
+                }
+            });
+        }
+
+        // Ensure at least the primary instructor is in the list if the junction table is empty
+        if (instructors.length === 0) {
+            instructors.push(instructor);
+        }
 
 
         const { data: modulesData } = await supabase
@@ -186,12 +234,7 @@ export async function getCoursePageData(slug: string): Promise<{
 
 
 
-        // Use admin client to bypass potential RLS issues for public outline data
-        // This ensures the outline is visible even if public policies are missing or misconfigured
-        const adminClient = createAdminClient(
-            process.env.NEXT_PUBLIC_SUPABASE_URL!,
-            process.env.SUPABASE_SERVICE_ROLE_KEY || ''
-        );
+        // Already initialized adminClient above
 
         const { data: outlineModulesData } = await adminClient
             .from('course_outline_modules')
@@ -328,6 +371,7 @@ export async function getCoursePageData(slug: string): Promise<{
                 course: courseData,
                 details: details as CourseDetails | null,
                 instructor,
+                instructors,
                 modules,
                 totalLessons,
                 totalDuration,

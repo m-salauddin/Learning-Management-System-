@@ -1,11 +1,6 @@
 "use server";
 
-// ============================================================================
-// COURSE SERVER ACTIONS
-// ============================================================================
-// Server-side actions for course management (create, read, update, delete)
-// All actions include proper authorization checks
-// ============================================================================
+
 
 import { createClient } from "@/lib/supabase/server";
 import { revalidatePath } from "next/cache";
@@ -14,9 +9,7 @@ import {
     CreateCourseInput, UpdateCourseInput, ApiResponse, PaginatedResponse
 } from "@/types/lms";
 
-// ============================================================================
-// GET COURSES
-// ============================================================================
+
 
 export interface GetCoursesParams {
     page?: number;
@@ -47,7 +40,7 @@ export async function getCourses(params: GetCoursesParams = {}): Promise<Paginat
 
     const offset = (page - 1) * pageSize;
 
-    // Build query
+
     let query = supabase
         .from('courses')
         .select(`
@@ -58,7 +51,7 @@ export async function getCourses(params: GetCoursesParams = {}): Promise<Paginat
             category:categories(id, name, slug, color)
         `, { count: 'exact' });
 
-    // Apply filters
+
     if (status !== 'all') {
         query = query.eq('status', status);
     }
@@ -79,7 +72,7 @@ export async function getCourses(params: GetCoursesParams = {}): Promise<Paginat
         query = query.or(`title.ilike.%${search}%,description.ilike.%${search}%`);
     }
 
-    // Apply sorting
+
     switch (sort) {
         case 'popular':
             query = query.order('total_students', { ascending: false });
@@ -141,7 +134,7 @@ export async function getCourses(params: GetCoursesParams = {}): Promise<Paginat
         };
     }
 
-    // Default paginated query
+
     query = query.range(offset, offset + pageSize - 1);
 
     const { data, error, count } = await query;
@@ -166,9 +159,7 @@ export async function getCourses(params: GetCoursesParams = {}): Promise<Paginat
     };
 }
 
-// ============================================================================
-// GET SINGLE COURSE
-// ============================================================================
+
 
 export async function getCourseBySlug(slug: string): Promise<ApiResponse<CourseWithModules>> {
     const supabase = await createClient();
@@ -183,17 +174,47 @@ export async function getCourseBySlug(slug: string): Promise<ApiResponse<CourseW
             category:categories(id, name, slug, color),
             modules(
                 *,
-                lessons(*)
-            )
+                lessons(
+                    *,
+                    lesson_assets(*)
+                )
+            ),
+            course_instructors(
+                instructor_id,
+                role,
+                instructor:users(id, name, email, avatar_url)
+            ),
+            course_projects(*),
+            course_faq(*),
+            course_resources(*),
+            course_details(*)
         `)
         .eq('slug', slug)
         .order('position', { foreignTable: 'modules', ascending: true })
         .order('position', { foreignTable: 'modules.lessons', ascending: true })
+        .order('order_index', { foreignTable: 'course_projects', ascending: true })
+        .order('order_index', { foreignTable: 'course_faq', ascending: true })
+        .order('order_index', { foreignTable: 'course_resources', ascending: true })
         .single();
 
-    // Map instructor
+    if (error || !course) {
+        return { success: false, error: error?.message || "Course not found" };
+    }
+
+
+    const instructor_ids = (course as any).course_instructors
+        ?.filter((ci: any) => ci.role === 'main')
+        .map((ci: any) => ci.instructor_id) || [];
+    
+    const support_instructor_ids = (course as any).course_instructors
+        ?.filter((ci: any) => ci.role === 'support')
+        .map((ci: any) => ci.instructor_id) || [];
+
+
     const transformedCourse = {
         ...course,
+        instructor_ids,
+        support_instructor_ids,
         instructor: (course as any).instructor?.user || {
             id: (course as any).instructor_id,
             name: 'Unknown Instructor',
@@ -218,21 +239,47 @@ export async function getCourseById(id: string): Promise<ApiResponse<CourseWithM
             category:categories(id, name, slug),
             modules(
                 *,
-                lessons(*)
-            )
+                lessons(
+                    *,
+                    lesson_assets(*)
+                )
+            ),
+            course_instructors(
+                instructor_id,
+                role,
+                instructor:users(id, name, email, avatar_url)
+            ),
+            course_projects(*),
+            course_faq(*),
+            course_resources(*),
+            course_details(*)
         `)
         .eq('id', id)
         .order('position', { foreignTable: 'modules', ascending: true })
         .order('position', { foreignTable: 'modules.lessons', ascending: true })
+        .order('order_index', { foreignTable: 'course_projects', ascending: true })
+        .order('order_index', { foreignTable: 'course_faq', ascending: true })
+        .order('order_index', { foreignTable: 'course_resources', ascending: true })
         .single();
 
     if (error) {
         return { success: false, error: error.message };
     }
 
-    // Map instructor
+
+    const instructor_ids = (course as any).course_instructors
+        ?.filter((ci: any) => ci.role === 'main')
+        .map((ci: any) => ci.instructor_id) || [];
+    
+    const support_instructor_ids = (course as any).course_instructors
+        ?.filter((ci: any) => ci.role === 'support')
+        .map((ci: any) => ci.instructor_id) || [];
+
+
     const transformedCourse = {
         ...course,
+        instructor_ids,
+        support_instructor_ids,
         instructor: (course as any).instructor?.user || {
             id: (course as any).instructor_id,
             name: 'Unknown Instructor',
@@ -262,14 +309,12 @@ export async function getNextBatchNumber(title: string): Promise<ApiResponse<num
     return { success: true, data: nextBatch };
 }
 
-// ============================================================================
-// CREATE COURSE
-// ============================================================================
+
 
 export async function createCourse(input: CreateCourseInput): Promise<ApiResponse<Course>> {
     const supabase = await createClient();
 
-    // Get current user
+
     const { data: { user }, error: authError } = await supabase.auth.getUser();
     if (authError || !user) {
         return { success: false, error: 'Unauthorized' };
@@ -286,11 +331,12 @@ export async function createCourse(input: CreateCourseInput): Promise<ApiRespons
         return { success: false, error: 'Only teachers can create courses' };
     }
 
-    // Extract auxiliary data
+
     const {
         faqs,
         projects,
         resources,
+        modules,
         target_audience,
         instructor_ids,
         support_instructor_ids,
@@ -361,7 +407,7 @@ export async function createCourse(input: CreateCourseInput): Promise<ApiRespons
         // For now, let's keep it simple, but we could add a short ID here.
     }
 
-    // --- Batch Validation ---
+
     if (input.batch_no) {
         const { data: existingBatches } = await supabase
             .from('courses')
@@ -380,15 +426,15 @@ export async function createCourse(input: CreateCourseInput): Promise<ApiRespons
         }
     }
 
-    // Create course using atomic ordering RPC
+
     const coursePayload = {
         ...mainCourseData,
         batch_no: input.batch_no || 1,
         course_type: input.course_type || 'recorded',
         slug: finalSlug,
         instructor_id: finalInstructorId,
-        status: 'draft',
-        published: false
+        status: 'published',
+        published: true
     };
 
     const { data: rpcResult, error: rpcError } = await supabase
@@ -411,7 +457,7 @@ export async function createCourse(input: CreateCourseInput): Promise<ApiRespons
         return { success: false, error: error.message };
     }
 
-    // 0. Insert Multiple Instructors
+
     const instructorAssignments = [
         ...(input.instructor_ids || []).map(id => ({
             course_id: course.id,
@@ -435,7 +481,7 @@ export async function createCourse(input: CreateCourseInput): Promise<ApiRespons
         }
     }
 
-    // 1. Insert into course_details if target_audience or description exists
+
     if (target_audience?.length || mainCourseData.description) {
         await supabase.from('course_details').insert({
             course_id: course.id,
@@ -446,7 +492,7 @@ export async function createCourse(input: CreateCourseInput): Promise<ApiRespons
         });
     }
 
-    // 2. Insert FAQs
+
     if (faqs?.length) {
         const faqData = faqs.map((faq, index) => ({
             course_id: course.id,
@@ -458,19 +504,21 @@ export async function createCourse(input: CreateCourseInput): Promise<ApiRespons
         await supabase.from('course_faq').insert(faqData);
     }
 
-    // 3. Insert Projects
+
     if (projects?.length) {
         const projectData = projects.map((p, index) => ({
             course_id: course.id,
             title: p.title,
             description: p.description,
+            thumbnail_url: p.image_url || "",
             order_index: index,
             is_public: true
         }));
-        await supabase.from('course_projects').insert(projectData);
+        const { error: projectError } = await supabase.from('course_projects').insert(projectData);
+        if (projectError) console.error('Error inserting projects:', projectError);
     }
 
-    // 4. Insert Resources
+
     if (resources?.length) {
         const resourceData = resources.map((r, index) => ({
             course_id: course.id,
@@ -483,13 +531,53 @@ export async function createCourse(input: CreateCourseInput): Promise<ApiRespons
         await supabase.from('course_resources').insert(resourceData);
     }
 
+
+    if (modules?.length) {
+        for (const [mIndex, moduleInput] of modules.entries()) {
+            const { data: module, error: moduleError } = await supabase
+                .from('modules')
+                .insert({
+                    course_id: course.id,
+                    title: moduleInput.title,
+                    description: "",
+                    position: mIndex,
+                    is_published: true
+                })
+                .select()
+                .single();
+
+            if (module && !moduleError && moduleInput.lessons?.length) {
+                for (const [lIndex, lessonInput] of moduleInput.lessons.entries()) {
+                    const { data: lesson, error: lessonError } = await supabase
+                        .from('lessons')
+                        .insert({
+                            module_id: module.id,
+                            title: lessonInput.title,
+                            lesson_type: 'video',
+                            position: lIndex,
+                            is_published: true
+                        })
+                        .select()
+                        .single();
+
+                    if (lesson && !lessonError) {
+                        await supabase
+                            .from('lesson_assets')
+                            .insert({
+                                lesson_id: lesson.id,
+                                video_path: lessonInput.video_url,
+                            });
+                    }
+                }
+            }
+        }
+    }
+
     revalidatePath('/dashboard/courses');
     return { success: true, data: course };
 }
 
-// ============================================================================
-// UPDATE COURSE
-// ============================================================================
+
 
 export async function updateCourse(input: UpdateCourseInput): Promise<ApiResponse<Course>> {
     const supabase = await createClient();
@@ -521,6 +609,7 @@ export async function updateCourse(input: UpdateCourseInput): Promise<ApiRespons
         faqs,
         projects,
         resources,
+        modules,
         target_audience,
         instructor_ids,
         support_instructor_ids,
@@ -637,10 +726,66 @@ export async function updateCourse(input: UpdateCourseInput): Promise<ApiRespons
                 course_id: id,
                 title: p.title,
                 description: p.description,
+                thumbnail_url: p.image_url || "",
                 order_index: index,
                 is_public: true
             }));
             await supabase.from('course_projects').insert(projectData);
+        }
+    }
+
+    // Update Curriculum Modules and Lessons (delete + reinsert)
+    if (modules !== undefined) {
+        // Delete existing modules (will cascade delete lessons if FK is set to cascade)
+        // If not cascade, we'd need to fetch module IDs and delete lessons first.
+        // Let's assume cascade or handle lessons explicitly if needed.
+        // Based on the schema overview, there's a cascade if defined, but let's be safe.
+        const { data: existingModules } = await supabase.from('modules').select('id').eq('course_id', id);
+        if (existingModules?.length) {
+            const mIds = existingModules.map(m => m.id);
+            await supabase.from('lessons').delete().in('module_id', mIds);
+            await supabase.from('modules').delete().eq('course_id', id);
+        }
+
+        if (modules && modules.length > 0) {
+            for (const [mIndex, moduleInput] of modules.entries()) {
+                const { data: moduleRow, error: moduleError } = await supabase
+                    .from('modules')
+                    .insert({
+                        course_id: id,
+                        title: moduleInput.title,
+                        description: "",
+                        position: mIndex,
+                        is_published: true
+                    })
+                    .select()
+                    .single();
+
+                if (moduleRow && !moduleError && moduleInput.lessons?.length) {
+                    for (const [lIndex, lessonInput] of moduleInput.lessons.entries()) {
+                        const { data: lessonRow, error: lessonError } = await supabase
+                            .from('lessons')
+                            .insert({
+                                module_id: moduleRow.id,
+                                title: lessonInput.title,
+                                lesson_type: 'video',
+                                position: lIndex,
+                                is_published: true
+                            })
+                            .select()
+                            .single();
+
+                        if (lessonRow && !lessonError) {
+                            await supabase
+                                .from('lesson_assets')
+                                .insert({
+                                    lesson_id: lessonRow.id,
+                                    video_path: lessonInput.video_url,
+                                });
+                        }
+                    }
+                }
+            }
         }
     }
 

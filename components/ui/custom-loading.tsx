@@ -1,8 +1,8 @@
 "use client";
 
-import { motion } from "framer-motion";
+import { motion } from "motion/react";
 import Image from "next/image";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 
 interface LoadingProps {
   className?: string;
@@ -32,7 +32,7 @@ export function CustomLoading({ className, size = "lg" }: LoadingProps) {
             repeat: Infinity,
             ease: "easeInOut",
           }}
-          className="absolute inset-0 bg-primary/15 blur-2xl rounded-full"
+          className="absolute inset-0 bg-primary/15 blur-2xl rounded-full animate-pulse"
         />
 
         <motion.div
@@ -45,7 +45,7 @@ export function CustomLoading({ className, size = "lg" }: LoadingProps) {
             repeat: Infinity,
             ease: "easeInOut",
           }}
-          className="relative z-10"
+          className="relative z-10 transition-transform duration-700"
         >
           <Image
             src="/favicon.svg"
@@ -57,7 +57,7 @@ export function CustomLoading({ className, size = "lg" }: LoadingProps) {
           />
         </motion.div>
 
-        <div className="absolute inset-[-15%]">
+        <div className="absolute inset-[-15%] animate-spin [animation-duration:8s]">
           <svg className="w-full h-full -rotate-90">
             <motion.circle
               cx="50%"
@@ -123,12 +123,18 @@ export function CustomLoading({ className, size = "lg" }: LoadingProps) {
 }
 
 export default function LoadingPage() {
+  const [mounted, setMounted] = useState(false);
+
   useEffect(() => {
+    setMounted(true);
     document.body.style.overflow = "hidden";
     return () => {
       document.body.style.overflow = "unset";
     };
   }, []);
+
+  // We remove the return null guard to ensure SSR visibility
+  // but we still use mounted for overflow logic
 
   return (
     <div className="relative w-full min-h-screen bg-background">

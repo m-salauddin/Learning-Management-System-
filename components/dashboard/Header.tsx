@@ -1,4 +1,5 @@
 "use client";
+import { useEffect, useState } from "react";
 
 import { usePathname } from "next/navigation";
 import {
@@ -34,7 +35,15 @@ interface HeaderProps {
 
 export function Header({ onMobileMenuOpen, isSidebarCollapsed, onSidebarToggle }: HeaderProps) {
     const pathname = usePathname();
-    const { user, isLoading } = useAppSelector((state) => state.auth);
+    const { user, isLoading: authLoading } = useAppSelector((state) => state.auth);
+    const [mounted, setMounted] = useState(false);
+
+    useEffect(() => {
+        setMounted(true);
+    }, []);
+
+    // Show loading state if auth is loading OR if not yet mounted to avoid hydration mismatch
+    const isLoading = !mounted || authLoading;
 
     // Generate breadcrumbs from path
     const pathSegments = pathname?.split("/").filter(p => p !== "" && p !== "dashboard") || [];
