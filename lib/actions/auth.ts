@@ -64,12 +64,17 @@ export async function signOut() {
     return { success: true }
 }
 
+const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || 
+                 (process.env.NODE_ENV === 'production' 
+                    ? 'https://www.dokkhotait.com' 
+                    : 'http://localhost:3000');
+
 export async function signInWithGoogle() {
     const supabase = await createClient()
     const { data, error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
-            redirectTo: `${process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'}/auth/callback`,
+            redirectTo: `${BASE_URL}/auth/callback`,
             queryParams: {
                 access_type: 'offline',
                 prompt: 'consent',
@@ -91,7 +96,7 @@ export async function signInWithGithub() {
     const { data, error } = await supabase.auth.signInWithOAuth({
         provider: 'github',
         options: {
-            redirectTo: `${process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'}/auth/callback`,
+            redirectTo: `${BASE_URL}/auth/callback`,
             scopes: 'read:user user:email',
         },
     })
@@ -109,7 +114,7 @@ export async function forgotPassword(email: string) {
     const supabase = await createClient()
 
     const { error } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: `${process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'}/auth/callback?next=/reset-password`,
+        redirectTo: `${BASE_URL}/auth/callback?next=/reset-password`,
     })
 
     if (error) {
