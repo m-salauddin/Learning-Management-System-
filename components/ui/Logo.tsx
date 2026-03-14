@@ -1,6 +1,7 @@
 'use client';
 
-import React, { useId } from 'react';
+import Image from 'next/image';
+import { cn } from '@/lib/utils';
 
 interface LogoProps {
     className?: string;
@@ -9,211 +10,106 @@ interface LogoProps {
     textClassName?: string;
 }
 
-export const Logo = ({ className = "", showText = true, size = "md", textClassName = "" }: LogoProps) => {
-    const id = useId();
-    const sizeConfig = {
-        sm: { icon: 34, text: "text-base", gap: "gap-2" },
-        md: { icon: 44, text: "text-xl", gap: "gap-2.5" },
-        lg: { icon: 56, text: "text-2xl", gap: "gap-3" },
-        xl: { icon: 72, text: "text-3xl", gap: "gap-4" }
-    };
+const logoConfig = {
+    sm: { height: 26, fullWidth: 100, smallWidth: 26 },
+    md: { height: 32, fullWidth: 124, smallWidth: 32 },
+    lg: { height: 44, fullWidth: 170, smallWidth: 44 },
+    xl: { height: 56, fullWidth: 215, smallWidth: 56 }
+};
 
-    const config = sizeConfig[size];
-    const gradId = `logo-grad-${id.replace(/:/g, '')}`;
-    const gradDarkId = `logo-gradDark-${id.replace(/:/g, '')}`;
-    const shineId = `logo-shine-${id.replace(/:/g, '')}`;
-    const depthId = `logo-depth-${id.replace(/:/g, '')}`;
-    const shadowId = `logo-shadow-${id.replace(/:/g, '')}`;
-    const clipId = `logo-clip-${id.replace(/:/g, '')}`;
+export const Logo = ({ className = "", showText = true, size = "md", textClassName = "" }: LogoProps) => {
+    const config = logoConfig[size];
 
     return (
-        <div className={`flex items-center ${config.gap} ${className}`}>
-
-            <div className="relative transition-transform duration-200 hover:scale-105 active:scale-95 shrink-0">
-                <svg
-                    width={config.icon}
-                    height={config.icon}
-                    viewBox="0 0 64 64"
-                    fill="none"
-                    xmlns="http://www.w3.org/2000/svg"
-                    className="relative z-10"
-                    aria-label="DokkhotaIT Logo"
-                >
-                    <defs>
-
-                        <linearGradient id={gradId} x1="0%" y1="0%" x2="100%" y2="100%">
-                            <stop offset="0%" stopColor="#0036F9" />
-                            <stop offset="35%" stopColor="#4F46E5" />
-                            <stop offset="65%" stopColor="#7C3AED" />
-                            <stop offset="100%" stopColor="#A855F7" />
-                        </linearGradient>
-
-
-                        <linearGradient id={gradDarkId} x1="0%" y1="0%" x2="100%" y2="100%">
-                            <stop offset="0%" stopColor="#FCB900" />
-                            <stop offset="40%" stopColor="#F59E0B" />
-                            <stop offset="70%" stopColor="#22D3EE" />
-                            <stop offset="100%" stopColor="#06B6D4" />
-                        </linearGradient>
-
-
-                        <linearGradient id={shineId} x1="0%" y1="0%" x2="100%" y2="100%">
-                            <stop offset="0%" stopColor="white" stopOpacity="0.4" />
-                            <stop offset="50%" stopColor="white" stopOpacity="0" />
-                            <stop offset="100%" stopColor="white" stopOpacity="0.15" />
-                        </linearGradient>
-
-
-                        <radialGradient id={depthId} cx="30%" cy="30%" r="70%" fx="20%" fy="20%">
-                            <stop offset="0%" stopColor="white" stopOpacity="0.25" />
-                            <stop offset="60%" stopColor="white" stopOpacity="0" />
-                            <stop offset="100%" stopColor="black" stopOpacity="0.1" />
-                        </radialGradient>
-
-
-                        <filter id={shadowId} x="-20%" y="-20%" width="140%" height="140%">
-                            <feDropShadow dx="0" dy="2" stdDeviation="4" floodColor="#4F46E5" floodOpacity="0.3" />
-                        </filter>
-
-                        <clipPath id={clipId}>
-                            <rect x="4" y="4" width="56" height="56" rx="16" />
-                        </clipPath>
-                    </defs>
-
-
-                    <g filter={`url(#${shadowId})`}>
-
-                        <rect
-                            x="4" y="4"
-                            width="56" height="56"
-                            rx="16"
-                            fill={`url(#${gradId})`}
-                            className="dark:hidden"
+        <div className={cn("relative flex items-center transition-transform duration-200 hover:scale-[1.02] active:scale-[0.98] group cursor-pointer", className)}>
+            {showText ? (
+                <>
+                    <div className={cn("relative", textClassName || "block")}>
+                        <Image
+                            src="/logo/logo-full-light.png"
+                            alt="DokkhotaIT Logo"
+                            width={config.fullWidth}
+                            height={config.height}
+                            className="dark:hidden w-auto h-auto object-contain"
+                            priority
                         />
-
-                        <rect
-                            x="4" y="4"
-                            width="56" height="56"
-                            rx="16"
-                            fill={`url(#${gradDarkId})`}
-                            className="hidden dark:block"
+                        <Image
+                            src="/logo/logo-full-dark.png"
+                            alt="DokkhotaIT Logo"
+                            width={config.fullWidth}
+                            height={config.height}
+                            className="hidden dark:block w-auto h-auto object-contain"
+                            priority
                         />
-                        <rect x="4" y="4" width="56" height="56" rx="16" fill={`url(#${depthId})`} />
-                        <rect x="4" y="4" width="56" height="56" rx="16" fill={`url(#${shineId})`} />
-                    </g>
-
-
-                    <g clipPath={`url(#${clipId})`}>
-                        <path
-                            d="M24 16V48M24 16H32C42 16 46 22 46 32C46 42 42 48 32 48H24"
-                            strokeWidth="5"
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            fill="none"
-                            className="stroke-white"
-                        />
-
-                        <circle cx="24" cy="16" r="3" fillOpacity="0.3" className="fill-white" />
-                        <circle cx="24" cy="48" r="3" fillOpacity="0.3" className="fill-white" />
-                        <circle cx="46" cy="32" r="4" fillOpacity="0.3" className="fill-white" />
-                    </g>
-                </svg>
-
-
-                <div className="absolute inset-0 rounded-2xl bg-primary/20 blur-lg -z-10 scale-110 opacity-50" />
-            </div>
-
-
-            {showText && (
-                <div className={`flex flex-col whitespace-nowrap ${textClassName}`}>
-                    <div className={`${config.text} font-bold tracking-tight leading-none flex items-baseline`}>
-                        <span className="bg-linear-to-r from-primary via-accent to-secondary bg-clip-text text-transparent dark:from-primary dark:via-secondary dark:to-accent">
-                            Dokkhota
-                        </span>
-                        <span className="ml-1 text-[0.45em] font-black tracking-wider text-white bg-linear-to-r from-primary to-accent px-1.5 py-0.5 rounded-md shadow-sm">
-                            IT
-                        </span>
+                        <div className="absolute inset-0 bg-primary/5 blur-xl -z-10 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
                     </div>
-                    <p className="text-[0.45em] text-muted-foreground tracking-[0.2em] uppercase font-medium mt-1 opacity-80">
-                        Empowering Future
-                    </p>
+
+                    {textClassName && textClassName.includes("hidden") && (
+                        <div className="sm:hidden relative">
+                            <Image
+                                src="/logo/logo-small-light.png"
+                                alt="DokkhotaIT Logo"
+                                width={config.smallWidth}
+                                height={config.height}
+                                className="dark:hidden w-auto h-auto object-contain"
+                                priority
+                            />
+                            <Image
+                                src="/logo/logo-small-dark.png"
+                                alt="DokkhotaIT Logo"
+                                width={config.smallWidth}
+                                height={config.height}
+                                className="hidden dark:block w-auto h-auto object-contain"
+                                priority
+                            />
+                            <div className="absolute inset-0 bg-primary/5 blur-lg -z-10 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                        </div>
+                    )}
+                </>
+            ) : (
+                 <div className="relative">
+                    <Image
+                        src="/logo/logo-small-light.png"
+                        alt="DokkhotaIT Logo"
+                        width={config.smallWidth}
+                        height={config.height}
+                        className="dark:hidden w-auto h-auto object-contain"
+                        priority
+                    />
+                    <Image
+                        src="/logo/logo-small-dark.png"
+                        alt="DokkhotaIT Logo"
+                        width={config.smallWidth}
+                        height={config.height}
+                        className="hidden dark:block w-auto h-auto object-contain"
+                        priority
+                    />
+                     <div className="absolute inset-0 bg-primary/5 blur-lg -z-10 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
                 </div>
             )}
         </div>
     );
 };
 
-
-export const LogoIcon = ({ size = 40, className = "" }: { size?: number; className?: string }) => {
-    const id = useId();
-    const gradId = `icon-grad-${id.replace(/:/g, '')}`;
-    const gradDarkId = `icon-gradDark-${id.replace(/:/g, '')}`;
-    const shineId = `icon-shine-${id.replace(/:/g, '')}`;
-    const shadowId = `icon-shadow-${id.replace(/:/g, '')}`;
-
+export const LogoIcon = ({ size = 32, className = "" }: { size?: number; className?: string }) => {
     return (
-        <svg
-            width={size}
-            height={size}
-            viewBox="0 0 64 64"
-            fill="none"
-            xmlns="http://www.w3.org/2000/svg"
-            className={`transition-transform duration-200 hover:scale-105 ${className}`}
-            aria-label="DokkhotaIT"
-        >
-            <defs>
-                <linearGradient id={gradId} x1="0%" y1="0%" x2="100%" y2="100%">
-                    <stop offset="0%" stopColor="#0036F9" />
-                    <stop offset="35%" stopColor="#4F46E5" />
-                    <stop offset="65%" stopColor="#7C3AED" />
-                    <stop offset="100%" stopColor="#A855F7" />
-                </linearGradient>
-                <linearGradient id={gradDarkId} x1="0%" y1="0%" x2="100%" y2="100%">
-                    <stop offset="0%" stopColor="#FCB900" />
-                    <stop offset="40%" stopColor="#F59E0B" />
-                    <stop offset="70%" stopColor="#22D3EE" />
-                    <stop offset="100%" stopColor="#06B6D4" />
-                </linearGradient>
-                <linearGradient id={shineId} x1="0%" y1="0%" x2="100%" y2="100%">
-                    <stop offset="0%" stopColor="white" stopOpacity="0.35" />
-                    <stop offset="50%" stopColor="white" stopOpacity="0" />
-                    <stop offset="100%" stopColor="white" stopOpacity="0.1" />
-                </linearGradient>
-                <filter id={shadowId} x="-20%" y="-20%" width="140%" height="140%">
-                    <feDropShadow dx="0" dy="2" stdDeviation="3" floodColor="#4F46E5" floodOpacity="0.35" />
-                </filter>
-            </defs>
-
-            <g filter={`url(#${shadowId})`}>
-                <rect
-                    x="4" y="4"
-                    width="56" height="56"
-                    rx="16"
-                    fill={`url(#${gradId})`}
-                    className="dark:hidden"
-                />
-                <rect
-                    x="4" y="4"
-                    width="56" height="56"
-                    rx="16"
-                    fill={`url(#${gradDarkId})`}
-                    className="hidden dark:block"
-                />
-                <rect x="4" y="4" width="56" height="56" rx="16" fill={`url(#${shineId})`} />
-            </g>
-
-            <path
-                d="M24 16V48M24 16H32C42 16 46 22 46 32C46 42 42 48 32 48H24"
-                strokeWidth="5"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                fill="none"
-                className="stroke-white"
+        <div className={cn("relative group cursor-pointer transition-transform duration-200 hover:scale-105", className)}>
+             <Image
+                src="/logo/logo-small-light.png"
+                alt="DokkhotaIT"
+                width={size}
+                height={size}
+                className="dark:hidden h-auto w-auto object-contain"
             />
-
-            <circle cx="46" cy="32" r="4" fillOpacity="0.25" className="fill-white" />
-            <circle cx="24" cy="16" r="3" fillOpacity="0.25" className="fill-white" />
-            <circle cx="24" cy="48" r="3" fillOpacity="0.25" className="fill-white" />
-        </svg>
+            <Image
+                src="/logo/logo-small-dark.png"
+                alt="DokkhotaIT"
+                width={size}
+                height={size}
+                className="hidden dark:block h-auto w-auto object-contain"
+            />
+            <div className="absolute inset-0 bg-primary/20 blur-lg -z-10 rounded-full opacity-0 group-hover:opacity-50 transition-opacity duration-300" />
+        </div>
     );
 };
+
