@@ -74,7 +74,8 @@ export default function CreateCoursePage() {
         projects: [] as { title: string; description: string }[],
         faqs: [] as { question: string; answer: string }[],
         resources: [] as { title: string; type: string; url: string }[],
-        modules: [] as { title: string; lessons: { title: string; video_url: string }[] }[]
+        modules: [] as { title: string; lessons: { title: string; video_url: string }[] }[],
+        coupon_code: ""
     });
 
     // Real-time validation (Watch Mode) - Debounced for performance

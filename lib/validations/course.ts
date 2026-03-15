@@ -24,6 +24,7 @@ export const courseStep3Schema = z.object({
     discount_price: z.number().nullable().optional().refine((val) => val === null || val === undefined || val >= 0, "Discount price cannot be negative"),
     thumbnail_url: z.string().min(1, "Course thumbnail is required"),
     preview_video_url: z.string().optional(),
+    coupon_code: z.string().optional(),
 }).refine((data) => {
     if (data.discount_price && data.discount_price >= data.price) {
         return false;

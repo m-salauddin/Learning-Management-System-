@@ -5,15 +5,16 @@ import { cn } from "@/lib/utils";
 
 interface CourseFeaturesProps {
     totalLectures: number;
+    projectCount: number;
 }
 
-export default function CourseFeatures({ totalLectures }: CourseFeaturesProps) {
+export default function CourseFeatures({ totalLectures, projectCount }: CourseFeaturesProps) {
     const features = [
-        { icon: Layout, label: 'LIFETIME ACCESS', value: 'Unlimited', color: 'emerald' },
+        { icon: Layout, label: 'ACCESS', value: 'Lifetime', color: 'emerald' },
         { icon: BookOpen, label: 'SYLLABUS', value: `${totalLectures || 0}+ Lessons`, color: 'blue' },
         { icon: Building, label: 'CAREER', value: 'Job Placement', color: 'purple' },
-        { icon: FolderKanban, label: 'HANDS-ON', value: 'Real Projects', color: 'amber' },
-        { icon: Award, label: 'CREDENTIALS', value: 'Verified Cert', color: 'rose' }
+        { icon: FolderKanban, label: 'HANDS-ON', value: projectCount > 0 ? `${projectCount} Real World Projects` : 'Real Projects', color: 'amber' },
+        { icon: Award, label: 'CREDENTIALS', value: 'Verified Certificate', color: 'rose' }
     ];
 
     return (

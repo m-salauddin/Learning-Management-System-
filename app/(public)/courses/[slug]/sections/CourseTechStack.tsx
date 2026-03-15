@@ -16,9 +16,9 @@ export default function CourseTechStack({ tags }: CourseTechStackProps) {
                 <div className="space-y-3">
                     <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-500/10 border border-blue-200 dark:border-blue-500/20 text-blue-600 dark:text-blue-400 text-[10px] font-black uppercase tracking-widest transition-colors">
                         <Code className="w-3.5 h-3.5" />
-                        Tools of Trade
+                        Advanced Tools
                     </div>
-                    <h3 className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white transition-colors">Advanced Tech Stack</h3>
+                    <h3 className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white transition-colors">Advanced tools you will learn</h3>
                 </div>
             </div>
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3">

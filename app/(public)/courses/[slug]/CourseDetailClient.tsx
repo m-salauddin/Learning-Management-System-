@@ -25,6 +25,7 @@ import CourseFAQSection from "./sections/CourseFAQ";
 import RelatedCourses from "./sections/RelatedCourses";
 import CourseSidebar from "./sections/CourseSidebar";
 import CourseModals from "./sections/CourseModals";
+import CourseDescription from "./sections/CourseDescription";
 
 interface CourseDetailClientProps {
     course: MappedCourse;
@@ -70,6 +71,7 @@ export default function CourseDetailClient({ course, pageData }: CourseDetailCli
             slug: c.slug || '',
             title: c.title || '',
             description: c.description || '',
+            shortDescription: c.short_description || c.description || '',
             image: c.thumbnail_url || '/placeholder-course.jpg',
             price: c.price > 0 ? `৳${c.price.toLocaleString()}` : "Free",
             originalPrice: c.price > 0 ? `৳${c.price.toLocaleString()}` : undefined,
@@ -325,7 +327,7 @@ export default function CourseDetailClient({ course, pageData }: CourseDetailCli
 
                         {/* All Sections - Sequential View */}
                         <div className="mt-12 sm:mt-16 space-y-20">
-                            <CourseFeatures totalLectures={totalLectures} />
+                            <CourseFeatures totalLectures={totalLectures} projectCount={projects.length} />
 
                             <CourseTechStack tags={course.tags || []} />
 
@@ -333,6 +335,8 @@ export default function CourseDetailClient({ course, pageData }: CourseDetailCli
                                 requirements={course.requirements || []}
                                 targetAudience={course.targetAudience || []}
                             />
+
+                            <CourseDescription description={course.longDescription || ""} />
 
                             <CourseCurriculum
                                 course={course}
@@ -353,13 +357,15 @@ export default function CourseDetailClient({ course, pageData }: CourseDetailCli
 
                             <CourseProjects projects={projects} />
 
-                            <CourseReviews
-                                reviews={reviews}
-                                ratingBreakdown={ratingBreakdown}
-                                showAllReviews={showAllReviews}
-                                setShowAllReviews={setShowAllReviews}
-                                setShowReviewModal={setShowReviewModal}
-                            />
+                            {reviews.length > 0 && (
+                                <CourseReviews
+                                    reviews={reviews}
+                                    ratingBreakdown={ratingBreakdown}
+                                    showAllReviews={showAllReviews}
+                                    setShowAllReviews={setShowAllReviews}
+                                    setShowReviewModal={setShowReviewModal}
+                                />
+                            )}
 
                             <CourseCertification course={course} />
 

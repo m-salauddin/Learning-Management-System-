@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import { Star, Users, ArrowRight } from "lucide-react";
+import { Star, Users, ArrowRight, Library } from "lucide-react";
 import { MappedCourse } from "@/types/mapped-course";
 
 interface RelatedCoursesProps {
@@ -15,9 +15,13 @@ export default function RelatedCourses({ relatedCourses }: RelatedCoursesProps) 
     return (
         <div className="mt-24 sm:mt-32 space-y-12 pb-12 sm:pb-20">
             <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-6">
-                <div className="space-y-3">
-                    <h2 className="text-3xl sm:text-4xl font-black text-white">Continue Growing</h2>
-                    <p className="text-slate-400 text-sm sm:text-base">Ready for the next step? Explore these related courses.</p>
+                <div className="space-y-4">
+                    <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-500/10 border border-blue-500/20 text-blue-600 dark:text-blue-400 text-[10px] font-black uppercase tracking-widest">
+                        <Library className="w-3.5 h-3.5" />
+                        More Courses
+                    </div>
+                    <h2 className="text-3xl sm:text-4xl font-black text-slate-900 dark:text-white">Continue Growing</h2>
+                    <p className="text-slate-600 dark:text-slate-400 text-sm sm:text-base">Ready for the next step? Explore these related courses.</p>
                 </div>
                 <Link
                     href="/courses"
@@ -30,11 +34,11 @@ export default function RelatedCourses({ relatedCourses }: RelatedCoursesProps) 
 
             <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
                 {relatedCourses.map((rCourse) => (
-                    <Link
-                        key={rCourse.id}
-                        href={`/courses/${rCourse.slug}`}
-                        className="group flex flex-col rounded-[2.5rem] bg-slate-900/40 border border-white/5 hover:border-white/10 transition-all duration-500 overflow-hidden"
-                    >
+                        <Link
+                            key={rCourse.id}
+                            href={`/courses/${rCourse.slug}`}
+                            className="group flex flex-col rounded-[2.5rem] bg-slate-100/50 dark:bg-slate-900/40 border border-slate-200 dark:border-white/5 hover:border-slate-300 dark:hover:border-white/10 transition-all duration-500 overflow-hidden shadow-sm hover:shadow-md"
+                        >
                         <div className="aspect-video relative overflow-hidden p-2">
                             <div className="w-full h-full rounded-[1.75rem] overflow-hidden relative">
                                 <Image
@@ -50,17 +54,17 @@ export default function RelatedCourses({ relatedCourses }: RelatedCoursesProps) 
                             </div>
                         </div>
                         <div className="p-6 space-y-4">
-                            <h3 className="font-bold text-lg text-white group-hover:text-primary transition-colors line-clamp-1">{rCourse.title}</h3>
+                            <h3 className="font-bold text-lg text-slate-900 dark:text-white group-hover:text-primary transition-colors line-clamp-1">{rCourse.title}</h3>
                             <div className="flex items-center justify-between">
                                 <div className="flex items-center gap-3">
                                     <div className="flex items-center gap-1">
                                         <Star className="w-3.5 h-3.5 text-primary fill-primary" />
-                                        <span className="text-xs font-black text-slate-400 tabular-nums">{(Number(rCourse.rating) || 0).toFixed(1)}</span>
+                                        <span className="text-xs font-black text-slate-600 dark:text-slate-400 tabular-nums">{(Number(rCourse.rating) || 0).toFixed(1)}</span>
                                     </div>
                                     <div className="w-1 h-1 rounded-full bg-white/10" />
                                     <div className="flex items-center gap-1.5">
-                                        <Users className="w-3.5 h-3.5 text-slate-500" />
-                                        <span className="text-xs font-black text-slate-400 tabular-nums">{rCourse.students}</span>
+                                        <Users className="w-3.5 h-3.5 text-slate-400 dark:text-slate-500" />
+                                        <span className="text-xs font-black text-slate-600 dark:text-slate-400 tabular-nums">{rCourse.students}</span>
                                     </div>
                                 </div>
                                 <div className="text-sm font-black text-primary">{rCourse.discountPrice || rCourse.price}</div>

@@ -340,6 +340,7 @@ export async function createCourse(input: CreateCourseInput): Promise<ApiRespons
         target_audience,
         instructor_ids,
         support_instructor_ids,
+        coupon_code,
         ...mainCourseData
     } = input;
 
@@ -571,6 +572,18 @@ export async function createCourse(input: CreateCourseInput): Promise<ApiRespons
                 }
             }
         }
+    }
+
+    if (coupon_code) {
+        const { error: couponError } = await supabase.from('coupons').insert({
+            code: coupon_code.toUpperCase(),
+            discount_type: 'percentage',
+            discount_value: 100,
+            course_ids: [course.id],
+            is_active: true,
+            description: `Auto-generated coupon for ${course.title}`
+        });
+        if (couponError) console.error('Error creating coupon:', couponError);
     }
 
     revalidatePath('/dashboard/courses');
