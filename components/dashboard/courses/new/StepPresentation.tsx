@@ -1,7 +1,7 @@
 "use client";
 
 import { motion } from "motion/react";
-import { DollarSign, Video, Image as ImageIcon, Upload, X, Loader2, AlertCircle } from "lucide-react";
+import { DollarSign, Video, Image as ImageIcon, Upload, X, Loader2, AlertCircle, Tag } from "lucide-react";
 import Image from "next/image";
 import { cn } from "@/lib/utils";
 import { inputClasses, labelClasses } from "./constants";
@@ -132,6 +132,30 @@ export const StepPresentation = ({
                                     placeholder="YouTube or Vimeo URL"
                                     className={inputClasses}
                                 />
+                            </div>
+                            <div className="space-y-2 pt-2">
+                                <div className="flex items-center justify-between">
+                                    <label className={labelClasses}>
+                                        <Tag className="w-4 h-4 text-muted-foreground" />
+                                        Launch Coupon Code
+                                    </label>
+                                    <span className="text-[9px] font-black text-amber-500 uppercase tracking-widest bg-amber-500/10 px-2 py-0.5 rounded-full border border-amber-500/20">Optional</span>
+                                </div>
+                                <div className="relative group">
+                                    <input
+                                        type="text"
+                                        value={formData.coupon_code || ""}
+                                        onChange={(e) => setFormData(prev => ({ ...prev, coupon_code: e.target.value.toUpperCase().replace(/\s/g, '') }))}
+                                        placeholder="E.G. NEWCOURSE20"
+                                        className={cn(inputClasses, "uppercase tracking-widest font-black")}
+                                    />
+                                    <div className="absolute right-4 top-1/2 -translate-y-1/2 opacity-0 group-focus-within:opacity-100 transition-opacity">
+                                        <span className="text-[10px] font-bold text-muted-foreground tracking-normal lowercase">auto-uppercase</span>
+                                    </div>
+                                </div>
+                                <p className="text-[10px] text-muted-foreground font-medium ml-1">
+                                    A 100% discount coupon will be automatically created for this code to help you test the enrollment flow.
+                                </p>
                             </div>
                         </div>
                     </div>

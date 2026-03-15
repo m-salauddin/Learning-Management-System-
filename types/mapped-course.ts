@@ -36,6 +36,7 @@ export interface MappedCourse {
     slug: string;
     title: string;
     description: string;
+    shortDescription: string;
     longDescription?: string;
     image: string;
     price: string;

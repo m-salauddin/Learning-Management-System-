@@ -49,45 +49,54 @@ export default function CourseInstructor({ course }: CourseInstructorProps) {
                     <button
                         key={inst.id || index}
                         onClick={() => setSelectedInstructor(inst)}
-                        className="group relative aspect-4/5 rounded-[2.5rem] overflow-hidden bg-slate-900 border border-white/5 shadow-2xl transition-all duration-500 hover:scale-[1.02] hover:shadow-accent/10 cursor-pointer"
+                        className="group relative h-[280px] rounded-[2rem] overflow-hidden bg-slate-950 border border-white/5 transition-all duration-500 hover:scale-[1.02] hover:border-accent/30 shadow-2xl cursor-pointer"
                     >
-
-                        <div className="absolute inset-0 bg-linear-to-b from-teal-900/40 via-transparent to-slate-950 z-0" />
-                        
-
-                        <div className="absolute inset-0 z-10">
+                        {/* Avatar Image / Placeholder */}
+                        <div className="absolute inset-0 z-10 overflow-hidden h-full w-full">
                             {inst.avatar ? (
                                 <Image 
                                     src={inst.avatar} 
                                     alt={inst.name} 
                                     fill 
-                                    className="object-cover object-top grayscale-20 group-hover:grayscale-0 group-hover:scale-105 transition-all duration-700" 
+                                    className="object-cover object-top group-hover:scale-110 transition-transform duration-700" 
                                 />
                             ) : (
-                                <div className="w-full h-full flex items-center justify-center font-black text-6xl text-white/10 bg-slate-800 uppercase">{inst.name.charAt(0)}</div>
+                                <div className="w-full h-full flex items-center justify-center font-black text-6xl text-white/5 bg-slate-900 uppercase transition-colors duration-500">
+                                    {inst.name.charAt(0)}
+                                </div>
                             )}
+                            
+                            {/* Seamless Gradient Fade - Matches bg-slate-950 */}
+                            <div className="absolute inset-0 bg-linear-to-t from-slate-950 via-slate-950/40 to-transparent z-20" />
                         </div>
 
+                        {/* Centered View Profile Indicator - Transparent mask for zero visible edges */}
+                        <div className="absolute inset-0 z-40 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center pointer-events-none">
+                            <div className="px-5 py-2.5 rounded-full bg-white/10 backdrop-blur-md border border-white/20 text-white text-[9px] font-black uppercase tracking-widest scale-50 group-hover:scale-100 transition-all duration-300 flex items-center gap-2 shadow-2xl">
+                                View Profile
+                                <Play className="w-2.5 h-2.5 fill-white" />
+                            </div>
+                        </div>
 
-                        <div className="absolute inset-0 z-20 bg-linear-to-t from-slate-950 via-slate-950/20 to-transparent opacity-80" />
+                        {/* Integrated Content Area - Positioned on the image */}
+                        <div className="absolute inset-x-0 bottom-0 p-6 z-30 flex flex-col items-start text-left space-y-2.5">
+                            {/* Role Badge */}
+                            <div className="px-2.5 py-1 rounded-full bg-accent/20 backdrop-blur-md border border-accent/30 text-accent text-[8px] font-black uppercase tracking-widest shadow-sm ring-1 ring-accent/10">
+                                {inst.role === 'main' ? "Lead Instructor" : "Support Mentor"}
+                            </div>
 
-
-                        <div className="absolute bottom-0 left-0 right-0 p-8 z-30 text-left space-y-1.5 translate-y-2 group-hover:translate-y-0 transition-transform duration-500">
-                            <h3 className="text-xl font-black text-white leading-tight group-hover:text-accent transition-colors">{inst.name}</h3>
                             <div className="space-y-0.5">
-                                <p className="text-accent text-[10px] sm:text-xs font-bold uppercase tracking-widest">
-                                    {inst.role === 'main' ? "Lead Instructor" : "Support Mentor"}
-                                </p>
-                                <p className="text-white/60 text-[10px] font-medium truncate max-w-[90%]">
+                                <h3 className="text-xl font-black text-white leading-tight group-hover:text-accent transition-colors duration-300 drop-shadow-md">
+                                    {inst.name}
+                                </h3>
+                                <p className="text-[10px] font-bold text-white/60 uppercase tracking-widest truncate max-w-full drop-shadow-sm">
                                     {inst.title || "Industry Specialist"}
                                 </p>
                             </div>
                         </div>
 
-
-                        <div className="absolute top-6 right-6 z-40 w-10 h-10 rounded-full bg-white/5 backdrop-blur-md border border-white/10 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-500 scale-90 group-hover:scale-100">
-                             <Play className="w-4 h-4 text-accent fill-accent ml-1" />
-                        </div>
+                        {/* Hover Border Glow */}
+                        <div className="absolute inset-0 border-2 border-accent/0 group-hover:border-accent/20 rounded-[2rem] transition-all duration-500 z-50 pointer-events-none" />
                     </button>
                 ))}
             </div>

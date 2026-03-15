@@ -481,6 +481,7 @@ export interface CreateCourseInput {
     projects?: { title: string; description: string; image_url?: string }[];
     resources?: { title: string; type: string; url: string }[];
     modules?: { title: string; lessons: { title: string; video_url: string }[] }[];
+    coupon_code?: string;
 }
 
 export interface UpdateCourseInput extends Partial<CreateCourseInput> {

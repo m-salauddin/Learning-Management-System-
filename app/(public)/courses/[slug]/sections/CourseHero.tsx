@@ -50,7 +50,6 @@ export default function CourseHero({
         >
             <div className="flex flex-wrap items-center gap-3">
                 <Badge
-                    icon={isLive ? Activity : Video}
                     className={cn(
                         "px-4 py-1.5 text-[11px] font-bold uppercase tracking-widest border rounded-full",
                         isLive
@@ -89,7 +88,7 @@ export default function CourseHero({
             </h1>
 
             <p className="text-base sm:text-lg text-muted-foreground leading-relaxed max-w-3xl mt-4 sm:mt-5">
-                {course.description}
+                {course.shortDescription}
             </p>
 
             {pageData?.batches && pageData.batches.length > 0 && pageData.batches.some(b => b.is_active) && (
@@ -139,32 +138,30 @@ export default function CourseHero({
                 </div>
 
                 {timeLeft && (
-                    <div className="flex items-center gap-3 px-4 py-2 rounded-xl bg-amber-500/5 border border-amber-500/20 backdrop-blur-sm group hover:border-amber-500/40 transition-all duration-300">
-                        <div className="hidden sm:flex items-center justify-center w-7 h-7 rounded-lg bg-amber-500/10 text-amber-500">
-                            <Zap className="w-4 h-4 fill-amber-500/20" />
+                    <div className="flex items-center gap-2 text-sm text-muted-foreground group">
+                        <div className="w-8 h-8 rounded-lg bg-amber-500/10 flex items-center justify-center group-hover:scale-110 transition-transform duration-500">
+                            <Zap className="w-4 h-4 text-amber-500 fill-amber-500" />
                         </div>
                         <div className="flex flex-col">
-                            <span className="text-[10px] uppercase font-heavy text-amber-500/80 tracking-widest leading-none mb-1">Enrollment ends in</span>
-                            <div className="flex items-center gap-2 font-black text-sm text-amber-500 tabular-nums">
-                                <div className="flex items-baseline gap-0.5">
-                                    <span className="text-base">{timeLeft.d}</span>
-                                    <span className="text-[9px] font-bold opacity-60 uppercase">d</span>
-                                </div>
-                                <span className="opacity-30 font-light">:</span>
-                                <div className="flex items-baseline gap-0.5">
-                                    <span className="text-base">{timeLeft.h}</span>
-                                    <span className="text-[9px] font-bold opacity-60 uppercase">h</span>
-                                </div>
-                                <span className="opacity-30 font-light">:</span>
-                                <div className="flex items-baseline gap-0.5">
-                                    <span className="text-base">{timeLeft.m}</span>
-                                    <span className="text-[9px] font-bold opacity-60 uppercase">m</span>
-                                </div>
-                                <span className="opacity-30 font-light">:</span>
-                                <div className="flex items-baseline gap-0.5">
-                                    <span className="text-base">{timeLeft.s}</span>
-                                    <span className="text-[9px] font-bold opacity-60 uppercase">s</span>
-                                </div>
+                            <span className="text-[10px] font-black text-amber-500 uppercase tracking-widest leading-none mb-1">
+                                Enrollment ends in
+                            </span>
+                            <div className="flex items-center gap-1.5 font-black text-sm text-amber-200/90 tabular-nums">
+                                <span className="flex items-baseline gap-0.5">
+                                    {timeLeft.d}<span className="text-[9px] font-bold opacity-60 uppercase">D</span>
+                                </span>
+                                <span className="opacity-30">:</span>
+                                <span className="flex items-baseline gap-0.5">
+                                    {timeLeft.h}<span className="text-[9px] font-bold opacity-60 uppercase">H</span>
+                                </span>
+                                <span className="opacity-30">:</span>
+                                <span className="flex items-baseline gap-0.5">
+                                    {timeLeft.m}<span className="text-[9px] font-bold opacity-60 uppercase">M</span>
+                                </span>
+                                <span className="opacity-30">:</span>
+                                <span className="flex items-baseline gap-0.5">
+                                    {timeLeft.s}<span className="text-[9px] font-bold opacity-60 uppercase">S</span>
+                                </span>
                             </div>
                         </div>
                     </div>

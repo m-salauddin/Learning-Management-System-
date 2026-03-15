@@ -1,5 +1,5 @@
-
 import type { Metadata } from "next";
+import { Suspense } from "react";
 import CourseDetailClient from "./CourseDetailClient";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { getCoursePageData } from "@/lib/actions/course-page";
@@ -69,7 +69,9 @@ export default async function CourseDetailPage({ params }: PageProps) {
     const pageData = result.data;
     const mappedCourse = transformToMappedCourse(pageData);
     return (
-        <CourseDetailClient course={mappedCourse} pageData={pageData} />
+        <Suspense fallback={<div className="min-h-screen bg-slate-950 flex items-center justify-center"><div className="w-8 h-8 border-4 border-accent border-t-transparent rounded-full animate-spin" /></div>}>
+            <CourseDetailClient course={mappedCourse} pageData={pageData} />
+        </Suspense>
     );
 }
 
@@ -105,6 +107,7 @@ function transformToMappedCourse(pageData: CoursePageData): MappedCourse {
         slug: course.slug || '',
         title: course.title,
         description: course.description || "",
+        shortDescription: course.short_description || course.description || "",
         longDescription: details?.description_long || course.description || "",
         image: course.thumbnail_url || "/placeholder-course.jpg",
 

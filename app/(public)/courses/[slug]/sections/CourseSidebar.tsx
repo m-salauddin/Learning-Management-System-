@@ -45,7 +45,7 @@ export default function CourseSidebar({
     setShowVideoModal
 }: CourseSidebarProps) {
     return (
-        <div className="lg:col-span-5 xl:col-span-4 lg:mt-0 order-first lg:order-0 z-20 lg:sticky lg:top-[110px] h-fit space-y-4 sm:space-y-6">
+        <div className="lg:col-span-5 xl:col-span-4 lg:mt-0 order-first lg:order-0 z-20 space-y-4 sm:space-y-6">
             <div className="hidden lg:flex justify-end mb-4">
                 <Breadcrumbs
                     rootLabel="Home"
@@ -56,7 +56,7 @@ export default function CourseSidebar({
                 />
             </div>
 
-            <div className="relative overflow-hidden rounded-[2.5rem]! bg-white dark:bg-slate-900/60 border border-slate-300 dark:border-white/10  backdrop-blur-2xl">
+            <div className="relative overflow-hidden rounded-[2.5rem]! bg-white dark:bg-slate-900/60 border border-slate-300 dark:border-white/10 backdrop-blur-2xl lg:sticky lg:top-[110px]">
                 <div className="p-3 pb-0">
                     <div
                         onClick={() => setShowVideoModal(true)}
@@ -92,7 +92,7 @@ export default function CourseSidebar({
                     </div>
                 </div>
 
-                <div className="p-6 sm:p-8 space-y-8">
+                <div className="p-5 sm:p-6 space-y-6">
                     {/* Price Section */}
                     <div className="space-y-4">
                         <div className="flex flex-col gap-1">
@@ -120,7 +120,7 @@ export default function CourseSidebar({
                                     <span className="relative inline-flex rounded-full h-2 w-2 bg-rose-500"></span>
                                 </div>
                                 <p className="text-[10px] font-black text-rose-400 uppercase tracking-widest">
-                                    Flash Sale Ends Soon
+                                    Discount Ends Soon
                                 </p>
                             </div>
                         )}
@@ -137,7 +137,7 @@ export default function CourseSidebar({
                                     exit={{ opacity: 0, scale: 0.96, y: 5 }}
                                     transition={{ type: "spring", stiffness: 400, damping: 30 }}
                                     onClick={() => setShowCouponInput(true)}
-                                    className="group relative flex items-center gap-3 w-full p-4 rounded-2xl bg-slate-50 dark:bg-white/3 border border-slate-300 dark:border-white/5 hover:bg-slate-100 dark:hover:bg-white/8 hover:border-primary/30 transition-all duration-300"
+                                    className="group relative flex items-center gap-3 w-full p-3.5 rounded-2xl bg-slate-50 dark:bg-white/3 border border-slate-300 dark:border-white/5 hover:bg-slate-100 dark:hover:bg-white/8 hover:border-primary/30 transition-all duration-300"
                                 >
                                     <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center group-hover:scale-110 transition-transform duration-500">
                                         <Tag className="w-4 h-4 text-primary" />
@@ -212,30 +212,6 @@ export default function CourseSidebar({
                     </div>
 
                     <div className="space-y-6">
-                        {timeLeft && (
-                            <div className="bg-slate-50 dark:bg-white/3 rounded-2xl p-4 border border-slate-200 dark:border-white/10">
-                                <div className="flex flex-col items-center">
-                                    <div className="grid grid-cols-4 gap-4 w-full">
-                                        {[
-                                            { label: 'D', value: timeLeft.d },
-                                            { label: 'H', value: timeLeft.h },
-                                            { label: 'M', value: timeLeft.m },
-                                            { label: 'S', value: timeLeft.s },
-                                        ].map((item, idx) => (
-                                            <div key={idx} className="flex flex-col items-center gap-1">
-                                                <div className="text-xl font-black text-slate-900 dark:text-white tabular-nums">
-                                                    {String(item.value).padStart(2, '0')}
-                                                </div>
-                                                <span className="text-[8px] uppercase font-black text-slate-600 tracking-widest">
-                                                    {item.label}
-                                                </span>
-                                            </div>
-                                        ))}
-                                    </div>
-                                </div>
-                            </div>
-                        )}
-
                         <div className="grid grid-cols-2 gap-3 sm:gap-4">
                             <PrimaryCTAButton
                                 onClick={handleEnroll}
