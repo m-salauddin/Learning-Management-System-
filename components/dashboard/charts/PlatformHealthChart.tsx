@@ -1,15 +1,12 @@
 "use client"
-
 import * as React from "react"
 import { RadialBarChart, RadialBar, ResponsiveContainer, Legend, Tooltip } from "recharts"
-
 const data = [
     { name: "Course Completion", value: 78, fill: "#10b981" },
     { name: "User Retention", value: 65, fill: "#3b82f6" },
     { name: "Student Satisfaction", value: 92, fill: "#8b5cf6" },
     { name: "Revenue Target", value: 84, fill: "#f59e0b" },
 ]
-
 export function PlatformHealthChart() {
     return (
         <div className="w-full h-[280px]">
@@ -51,8 +48,7 @@ export function PlatformHealthChart() {
                     />
                 </RadialBarChart>
             </ResponsiveContainer>
-
-            {/* Legend */}
+            {}
             <div className="grid grid-cols-2 gap-x-4 gap-y-2 mt-2">
                 {data.map((item) => (
                     <div key={item.name} className="flex items-center gap-2">

@@ -8,19 +8,16 @@ import { SocialLoginToast } from "@/components/auth/SocialLoginToast";
 import { AuthListener } from "@/components/auth/AuthListener";
 import { Suspense } from "react";
 import "./globals.css";
-
 const spaceGrotesk = Space_Grotesk({
   variable: "--font-space-grotesk",
   subsets: ["latin"],
   display: "swap",
 });
-
 const jetbrainsMono = JetBrains_Mono({
   variable: "--font-jetbrains-mono",
   subsets: ["latin"],
   display: "swap",
 });
-
 export const metadata: Metadata = {
   title: {
     default: "Dokkhota IT - Best IT Training Platform in Bangladesh",
@@ -84,7 +81,6 @@ export const metadata: Metadata = {
   },
   metadataBase: new URL("https://dokkhotait.com"),
 };
-
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -117,4 +113,3 @@ export default function RootLayout({
     </html >
   );
 }
-

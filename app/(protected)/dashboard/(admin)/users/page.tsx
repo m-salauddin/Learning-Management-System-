@@ -1,5 +1,4 @@
 "use client";
-
 import {
     Shield, User, Trash2, Edit, MoreHorizontal, Filter, ChevronDown,
     UserPlus, Download, Mail, Phone, MapPin, Calendar, Activity, Award,
@@ -39,34 +38,24 @@ import { AnimatedCheckbox } from "@/components/ui/AnimatedCheckbox";
 import { Pagination } from "@/components/ui/Pagination";
 import { useToast } from "@/components/ui/toast";
 import { SearchInput } from "@/components/dashboard/shared/SearchInput";
-
 export default function UserManagementPage() {
     const toast = useToast();
-
-    // State Management
     const [users, setUsers] = useState<ExtendedUser[]>([]);
     const [stats, setStats] = useState<UserStats | null>(null);
     const [isLoading, setIsLoading] = useState(true);
     const [selectedUsers, setSelectedUsers] = useState<Set<string>>(new Set());
-
-    // Filters & Pagination
     const [searchTerm, setSearchTerm] = useState("");
     const [roleFilter, setRoleFilter] = useState("all");
     const [statusFilter, setStatusFilter] = useState("all");
     const [currentPage, setCurrentPage] = useState(1);
     const [pageSize, setPageSize] = useState(10);
     const [totalUsers, setTotalUsers] = useState(0);
-
     const totalPages = Math.ceil(totalUsers / pageSize);
-
-    // Modals
     const [viewUserModal, setViewUserModal] = useState<ExtendedUser | null>(null);
     const [deleteConfirmModal, setDeleteConfirmModal] = useState<string | null>(null);
     const [bulkActionModal, setBulkActionModal] = useState<'delete' | 'role' | null>(null);
     const [selectedRole, setSelectedRole] = useState<UserRole>('student');
     const [exportModal, setExportModal] = useState(false);
-
-    // Fetch Users
     const fetchUsers = async () => {
         setIsLoading(true);
         const result = await getUsers({
@@ -76,7 +65,6 @@ export default function UserManagementPage() {
             page: currentPage,
             pageSize
         });
-
         if (!result.error) {
             setUsers(result.users);
             setTotalUsers(result.total);
@@ -85,24 +73,18 @@ export default function UserManagementPage() {
         }
         setIsLoading(false);
     };
-
-    // Fetch Stats
     const fetchStats = async () => {
         const result = await getUserStats();
         if (!result.error && result.stats) {
             setStats(result.stats);
         }
     };
-
     useEffect(() => {
         fetchUsers();
     }, [searchTerm, roleFilter, statusFilter, currentPage, pageSize]);
-
     useEffect(() => {
         fetchStats();
     }, []);
-
-    // Selection Handlers
     const toggleSelectAll = () => {
         if (selectedUsers.size === users.length && users.length > 0) {
             setSelectedUsers(new Set());
@@ -110,7 +92,6 @@ export default function UserManagementPage() {
             setSelectedUsers(new Set(users.map(u => u.id)));
         }
     };
-
     const toggleSelectUser = (userId: string) => {
         const newSelected = new Set(selectedUsers);
         if (newSelected.has(userId)) {
@@ -120,18 +101,15 @@ export default function UserManagementPage() {
         }
         setSelectedUsers(newSelected);
     };
-
     const clearSelection = () => {
         setSelectedUsers(new Set());
     };
-
     const clearFilters = () => {
         setSearchTerm("");
         setRoleFilter("all");
         setStatusFilter("all");
         setCurrentPage(1);
     };
-
     const handleRoleUpdate = async (userId: string, newRole: UserRole) => {
         const result = await updateUserRole(userId, newRole);
         if (result.success) {
@@ -142,7 +120,6 @@ export default function UserManagementPage() {
             toast.error('Failed to update role');
         }
     };
-
     const handleDeleteUser = async (userId: string) => {
         const result = await deleteUser(userId);
         if (result.success) {
@@ -154,7 +131,6 @@ export default function UserManagementPage() {
             toast.error('Failed to delete user');
         }
     };
-
     const handleBulkDelete = async () => {
         const result = await bulkDeleteUsers(Array.from(selectedUsers));
         if (result.success) {
@@ -167,7 +143,6 @@ export default function UserManagementPage() {
             toast.error('Failed to delete users');
         }
     };
-
     const handleBulkRoleUpdate = async () => {
         const result = await bulkUpdateRoles(Array.from(selectedUsers), selectedRole);
         if (result.success) {
@@ -180,7 +155,6 @@ export default function UserManagementPage() {
             toast.error('Failed to update users');
         }
     };
-
     const handleExportCSV = async () => {
         const result = await exportUsersToCSV({ search: searchTerm, role: roleFilter });
         if (result.csv) {
@@ -197,7 +171,6 @@ export default function UserManagementPage() {
             toast.error('Failed to export users');
         }
     };
-
     const handleExportJSON = async () => {
         const result = await exportUsersToJSON({ search: searchTerm, role: roleFilter });
         if (result.json) {
@@ -214,7 +187,6 @@ export default function UserManagementPage() {
             toast.error('Failed to export users');
         }
     };
-
     const handleExportPDF = async () => {
         try {
             const result = await exportUsersToJSON({ search: searchTerm, role: roleFilter });
@@ -229,7 +201,6 @@ export default function UserManagementPage() {
                 doc.text("Dokkhota IT LMS", 14, 25);
                 doc.setFontSize(12);
                 doc.text("User Management Report", 14, 33);
-
                 const tableColumn = ["Name", "Email", "Role", "Joined Date", "Status"];
                 const tableRows = usersData.map((user: any) => [
                     user.name || "N/A",
@@ -238,7 +209,6 @@ export default function UserManagementPage() {
                     new Date(user.created_at).toLocaleDateString(),
                     (user.status || "active").toUpperCase()
                 ]);
-
                 autoTable(doc, {
                     head: [tableColumn],
                     body: tableRows,
@@ -247,7 +217,6 @@ export default function UserManagementPage() {
                     styles: { fontSize: 9 },
                     headStyles: { fillColor: [63, 81, 181] }
                 });
-
                 doc.save(`users-export-${new Date().toISOString().split('T')[0]}.pdf`);
                 toast.success('Users exported to PDF');
                 setExportModal(false);
@@ -256,14 +225,12 @@ export default function UserManagementPage() {
             toast.error('Failed to generate PDF');
         }
     };
-
     const getRoleBadgeStyle = (role?: string) => {
         const r = role || 'student';
         if (r === 'admin') return "bg-rose-500/10 text-rose-500 border-rose-500/20 shadow-rose-500/5";
         if (r === 'teacher') return "bg-indigo-500/10 text-indigo-500 border-indigo-500/20 shadow-indigo-500/5";
         return "bg-blue-500/10 text-blue-500 border-blue-500/20 shadow-blue-500/5";
     };
-
     const StatusBadge = ({ status }: { status?: string }) => {
         const s = status || 'active';
         return (
@@ -285,7 +252,6 @@ export default function UserManagementPage() {
             </span>
         );
     };
-
     const getAvatarColor = (seed: string) => {
         const AVATAR_COLORS = [
             "bg-blue-500/15 text-blue-500 border-blue-500/20",
@@ -298,10 +264,9 @@ export default function UserManagementPage() {
         for (let i = 0; i < seed.length; i++) hash = seed.charCodeAt(i) + ((hash << 5) - hash);
         return AVATAR_COLORS[Math.abs(hash) % AVATAR_COLORS.length];
     };
-
     return (
         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-6 pb-10 font-sans text-foreground">
-            {/* Header */}
+            {}
             <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-6">
                 <div>
                     <motion.h1 initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} className="text-3xl font-black tracking-tight uppercase italic">User Directory</motion.h1>
@@ -318,8 +283,7 @@ export default function UserManagementPage() {
                     </Link>
                 </div>
             </div>
-
-            {/* Stats */}
+            {}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                 {!stats ? Array.from({ length: 4 }).map((_, i) => (
                     <div key={i} className="p-6 rounded-3xl border border-border/40 bg-card/30 backdrop-blur-xl animate-pulse h-28" />
@@ -346,8 +310,7 @@ export default function UserManagementPage() {
                     </motion.div>
                 ))}
             </div>
-
-            {/* Main Content */}
+            {}
             <div className="rounded-[2.5rem] border border-border/40 bg-card/30 backdrop-blur-xl overflow-hidden shadow-2xl">
                 <div className="p-6 border-b border-border/20 flex flex-col lg:flex-row gap-4 justify-between items-center bg-muted/5">
                     <div className="flex items-center gap-3 w-full lg:max-w-md">
@@ -385,7 +348,6 @@ export default function UserManagementPage() {
                         )}
                     </div>
                 </div>
-
                 {isLoading ? (
                     <div className="py-24 text-center flex flex-col items-center justify-center space-y-4">
                         <Loader2 className="w-12 h-12 animate-spin text-primary/30" />
@@ -398,7 +360,7 @@ export default function UserManagementPage() {
                     </div>
                 ) : (
                     <div className="min-w-[1000px]">
-                        {/* Custom Grid Head */}
+                        {}
                         <div className="grid grid-cols-[48px_2.5fr_1fr_120px_120px_80px] px-8 py-5 bg-muted/5 border-b border-border/20 items-center">
                             <div className="flex justify-center">
                                 <AnimatedCheckbox id="select-all" checked={selectedUsers.size === users.length && users.length > 0} onChange={toggleSelectAll} />
@@ -409,8 +371,7 @@ export default function UserManagementPage() {
                             <div className="px-4 text-[10px] font-black uppercase tracking-widest text-muted-foreground/60 text-center">Protocol Start</div>
                             <div className="px-4 text-[10px] font-black uppercase tracking-widest text-muted-foreground/60 text-right">Intervention</div>
                         </div>
-
-                        {/* Custom Grid Body */}
+                        {}
                         <div className="divide-y divide-border/10">
                             {users.map((user) => (
                                 <div key={user.id} className="grid grid-cols-[48px_2.5fr_1fr_120px_120px_80px] px-8 py-5 items-center hover:bg-primary/5 transition-all duration-300 group">
@@ -465,15 +426,13 @@ export default function UserManagementPage() {
                         </div>
                     </div>
                 )}
-
                 {!isLoading && totalUsers > pageSize && (
                     <div className="p-8 border-t border-border/20 bg-muted/5">
                         <Pagination currentPage={currentPage} totalPages={totalPages} onPageChange={setCurrentPage} pageSize={pageSize} onPageSizeChange={setPageSize} totalItems={totalUsers} />
                     </div>
                 )}
             </div>
-
-            {/* Bulk Action Bar */}
+            {}
             <AnimatePresence>
                 {selectedUsers.size > 0 && (
                     <motion.div initial={{ opacity: 0, y: 100 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 100 }} className="fixed bottom-10 left-1/2 -translate-x-1/2 z-50 flex items-center gap-4 p-3 rounded-2xl border border-primary/20 bg-card/90 shadow-2xl backdrop-blur-2xl ring-4 ring-primary/5">
@@ -491,8 +450,7 @@ export default function UserManagementPage() {
                     </motion.div>
                 )}
             </AnimatePresence>
-
-            {/* High-Fidelity Dialogs */}
+            {}
             <Dialog open={exportModal} onClose={() => setExportModal(false)} size="sm">
                 <DialogHeader>
                     <DialogTitle>Data Extraction</DialogTitle>
@@ -514,8 +472,7 @@ export default function UserManagementPage() {
                     ))}
                 </DialogBody>
             </Dialog>
-
-            {/* Bulk Role Correction */}
+            {}
             <Dialog open={bulkActionModal === 'role'} onClose={() => setBulkActionModal(null)} size="sm">
                 <DialogHeader>
                     <DialogTitle className="italic">Authority Adjustment</DialogTitle>
@@ -538,8 +495,7 @@ export default function UserManagementPage() {
                     <button onClick={handleBulkRoleUpdate} className="py-4 bg-indigo-500 text-white rounded-2xl font-black text-[10px] uppercase tracking-widest hover:bg-indigo-600 transition-all shadow-xl shadow-indigo-500/30">Commit Changes</button>
                 </DialogFooter>
             </Dialog>
-
-            {/* Delete Confirm */}
+            {}
             <Dialog open={!!deleteConfirmModal} onClose={() => setDeleteConfirmModal(null)} size="sm">
                 <div className="p-6 text-center space-y-6">
                     <div className="w-20 h-20 rounded-full bg-rose-500/10 text-rose-500 flex items-center justify-center mx-auto ring-8 ring-rose-500/5"><AlertCircle className="w-10 h-10" /></div>
@@ -553,8 +509,7 @@ export default function UserManagementPage() {
                     <button onClick={() => deleteConfirmModal && handleDeleteUser(deleteConfirmModal)} className="py-4 bg-rose-500 text-white rounded-2xl font-black text-[10px] uppercase tracking-widest hover:bg-rose-600 transition-all shadow-xl shadow-rose-500/30">Execute Purge</button>
                 </DialogFooter>
             </Dialog>
-
-            {/* User Detail View */}
+            {}
             <Dialog open={!!viewUserModal} onClose={() => setViewUserModal(null)} size="lg">
                 <DialogHeader>
                     <DialogTitle className="italic">Entity Intelligence</DialogTitle>

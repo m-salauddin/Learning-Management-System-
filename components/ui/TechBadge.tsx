@@ -13,13 +13,11 @@ import {
     SiRubyonrails, SiVuedotjs, SiSvelte, SiFlutter, SiKotlin, SiSwift, SiFirebase, SiGraphql, SiRedux, SiWordpress, SiShopify, SiPostman, SiSharp
 } from "react-icons/si";
 import { FaDatabase, FaCode, FaCloud, FaInfinity, FaAws, FaJava, FaAppStoreIos, FaAndroid } from "react-icons/fa";
-
 interface TechBadgeProps {
     tag: string;
     className?: string;
     showIcon?: boolean;
 }
-
 const TECH_DATA = [
     { keys: ['html'], icon: <SiHtml5 className="w-4 h-4" />, color: "#E34F26" },
     { keys: ['css'], icon: <SiCss3 className="w-4 h-4" />, color: "#1572B6" },
@@ -99,24 +97,18 @@ const TECH_DATA = [
     { keys: ['programming', 'software', 'coding'], icon: <FaCode className="w-4 h-4" />, color: "#10B981" },
     { keys: ['snippets', 'template', 'source'], icon: <FileCode className="w-4 h-4" />, color: "#64748B" },
 ];
-
 export const getTechBadgeData = (tag: string) => {
     const t = tag.toLowerCase().replace(/\s+/g, '');
-
     const match = TECH_DATA.find(data =>
         data.keys.some(key => t.includes(key))
     );
-
     return {
         icon: match?.icon || <Code className="w-4 h-4" />,
         brandColor: match?.color || "#EAB308"
     };
 };
-
-
 export const TechBadge: React.FC<TechBadgeProps> = ({ tag, className, showIcon = true }) => {
     const { icon, brandColor } = getTechBadgeData(tag);
-
     return (
         <div className={cn(
             "inline-flex items-center gap-2.5 px-3 py-1.5 rounded-xl bg-[#0F1115]/80 backdrop-blur-md border border-white/5 hover:border-white/10 transition-all group cursor-default",
@@ -143,5 +135,4 @@ export const TechBadge: React.FC<TechBadgeProps> = ({ tag, className, showIcon =
         </div>
     );
 };
-
 export default TechBadge;

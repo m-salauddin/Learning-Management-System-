@@ -1,19 +1,16 @@
 import { createSlice, createAsyncThunk, PayloadAction } from "@reduxjs/toolkit";
 import { Category, ApiResponse } from "@/types/lms";
 import * as categoryActions from "@/lib/actions/categories";
-
 interface CategoriesState {
     categories: Category[];
     isLoading: boolean;
     error: string | null;
 }
-
 const initialState: CategoriesState = {
     categories: [],
     isLoading: false,
     error: null,
 };
-
 export const fetchAdminCategories = createAsyncThunk(
     "adminCategories/fetchAll",
     async (_, { rejectWithValue }) => {
@@ -26,26 +23,19 @@ export const fetchAdminCategories = createAsyncThunk(
         }
     }
 );
-
 export const reorderCategories = createAsyncThunk(
     "adminCategories/reorder",
     async (newOrder: Category[], { dispatch, rejectWithValue }) => {
         try {
-            // Recalculate serial numbers for the new order
             const updatedCategories = newOrder.map((cat, index) => ({
                 ...cat,
                 serial_number: index + 1
             }));
-
-            // First update local state for immediate feedback with CORRECT serials
             dispatch(setCategoriesLocally(updatedCategories));
-
-            // Prepare updates for backend
             const updates = updatedCategories.map((cat) => ({
                 id: cat.id,
                 serial_number: cat.serial_number
             }));
-
             const result = await categoryActions.updateCategoryOrder(updates);
             if (!result.success) return rejectWithValue(result.error);
             return result;
@@ -54,7 +44,6 @@ export const reorderCategories = createAsyncThunk(
         }
     }
 );
-
 const categoriesSlice = createSlice({
     name: "adminCategories",
     initialState,
@@ -63,7 +52,6 @@ const categoriesSlice = createSlice({
             state.categories = action.payload;
         },
         updateCategoryOrderLocally(state, action: PayloadAction<{ id: string, serial_number: number }[]>) {
-            // This could be used for more granular updates if needed
         }
     },
     extraReducers: (builder) => {
@@ -85,6 +73,5 @@ const categoriesSlice = createSlice({
             });
     },
 });
-
 export const { setCategoriesLocally } = categoriesSlice.actions;
 export default categoriesSlice.reducer;

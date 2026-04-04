@@ -1,17 +1,14 @@
 "use client";
-
 import { motion, AnimatePresence } from "motion/react";
 import { HelpCircle, ChevronDown, Rocket } from "lucide-react";
 import { CourseFAQ } from "@/types/course-page";
 import { cn } from "@/lib/utils";
-
 interface CourseFAQProps {
     faq: CourseFAQ[];
     expandedFaq: number | null;
     toggleFaq: (idx: number) => void;
     setShowLeadModal: (show: boolean) => void;
 }
-
 export default function CourseFAQSection({
     faq,
     expandedFaq,
@@ -19,7 +16,6 @@ export default function CourseFAQSection({
     setShowLeadModal
 }: CourseFAQProps) {
     if (!faq || faq.length === 0) return null;
-
     return (
         <div className="mt-12 sm:mt-16 space-y-12">
             <div className="flex flex-col md:flex-row md:items-end justify-between gap-8">
@@ -34,15 +30,14 @@ export default function CourseFAQSection({
                     </p>
                 </div>
             </div>
-
             <div className="max-w-4xl space-y-4">
                 {faq.map((item, i) => (
-                    <div 
-                        key={i} 
+                    <div
+                        key={i}
                         className={cn(
                             "group overflow-hidden rounded-[2rem] border transition-all duration-300",
-                            expandedFaq === i 
-                                ? "bg-slate-50 dark:bg-slate-900/40 border-primary/20 shadow-xl shadow-primary/5" 
+                            expandedFaq === i
+                                ? "bg-slate-50 dark:bg-slate-900/40 border-primary/20 shadow-xl shadow-primary/5"
                                 : "bg-slate-100/50 dark:bg-slate-900/10 border-slate-200 dark:border-white/5 hover:border-slate-300 dark:hover:border-white/10"
                         )}
                     >
@@ -50,7 +45,7 @@ export default function CourseFAQSection({
                             onClick={() => toggleFaq(i)}
                             className="w-full flex items-center gap-5 p-5 sm:p-6 text-left group/btn"
                         >
-                            {/* Icon / Number Circle */}
+                            {}
                             <div className={cn(
                                 "shrink-0 w-10 h-10 rounded-xl flex items-center justify-center font-black text-sm transition-all duration-500",
                                 expandedFaq === i
@@ -59,20 +54,18 @@ export default function CourseFAQSection({
                             )}>
                                 {i + 1 < 10 ? `0${i + 1}` : i + 1}
                             </div>
-
                             <h4 className={cn(
                                 "flex-1 font-bold text-base sm:text-lg transition-colors",
-                                expandedFaq === i 
-                                    ? "text-slate-900 dark:text-white" 
+                                expandedFaq === i
+                                    ? "text-slate-900 dark:text-white"
                                     : "text-slate-700 dark:text-slate-300 group-hover/btn:text-slate-900 dark:group-hover/btn:text-white"
                             )}>
                                 {item.question.replace(/^\d+\.\s*/, '')}
                             </h4>
-
                             <div className={cn(
                                 "w-10 h-10 rounded-xl flex items-center justify-center transition-all duration-500",
-                                expandedFaq === i 
-                                    ? "rotate-180 bg-primary/20 text-primary" 
+                                expandedFaq === i
+                                    ? "rotate-180 bg-primary/20 text-primary"
                                     : "bg-slate-200/50 dark:bg-white/5 text-slate-400 dark:text-slate-600 group-hover/btn:bg-slate-200 dark:group-hover/btn:bg-white/10"
                             )}>
                                 <ChevronDown className="w-5 h-5" />

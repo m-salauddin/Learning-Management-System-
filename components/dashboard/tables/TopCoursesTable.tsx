@@ -1,10 +1,8 @@
 "use client"
-
 import { Badge } from "@/components/ui/Badge"
 import { Button } from "@/components/ui/Button"
 import { cn } from "@/lib/utils"
 import { Star, Users, TrendingUp, TrendingDown, Eye, Pencil, Trash2 } from "lucide-react"
-
 const courses = [
     {
         id: 1,
@@ -67,12 +65,11 @@ const courses = [
         thumbnail: "🚀"
     },
 ]
-
 export function TopCoursesTable() {
     return (
         <div className="w-full bg-card/30 backdrop-blur-xl border border-border/40 rounded-3xl overflow-hidden shadow-xl overflow-x-auto min-w-0">
             <div className="min-w-[800px] divide-y divide-border/20">
-                {/* Header */}
+                {}
                 <div className="grid grid-cols-[2fr_1fr_120px_100px_120px_100px_120px] px-6 py-4 bg-muted/10 border-b border-border/10">
                     <div className="px-4 text-[10px] font-black uppercase tracking-widest text-muted-foreground/70">Course</div>
                     <div className="px-4 text-[10px] font-black uppercase tracking-widest text-muted-foreground/70 hidden md:block">Instructor</div>
@@ -82,15 +79,14 @@ export function TopCoursesTable() {
                     <div className="px-4 text-[10px] font-black uppercase tracking-widest text-muted-foreground/70 text-center hidden lg:block">Trend</div>
                     <div className="px-4 text-[10px] font-black uppercase tracking-widest text-muted-foreground/70 text-center">Actions</div>
                 </div>
-
-                {/* Body */}
+                {}
                 <div className="divide-y divide-border/20">
                     {courses.map((course) => (
                         <div
                             key={course.id}
                             className="grid grid-cols-[2fr_1fr_120px_100px_120px_100px_120px] px-6 py-4 items-center transition-colors hover:bg-muted/10 group bg-card/5"
                         >
-                            {/* Course Info */}
+                            {}
                             <div className="px-4">
                                 <div className="flex items-center gap-3">
                                     <div className="w-10 h-10 rounded-lg bg-muted flex items-center justify-center text-lg shrink-0">
@@ -114,38 +110,33 @@ export function TopCoursesTable() {
                                     </div>
                                 </div>
                             </div>
-
-                            {/* Instructor */}
+                            {}
                             <div className="px-4 hidden md:block">
                                 <span className="text-sm font-medium text-muted-foreground">
                                     {course.instructor}
                                 </span>
                             </div>
-
-                            {/* Students */}
+                            {}
                             <div className="px-4 text-center">
                                 <div className="inline-flex items-center gap-1.5">
                                     <Users className="w-4 h-4 text-muted-foreground/60" />
                                     <span className="text-sm font-bold tracking-tight">{course.students.toLocaleString()}</span>
                                 </div>
                             </div>
-
-                            {/* Rating */}
+                            {}
                             <div className="px-4 text-center hidden sm:block">
                                 <div className="inline-flex items-center gap-1">
                                     <Star className="w-4 h-4 text-amber-500 fill-amber-500" />
                                     <span className="text-sm font-black text-foreground">{course.rating}</span>
                                 </div>
                             </div>
-
-                            {/* Revenue */}
+                            {}
                             <div className="px-4 text-right">
                                 <span className="text-sm font-black tracking-tighter text-foreground">
                                     ৳{course.revenue.toLocaleString()}
                                 </span>
                             </div>
-
-                            {/* Trend */}
+                            {}
                             <div className="px-4 text-center hidden lg:block">
                                 <Badge
                                     variant="outline"
@@ -164,8 +155,7 @@ export function TopCoursesTable() {
                                     {course.trendValue}%
                                 </Badge>
                             </div>
-
-                            {/* Actions */}
+                            {}
                             <div className="px-4 text-center">
                                 <div className="flex items-center justify-center gap-1">
                                     <Button

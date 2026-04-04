@@ -1,5 +1,4 @@
 "use client";
-
 import { ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight } from "lucide-react";
 import { cn } from "@/lib/utils";
 import {
@@ -9,7 +8,6 @@ import {
     SelectTrigger,
     SelectValue,
 } from "@/components/ui/select";
-
 interface PaginationProps {
     currentPage: number;
     totalPages: number;
@@ -19,7 +17,6 @@ interface PaginationProps {
     totalItems: number;
     className?: string;
 }
-
 export function Pagination({
     currentPage,
     totalPages,
@@ -31,13 +28,11 @@ export function Pagination({
 }: PaginationProps) {
     const startItem = (currentPage - 1) * pageSize + 1;
     const endItem = Math.min(currentPage * pageSize, totalItems);
-
     return (
         <div className={cn("flex flex-col-reverse md:flex-row items-center justify-between gap-4 text-sm select-none", className)}>
             <div className="text-input-dark-text font-medium">
                 {startItem}-{endItem} of {totalItems}
             </div>
-
             <div className="flex flex-col sm:flex-row items-center gap-4 sm:gap-6 w-full md:w-auto">
                 <div className="flex items-center gap-3">
                     <span className="text-input-dark-text text-xs font-medium uppercase tracking-wider">Rows</span>
@@ -57,7 +52,6 @@ export function Pagination({
                         </SelectContent>
                     </Select>
                 </div>
-
                 <div className="flex items-center gap-1 bg-input-dark p-1 rounded-xl border border-input-dark-border">
                     <button
                         onClick={() => onPageChange(1)}
@@ -67,7 +61,6 @@ export function Pagination({
                     >
                         <ChevronsLeft className="w-4 h-4" />
                     </button>
-
                     <button
                         onClick={() => onPageChange(currentPage - 1)}
                         disabled={currentPage === 1}
@@ -76,7 +69,6 @@ export function Pagination({
                     >
                         <ChevronLeft className="w-4 h-4" />
                     </button>
-
                     <div className="flex items-center px-2">
                         <span className="text-sm font-semibold text-foreground min-w-[20px] text-center">
                             {currentPage}
@@ -86,7 +78,6 @@ export function Pagination({
                             {totalPages}
                         </span>
                     </div>
-
                     <button
                         onClick={() => onPageChange(currentPage + 1)}
                         disabled={currentPage === totalPages}
@@ -95,7 +86,6 @@ export function Pagination({
                     >
                         <ChevronRight className="w-4 h-4" />
                     </button>
-
                     <button
                         onClick={() => onPageChange(totalPages)}
                         disabled={currentPage === totalPages}

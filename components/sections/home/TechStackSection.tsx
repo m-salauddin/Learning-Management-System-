@@ -1,5 +1,4 @@
 "use client";
-
 import {
     SiReact,
     SiNextdotjs,
@@ -16,7 +15,6 @@ import {
 } from "react-icons/si";
 import { Code2 } from "lucide-react";
 import { Badge } from "@/components/ui/Badge";
-
 const TECH_STACK = [
     { name: "React", icon: SiReact, color: "text-cyan-400" },
     { name: "Next.js", icon: SiNextdotjs, color: "text-foreground" },
@@ -31,15 +29,13 @@ const TECH_STACK = [
     { name: "Tailwind", icon: SiTailwindcss, color: "text-cyan-400" },
     { name: "Git", icon: SiGit, color: "text-orange-500" },
 ] as const;
-
 interface TechMarqueeProps {
     direction?: "left" | "right";
 }
-
 export function TechMarquee({ direction = "left" }: TechMarqueeProps) {
     return (
         <div className={`marquee-track ${direction === "right" ? "marquee-track-reverse" : ""}`}>
-            {/* Duplicate items for seamless loop */}
+            {}
             {[...TECH_STACK, ...TECH_STACK].map((tech, index) => (
                 <div
                     key={`${tech.name}-${index}`}
@@ -52,11 +48,10 @@ export function TechMarquee({ direction = "left" }: TechMarqueeProps) {
         </div>
     );
 }
-
 export function TechStackSection() {
     return (
         <section className="relative py-16 border-y border-border/50">
-            {/* Header */}
+            {}
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-10">
                 <div className="text-center">
                     <Badge icon={Code2} className="mb-4 tracking-wider">
@@ -70,15 +65,13 @@ export function TechStackSection() {
                     </p>
                 </div>
             </div>
-
-            {/* Marquee Container */}
+            {}
             <div className="relative">
-                {/* First Marquee Row */}
+                {}
                 <div className="marquee-container mb-4">
                     <TechMarquee direction="left" />
                 </div>
-
-                {/* Second Marquee Row */}
+                {}
                 <div className="marquee-container">
                     <TechMarquee direction="right" />
                 </div>

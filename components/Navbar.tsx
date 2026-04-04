@@ -1,5 +1,4 @@
 "use client";
-
 import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -10,17 +9,13 @@ import { Logo } from "@/components/ui/Logo";
 import { ThemeToggle, ThemeToggleCompact } from "@/components/ui/theme-toggle";
 import { cn } from "@/lib/utils";
 import { UserDropdown } from "@/components/ui/UserDropdown/UserDropdown";
-
 import { useAppSelector } from "@/lib/store/hooks";
-
-
 const navItems = [
     { name: "Home", href: "/" },
     { name: "Courses", href: "/courses" },
     { name: "Instructors", href: "/instructors" },
     { name: "About", href: "/about" },
 ];
-
 const AuthButtons = ({ isMobile = false }: { isMobile?: boolean }) => (
     <>
         <Link
@@ -44,7 +39,6 @@ const AuthButtons = ({ isMobile = false }: { isMobile?: boolean }) => (
         </Link>
     </>
 );
-
 const AuthSkeleton = () => (
     <div className="flex items-center gap-2 sm:gap-3 pl-1 pr-2 sm:pl-1 sm:pr-4 py-1 rounded-full border border-border/50 bg-muted/50 animate-pulse">
         <div className="w-8 h-8 rounded-full bg-muted-foreground/20" />
@@ -55,14 +49,18 @@ const AuthSkeleton = () => (
         <div className="w-4 h-4 rounded-full bg-muted-foreground/20 hidden sm:block" />
     </div>
 );
-
 export function Navbar() {
     const pathname = usePathname();
+    const [mounted, setMounted] = useState(false);
     const [isSearchOpen, setIsSearchOpen] = useState(false);
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
     const { user, isLoading } = useAppSelector((state) => state.auth);
     const navRef = useRef<HTMLDivElement>(null);
     const [activeRect, setActiveRect] = useState({ left: 0, width: 0 });
+
+    useEffect(() => {
+        setMounted(true);
+    }, []);
 
     useEffect(() => {
         const updateRect = () => {
@@ -74,15 +72,10 @@ export function Navbar() {
                 });
             }
         };
-
         updateRect();
-        // Update on window resize to keep it aligned
         window.addEventListener('resize', updateRect);
         return () => window.removeEventListener('resize', updateRect);
     }, [pathname]);
-
-
-
     useEffect(() => {
         const handleKeyDown = (e: KeyboardEvent) => {
             if (e.key === "k" && (e.metaKey || e.ctrlKey)) {
@@ -93,13 +86,9 @@ export function Navbar() {
         window.addEventListener("keydown", handleKeyDown);
         return () => window.removeEventListener("keydown", handleKeyDown);
     }, []);
-
-
     useEffect(() => {
         setIsMobileMenuOpen(false);
     }, [pathname]);
-
-
     useEffect(() => {
         if (isMobileMenuOpen || isSearchOpen) {
             document.body.classList.add("nav-open");
@@ -110,8 +99,6 @@ export function Navbar() {
             document.body.classList.remove("nav-open");
         };
     }, [isMobileMenuOpen, isSearchOpen]);
-
-
     return (
         <nav
             suppressHydrationWarning
@@ -119,14 +106,11 @@ export function Navbar() {
         >
             <div className="isolate bg-white/60 dark:bg-slate-950/50 backdrop-blur-3xl border border-border rounded-2xl px-4 xl:px-8 py-3 xl:py-4 shadow-xl shadow-black/5 dark:shadow-black/40">
                 <div className="flex items-center justify-between">
-
                     <Link href="/" aria-label="Home" className="shrink-0">
                         <Logo className="scale-[0.8] origin-left sm:scale-100" textClassName="hidden sm:flex" />
                     </Link>
-
-
                     <div ref={navRef} className="hidden xl:flex items-center gap-1 relative">
-                        {/* The sliding indicator */}
+                        {}
                         <motion.div
                             className="absolute bg-primary rounded-lg z-0"
                             initial={false}
@@ -138,7 +122,6 @@ export function Navbar() {
                             transition={{ type: "spring", bounce: 0.15, duration: 0.5 }}
                             style={{ height: 'calc(100% - 2px)', top: '0px' }}
                         />
-
                         {navItems.map((item) => {
                             const isActive = pathname === item.href;
                             return (
@@ -156,10 +139,7 @@ export function Navbar() {
                             );
                         })}
                     </div>
-
-
                     <div className="flex items-center gap-3">
-
                         <button
                             onClick={() => setIsSearchOpen(true)}
                             className="hidden xl:flex items-center gap-3 px-4 py-2.5 rounded-2xl bg-muted/50 border border-border/50 hover:bg-muted/80 transition-all duration-200 group min-w-[240px] cursor-pointer"
@@ -170,26 +150,21 @@ export function Navbar() {
                                 <span className="xs">⌘</span>K
                             </kbd>
                         </button>
-
-
                         <button
                             onClick={() => setIsSearchOpen(true)}
                             className="flex xl:hidden items-center justify-center w-10 h-10 text-muted-foreground hover:text-foreground transition-colors rounded-xl bg-muted/50 border border-border/50 hover:bg-muted/80 cursor-pointer"
                         >
                             <Search className="w-5 h-5" />
                         </button>
-
-
-
                         <div className="hidden sm:block">
                             <ThemeToggle />
                         </div>
                         <div className="sm:hidden">
                             <ThemeToggleCompact />
                         </div>
-
-
-                        {isLoading ? (
+                        {!mounted ? (
+                            <AuthSkeleton />
+                        ) : isLoading ? (
                             <AuthSkeleton />
                         ) : user ? (
                             <UserDropdown
@@ -201,8 +176,6 @@ export function Navbar() {
                                 <AuthButtons />
                             </div>
                         )}
-
-
                         <button
                             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
                             className="xl:hidden flex items-center justify-center w-10 h-10 text-muted-foreground hover:text-foreground transition-colors rounded-xl bg-muted/50 border border-border/50 hover:bg-muted/80 cursor-pointer"
@@ -212,8 +185,6 @@ export function Navbar() {
                     </div>
                 </div>
             </div>
-
-
             <AnimatePresence>
                 {isMobileMenuOpen && (
                     <>
@@ -232,10 +203,7 @@ export function Navbar() {
                             transition={{ type: "spring", stiffness: 300, damping: 30 }}
                             className="absolute top-full right-0 mt-2 w-72 p-4 bg-white/80 dark:bg-slate-950/90 backdrop-blur-xl border border-border rounded-3xl shadow-2xl origin-top-right flex flex-col gap-4 overflow-hidden"
                         >
-
                             <div className="flex flex-col gap-2">
-
-
                                 {navItems.map((item) => {
                                     const isActive = pathname === item.href;
                                     return (
@@ -253,8 +221,6 @@ export function Navbar() {
                                     );
                                 })}
                             </div>
-
-
                             {!user && (
                                 <div className="flex cursor-pointer min-[730px]:hidden flex-col gap-3 pt-4 border-t border-border/50">
                                     <AuthButtons isMobile />
@@ -264,7 +230,6 @@ export function Navbar() {
                     </>
                 )}
             </AnimatePresence>
-
             <SearchCommand isOpen={isSearchOpen} onClose={() => setIsSearchOpen(false)} />
         </nav>
     );

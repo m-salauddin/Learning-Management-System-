@@ -1,9 +1,6 @@
 export type UserRole = 'student' | 'teacher' | 'moderator' | 'admin';
-
 export type AuthProvider = 'google' | 'github' | 'email' | 'password';
-
 export type UserStatus = 'active' | 'inactive' | 'suspended' | 'pending';
-
 export interface UserProfile {
     id: string;
     email: string;
@@ -16,8 +13,6 @@ export interface UserProfile {
     created_at: string;
     updated_at: string;
 }
-
-// Extended User Management Types
 export interface ExtendedUser extends UserProfile {
     status?: UserStatus;
     last_login?: string;
@@ -30,12 +25,10 @@ export interface ExtendedUser extends UserProfile {
     total_courses?: number;
     completed_courses?: number;
     certificates_earned?: number;
-    // Soft delete fields
     is_deleted?: boolean;
     deleted_at?: string | null;
     is_banned?: boolean;
 }
-
 export interface UserFilters {
     search?: string;
     role?: UserRole | 'all';
@@ -45,25 +38,21 @@ export interface UserFilters {
     provider?: AuthProvider | 'all';
     verified?: boolean | 'all';
 }
-
 export interface UserSortConfig {
     field: 'name' | 'email' | 'role' | 'created_at' | 'last_login' | 'status';
     order: 'asc' | 'desc';
 }
-
 export interface UserTableColumn {
     key: string;
     label: string;
     sortable: boolean;
     hidden?: boolean;
 }
-
 export interface BulkAction {
     type: 'delete' | 'activate' | 'suspend' | 'change-role' | 'export';
     userIds: string[];
     newRole?: UserRole;
 }
-
 export interface UserActivity {
     id: string;
     user_id: string;
@@ -72,7 +61,6 @@ export interface UserActivity {
     timestamp: string;
     ip_address?: string;
 }
-
 export interface UserStats {
     total: number;
     active: number;

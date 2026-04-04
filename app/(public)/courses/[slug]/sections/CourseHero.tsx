@@ -1,5 +1,4 @@
 "use client";
-
 import { motion } from "motion/react";
 import { Star, Users, Clock, Zap, Download, Activity, Video, Hash, Rocket, Layers, Award, Target, BookOpen, Play } from "lucide-react";
 import { Badge } from "@/components/ui/Badge";
@@ -8,7 +7,6 @@ import { MappedCourse } from "@/types/mapped-course";
 import { CoursePageData } from "@/types/course-page";
 import { cn } from "@/lib/utils";
 import { useMemo } from "react";
-
 interface CourseHeroProps {
     course: MappedCourse;
     pageData?: CoursePageData;
@@ -18,7 +16,6 @@ interface CourseHeroProps {
     loading: boolean;
     setShowVideoModal: (show: boolean) => void;
 }
-
 export default function CourseHero({
     course,
     pageData,
@@ -41,7 +38,6 @@ export default function CourseHero({
         }
         return { icon: Target, label: course.level || 'All Levels', color: "border-primary/40 bg-primary/10 text-primary" };
     }, [course.level]);
-
     return (
         <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -67,14 +63,12 @@ export default function CourseHero({
                         {isLive ? 'Live Course' : 'Recorded'}
                     </span>
                 </Badge>
-
                 <Badge
                     icon={levelConfig.icon}
                     className={cn("px-4 py-1.5 text-[11px] font-bold uppercase tracking-widest border rounded-full", levelConfig.color)}
                 >
                     {levelConfig.label}
                 </Badge>
-
                 <Badge
                     icon={Hash}
                     className="px-4 py-1.5 text-[11px] font-bold uppercase tracking-widest border border-cyan-500/40 bg-cyan-500/10 text-cyan-400 rounded-full"
@@ -82,15 +76,12 @@ export default function CourseHero({
                     Batch {course.batchNo ? (course.batchNo < 10 ? `0${course.batchNo}` : course.batchNo) : '01'}
                 </Badge>
             </div>
-
             <h1 className="text-3xl sm:text-4xl lg:text-[2.75rem] font-extrabold tracking-tight leading-[1.15] mt-4 sm:mt-5">
                 <span className="gradient-text">{course.title}</span>
             </h1>
-
             <p className="text-base sm:text-lg text-muted-foreground leading-relaxed max-w-3xl mt-4 sm:mt-5">
                 {course.shortDescription}
             </p>
-
             {pageData?.batches && pageData.batches.length > 0 && pageData.batches.some(b => b.is_active) && (
                 <div className="mt-6 flex flex-wrap gap-4">
                     {pageData.batches.filter(b => b.is_active).map(batch => (
@@ -114,7 +105,6 @@ export default function CourseHero({
                     ))}
                 </div>
             )}
-
             <div className="flex flex-wrap items-center gap-4 sm:gap-6 mt-4 sm:mt-6">
                 <div className="flex items-center gap-2 text-sm text-muted-foreground">
                     <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center">
@@ -122,21 +112,18 @@ export default function CourseHero({
                     </div>
                     <span className="font-medium">{(Number(course.rating) || 0).toFixed(1)} ({course.reviews} ratings)</span>
                 </div>
-
                 <div className="flex items-center gap-2 text-sm text-muted-foreground">
                     <div className="w-8 h-8 rounded-lg bg-secondary/10 flex items-center justify-center">
                         <Users className="w-4 h-4 text-secondary" />
                     </div>
                     <span className="font-medium">{course.students} students</span>
                 </div>
-
                 <div className="flex items-center gap-2 text-sm text-muted-foreground">
                     <div className="w-8 h-8 rounded-lg bg-accent/10 flex items-center justify-center">
                         <BookOpen className="w-4 h-4 text-accent" />
                     </div>
                     <span className="font-medium">{pageData?.totalLessons || 0} Lessons</span>
                 </div>
-
                 {timeLeft && (
                     <div className="flex items-center gap-2 text-sm text-muted-foreground group">
                         <div className="w-8 h-8 rounded-lg bg-amber-500/10 flex items-center justify-center group-hover:scale-110 transition-transform duration-500">
@@ -167,10 +154,9 @@ export default function CourseHero({
                     </div>
                 )}
             </div>
-
             <div className="flex flex-wrap items-center gap-6 mt-8 sm:mt-12">
                 <SecondaryCTAButton
-                    onClick={() => {/* download logic */ }}
+                    onClick={() => { }}
                     className="h-10! sm:h-12!"
                 >
                     <div className="flex items-center gap-2">
@@ -178,7 +164,6 @@ export default function CourseHero({
                         <span>Download Outline</span>
                     </div>
                 </SecondaryCTAButton>
-
                 <SecondaryCTAButton
                     onClick={() => setShowVideoModal(true)}
                     className="h-10! sm:h-12!"
@@ -188,7 +173,6 @@ export default function CourseHero({
                         <span>Watch Preview</span>
                     </div>
                 </SecondaryCTAButton>
-
                 <PrimaryCTAButton
                     onClick={handleEnroll}
                     loading={loading}

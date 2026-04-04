@@ -1,4 +1,3 @@
-// Re-export UI components for cleaner imports
 export { ThemeToggle, ThemeToggleCompact } from "./theme-toggle"
 export { Dialog, DialogHeader, DialogTitle, DialogDescription, DialogBody, DialogFooter, DialogClose } from "./Dialog"
 export { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectScrollDownButton, SelectScrollUpButton, SelectSeparator, SelectTrigger, SelectValue } from "./select"

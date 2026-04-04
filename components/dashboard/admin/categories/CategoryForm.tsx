@@ -1,5 +1,4 @@
 "use client";
-
 import {
     Globe, Smartphone, Palette, TrendingUp, Briefcase,
     Database, Code, Shield, Cloud, Layers, Info, Save, X, AlertCircle
@@ -13,7 +12,6 @@ import { Category } from "@/types/lms";
 import { createCategory, updateCategory } from "@/lib/actions/categories";
 import { categorySchema } from "@/lib/validations/category";
 import { ZodError } from "zod";
-
 const iconOptions = [
     { name: 'Globe', icon: Globe },
     { name: 'Smartphone', icon: Smartphone },
@@ -27,7 +25,6 @@ const iconOptions = [
     { name: 'Layers', icon: Layers },
     { name: 'Info', icon: Info },
 ];
-
 const colorOptions = [
     { name: 'Indigo', hex: '#6366f1' },
     { name: 'Blue', hex: '#3b82f6' },
@@ -42,17 +39,14 @@ const colorOptions = [
     { name: 'Pink', hex: '#ec4899' },
     { name: 'Violet', hex: '#8b5cf6' },
 ];
-
 interface CategoryFormProps {
     initialData?: Category;
     isEditing?: boolean;
 }
-
 export function CategoryForm({ initialData, isEditing = false }: CategoryFormProps) {
     const router = useRouter();
     const toast = useToast();
     const [isSubmitting, setIsSubmitting] = useState(false);
-
     const [formData, setFormData] = useState({
         name: initialData?.name || "",
         slug: initialData?.slug || "",
@@ -60,11 +54,8 @@ export function CategoryForm({ initialData, isEditing = false }: CategoryFormPro
         color: initialData?.color || "#6366f1",
         description: initialData?.description || ""
     });
-
     const [errors, setErrors] = useState<Record<string, string>>({});
     const [isSubmitted, setIsSubmitted] = useState(false);
-
-    // Real-time validation (Watch Mode) - Debounced for performance
     useEffect(() => {
         if (isSubmitted) {
             const timer = setTimeout(() => {
@@ -82,20 +73,16 @@ export function CategoryForm({ initialData, isEditing = false }: CategoryFormPro
             return () => clearTimeout(timer);
         }
     }, [formData, isSubmitted]);
-
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setIsSubmitted(true);
         setErrors({});
         setIsSubmitting(true);
-
         try {
             categorySchema.parse(formData);
-
             const result = isEditing && initialData
                 ? await updateCategory(initialData.id, formData)
                 : await createCategory(formData);
-
             if (result.success) {
                 toast.success(isEditing ? "Category updated" : "Category created");
                 router.push("/dashboard/categories");
@@ -117,11 +104,10 @@ export function CategoryForm({ initialData, isEditing = false }: CategoryFormPro
             setIsSubmitting(false);
         }
     };
-
     return (
         <form onSubmit={handleSubmit} className="space-y-8 max-w-4xl">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-                {/* Name Field */}
+                {}
                 <div className="space-y-3 md:col-span-2">
                     <label className="text-[10px] font-black uppercase tracking-[0.2em] text-white/40">Category Name</label>
                     <div className="space-y-1">
@@ -142,8 +128,7 @@ export function CategoryForm({ initialData, isEditing = false }: CategoryFormPro
                         )}
                     </div>
                 </div>
-
-                {/* Slug Field */}
+                {}
                 <div className="space-y-3">
                     <label className="text-[10px] font-black uppercase tracking-[0.2em] text-white/40">URL ID (Slug)</label>
                     <input
@@ -153,8 +138,7 @@ export function CategoryForm({ initialData, isEditing = false }: CategoryFormPro
                         className="w-full bg-slate-950/50 border border-border/50 rounded-2xl px-5 py-4 text-white/60 outline-none focus:border-primary/50 transition-all font-mono text-xs"
                     />
                 </div>
-
-                {/* Icon Selection */}
+                {}
                 <div className="md:col-span-3 space-y-4">
                     <label className="text-[10px] font-black uppercase tracking-[0.2em] text-white/40 block">Visual Representation (Icon)</label>
                     <div className="grid grid-cols-4 sm:grid-cols-6 md:grid-cols-11 gap-3 p-6 bg-slate-950/50 rounded-3xl border border-border/50">
@@ -174,8 +158,7 @@ export function CategoryForm({ initialData, isEditing = false }: CategoryFormPro
                         ))}
                     </div>
                 </div>
-
-                {/* Color Selection */}
+                {}
                 <div className="md:col-span-3 space-y-4">
                     <label className="text-[10px] font-black uppercase tracking-[0.2em] text-white/40 block">Thematic Color Accent</label>
                     <div className="flex flex-wrap gap-4 p-6 bg-slate-950/50 rounded-3xl border border-border/50">
@@ -216,8 +199,7 @@ export function CategoryForm({ initialData, isEditing = false }: CategoryFormPro
                         </div>
                     </div>
                 </div>
-
-                {/* Description Field */}
+                {}
                 <div className="md:col-span-3 space-y-3">
                     <label className="text-[10px] font-black uppercase tracking-[0.2em] text-white/40">Narrative (Description)</label>
                     <div className="space-y-1">
@@ -239,8 +221,7 @@ export function CategoryForm({ initialData, isEditing = false }: CategoryFormPro
                     </div>
                 </div>
             </div>
-
-            {/* Actions */}
+            {}
             <div className="flex items-center justify-end gap-4 pt-6">
                 <button
                     type="button"

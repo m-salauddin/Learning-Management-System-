@@ -1,5 +1,4 @@
 "use client";
-
 import * as React from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -13,8 +12,6 @@ import { signup, signInWithGoogle, signInWithGithub } from "@/lib/actions/auth";
 import { useAppDispatch } from "@/lib/store/hooks";
 import { setUser } from "@/lib/store/features/auth/authSlice";
 import { useToast } from "@/components/ui/toast";
-
-
 const registerSchema = z.object({
     fullName: z
         .string()
@@ -40,10 +37,7 @@ const registerSchema = z.object({
     message: "Passwords do not match",
     path: ["confirmPassword"],
 });
-
 type RegisterFormData = z.infer<typeof registerSchema>;
-
-
 function getPasswordStrength(password: string): { strength: number; label: string; color: string } {
     let strength = 0;
     if (password.length >= 8) strength++;
@@ -51,13 +45,11 @@ function getPasswordStrength(password: string): { strength: number; label: strin
     if (/[a-z]/.test(password)) strength++;
     if (/[0-9]/.test(password)) strength++;
     if (/[^A-Za-z0-9]/.test(password)) strength++;
-
     if (strength <= 2) return { strength, label: "Weak", color: "bg-destructive" };
     if (strength <= 3) return { strength, label: "Medium", color: "bg-yellow-500" };
     if (strength <= 4) return { strength, label: "Strong", color: "bg-primary" };
     return { strength, label: "Very Strong", color: "bg-green-500" };
 }
-
 export default function RegisterPage() {
     const router = useRouter();
     const dispatch = useAppDispatch();
@@ -75,8 +67,6 @@ export default function RegisterPage() {
     const [errors, setErrors] = React.useState<Record<string, string>>({});
     const [isSubmitted, setIsSubmitted] = React.useState(false);
     const toast = useToast();
-
-    // Real-time validation (Watch Mode) - Debounced for performance
     React.useEffect(() => {
         if (isSubmitted) {
             const timer = setTimeout(() => {
@@ -94,19 +84,15 @@ export default function RegisterPage() {
             return () => clearTimeout(timer);
         }
     }, [formData, isSubmitted]);
-
     const passwordStrength = getPasswordStrength(formData.password);
-
     const onSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setIsSubmitted(true);
         setErrors({});
         setIsLoading(true);
         const loadingToastId = toast.loading("Creating Account...", "Please wait while we set up your account.");
-
         try {
             registerSchema.parse(formData);
-
             const result = await signup(formData);
             if (result?.error) {
                 toast.dismiss(loadingToastId);
@@ -139,12 +125,8 @@ export default function RegisterPage() {
             setIsLoading(false);
         }
     };
-
     return (
         <div className="min-h-screen bg-background flex flex-col" suppressHydrationWarning>
-
-
-
             <main className="flex-1 flex items-center justify-center px-4 py-28">
                 <motion.div
                     initial="hidden"
@@ -152,9 +134,7 @@ export default function RegisterPage() {
                     variants={fadeInUp}
                     className="w-full max-w-md"
                 >
-
                     <div className="bg-card/80 dark:bg-card/60 backdrop-blur-xl border border-border rounded-3xl p-8 shadow-2xl">
-
                         <div className="text-center mb-8">
                             <div className="flex justify-center mb-4">
                                 <Logo />
@@ -164,8 +144,6 @@ export default function RegisterPage() {
                                 Start your learning journey today
                             </p>
                         </div>
-
-
                         {isSuccess ? (
                             <div className="text-center py-8 space-y-4">
                                 <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto text-primary">
@@ -185,7 +163,6 @@ export default function RegisterPage() {
                         ) : (
                             <>
                                 <form onSubmit={onSubmit} className="space-y-4">
-
                                     <div className="space-y-2">
                                         <label htmlFor="fullName" className="block text-sm font-medium">
                                             Full Name
@@ -213,8 +190,6 @@ export default function RegisterPage() {
                                             )}
                                         </div>
                                     </div>
-
-
                                     <div className="space-y-2">
                                         <label htmlFor="email" className="block text-sm font-medium">
                                             Email Address
@@ -242,8 +217,6 @@ export default function RegisterPage() {
                                             )}
                                         </div>
                                     </div>
-
-
                                     <div className="space-y-2">
                                         <label htmlFor="password" className="block text-sm font-medium">
                                             Password
@@ -300,8 +273,6 @@ export default function RegisterPage() {
                                             )}
                                         </div>
                                     </div>
-
-
                                     <div className="space-y-2">
                                         <label htmlFor="confirmPassword" className="block text-sm font-medium">
                                             Confirm Password
@@ -340,8 +311,6 @@ export default function RegisterPage() {
                                             )}
                                         </div>
                                     </div>
-
-
                                     <div className="bg-muted/30 rounded-xl p-3 space-y-1">
                                         <p className="text-xs font-medium text-muted-foreground mb-2">Password must contain:</p>
                                         <div className="grid grid-cols-2 gap-1">
@@ -363,8 +332,6 @@ export default function RegisterPage() {
                                             ))}
                                         </div>
                                     </div>
-
-
                                     <div className="space-y-1">
                                         <AnimatedCheckbox
                                             id="agreeToTerms"
@@ -390,10 +357,6 @@ export default function RegisterPage() {
                                             </p>
                                         )}
                                     </div>
-
-
-
-
                                     <button
                                         type="submit"
                                         disabled={isLoading}
@@ -412,8 +375,6 @@ export default function RegisterPage() {
                                         )}
                                     </button>
                                 </form>
-
-
                                 <div className="relative my-6">
                                     <div className="absolute inset-0 flex items-center">
                                         <div className="w-full border-t border-border/50" />
@@ -424,8 +385,6 @@ export default function RegisterPage() {
                                         </span>
                                     </div>
                                 </div>
-
-
                                 <div className="grid grid-cols-2 gap-3">
                                     <button
                                         onClick={async () => {
@@ -477,8 +436,6 @@ export default function RegisterPage() {
                                         GitHub
                                     </button>
                                 </div>
-
-
                                 <p className="text-center text-sm text-muted-foreground mt-6">
                                     Already have an account?{" "}
                                     <Link href="/login" className="text-primary font-medium hover:underline">
@@ -490,7 +447,6 @@ export default function RegisterPage() {
                     </div>
                 </motion.div>
             </main>
-
         </div>
     );
 }

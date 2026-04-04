@@ -1,25 +1,21 @@
 "use client";
-
 import * as React from "react";
 import { createPortal } from "react-dom";
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "motion/react";
 import { Search, X, Clock, Hash, CornerDownLeft, Command, FileText } from "lucide-react";
 import { cn } from "@/lib/utils";
-
 interface SearchCommandProps {
     isOpen: boolean;
     onClose: () => void;
 }
-
 type SearchItem = {
     id: string;
     label: string;
     type: "category" | "level" | "price" | "recent" | "course";
-    value: string; // The param value or search term
+    value: string;
     group: string;
 };
-
 const FILTER_SUGGESTIONS: SearchItem[] = [
     { id: "cat-web", label: "Web Development", type: "category", value: "Web Development", group: "Categories" },
     { id: "cat-data", label: "Data Science", type: "category", value: "Data Science", group: "Categories" },
@@ -28,17 +24,13 @@ const FILTER_SUGGESTIONS: SearchItem[] = [
     { id: "lvl-adv", label: "Advanced Techniques", type: "level", value: "Advanced", group: "Filters" },
     { id: "prc-free", label: "Free Courses", type: "price", value: "Free", group: "Filters" },
 ];
-
 export function SearchCommand({ isOpen, onClose }: SearchCommandProps) {
     const router = useRouter();
     const inputRef = React.useRef<HTMLInputElement>(null);
     const [query, setQuery] = React.useState("");
     const [selectedIndex, setSelectedIndex] = React.useState(0);
     const [recentSearches, setRecentSearches] = React.useState<string[]>([]);
-
     const [mounted, setMounted] = React.useState(false);
-
-    // Initialize recent searches and mounting
     React.useEffect(() => {
         setMounted(true);
         const saved = localStorage.getItem("dokkhotait-recent-searches");
@@ -46,8 +38,6 @@ export function SearchCommand({ isOpen, onClose }: SearchCommandProps) {
             setRecentSearches(JSON.parse(saved));
         }
     }, []);
-
-    // Focus input on open
     React.useEffect(() => {
         if (isOpen) {
             setTimeout(() => inputRef.current?.focus(), 50);
@@ -56,8 +46,6 @@ export function SearchCommand({ isOpen, onClose }: SearchCommandProps) {
             setSelectedIndex(0);
         }
     }, [isOpen]);
-
-    // Handle Closing
     React.useEffect(() => {
         const handleKeyDown = (e: KeyboardEvent) => {
             if (e.key === "Escape") onClose();
@@ -65,12 +53,8 @@ export function SearchCommand({ isOpen, onClose }: SearchCommandProps) {
         window.addEventListener("keydown", handleKeyDown);
         return () => window.removeEventListener("keydown", handleKeyDown);
     }, [onClose]);
-
-    // Filter Items
     const filteredItems = React.useMemo(() => {
         let items: SearchItem[] = [];
-
-        // 1. Add Recent Searches matching query
         if (query.trim() === "") {
             items = recentSearches.map((term, i) => ({
                 id: `recent-${i}`,
@@ -80,14 +64,10 @@ export function SearchCommand({ isOpen, onClose }: SearchCommandProps) {
                 group: "Recent Searches"
             }));
         }
-
-        // 2. Add Filter Suggestions matching query
         const matches = FILTER_SUGGESTIONS.filter(item =>
             item.label.toLowerCase().includes(query.toLowerCase())
         );
         items = [...items, ...matches];
-
-        // 3. Add current query as a "Search for..." option if not empty
         if (query.trim() !== "") {
             items.unshift({
                 id: "search-query",
@@ -97,34 +77,25 @@ export function SearchCommand({ isOpen, onClose }: SearchCommandProps) {
                 group: "Search"
             });
         }
-
         return items;
     }, [query, recentSearches]);
-
-    // Update selected index when list changes
     React.useEffect(() => {
         setSelectedIndex(0);
     }, [filteredItems]);
-
     const handleSelect = (item: SearchItem) => {
-        // Save to recent if it's a generic search or a filter
         if (!recentSearches.includes(item.label) && item.type !== "recent") {
             const newRecent = [item.label, ...recentSearches].slice(0, 5);
             setRecentSearches(newRecent);
             localStorage.setItem("dokkhotait-recent-searches", JSON.stringify(newRecent));
         }
-
-        // Navigate
         const params = new URLSearchParams();
         if (item.type === "category") params.set("category", item.value);
         else if (item.type === "level") params.set("levels", item.value);
         else if (item.type === "price") params.set("prices", item.value);
-        else params.set("q", item.value); // generic search
-
+        else params.set("q", item.value);
         router.push(`/courses?${params.toString()}`);
         onClose();
     };
-
     const handleKeyDown = (e: React.KeyboardEvent) => {
         if (e.key === "ArrowDown") {
             e.preventDefault();
@@ -139,14 +110,12 @@ export function SearchCommand({ isOpen, onClose }: SearchCommandProps) {
             }
         }
     };
-
     if (!mounted) return null;
-
     return createPortal(
         <AnimatePresence>
             {isOpen && (
                 <>
-                    {/* Backdrop */}
+                    {}
                     <motion.div
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
@@ -154,8 +123,7 @@ export function SearchCommand({ isOpen, onClose }: SearchCommandProps) {
                         onClick={onClose}
                         className="fixed inset-0 bg-black/40 backdrop-blur-sm z-100"
                     />
-
-                    {/* Modal Wrapper */}
+                    {}
                     <div className="fixed inset-0 z-101 flex items-start justify-center pt-[15vh] pointer-events-none px-4">
                         <motion.div
                             initial={{ opacity: 0, scale: 0.98, y: -10 }}
@@ -165,7 +133,7 @@ export function SearchCommand({ isOpen, onClose }: SearchCommandProps) {
                             className="w-full max-w-2xl pointer-events-auto"
                         >
                             <div className="bg-white dark:bg-[#030712] rounded-2xl border border-black/5 dark:border-white/10 shadow-2xl overflow-hidden flex flex-col max-h-[70vh]">
-                                {/* Input Header */}
+                                {}
                                 <div className="flex items-center px-5 py-4 border-b border-black/3 dark:border-white/6">
                                     <Search className="w-5 h-5 text-primary mr-3" />
                                     <input
@@ -182,8 +150,7 @@ export function SearchCommand({ isOpen, onClose }: SearchCommandProps) {
                                         </kbd>
                                     </div>
                                 </div>
-
-                                {/* Results List */}
+                                {}
                                 <div className="overflow-y-auto p-2 scrollbar-none">
                                     {filteredItems.length === 0 ? (
                                         <div className="py-12 text-center text-muted-foreground">
@@ -199,15 +166,15 @@ export function SearchCommand({ isOpen, onClose }: SearchCommandProps) {
                                                     className={cn(
                                                         "w-full flex items-center gap-3 px-3 py-3 rounded-lg text-left transition-colors duration-200 border border-transparent",
                                                         selectedIndex === index
-                                                            ? "bg-primary/5 dark:bg-primary/10 text-primary border-primary/10" // Active State: Theme Color, No Gradient
+                                                            ? "bg-primary/5 dark:bg-primary/10 text-primary border-primary/10"
                                                             : "text-muted-foreground hover:bg-muted/50"
                                                     )}
                                                 >
-                                                    {/* Icon based on Type */}
+                                                    {}
                                                     <div className={cn(
                                                         "w-8 h-8 rounded-md flex items-center justify-center shrink-0 border transition-colors",
                                                         selectedIndex === index
-                                                            ? "bg-primary text-primary-foreground border-primary" // Solid Primary Icon
+                                                            ? "bg-primary text-primary-foreground border-primary"
                                                             : "bg-muted/50 border-transparent text-muted-foreground"
                                                     )}>
                                                         {item.type === "recent" && <Clock className="w-4 h-4" />}
@@ -216,7 +183,6 @@ export function SearchCommand({ isOpen, onClose }: SearchCommandProps) {
                                                         {item.type === "price" && <Hash className="w-4 h-4" />}
                                                         {item.type === "course" && <Search className="w-4 h-4" />}
                                                     </div>
-
                                                     <div className="flex-1 min-w-0">
                                                         <div className="flex items-center justify-between">
                                                             <span className={cn("text-sm font-medium truncate transition-colors", selectedIndex === index && "text-primary")}>
@@ -232,7 +198,6 @@ export function SearchCommand({ isOpen, onClose }: SearchCommandProps) {
                                                             )}
                                                         </div>
                                                     </div>
-
                                                     {selectedIndex === index && (
                                                         <CornerDownLeft className="w-3.5 h-3.5 opacity-100 text-primary" />
                                                     )}
@@ -241,8 +206,7 @@ export function SearchCommand({ isOpen, onClose }: SearchCommandProps) {
                                         </div>
                                     )}
                                 </div>
-
-                                {/* Minimal Footer */}
+                                {}
                                 {filteredItems.length > 0 && (
                                     <div className="px-5 py-2.5 bg-muted/20 border-t border-black/3 dark:border-white/6 flex items-center justify-between text-[11px] text-muted-foreground">
                                         <span>

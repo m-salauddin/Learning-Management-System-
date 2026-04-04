@@ -1,24 +1,19 @@
 "use client";
-
 import { motion } from "motion/react";
 import Image from "next/image";
 import { useEffect, useState } from "react";
-
 interface LoadingProps {
   className?: string;
   size?: "sm" | "md" | "lg" | "xl";
 }
-
 const sizes = {
   sm: 24,
   md: 48,
   lg: 64,
   xl: 80,
 };
-
 export function CustomLoading({ className, size = "lg" }: LoadingProps) {
   const pixelSize = sizes[size];
-
   return (
     <div className={`flex flex-col items-center justify-center min-h-[40vh] w-full ${className}`}>
       <div className="relative">
@@ -34,7 +29,6 @@ export function CustomLoading({ className, size = "lg" }: LoadingProps) {
           }}
           className="absolute inset-0 bg-primary/15 blur-2xl rounded-full animate-pulse"
         />
-
         <motion.div
           animate={{
             scale: [1, 1.03, 1],
@@ -56,7 +50,6 @@ export function CustomLoading({ className, size = "lg" }: LoadingProps) {
             priority
           />
         </motion.div>
-
         <div className="absolute inset-[-15%] animate-spin [animation-duration:8s]">
           <svg className="w-full h-full -rotate-90">
             <motion.circle
@@ -90,7 +83,6 @@ export function CustomLoading({ className, size = "lg" }: LoadingProps) {
           </svg>
         </div>
       </div>
-
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
@@ -121,10 +113,8 @@ export function CustomLoading({ className, size = "lg" }: LoadingProps) {
     </div>
   );
 }
-
 export default function LoadingPage() {
   const [mounted, setMounted] = useState(false);
-
   useEffect(() => {
     setMounted(true);
     document.body.style.overflow = "hidden";
@@ -132,10 +122,6 @@ export default function LoadingPage() {
       document.body.style.overflow = "unset";
     };
   }, []);
-
-  // We remove the return null guard to ensure SSR visibility
-  // but we still use mounted for overflow logic
-
   return (
     <div className="relative w-full min-h-screen bg-background">
       <div className="fixed inset-0 z-50 flex items-center justify-center bg-background/95 backdrop-blur-md">

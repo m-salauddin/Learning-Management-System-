@@ -1,5 +1,4 @@
 import { z } from "zod";
-
 export const courseStep1Schema = z.object({
     title: z.string().min(5, "Title must be at least 5 characters"),
     short_description: z.string().min(10, "Short description must realize the value (min 10 chars)"),
@@ -13,12 +12,10 @@ export const courseStep1Schema = z.object({
     course_type: z.enum(["recorded", "live", "hybrid"]),
     language: z.string().min(1, "Language is required"),
 });
-
 export const courseStep2Schema = z.object({
     requirements: z.array(z.string()).min(1, "Add at least one requirement"),
     target_audience: z.array(z.string()).min(1, "Define your target audience"),
 });
-
 export const courseStep3Schema = z.object({
     price: z.number().min(0, "Price cannot be negative"),
     discount_price: z.number().nullable().optional().refine((val) => val === null || val === undefined || val >= 0, "Discount price cannot be negative"),
@@ -34,7 +31,6 @@ export const courseStep3Schema = z.object({
     message: "Discount price must be less than regular price",
     path: ["discount_price"],
 });
-
 export const courseStep4Schema = z.object({
     tags: z.array(z.string()).optional(),
     projects: z.array(z.object({
@@ -59,7 +55,6 @@ export const courseStep4Schema = z.object({
         })).optional(),
     })).optional(),
 });
-
 export const courseFormSchema = courseStep1Schema
     .merge(courseStep2Schema)
     .merge(courseStep3Schema)

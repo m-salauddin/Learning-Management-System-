@@ -1,5 +1,4 @@
 "use client";
-
 import {
     Plus, Search, Edit2, Trash2, MoreHorizontal, Layers,
     Globe, Smartphone, Palette, TrendingUp, Briefcase,
@@ -46,7 +45,6 @@ import {
     verticalListSortingStrategy,
 } from "@dnd-kit/sortable"
 import { CSS } from "@dnd-kit/utilities"
-
 const iconMap: Record<string, any> = {
     'Globe': Globe,
     'Smartphone': Smartphone,
@@ -60,7 +58,6 @@ const iconMap: Record<string, any> = {
     'Layers': Layers,
     'Info': Info,
 };
-
 export default function CategoryManagementPage() {
     const toast = useToast();
     const dispatch = useAppDispatch();
@@ -72,38 +69,31 @@ export default function CategoryManagementPage() {
     const [currentPage, setCurrentPage] = useState(1);
     const [pageSize, setPageSize] = useState(10);
     const [localCategories, setLocalCategories] = useState<Category[]>([]);
-
     useEffect(() => {
         dispatch(fetchAdminCategories());
     }, [dispatch]);
-
     useEffect(() => {
         if (error) {
             toast.error(error);
         }
     }, [error, toast]);
-
     const filteredCategories = useMemo(() => {
         return categories.filter(c =>
             c.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
             c.slug.toLowerCase().includes(searchTerm.toLowerCase())
         );
     }, [categories, searchTerm]);
-
     const paginatedCategories = useMemo(() => {
         return filteredCategories.slice((currentPage - 1) * pageSize, currentPage * pageSize);
     }, [filteredCategories, currentPage, pageSize]);
-
     useEffect(() => {
         setLocalCategories(paginatedCategories);
     }, [paginatedCategories]);
-
     const sensors = useSensors(
         useSensor(MouseSensor, {}),
         useSensor(TouchSensor, {}),
         useSensor(KeyboardSensor, {})
     );
-
     const handleDragEnd = async (event: DragEndEvent) => {
         const { active, over } = event;
         if (active && over && active.id !== over.id) {
@@ -114,14 +104,12 @@ export default function CategoryManagementPage() {
             const startIndex = (currentPage - 1) * pageSize;
             const updatedFullList = [...categories];
             updatedFullList.splice(startIndex, newOrder.length, ...newOrder);
-
             const loadingId = toast.loading("Serializing...", "Synchronizing taxonomic structure");
             await dispatch(reorderCategories(updatedFullList));
             toast.dismiss(loadingId);
             toast.success("Order synchronized successfully");
         }
     };
-
     const handleDelete = async () => {
         if (!deleteConfirmId) return;
         const result = await deleteCategory(deleteConfirmId);
@@ -133,7 +121,6 @@ export default function CategoryManagementPage() {
             toast.error(result.error || "Failed to delete");
         }
     };
-
     const toggleSelectAll = () => {
         if (selectedCategories.size === filteredCategories.length) {
             setSelectedCategories(new Set());
@@ -141,7 +128,6 @@ export default function CategoryManagementPage() {
             setSelectedCategories(new Set(filteredCategories.map(c => c.id)));
         }
     };
-
     const toggleSelectCategory = (id: string) => {
         const newSelected = new Set(selectedCategories);
         if (newSelected.has(id)) {
@@ -151,16 +137,12 @@ export default function CategoryManagementPage() {
         }
         setSelectedCategories(newSelected);
     };
-
     const totalPages = Math.max(1, Math.ceil(filteredCategories.length / pageSize));
-
     useEffect(() => {
         setCurrentPage(1);
     }, [searchTerm, pageSize]);
-
     const totalCourses = categories.reduce((sum, c) => sum + (c.course_count || 0), 0);
     const avgCourses = categories.length > 0 ? (totalCourses / categories.length).toFixed(1) : 0;
-
     return (
         <motion.div
             initial={{ opacity: 0 }}
@@ -185,7 +167,6 @@ export default function CategoryManagementPage() {
                         Organize course taxonomies, icons, and structure
                     </motion.p>
                 </div>
-
                 <div className="flex flex-wrap items-center gap-3">
                     <button
                         onClick={() => setExportModal(true)}
@@ -204,7 +185,6 @@ export default function CategoryManagementPage() {
                     </Link>
                 </div>
             </div>
-
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                 {isLoading ? (
                     [...Array(4)].map((_, i) => (
@@ -243,7 +223,6 @@ export default function CategoryManagementPage() {
                     ))
                 )}
             </div>
-
             <div className="bg-card/30 backdrop-blur-xl border border-border/40 rounded-3xl overflow-hidden shadow-xl">
                 <div className="p-6 border-b border-border/20 flex flex-col md:flex-row md:items-center justify-between gap-4">
                     <div className="relative flex-1 max-w-md">
@@ -256,7 +235,6 @@ export default function CategoryManagementPage() {
                             className="w-full bg-muted/20 border border-border/30 rounded-xl pl-10 pr-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 hover:bg-muted/30 transition-all font-medium"
                         />
                     </div>
-
                     <div className="flex items-center gap-3">
                         {selectedCategories.size > 0 && (
                             <button
@@ -275,7 +253,6 @@ export default function CategoryManagementPage() {
                         </button>
                     </div>
                 </div>
-
                 <div className="min-w-[800px] overflow-x-auto">
                     <div className="grid grid-cols-[48px_48px_2fr_1fr_100px_120px_80px] px-6 py-4 bg-muted/5 border-b border-border/20">
                         <div className="flex items-center justify-center"></div>
@@ -292,7 +269,6 @@ export default function CategoryManagementPage() {
                         <div className="px-4 text-[10px] uppercase tracking-widest font-black text-muted-foreground/60">Courses</div>
                         <div className="px-4 text-[10px] uppercase tracking-widest font-black text-muted-foreground/60 text-right">Action</div>
                     </div>
-
                     {isLoading && localCategories.length === 0 ? (
                         <div className="p-24 flex flex-col items-center justify-center space-y-4 text-center">
                             <div className="w-12 h-12 border-4 border-primary/20 border-t-primary rounded-full animate-spin" />
@@ -329,7 +305,6 @@ export default function CategoryManagementPage() {
                         </DndContext>
                     )}
                 </div>
-
                 {!isLoading && filteredCategories.length > 0 && (
                     <div className="p-6 border-t border-border/20 bg-muted/5">
                         <Pagination
@@ -343,7 +318,6 @@ export default function CategoryManagementPage() {
                     </div>
                 )}
             </div>
-
             <Dialog open={!!deleteConfirmId} onClose={() => setDeleteConfirmId(null)} size="sm">
                 <div className="p-8 text-center space-y-6">
                     <div className="w-24 h-24 rounded-full bg-rose-500/10 text-rose-500 flex items-center justify-center mx-auto ring-8 ring-rose-500/5"><X className="w-10 h-10" /></div>
@@ -357,7 +331,6 @@ export default function CategoryManagementPage() {
                     <button onClick={handleDelete} className="h-14 bg-rose-500 text-white rounded-2xl font-black text-[10px] uppercase tracking-widest hover:bg-rose-600 transition-all shadow-xl shadow-rose-500/30">Delete</button>
                 </DialogFooter>
             </Dialog>
-
             <Dialog open={exportModal} onClose={() => setExportModal(false)} size="sm">
                 <DialogHeader>
                     <DialogTitle className="italic">Matrix Extraction</DialogTitle>
@@ -384,7 +357,6 @@ export default function CategoryManagementPage() {
         </motion.div>
     );
 }
-
 function CategoryRowItem({ category, selected, onToggleSelect, onDelete }: {
     category: Category;
     selected: boolean;
@@ -394,14 +366,11 @@ function CategoryRowItem({ category, selected, onToggleSelect, onDelete }: {
     const { transform, transition, setNodeRef, isDragging, attributes, listeners } = useSortable({
         id: category.id,
     });
-
     const Icon = iconMap[category.icon || 'Layers'] || Layers;
-
     const style = {
         transform: CSS.Transform.toString(transform),
         transition,
     };
-
     return (
         <div
             ref={setNodeRef}

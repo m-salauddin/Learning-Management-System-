@@ -4,13 +4,10 @@ import Image from "next/image";
 import Link from "next/link";
 import { Star, Clock, Users, ArrowRight, Zap, BookOpen, Hash, Timer } from "lucide-react";
 import { MappedCourse } from "@/types/mapped-course";
-
 export function CourseCard({ course }: { course: MappedCourse }) {
     const [timeLeft, setTimeLeft] = useState<{ days: number; hours: number; minutes: number; seconds: number } | null>(null);
-
     useEffect(() => {
         if (!course.discountExpiresAt) return;
-
         const calculateTimeLeft = () => {
             const difference = +new Date(course.discountExpiresAt!) - +new Date();
             if (difference > 0) {
@@ -23,15 +20,11 @@ export function CourseCard({ course }: { course: MappedCourse }) {
             }
             return null;
         };
-
         setTimeLeft(calculateTimeLeft());
         const timer = setInterval(() => setTimeLeft(calculateTimeLeft()), 1000);
         return () => clearInterval(timer);
     }, [course.discountExpiresAt]);
-
     const hasDiscount = course.discountPrice && timeLeft;
-
-
     const formatCountdown = () => {
         if (!timeLeft) return "";
         const parts = [];
@@ -41,11 +34,9 @@ export function CourseCard({ course }: { course: MappedCourse }) {
         parts.push(`${String(timeLeft.seconds).padStart(2, '0')}s`);
         return parts.join(" ");
     };
-
     return (
         <div className="group relative h-full">
             <div className="relative h-full flex flex-col bg-card/80 border border-border rounded-2xl overflow-hidden transition-all duration-500 group-hover:border-border">
-
                 <div className="relative p-3">
                     <div className="relative h-48 rounded-xl overflow-hidden">
                         <Image
@@ -54,11 +45,8 @@ export function CourseCard({ course }: { course: MappedCourse }) {
                             fill
                             className="object-cover transition-transform duration-700 group-hover:scale-105"
                         />
-
                         <div className="absolute inset-0 bg-linear-to-t from-black/90 via-black/40 to-black/20" />
-
                         <div className="absolute top-3 left-3 right-3 flex items-start justify-between gap-2">
-
                             {hasDiscount && (
                                 <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/20 dark:bg-black/60 backdrop-blur-md border border-white/30 dark:border-white/10 shadow-sm">
                                     <Timer className="w-3.5 h-3.5 text-amber-400" />
@@ -67,7 +55,6 @@ export function CourseCard({ course }: { course: MappedCourse }) {
                                     </span>
                                 </div>
                             )}
-
                             <div className="ml-auto flex flex-col items-end gap-1.5">
                                 {course.batchNo && (
                                     <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/20 dark:bg-black/60 backdrop-blur-md text-white text-xs font-medium border border-white/30 dark:border-white/10 shadow-sm w-fit">
@@ -83,14 +70,12 @@ export function CourseCard({ course }: { course: MappedCourse }) {
                                 )}
                             </div>
                         </div>
-
                         <div className="absolute bottom-3 left-3 right-3 flex items-center justify-between">
                             <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/20 dark:bg-black/60 backdrop-blur-md border border-white/30 dark:border-white/10 shadow-sm">
                                 <Star className="w-3.5 h-3.5 fill-amber-400 text-amber-400" />
                                 <span className="text-white text-xs font-bold">{course.rating.toFixed(1)}</span>
                                 <span className="text-white/70 text-[10px]">({course.reviews})</span>
                             </div>
-
                             <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/20 dark:bg-black/60 backdrop-blur-md border border-white/30 dark:border-white/10 shadow-sm">
                                 <Users className="w-3.5 h-3.5 text-emerald-400" />
                                 <span className="text-white text-xs font-medium">{course.students}</span>
@@ -98,7 +83,6 @@ export function CourseCard({ course }: { course: MappedCourse }) {
                         </div>
                     </div>
                 </div>
-
                 <div className="relative px-4 pb-5 flex flex-col grow">
                     <div className="flex items-center flex-wrap gap-2 mb-3">
                         <span className="inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider text-primary bg-primary/10 border border-primary/20 px-2.5 py-1 rounded-full">
@@ -109,15 +93,12 @@ export function CourseCard({ course }: { course: MappedCourse }) {
                             {course.type}
                         </span>
                     </div>
-
                     <h3 className="text-lg font-bold leading-snug mb-2 text-foreground transition-colors duration-300 group-hover:text-primary line-clamp-2 min-h-14">
                         {course.title}
                     </h3>
-
                     <p className="text-muted-foreground text-sm leading-relaxed mb-4 line-clamp-2 min-h-[46px]">
                         {course.description}
                     </p>
-
                     <div className="flex items-center justify-between py-3 px-4 mb-4 rounded-xl bg-card/50 border border-border/50">
                         <div className="flex items-center gap-2">
                             <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-secondary/10">
@@ -125,18 +106,14 @@ export function CourseCard({ course }: { course: MappedCourse }) {
                             </div>
                             <span className="text-xs font-medium text-foreground">{course.students}</span>
                         </div>
-
                         <div className="w-px h-5 bg-border/50" />
-
                         <div className="flex items-center gap-2">
                             <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-primary/10">
                                 <BookOpen className="w-3.5 h-3.5 text-primary" />
                             </div>
                             <span className="text-xs font-medium text-foreground">{course.totalLessons || 0} lessons</span>
                         </div>
-
                         <div className="w-px h-5 bg-border/50" />
-
                         <div className="flex items-center gap-2">
                             <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-warning/10">
                                 <Clock className="w-3.5 h-3.5 text-warning" />
@@ -144,9 +121,7 @@ export function CourseCard({ course }: { course: MappedCourse }) {
                             <span className="text-xs font-medium text-foreground">{course.duration}</span>
                         </div>
                     </div>
-
                     <div className="grow" />
-
                     <div className="flex items-end justify-between pt-4 border-t border-border/50">
                         <div className="flex flex-col">
                             {hasDiscount ? (
@@ -177,7 +152,6 @@ export function CourseCard({ course }: { course: MappedCourse }) {
                                 </>
                             )}
                         </div>
-
                         <Link
                             href={`/courses/${course.slug}`}
                             className="group/btn flex items-center gap-2 pl-5 pr-1.5 py-1.5 bg-primary hover:bg-primary/90 rounded-full transition-all duration-300 active:scale-95"

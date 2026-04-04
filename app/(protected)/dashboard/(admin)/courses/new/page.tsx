@@ -1,5 +1,4 @@
 "use client";
-
 import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "motion/react";
@@ -16,8 +15,6 @@ import {
     courseFormSchema
 } from "@/lib/validations/course";
 import { ZodError } from "zod";
-
-// Extracted Components
 import { StepIndicator } from "@/components/dashboard/courses/new/StepIndicator";
 import { CoursePreview } from "@/components/dashboard/courses/new/CoursePreview";
 import { StepFoundations } from "@/components/dashboard/courses/new/StepFoundations";
@@ -25,21 +22,18 @@ import { StepNarratives } from "@/components/dashboard/courses/new/StepNarrative
 import { StepPresentation } from "@/components/dashboard/courses/new/StepPresentation";
 import { StepFinalization } from "@/components/dashboard/courses/new/StepFinalization";
 import { FormFooter } from "@/components/dashboard/courses/new/FormFooter";
-
 interface Category {
     id: string;
     name: string;
     slug: string;
     icon?: string;
 }
-
 interface Teacher {
     id: string;
     name: string;
     email: string;
     avatar_url: string | null;
 }
-
 export default function CreateCoursePage() {
     const router = useRouter();
     const supabase = createClient();
@@ -49,8 +43,6 @@ export default function CreateCoursePage() {
     const [teachers, setTeachers] = useState<Teacher[]>([]);
     const [errors, setErrors] = useState<Record<string, string>>({});
     const [submittedSteps, setSubmittedSteps] = useState<Set<number>>(new Set());
-
-    // Form state
     const [currentStep, setCurrentStep] = useState(1);
     const totalSteps = 4;
     const [formData, setFormData] = useState<CreateCourseInput>({
@@ -77,8 +69,6 @@ export default function CreateCoursePage() {
         modules: [] as { title: string; lessons: { title: string; video_url: string }[] }[],
         coupon_code: ""
     });
-
-    // Real-time validation (Watch Mode) - Debounced for performance
     useEffect(() => {
         if (submittedSteps.has(currentStep)) {
             const timer = setTimeout(() => {
@@ -87,7 +77,6 @@ export default function CreateCoursePage() {
                 else if (currentStep === 2) schema = courseStep2Schema;
                 else if (currentStep === 3) schema = courseStep3Schema;
                 else if (currentStep === 4) schema = courseStep4Schema;
-
                 if (schema) {
                     const result = schema.safeParse(formData);
                     if (!result.success) {
@@ -104,25 +93,19 @@ export default function CreateCoursePage() {
             return () => clearTimeout(timer);
         }
     }, [formData, currentStep, submittedSteps]);
-
-    // Media states
     const [thumbnailPreview, setThumbnailPreview] = useState<string | null>(null);
     const [isUploadingThumbnail, setIsUploadingThumbnail] = useState(false);
     const [isDragging, setIsDragging] = useState(false);
     const fileInputRef = useRef<HTMLInputElement>(null);
-
-    // Initial data fetch
     useEffect(() => {
         fetchData();
     }, []);
-
     const fetchData = async () => {
         try {
             const [catsRes, tchsRes] = await Promise.all([
                 getCategories(),
                 getTeachers()
             ]);
-
             if (catsRes.success && catsRes.data) {
                 setCategories(catsRes.data);
             }
@@ -133,31 +116,23 @@ export default function CreateCoursePage() {
             toast.error("Failed to fetch initial data");
         }
     };
-
-    // --- Media Handlers ---
     const handleThumbnailUpload = async (file: File) => {
         setIsUploadingThumbnail(true);
         try {
             const fileExt = file.name.split('.').pop();
             const fileName = `${Math.random()}.${fileExt}`;
             const filePath = `course-thumbnails/${fileName}`;
-
             const { error: uploadError } = await supabase.storage
                 .from('courses')
                 .upload(filePath, file);
-
             if (uploadError) throw uploadError;
-
             const { data: { publicUrl } } = supabase.storage
                 .from('courses')
                 .getPublicUrl(filePath);
-
             setFormData(prev => ({ ...prev, thumbnail_url: publicUrl }));
-
             const reader = new FileReader();
             reader.onloadend = () => setThumbnailPreview(reader.result as string);
             reader.readAsDataURL(file);
-
             toast.success("Thumbnail uploaded successfully");
         } catch (error: any) {
             console.error("Thumbnail upload error:", error);
@@ -170,49 +145,37 @@ export default function CreateCoursePage() {
             setIsUploadingThumbnail(false);
         }
     };
-
     const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
         if (file) handleThumbnailUpload(file);
     };
-
     const handleDragOver = (e: React.DragEvent) => {
         e.preventDefault();
         setIsDragging(true);
     };
-
     const handleDragLeave = (e: React.DragEvent) => {
         e.preventDefault();
         setIsDragging(false);
     };
-
     const handleDrop = (e: React.DragEvent) => {
         e.preventDefault();
         setIsDragging(false);
         const file = e.dataTransfer.files?.[0];
         if (file) handleThumbnailUpload(file);
     };
-
     const removeThumbnail = () => {
         setFormData(prev => ({ ...prev, thumbnail_url: "" }));
         setThumbnailPreview(null);
     };
-
-    // --- Submission ---
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-
-        // If not on the last step, just trigger nextStep logic
         if (currentStep < totalSteps) {
             nextStep();
             return;
         }
-
         setSubmittedSteps(prev => new Set(prev).add(4));
         setErrors({});
-
         try {
-            // Final validation of the entire form
             courseFormSchema.parse(formData);
             setIsSubmitting(true);
             const result = await createCourse(formData);
@@ -230,8 +193,6 @@ export default function CreateCoursePage() {
                     if (path) newErrors[path] = issue.message;
                 });
                 setErrors(newErrors);
-                
-                // If there are errors in previous steps, jump back to them or at least notify
                 toast.error("Please fix the errors in your course data");
             } else {
                 toast.error(errorDetail.message || "Failed to create course");
@@ -240,8 +201,6 @@ export default function CreateCoursePage() {
             setIsSubmitting(false);
         }
     };
-
-    // --- Navigation ---
     const nextStep = () => {
         setSubmittedSteps(prev => new Set(prev).add(currentStep));
         setErrors({});
@@ -249,7 +208,6 @@ export default function CreateCoursePage() {
             if (currentStep === 1) courseStep1Schema.parse(formData);
             if (currentStep === 2) courseStep2Schema.parse(formData);
             if (currentStep === 3) courseStep3Schema.parse(formData);
-
             setCurrentStep(prev => Math.min(prev + 1, totalSteps));
             window.scrollTo({ top: 0, behavior: 'smooth' });
         } catch (errorDetail: any) {
@@ -262,24 +220,20 @@ export default function CreateCoursePage() {
             }
         }
     };
-
     const prevStep = () => {
         setErrors({});
         setCurrentStep(prev => Math.max(prev - 1, 1));
         window.scrollTo({ top: 0, behavior: 'smooth' });
     };
-
     return (
         <div className="max-w-6xl mx-auto py-8 px-4 sm:px-6">
             <form onSubmit={handleSubmit} className="space-y-8">
-                {/* Header */}
+                {}
                 <div className="mb-8">
-                    <h1 className="text-3xl font-bold tracking-tight text-white">Initialize New Course</h1>
+                    <h1 className="text-3xl font-bold tracking-tight text-slate-900 dark:text-white">Initialize New Course</h1>
                     <p className="text-muted-foreground mt-1 font-medium">Configure the core details, curriculum, and presentation for your new educational program.</p>
                 </div>
-
                 <StepIndicator currentStep={currentStep} setCurrentStep={setCurrentStep} />
-
                 <div className="grid grid-cols-1 xl:grid-cols-12 gap-10 items-start">
                     <div className="xl:col-span-8 space-y-8 min-h-[500px]">
                         <AnimatePresence mode="wait">
@@ -324,8 +278,7 @@ export default function CreateCoursePage() {
                             )}
                         </AnimatePresence>
                     </div>
-
-                    {/* Live Preview Sidebar */}
+                    {}
                     <div className="xl:col-span-4 h-full">
                         <CoursePreview
                             formData={formData}
@@ -333,7 +286,6 @@ export default function CreateCoursePage() {
                         />
                     </div>
                 </div>
-
                 <FormFooter
                     currentStep={currentStep}
                     totalSteps={totalSteps}

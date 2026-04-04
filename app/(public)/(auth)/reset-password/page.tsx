@@ -1,5 +1,4 @@
 "use client";
-
 import * as React from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -8,8 +7,6 @@ import { z, ZodError } from "zod";
 import { Lock, ArrowRight, Loader2, Eye, EyeOff, CheckCircle2, AlertCircle } from "lucide-react";
 import { fadeInUp } from "@/lib/motion";
 import { updatePassword } from "@/lib/actions/auth";
-
-
 const resetPasswordSchema = z.object({
     password: z
         .string()
@@ -23,9 +20,7 @@ const resetPasswordSchema = z.object({
     message: "Passwords do not match",
     path: ["confirmPassword"],
 });
-
 type ResetPasswordFormData = z.infer<typeof resetPasswordSchema>;
-
 function getPasswordStrength(password: string): { strength: number; label: string; color: string } {
     let strength = 0;
     if (password.length >= 8) strength++;
@@ -33,13 +28,11 @@ function getPasswordStrength(password: string): { strength: number; label: strin
     if (/[a-z]/.test(password)) strength++;
     if (/[0-9]/.test(password)) strength++;
     if (/[^A-Za-z0-9]/.test(password)) strength++;
-
     if (strength <= 2) return { strength, label: "Weak", color: "bg-destructive" };
     if (strength <= 3) return { strength, label: "Medium", color: "bg-yellow-500" };
     if (strength <= 4) return { strength, label: "Strong", color: "bg-primary" };
     return { strength, label: "Very Strong", color: "bg-green-500" };
 }
-
 export default function ResetPasswordPage() {
     const router = useRouter();
     const [isLoading, setIsLoading] = React.useState(false);
@@ -51,8 +44,6 @@ export default function ResetPasswordPage() {
     });
     const [errors, setErrors] = React.useState<Record<string, string>>({});
     const [isSubmitted, setIsSubmitted] = React.useState(false);
-
-    // Real-time validation (Watch Mode) - Debounced for performance
     React.useEffect(() => {
         if (isSubmitted) {
             const timer = setTimeout(() => {
@@ -70,9 +61,7 @@ export default function ResetPasswordPage() {
             return () => clearTimeout(timer);
         }
     }, [formData, isSubmitted]);
-
     const passwordStrength = getPasswordStrength(formData.password);
-
     const onSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setIsSubmitted(true);
@@ -100,10 +89,8 @@ export default function ResetPasswordPage() {
             setIsLoading(false);
         }
     };
-
     return (
         <div className="min-h-screen bg-background flex flex-col" suppressHydrationWarning>
-
             <main className="flex-1 flex items-center justify-center px-4 py-28">
                 <motion.div
                     initial="hidden"
@@ -111,19 +98,14 @@ export default function ResetPasswordPage() {
                     variants={fadeInUp}
                     className="w-full max-w-md"
                 >
-
                     <div className="bg-card/80 dark:bg-card/60 backdrop-blur-xl border border-border rounded-3xl p-8 shadow-2xl">
-
                         <div className="text-center mb-8">
                             <h1 className="text-2xl font-bold mb-2">Set New Password</h1>
                             <p className="text-muted-foreground text-sm">
                                 Create a strong password for your account
                             </p>
                         </div>
-
-
                         <form onSubmit={onSubmit} className="space-y-4">
-
                             <div className="space-y-2">
                                 <label htmlFor="password" className="block text-sm font-medium">
                                     New Password
@@ -180,8 +162,6 @@ export default function ResetPasswordPage() {
                                     )}
                                 </div>
                             </div>
-
-
                             <div className="space-y-2">
                                 <label htmlFor="confirmPassword" className="block text-sm font-medium">
                                     Confirm New Password
@@ -220,8 +200,6 @@ export default function ResetPasswordPage() {
                                     )}
                                 </div>
                             </div>
-
-
                             <div className="bg-muted/30 rounded-xl p-3 space-y-1">
                                 <p className="text-xs font-medium text-muted-foreground mb-2">Password must contain:</p>
                                 <div className="grid grid-cols-2 gap-1">
@@ -243,15 +221,11 @@ export default function ResetPasswordPage() {
                                     ))}
                                 </div>
                             </div>
-
-
                             {errors.root && (
                                 <div className="p-3 rounded-lg bg-destructive/10 border border-destructive/20 text-destructive text-sm text-center">
                                     {errors.root}
                                 </div>
                             )}
-
-
                             <button
                                 type="submit"
                                 disabled={isLoading}

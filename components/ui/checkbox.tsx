@@ -1,13 +1,10 @@
 "use client"
-
 import * as React from "react"
 import { Check } from "lucide-react"
 import { cn } from "@/lib/utils"
-
 export interface CheckboxProps extends React.InputHTMLAttributes<HTMLInputElement> {
     onCheckedChange?: (checked: boolean) => void
 }
-
 const Checkbox = React.forwardRef<HTMLInputElement, CheckboxProps>(
     ({ className, onCheckedChange, ...props }, ref) => {
         return (
@@ -28,5 +25,4 @@ const Checkbox = React.forwardRef<HTMLInputElement, CheckboxProps>(
     }
 )
 Checkbox.displayName = "Checkbox"
-
 export { Checkbox }

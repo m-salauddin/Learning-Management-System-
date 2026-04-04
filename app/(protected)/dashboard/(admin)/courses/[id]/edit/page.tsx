@@ -1,5 +1,4 @@
 "use client";
-
 import { useState, useEffect, useRef, use } from "react";
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "motion/react";
@@ -16,8 +15,6 @@ import {
 } from "@/lib/validations/course";
 import { ZodError } from "zod";
 import Link from "next/link";
-
-// Reuse extracted components from create page
 import { StepIndicator } from "@/components/dashboard/courses/new/StepIndicator";
 import { CoursePreview } from "@/components/dashboard/courses/new/CoursePreview";
 import { StepFoundations } from "@/components/dashboard/courses/new/StepFoundations";
@@ -25,35 +22,29 @@ import { StepNarratives } from "@/components/dashboard/courses/new/StepNarrative
 import { StepPresentation } from "@/components/dashboard/courses/new/StepPresentation";
 import { StepFinalization } from "@/components/dashboard/courses/new/StepFinalization";
 import { FormFooter } from "@/components/dashboard/courses/new/FormFooter";
-
 interface Category {
     id: string;
     name: string;
     slug: string;
     icon?: string;
 }
-
 interface Teacher {
     id: string;
     name: string;
     email: string;
     avatar_url: string | null;
 }
-
 export default function EditCoursePage({ params }: { params: Promise<{ id: string }> }) {
     const { id: courseId } = use(params);
     const router = useRouter();
     const supabase = createClient();
     const toast = useToast();
-
     const [isLoading, setIsLoading] = useState(true);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [categories, setCategories] = useState<Category[]>([]);
     const [teachers, setTeachers] = useState<Teacher[]>([]);
     const [errors, setErrors] = useState<Record<string, string>>({});
     const [submittedSteps, setSubmittedSteps] = useState<Set<number>>(new Set());
-
-    // Form state
     const [currentStep, setCurrentStep] = useState(1);
     const totalSteps = 4;
     const [formData, setFormData] = useState<CreateCourseInput>({
@@ -79,8 +70,6 @@ export default function EditCoursePage({ params }: { params: Promise<{ id: strin
         faqs: [] as { question: string; answer: string }[],
         resources: [] as { title: string; type: string; url: string }[]
     });
-
-    // Real-time validation (Watch Mode)
     useEffect(() => {
         if (submittedSteps.has(currentStep)) {
             const timer = setTimeout(() => {
@@ -89,7 +78,6 @@ export default function EditCoursePage({ params }: { params: Promise<{ id: strin
                 else if (currentStep === 2) schema = courseStep2Schema;
                 else if (currentStep === 3) schema = courseStep3Schema;
                 else if (currentStep === 4) schema = courseStep4Schema;
-
                 if (schema) {
                     const result = schema.safeParse(formData);
                     if (!result.success) {
@@ -106,18 +94,13 @@ export default function EditCoursePage({ params }: { params: Promise<{ id: strin
             return () => clearTimeout(timer);
         }
     }, [formData, currentStep, submittedSteps]);
-
-    // Media states
     const [thumbnailPreview, setThumbnailPreview] = useState<string | null>(null);
     const [isUploadingThumbnail, setIsUploadingThumbnail] = useState(false);
     const [isDragging, setIsDragging] = useState(false);
     const fileInputRef = useRef<HTMLInputElement>(null);
-
-    // Fetch course data + categories + teachers
     useEffect(() => {
         fetchData();
     }, [courseId]);
-
     const fetchData = async () => {
         setIsLoading(true);
         try {
@@ -126,30 +109,25 @@ export default function EditCoursePage({ params }: { params: Promise<{ id: strin
                 getCategories(),
                 getTeachers()
             ]);
-
             if (catsRes.success && catsRes.data) {
                 setCategories(catsRes.data);
             }
             if (tchsRes.success && tchsRes.data) {
                 setTeachers(tchsRes.data);
             }
-
             if (courseRes.success && courseRes.data) {
                 const course = courseRes.data as any;
-
                 const details = course.course_details?.[0] || {};
                 const projects = course.course_projects || [];
                 const faqs = course.course_faq || [];
                 const resources = course.course_resources || [];
                 const instructors = course.course_instructors || [];
-
                 const mainInstructorIds = instructors
                     .filter((i: any) => i.role === 'main')
                     .map((i: any) => i.instructor_id);
                 const supportInstructorIds = instructors
                     .filter((i: any) => i.role === 'support')
                     .map((i: any) => i.instructor_id);
-
                 setFormData({
                     title: course.title || "",
                     short_description: course.short_description || "",
@@ -191,8 +169,6 @@ export default function EditCoursePage({ params }: { params: Promise<{ id: strin
                         }))
                     })) || []
                 });
-
-                // Set thumbnail preview from existing URL
                 if (course.thumbnail_url) {
                     setThumbnailPreview(course.thumbnail_url);
                 }
@@ -207,31 +183,23 @@ export default function EditCoursePage({ params }: { params: Promise<{ id: strin
             setIsLoading(false);
         }
     };
-
-    // --- Media Handlers ---
     const handleThumbnailUpload = async (file: File) => {
         setIsUploadingThumbnail(true);
         try {
             const fileExt = file.name.split('.').pop();
             const fileName = `${Math.random()}.${fileExt}`;
             const filePath = `course-thumbnails/${fileName}`;
-
             const { error: uploadError } = await supabase.storage
                 .from('courses')
                 .upload(filePath, file);
-
             if (uploadError) throw uploadError;
-
             const { data: { publicUrl } } = supabase.storage
                 .from('courses')
                 .getPublicUrl(filePath);
-
             setFormData(prev => ({ ...prev, thumbnail_url: publicUrl }));
-
             const reader = new FileReader();
             reader.onloadend = () => setThumbnailPreview(reader.result as string);
             reader.readAsDataURL(file);
-
             toast.success("Thumbnail uploaded successfully");
         } catch (error: any) {
             console.error("Thumbnail upload error:", error);
@@ -244,40 +212,32 @@ export default function EditCoursePage({ params }: { params: Promise<{ id: strin
             setIsUploadingThumbnail(false);
         }
     };
-
     const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
         if (file) handleThumbnailUpload(file);
     };
-
     const handleDragOver = (e: React.DragEvent) => {
         e.preventDefault();
         setIsDragging(true);
     };
-
     const handleDragLeave = (e: React.DragEvent) => {
         e.preventDefault();
         setIsDragging(false);
     };
-
     const handleDrop = (e: React.DragEvent) => {
         e.preventDefault();
         setIsDragging(false);
         const file = e.dataTransfer.files?.[0];
         if (file) handleThumbnailUpload(file);
     };
-
     const removeThumbnail = () => {
         setFormData(prev => ({ ...prev, thumbnail_url: "" }));
         setThumbnailPreview(null);
     };
-
-    // --- Submission ---
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setSubmittedSteps(prev => new Set(prev).add(4));
         setErrors({});
-
         try {
             courseStep4Schema.parse(formData);
             setIsSubmitting(true);
@@ -305,8 +265,6 @@ export default function EditCoursePage({ params }: { params: Promise<{ id: strin
             setIsSubmitting(false);
         }
     };
-
-    // --- Navigation ---
     const nextStep = () => {
         setSubmittedSteps(prev => new Set(prev).add(currentStep));
         setErrors({});
@@ -314,7 +272,6 @@ export default function EditCoursePage({ params }: { params: Promise<{ id: strin
             if (currentStep === 1) courseStep1Schema.parse(formData);
             if (currentStep === 2) courseStep2Schema.parse(formData);
             if (currentStep === 3) courseStep3Schema.parse(formData);
-
             setCurrentStep(prev => Math.min(prev + 1, totalSteps));
             window.scrollTo({ top: 0, behavior: 'smooth' });
         } catch (errorDetail: any) {
@@ -327,14 +284,11 @@ export default function EditCoursePage({ params }: { params: Promise<{ id: strin
             }
         }
     };
-
     const prevStep = () => {
         setErrors({});
         setCurrentStep(prev => Math.max(prev - 1, 1));
         window.scrollTo({ top: 0, behavior: 'smooth' });
     };
-
-    // Loading state
     if (isLoading) {
         return (
             <div className="max-w-6xl mx-auto py-8 px-4 sm:px-6">
@@ -345,11 +299,10 @@ export default function EditCoursePage({ params }: { params: Promise<{ id: strin
             </div>
         );
     }
-
     return (
         <div className="max-w-6xl mx-auto py-8 px-4 sm:px-6">
             <form onSubmit={handleSubmit} className="space-y-8">
-                {/* Header */}
+                {}
                 <div className="mb-8">
                     <div className="flex items-center gap-3 mb-4">
                         <Link
@@ -366,9 +319,7 @@ export default function EditCoursePage({ params }: { params: Promise<{ id: strin
                         </div>
                     </div>
                 </div>
-
                 <StepIndicator currentStep={currentStep} setCurrentStep={setCurrentStep} />
-
                 <div className="grid grid-cols-1 xl:grid-cols-12 gap-10 items-start">
                     <div className="xl:col-span-8 space-y-8 min-h-[500px]">
                         <AnimatePresence mode="wait">
@@ -413,8 +364,7 @@ export default function EditCoursePage({ params }: { params: Promise<{ id: strin
                             )}
                         </AnimatePresence>
                     </div>
-
-                    {/* Live Preview Sidebar */}
+                    {}
                     <div className="xl:col-span-4 h-full">
                         <CoursePreview
                             formData={formData}
@@ -422,7 +372,6 @@ export default function EditCoursePage({ params }: { params: Promise<{ id: strin
                         />
                     </div>
                 </div>
-
                 <FormFooter
                     currentStep={currentStep}
                     totalSteps={totalSteps}

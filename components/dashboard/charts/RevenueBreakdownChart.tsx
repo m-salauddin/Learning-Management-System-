@@ -1,8 +1,6 @@
 "use client"
-
 import * as React from "react"
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend } from "recharts"
-
 const data = [
     { name: "Course Sales", value: 68500, color: "#8b5cf6" },
     { name: "Subscriptions", value: 32400, color: "#3b82f6" },
@@ -10,7 +8,6 @@ const data = [
     { name: "Merchandise", value: 8900, color: "#f59e0b" },
     { name: "Workshops", value: 15200, color: "#ec4899" },
 ]
-
 const RADIAN = Math.PI / 180
 const renderCustomizedLabel = ({
     cx,
@@ -23,7 +20,6 @@ const renderCustomizedLabel = ({
     const radius = innerRadius + (outerRadius - innerRadius) * 0.5
     const x = cx + radius * Math.cos(-midAngle * RADIAN)
     const y = cy + radius * Math.sin(-midAngle * RADIAN)
-
     return percent > 0.05 ? (
         <text
             x={x}
@@ -37,10 +33,8 @@ const renderCustomizedLabel = ({
         </text>
     ) : null
 }
-
 export function RevenueBreakdownChart() {
     const total = data.reduce((sum, item) => sum + item.value, 0)
-
     return (
         <div className="w-full h-[300px] flex flex-col">
             <div className="flex-1">
@@ -88,8 +82,7 @@ export function RevenueBreakdownChart() {
                     </PieChart>
                 </ResponsiveContainer>
             </div>
-
-            {/* Custom Legend */}
+            {}
             <div className="grid grid-cols-2 gap-2 mt-2">
                 {data.map((item) => (
                     <div key={item.name} className="flex items-center gap-2 text-sm">

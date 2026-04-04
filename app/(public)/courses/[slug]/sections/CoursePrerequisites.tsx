@@ -1,21 +1,16 @@
 "use client";
-
 import { ListChecks, Target, CheckCircle2 } from "lucide-react";
-
 interface CoursePrerequisitesProps {
     requirements: string[];
     targetAudience: string[];
 }
-
 export default function CoursePrerequisites({ requirements, targetAudience }: CoursePrerequisitesProps) {
     const hasRequirements = requirements && requirements.length > 0;
     const hasAudience = targetAudience && targetAudience.length > 0;
-
     if (!hasRequirements && !hasAudience) return null;
-
     return (
         <div className="mt-12 sm:mt-16 space-y-12">
-            {/* Requirements Section */}
+            {}
             {hasRequirements && (
                 <div className="space-y-8">
                     <div className="space-y-4">
@@ -30,15 +25,13 @@ export default function CoursePrerequisites({ requirements, targetAudience }: Co
                             Here's a list of everything you'll need before starting this course.
                         </p>
                     </div>
-
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
                         {requirements.map((req, i) => {
                             const [title, ...descParts] = req.includes(":") ? req.split(":") : [`Requirement ${i + 1}`, req];
                             const desc = descParts.join(":").trim();
-                            
                             return (
-                                <div 
-                                    key={i} 
+                                <div
+                                    key={i}
                                     className="group p-5 sm:p-6 rounded-[2rem] bg-slate-100 dark:bg-slate-900/40 border border-slate-200 dark:border-white/5 hover:border-amber-500/30 transition-all duration-300 shadow-sm hover:shadow-md"
                                 >
                                     <div className="flex flex-col gap-3">
@@ -58,8 +51,7 @@ export default function CoursePrerequisites({ requirements, targetAudience }: Co
                     </div>
                 </div>
             )}
-
-            {/* Target Audience Section */}
+            {}
             {hasAudience && (
                 <div className="space-y-8">
                     <div className="space-y-4">
@@ -74,15 +66,13 @@ export default function CoursePrerequisites({ requirements, targetAudience }: Co
                             This course is designed for anyone looking to take their skills to the next level.
                         </p>
                     </div>
-
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
                         {targetAudience.map((item, i) => {
                             const [title, ...descParts] = item.includes(":") ? item.split(":") : [`Target ${i + 1}`, item];
                             const desc = descParts.join(":").trim();
-
                             return (
-                                <div 
-                                    key={i} 
+                                <div
+                                    key={i}
                                     className="group p-5 sm:p-6 rounded-[2rem] bg-slate-100 dark:bg-slate-900/40 border border-slate-200 dark:border-white/5 hover:border-blue-500/30 transition-all duration-300 shadow-sm hover:shadow-md"
                                 >
                                     <div className="flex flex-col gap-3">

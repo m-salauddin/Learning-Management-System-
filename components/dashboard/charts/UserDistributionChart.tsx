@@ -1,23 +1,19 @@
 "use client"
-
 import * as React from "react"
 import { Label, Pie, PieChart, ResponsiveContainer, Tooltip, Cell } from "recharts"
-
 const chartData = [
-    { role: "Student", count: 850, fill: "#f43f5e" }, // Pink
-    { role: "Teacher", count: 200, fill: "#3b82f6" }, // Blue
-    { role: "Admin", count: 100, fill: "#f59e0b" },   // Orange
-    { role: "Other", count: 50, fill: "#4b5563" },    // Grey
+    { role: "Student", count: 850, fill: "#f43f5e" },
+    { role: "Teacher", count: 200, fill: "#3b82f6" },
+    { role: "Admin", count: 100, fill: "#f59e0b" },
+    { role: "Other", count: 50, fill: "#4b5563" },
 ]
-
 export function UserDistributionChart() {
     const totalVisitors = React.useMemo(() => {
         return chartData.reduce((acc, curr) => acc + curr.count, 0)
     }, [])
-
     return (
         <div className="flex flex-col h-full w-full">
-            {/* Header Section */}
+            {}
             <div className="flex items-center justify-between mb-4 px-2">
                 <div>
                     <p className="text-sm font-medium text-muted-foreground mb-1">Total Users</p>
@@ -28,8 +24,7 @@ export function UserDistributionChart() {
                     <p className="text-sm font-medium">1,500</p>
                 </div>
             </div>
-
-            {/* Chart Section */}
+            {}
             <div className="flex-1 w-full min-h-[200px] relative">
                 <ResponsiveContainer width="100%" height="100%">
                     <PieChart>
@@ -92,14 +87,12 @@ export function UserDistributionChart() {
                         </Pie>
                     </PieChart>
                 </ResponsiveContainer>
-
-                {/* Floating Badge (Visual only replication of the "1.200" tag) */}
+                {}
                 <div className="absolute top-[45%] right-[10%] bg-background text-foreground text-xs font-bold px-2 py-1 rounded-md shadow-lg border border-border/50 hidden sm:block">
                     {chartData[0].count}
                 </div>
             </div>
-
-            {/* Legend Section */}
+            {}
             <div className="flex items-center justify-center gap-6 mt-4">
                 {chartData.map((item, index) => (
                     <div key={index} className="flex items-center gap-2">

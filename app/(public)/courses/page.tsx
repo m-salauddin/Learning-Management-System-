@@ -2,16 +2,12 @@ import type { Metadata } from "next";
 import CoursesClient from "./CoursesClient";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { MappedCourse } from "@/types/mapped-course";
-
 export const metadata: Metadata = {
     title: "Browse Courses - Dokkhota IT",
     description: "Explore our wide range of IT courses including Web Development, App Development, Cyber Security, and more. Start your learning journey today.",
 };
-
 export default async function CoursesPage() {
     const supabase = await createSupabaseServerClient();
-
-    // Fetch published courses with resolved relationships
     const { data: courses, error } = await supabase
         .from('courses')
         .select(`
@@ -42,15 +38,12 @@ export default async function CoursesPage() {
         `)
         .eq('status', 'published')
         .order('serial_number', { ascending: true });
-
     if (error) {
         console.error("Error fetching courses:", error);
     }
-
     const mappedCourses: MappedCourse[] = (courses || []).map((c: any) => {
         const instructorProfile = Array.isArray(c.instructor) ? c.instructor[0] : c.instructor;
         const instructorData = Array.isArray(instructorProfile?.users) ? instructorProfile.users[0] : instructorProfile?.users;
-
         return {
             id: c.id,
             slug: c.slug,
@@ -80,7 +73,6 @@ export default async function CoursesPage() {
             batchNo: c.batch_no
         };
     });
-
     return (
         <main>
             <CoursesClient initialCourses={mappedCourses} />

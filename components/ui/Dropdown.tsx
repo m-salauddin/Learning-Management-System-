@@ -1,9 +1,7 @@
 "use client";
-
 import { motion, AnimatePresence } from "motion/react";
 import { ReactNode, useState, useRef, useEffect } from "react";
 import { cn } from "@/lib/utils";
-
 interface DropdownProps {
     trigger: ReactNode;
     children: ReactNode;
@@ -11,33 +9,27 @@ interface DropdownProps {
     direction?: 'up' | 'down';
     align?: 'left' | 'right';
 }
-
 export function Dropdown({ trigger, children, className, align = 'right', direction = 'down' }: DropdownProps) {
     const [isOpen, setIsOpen] = useState(false);
     const dropdownRef = useRef<HTMLDivElement>(null);
-
     useEffect(() => {
         function handleClickOutside(event: MouseEvent) {
             if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
                 setIsOpen(false);
             }
         }
-
         if (isOpen) {
             document.addEventListener('mousedown', handleClickOutside);
         }
-
         return () => {
             document.removeEventListener('mousedown', handleClickOutside);
         };
     }, [isOpen]);
-
     return (
         <div className="relative" ref={dropdownRef}>
             <div onClick={() => setIsOpen(!isOpen)}>
                 {trigger}
             </div>
-
             <AnimatePresence>
                 {isOpen && (
                     <motion.div
@@ -61,7 +53,6 @@ export function Dropdown({ trigger, children, className, align = 'right', direct
         </div>
     );
 }
-
 interface DropdownItemProps {
     children: ReactNode;
     onClick?: () => void;
@@ -69,7 +60,6 @@ interface DropdownItemProps {
     icon?: ReactNode;
     destructive?: boolean;
 }
-
 export function DropdownItem({ children, onClick, className, icon, destructive }: DropdownItemProps) {
     return (
         <button
@@ -86,11 +76,9 @@ export function DropdownItem({ children, onClick, className, icon, destructive }
         </button>
     );
 }
-
 export function DropdownSeparator() {
     return <div className="my-1 h-px bg-border/50" />;
 }
-
 export function DropdownLabel({ children, className }: { children: ReactNode; className?: string }) {
     return (
         <div className={cn("px-4 py-2 text-xs font-semibold text-muted-foreground uppercase tracking-wider", className)}>

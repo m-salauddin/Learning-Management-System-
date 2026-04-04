@@ -1,23 +1,20 @@
 "use client";
-
 import * as React from "react";
 import { motion } from "motion/react";
 import { ArrowRight, Sparkles, Zap, Globe, Star, Award } from "lucide-react";
 import { Badge } from "@/components/ui/Badge";
 import { FloatingCard } from "./FloatingCard";
 import { PrimaryCTAButton, SecondaryCTAButton } from "@/components/ui/CTAButton";
-
 export function AboutHeroSection() {
     return (
         <section className="relative min-h-[80vh] flex items-center overflow-hidden pt-32 pb-20">
-            {/* Animated Background */}
+            {}
             <div className="absolute inset-0 overflow-hidden">
-                {/* Gradient Orbs */}
+                {}
                 <div className="absolute top-0 right-0 w-[800px] h-[800px] bg-linear-to-br from-primary/20 via-accent/15 to-transparent rounded-full blur-3xl translate-x-1/4 -translate-y-1/4 animate-gentle-pulse" />
                 <div className="absolute bottom-0 left-0 w-[600px] h-[600px] bg-linear-to-tr from-secondary/20 via-primary/15 to-transparent rounded-full blur-3xl -translate-x-1/4 translate-y-1/4 animate-gentle-pulse" style={{ animationDelay: "1s" }} />
                 <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-accent/10 rounded-full blur-[100px] animate-gentle-pulse" style={{ animationDelay: "2s" }} />
-
-                {/* Grid Pattern */}
+                {}
                 <div
                     className="absolute inset-0 opacity-[0.02]"
                     style={{
@@ -26,7 +23,6 @@ export function AboutHeroSection() {
                     }}
                 />
             </div>
-
             <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 <motion.div
                     initial={{ opacity: 0, y: 40 }}
@@ -38,7 +34,6 @@ export function AboutHeroSection() {
                         <Sparkles className="w-4 h-4 mr-2 text-primary" />
                         Launched in 2026
                     </Badge>
-
                     <h1 className="text-5xl sm:text-6xl lg:text-7xl xl:text-8xl font-bold tracking-tight mb-8 leading-[0.95]">
                         Empowering the
                         <br />
@@ -46,11 +41,9 @@ export function AboutHeroSection() {
                             Next Generation
                         </span>
                     </h1>
-
                     <p className="text-xl md:text-2xl text-muted-foreground max-w-3xl mx-auto mb-12 leading-relaxed">
                         We're on a mission to transform tech education in Bangladesh, making world-class learning accessible to every aspiring developer.
                     </p>
-
                     <div className="flex flex-col sm:flex-row gap-4 justify-center">
                         <PrimaryCTAButton href="/courses">
                             Explore Courses
@@ -61,8 +54,7 @@ export function AboutHeroSection() {
                     </div>
                 </motion.div>
             </div>
-
-            {/* Floating Cards */}
+            {}
             <FloatingCard
                 icon={Zap}
                 title="Fast Track"
@@ -71,7 +63,6 @@ export function AboutHeroSection() {
                 position="top-left"
                 showStatusDot
             />
-
             <FloatingCard
                 icon={Globe}
                 title="50K+ Learners"
@@ -88,7 +79,6 @@ export function AboutHeroSection() {
                     <span className="text-[10px] text-success font-medium">+2.5k this week</span>
                 </div>
             </FloatingCard>
-
             <FloatingCard
                 icon={Star}
                 title="4.9"
@@ -105,7 +95,6 @@ export function AboutHeroSection() {
                 </div>
                 <p className="text-[11px] text-muted-foreground">2,847 Reviews</p>
             </FloatingCard>
-
             <FloatingCard
                 icon={Award}
                 title="95% Placement"

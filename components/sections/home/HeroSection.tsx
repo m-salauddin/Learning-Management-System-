@@ -1,5 +1,4 @@
 "use client";
-
 import * as React from "react";
 import { useInView } from "motion/react";
 import {
@@ -13,8 +12,6 @@ import {
 } from "lucide-react";
 import { Badge } from "@/components/ui/Badge";
 import { PrimaryCTAButton, SecondaryCTAButton } from "@/components/ui/CTAButton";
-
-
 function AnimatedStatCard({
     icon: Icon,
     end,
@@ -35,32 +32,23 @@ function AnimatedStatCard({
     const [count, setCount] = React.useState(0);
     const ref = React.useRef<HTMLDivElement>(null);
     const isInView = useInView(ref, { once: true, margin: "-50px" });
-
     React.useEffect(() => {
         if (!isInView) return;
-
         const duration = 2000;
         const start = 0;
         const startTime = performance.now();
-
         const animate = (currentTime: number) => {
             const elapsed = currentTime - startTime;
             const progress = Math.min(elapsed / duration, 1);
-
-
             const easeOutQuart = 1 - Math.pow(1 - progress, 4);
             const current = start + (end - start) * easeOutQuart;
-
             setCount(decimals > 0 ? parseFloat(current.toFixed(decimals)) : Math.floor(current));
-
             if (progress < 1) {
                 requestAnimationFrame(animate);
             }
         };
-
         requestAnimationFrame(animate);
     }, [isInView, end, decimals]);
-
     return (
         <div ref={ref} className="text-center">
             <div className={`w-10 h-10 rounded-xl ${bgColor} flex items-center justify-center mx-auto mb-2`}>
@@ -73,17 +61,12 @@ function AnimatedStatCard({
         </div>
     );
 }
-
 export function HeroSection() {
     return (
         <section id="hero" className="relative min-h-screen overflow-visible pt-32 pb-20">
-
             <div className="absolute inset-0 overflow-hidden">
-
                 <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-linear-to-br from-primary/15 via-accent/10 to-transparent rounded-full blur-2xl translate-x-1/4 -translate-y-1/4" />
                 <div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-linear-to-tr from-secondary/15 via-primary/10 to-transparent rounded-full blur-2xl -translate-x-1/4 translate-y-1/4" />
-
-
                 <div
                     className="absolute inset-0 opacity-[0.02]"
                     style={{
@@ -92,19 +75,14 @@ export function HeroSection() {
                     }}
                 />
             </div>
-
             <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 <div className="grid lg:grid-cols-2 gap-12 lg:gap-20 items-center">
-
                     <div className="text-center lg:text-left animate-fade-in-up">
-
                         <div className="inline-flex mb-8">
                             <Badge icon={Rocket}>
                                 Start Your Learning Journey on 2026
                             </Badge>
                         </div>
-
-
                         <h1 className="text-5xl sm:text-6xl lg:text-7xl font-bold leading-tight tracking-tight mb-8">
                             Build What
                             <br />
@@ -112,13 +90,9 @@ export function HeroSection() {
                                 Matters.
                             </span>
                         </h1>
-
-
                         <p className="text-xl text-muted-foreground mb-10 max-w-2xl mx-auto lg:mx-0 leading-relaxed">
                             From your first line of code to your first day at a tech giant. We’re with you every step of the journey.
                         </p>
-
-
                         <div className="flex flex-row flex-wrap gap-4 justify-center lg:justify-start mb-12">
                             <PrimaryCTAButton href="#courses" isAnchor>
                                 Get Started
@@ -127,8 +101,6 @@ export function HeroSection() {
                                 Explore <span className="sm:inline hidden">Courses</span>
                             </SecondaryCTAButton>
                         </div>
-
-
                         <div className="flex items-center gap-6 justify-center lg:justify-start">
                             <div className="flex -space-x-3">
                                 {[1, 2, 3, 4, 5].map((i) => (
@@ -152,10 +124,7 @@ export function HeroSection() {
                             </div>
                         </div>
                     </div>
-
-
                     <div className="relative mt-12 lg:mt-0 animate-fade-in-up" style={{ animationDelay: '0.2s' }}>
-
                         <div className="flex justify-end mb-4">
                             <div className="inline-flex items-center gap-3 px-5 py-3 rounded-2xl bg-linear-to-r from-primary via-accent to-secondary dark:from-primary dark:via-secondary dark:to-accent text-white dark:text-slate-950 shadow-lg shadow-primary/20">
                                 <div className="w-10 h-10 rounded-xl bg-white/20 dark:bg-black/5 flex items-center justify-center">
@@ -167,9 +136,6 @@ export function HeroSection() {
                                 </div>
                             </div>
                         </div>
-
-
-
                         <div className="lg:p-5 lg:rounded-3xl lg:bg-card/80 lg:border lg:border-border lg:shadow-2xl">
                             <div className="grid grid-cols-2 gap-3 lg:gap-0">
                                 <div className="bg-card/50 lg:bg-transparent border border-border/50 lg:border-0 rounded-2xl lg:rounded-none p-4 lg:border-r lg:border-b lg:border-border/50">
@@ -215,8 +181,6 @@ export function HeroSection() {
                                 </div>
                             </div>
                         </div>
-
-
                         <div className="flex justify-start mt-4">
                             <div className="inline-flex items-center gap-3 px-5 py-3 rounded-2xl bg-card border border-border shadow-xl">
                                 <div className="w-10 h-10 rounded-full bg-success/20 flex items-center justify-center">

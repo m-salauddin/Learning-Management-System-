@@ -1,5 +1,4 @@
 import { cn } from "@/lib/utils";
-
 export function StatusBadge({ status }: { status: string }) {
     const s = status?.toLowerCase();
     return (
@@ -14,7 +13,6 @@ export function StatusBadge({ status }: { status: string }) {
         </span>
     );
 }
-
 export function LevelBadge({ level }: { level: string }) {
     const l = level?.toLowerCase();
     return (

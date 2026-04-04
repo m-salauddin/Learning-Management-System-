@@ -13,7 +13,6 @@ export interface Course {
     type: string;
     priceType: string;
 }
-
 export const COURSES: Course[] = [
     {
         slug: "full-stack-web-development",

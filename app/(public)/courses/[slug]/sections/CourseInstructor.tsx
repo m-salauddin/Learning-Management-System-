@@ -1,36 +1,25 @@
 "use client";
-
 import { useState } from "react";
 import Image from "next/image";
 import { Star, Play, Github, Linkedin, Award } from "lucide-react";
 import { MappedCourse, Instructor } from "@/types/mapped-course";
 import { cn } from "@/lib/utils";
 import { Dialog, DialogBody, DialogClose, DialogHeader, DialogTitle } from "@/components/ui/Dialog";
-
 interface CourseInstructorProps {
     course: MappedCourse;
 }
-
 export default function CourseInstructor({ course }: CourseInstructorProps) {
     const [selectedInstructor, setSelectedInstructor] = useState<Instructor | null>(null);
-
-
-    const rawInstructors = course.instructors && course.instructors.length > 0 
-        ? course.instructors 
+    const rawInstructors = course.instructors && course.instructors.length > 0
+        ? course.instructors
         : [course.instructor];
-
-
     const uniqueInstructors = rawInstructors.filter((v, i, a) => v && a.findIndex(t => t?.id === v?.id) === i);
-
-
     const sortedInstructors = [...uniqueInstructors].sort((a, b) => {
         const roleA = a.role === 'main' ? 0 : 1;
         const roleB = b.role === 'main' ? 0 : 1;
         return roleA - roleB;
     });
-
     if (sortedInstructors.length === 0) return null;
-
     return (
         <section id="instructors" className="mt-12 sm:mt-16 space-y-12">
              <div className="space-y-4">
@@ -43,7 +32,6 @@ export default function CourseInstructor({ course }: CourseInstructorProps) {
                     Our curriculum is crafted and delivered by industry veterans who have built and scaled systems used by millions.
                 </p>
             </div>
-
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                 {sortedInstructors.map((inst, index) => (
                     <button
@@ -51,40 +39,36 @@ export default function CourseInstructor({ course }: CourseInstructorProps) {
                         onClick={() => setSelectedInstructor(inst)}
                         className="group relative h-[280px] rounded-[2rem] overflow-hidden bg-slate-950 border border-white/5 transition-all duration-500 hover:scale-[1.02] hover:border-accent/30 shadow-2xl cursor-pointer"
                     >
-                        {/* Avatar Image / Placeholder */}
+                        {}
                         <div className="absolute inset-0 z-10 overflow-hidden h-full w-full">
                             {inst.avatar ? (
-                                <Image 
-                                    src={inst.avatar} 
-                                    alt={inst.name} 
-                                    fill 
-                                    className="object-cover object-top group-hover:scale-110 transition-transform duration-700" 
+                                <Image
+                                    src={inst.avatar}
+                                    alt={inst.name}
+                                    fill
+                                    className="object-cover object-top group-hover:scale-110 transition-transform duration-700"
                                 />
                             ) : (
                                 <div className="w-full h-full flex items-center justify-center font-black text-6xl text-white/5 bg-slate-900 uppercase transition-colors duration-500">
                                     {inst.name.charAt(0)}
                                 </div>
                             )}
-                            
-                            {/* Seamless Gradient Fade - Matches bg-slate-950 */}
+                            {}
                             <div className="absolute inset-0 bg-linear-to-t from-slate-950 via-slate-950/40 to-transparent z-20" />
                         </div>
-
-                        {/* Centered View Profile Indicator - Transparent mask for zero visible edges */}
+                        {}
                         <div className="absolute inset-0 z-40 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center pointer-events-none">
                             <div className="px-5 py-2.5 rounded-full bg-white/10 backdrop-blur-md border border-white/20 text-white text-[9px] font-black uppercase tracking-widest scale-50 group-hover:scale-100 transition-all duration-300 flex items-center gap-2 shadow-2xl">
                                 View Profile
                                 <Play className="w-2.5 h-2.5 fill-white" />
                             </div>
                         </div>
-
-                        {/* Integrated Content Area - Positioned on the image */}
+                        {}
                         <div className="absolute inset-x-0 bottom-0 p-6 z-30 flex flex-col items-start text-left space-y-2.5">
-                            {/* Role Badge */}
+                            {}
                             <div className="px-2.5 py-1 rounded-full bg-accent/20 backdrop-blur-md border border-accent/30 text-accent text-[8px] font-black uppercase tracking-widest shadow-sm ring-1 ring-accent/10">
                                 {inst.role === 'main' ? "Lead Instructor" : "Support Mentor"}
                             </div>
-
                             <div className="space-y-0.5">
                                 <h3 className="text-xl font-black text-white leading-tight group-hover:text-accent transition-colors duration-300 drop-shadow-md">
                                     {inst.name}
@@ -94,13 +78,11 @@ export default function CourseInstructor({ course }: CourseInstructorProps) {
                                 </p>
                             </div>
                         </div>
-
-                        {/* Hover Border Glow */}
+                        {}
                         <div className="absolute inset-0 border-2 border-accent/0 group-hover:border-accent/20 rounded-[2rem] transition-all duration-500 z-50 pointer-events-none" />
                     </button>
                 ))}
             </div>
-
             <Dialog open={!!selectedInstructor} onClose={() => setSelectedInstructor(null)} size="md">
                 {selectedInstructor && (
                     <>
@@ -132,7 +114,6 @@ export default function CourseInstructor({ course }: CourseInstructorProps) {
                                     {selectedInstructor.bio || "Senior professional dedicated to delivering high-quality education and practical insights to the next generation of engineers."}
                                 </p>
                             </div>
-
                             <div className="grid grid-cols-3 gap-8 py-8 border-y border-slate-200 dark:border-white/5">
                                 <div>
                                     <p className="text-[10px] font-bold text-slate-500 uppercase tracking-tight mb-2">Total Students</p>
@@ -154,7 +135,6 @@ export default function CourseInstructor({ course }: CourseInstructorProps) {
                                     </p>
                                 </div>
                             </div>
-
                             <div className="flex items-center gap-6">
                                 <h4 className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 dark:text-slate-500">Social Presence</h4>
                                 <div className="flex items-center gap-3">

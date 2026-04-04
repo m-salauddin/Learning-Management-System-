@@ -1,9 +1,4 @@
-
-
 import { Json } from './supabase';
-
-
-
 export type UserRole = 'student' | 'teacher' | 'moderator' | 'admin';
 export type AuthProvider = 'google' | 'github' | 'password';
 export type CourseStatus = 'draft' | 'pending_review' | 'published' | 'archived';
@@ -13,9 +8,6 @@ export type CouponType = 'percentage' | 'fixed';
 export type EnrollmentStatus = 'active' | 'expired' | 'cancelled' | 'refunded';
 export type CourseLevel = 'beginner' | 'intermediate' | 'advanced';
 export type CourseType = 'recorded' | 'live' | 'hybrid';
-
-
-
 export interface User {
     id: string;
     name: string;
@@ -27,7 +19,6 @@ export interface User {
     created_at: string;
     updated_at: string;
 }
-
 export interface InstructorProfile {
     id: string;
     bio: string;
@@ -44,13 +35,9 @@ export interface InstructorProfile {
     created_at: string;
     updated_at: string;
 }
-
 export interface InstructorWithUser extends InstructorProfile {
     user: User;
 }
-
-
-
 export interface Category {
     id: string;
     name: string;
@@ -64,9 +51,6 @@ export interface Category {
     created_at: string;
     updated_at: string;
 }
-
-
-
 export interface Course {
     id: string;
     title: string;
@@ -75,7 +59,7 @@ export interface Course {
     short_description: string;
     thumbnail_url: string;
     preview_video_url: string;
-    instructor_id: string; // Deprecated, keep for now
+    instructor_id: string;
     instructor_ids: string[];
     support_instructor_ids: string[];
     category_id: string | null;
@@ -99,18 +83,13 @@ export interface Course {
     created_at: string;
     updated_at: string;
 }
-
 export interface CourseWithInstructor extends Course {
     instructor: User;
     category?: Category;
 }
-
 export interface CourseWithModules extends CourseWithInstructor {
     modules: ModuleWithLessons[];
 }
-
-
-
 export interface Module {
     id: string;
     course_id: string;
@@ -121,13 +100,9 @@ export interface Module {
     created_at: string;
     updated_at: string;
 }
-
 export interface ModuleWithLessons extends Module {
     lessons: Lesson[];
 }
-
-
-
 export interface Lesson {
     id: string;
     module_id: string;
@@ -141,7 +116,6 @@ export interface Lesson {
     created_at: string;
     updated_at: string;
 }
-
 export interface LessonAsset {
     id: string;
     lesson_id: string;
@@ -153,19 +127,14 @@ export interface LessonAsset {
     created_at: string;
     updated_at: string;
 }
-
 export interface LessonResource {
     title: string;
     url: string;
     type: 'link' | 'pdf' | 'code' | 'file';
 }
-
 export interface LessonWithAsset extends Lesson {
     asset?: LessonAsset;
 }
-
-
-
 export interface Enrollment {
     id: string;
     user_id: string;
@@ -183,18 +152,13 @@ export interface Enrollment {
     created_at: string;
     updated_at: string;
 }
-
 export interface EnrollmentWithCourse extends Enrollment {
     course: CourseWithInstructor;
 }
-
 export interface EnrollmentWithProgress extends Enrollment {
     course: CourseWithInstructor;
     lesson_progress: LessonProgress[];
 }
-
-
-
 export interface LessonProgress {
     id: string;
     user_id: string;
@@ -210,9 +174,6 @@ export interface LessonProgress {
     created_at: string;
     updated_at: string;
 }
-
-
-
 export interface Coupon {
     id: string;
     code: string;
@@ -233,7 +194,6 @@ export interface Coupon {
     created_at: string;
     updated_at: string;
 }
-
 export interface CouponValidationResult {
     valid: boolean;
     error?: string;
@@ -243,9 +203,6 @@ export interface CouponValidationResult {
     discount_amount?: number;
     final_price?: number;
 }
-
-
-
 export interface Transaction {
     id: string;
     user_id: string;
@@ -265,15 +222,11 @@ export interface Transaction {
     created_at: string;
     updated_at: string;
 }
-
 export interface TransactionWithDetails extends Transaction {
     user: User;
     course: Course;
     coupon?: Coupon;
 }
-
-
-
 export interface Certificate {
     id: string;
     user_id: string;
@@ -289,7 +242,6 @@ export interface Certificate {
     completion_date: string;
     created_at: string;
 }
-
 export interface CertificateVerification {
     valid: boolean;
     error?: string;
@@ -299,9 +251,6 @@ export interface CertificateVerification {
     completion_date?: string;
     issued_at?: string;
 }
-
-
-
 export interface CourseReview {
     id: string;
     user_id: string;
@@ -316,13 +265,9 @@ export interface CourseReview {
     created_at: string;
     updated_at: string;
 }
-
 export interface CourseReviewWithUser extends CourseReview {
     user: User;
 }
-
-
-
 export interface AdminDashboardStats {
     total_users: number;
     total_students: number;
@@ -336,7 +281,6 @@ export interface AdminDashboardStats {
     new_enrollments_today: number;
     revenue_today: number;
 }
-
 export interface InstructorDashboardStats {
     total_courses: number;
     published_courses: number;
@@ -345,7 +289,6 @@ export interface InstructorDashboardStats {
     avg_rating: number;
     total_reviews: number;
 }
-
 export interface StudentDashboardStats {
     enrolled_courses: number;
     completed_courses: number;
@@ -354,14 +297,10 @@ export interface StudentDashboardStats {
     total_learning_time: number;
     avg_progress: number;
 }
-
-
-
 export interface DailyStats {
     date: string;
     count: number;
 }
-
 export interface PopularCourse {
     course_id: string;
     title: string;
@@ -370,15 +309,11 @@ export interface PopularCourse {
     revenue: number;
     rating: number;
 }
-
 export interface RevenueStats {
     total: number;
     by_day: DailyStats[];
     by_course: { course_id: string; title: string; revenue: number }[];
 }
-
-
-
 export interface AuditLog {
     id: string;
     user_id: string | null;
@@ -391,7 +326,6 @@ export interface AuditLog {
     user_agent: string;
     created_at: string;
 }
-
 export interface AuditLogEntry extends AuditLog {
     admin?: {
         id: string;
@@ -400,23 +334,17 @@ export interface AuditLogEntry extends AuditLog {
         avatar_url: string | null;
     };
 }
-
-
-
 export interface UserManagement extends User {
     instructor_profile?: InstructorProfile;
 }
-
 export interface CertificateWithDetails extends Certificate {
     course: Course;
     user: User;
 }
-
 export interface CourseWithDetails extends CourseWithInstructor {
     enrollments_count?: number;
     revenue?: number;
 }
-
 export interface CourseProgressSummary {
     enrollment_id: string;
     course_id: string;
@@ -425,9 +353,6 @@ export interface CourseProgressSummary {
     total_lessons: number;
     completed_at: string | null;
 }
-
-
-
 export interface UserActivity {
     id: string;
     user_id: string;
@@ -437,15 +362,11 @@ export interface UserActivity {
     metadata: Json;
     created_at: string;
 }
-
-
-
 export interface ApiResponse<T> {
     data?: T;
     error?: string;
     success: boolean;
 }
-
 export interface PaginatedResponse<T> {
     data: T[];
     total: number;
@@ -453,9 +374,6 @@ export interface PaginatedResponse<T> {
     pageSize: number;
     totalPages: number;
 }
-
-
-
 export interface CreateCourseInput {
     title: string;
     slug?: string;
@@ -465,7 +383,7 @@ export interface CreateCourseInput {
     discount_price?: number | null;
     discount_expires_at?: string | null;
     category_id?: string;
-    instructor_id?: string; // Primary/Single legacy
+    instructor_id?: string;
     instructor_ids?: string[];
     support_instructor_ids?: string[];
     level?: CourseLevel;
@@ -478,24 +396,21 @@ export interface CreateCourseInput {
     tags?: string[];
     batch_no?: number;
     faqs?: { question: string; answer: string }[];
-    projects?: { title: string; description: string; image_url?: string }[];
+    projects?: { title: string; description: string; image_url?: string; tech_stack?: string }[];
     resources?: { title: string; type: string; url: string }[];
     modules?: { title: string; lessons: { title: string; video_url: string }[] }[];
     coupon_code?: string;
 }
-
 export interface UpdateCourseInput extends Partial<CreateCourseInput> {
     id: string;
     status?: CourseStatus;
 }
-
 export interface CreateModuleInput {
     course_id: string;
     title: string;
     description?: string;
     position?: number;
 }
-
 export interface CreateLessonInput {
     module_id: string;
     title: string;
@@ -505,7 +420,6 @@ export interface CreateLessonInput {
     duration_minutes?: number;
     is_free_preview?: boolean;
 }
-
 export interface UpdateLessonAssetInput {
     lesson_id: string;
     video_path?: string;
@@ -514,13 +428,11 @@ export interface UpdateLessonAssetInput {
     resources?: LessonResource[];
     attachments?: string[];
 }
-
 export interface CreateTransactionInput {
     course_id: string;
     coupon_code?: string;
     payment_provider: string;
 }
-
 export interface CreateReviewInput {
     course_id: string;
     rating: number;

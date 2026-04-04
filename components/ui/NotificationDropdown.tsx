@@ -1,5 +1,4 @@
 "use client";
-
 import { useEffect, useState, useRef } from "react";
 import { Bell, Check, Info, AlertTriangle, XCircle, CheckCircle2, Trash2 } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
@@ -7,7 +6,6 @@ import { createClient } from "@/lib/supabase/client";
 import { cn } from "@/lib/utils";
 import Link from "next/link";
 import { useOnClickOutside } from "usehooks-ts";
-
 interface Notification {
     id: string;
     title: string;
@@ -17,7 +15,6 @@ interface Notification {
     link?: string;
     created_at: string;
 }
-
 export function NotificationDropdown() {
     const [isOpen, setIsOpen] = useState(false);
     const [notifications, setNotifications] = useState<Notification[]>([]);
@@ -25,34 +22,27 @@ export function NotificationDropdown() {
     const [isLoading, setIsLoading] = useState(true);
     const dropdownRef = useRef<HTMLDivElement>(null);
     const supabase = createClient();
-
     useOnClickOutside(dropdownRef as React.RefObject<HTMLElement>, () => setIsOpen(false));
-
     useEffect(() => {
         fetchNotifications();
         subscribeToNotifications();
-
         return () => {
             supabase.channel('public:notifications').unsubscribe();
         };
     }, []);
-
     useEffect(() => {
         setUnreadCount(notifications.filter(n => !n.is_read).length);
     }, [notifications]);
-
     const fetchNotifications = async () => {
         try {
             const { data: { user } } = await supabase.auth.getUser();
             if (!user) return;
-
             const { data, error } = await supabase
                 .from('notifications')
                 .select('*')
                 .eq('user_id', user.id)
                 .order('created_at', { ascending: false })
                 .limit(10);
-
             if (data) {
                 setNotifications(data as Notification[]);
             }
@@ -62,11 +52,9 @@ export function NotificationDropdown() {
             setIsLoading(false);
         }
     };
-
     const subscribeToNotifications = async () => {
         const { data: { user } } = await supabase.auth.getUser();
         if (!user) return;
-
         supabase
             .channel('public:notifications')
             .on(
@@ -84,38 +72,29 @@ export function NotificationDropdown() {
             )
             .subscribe();
     };
-
     const markAsRead = async (id: string) => {
-        // Optimistic update
         setNotifications(prev => prev.map(n => n.id === id ? { ...n, is_read: true } : n));
-
-        await supabase
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        await (supabase as any)
             .from('notifications')
-            // @ts-expect-error - Update type not correctly inferred for notifications
-            .update({ is_read: true } as any)
+            .update({ is_read: true })
             .eq('id', id);
     };
-
     const markAllAsRead = async () => {
         const unreadIds = notifications.filter(n => !n.is_read).map(n => n.id);
         if (unreadIds.length === 0) return;
-
-        // Optimistic update
         setNotifications(prev => prev.map(n => ({ ...n, is_read: true })));
-
-        await supabase
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        await (supabase as any)
             .from('notifications')
-            // @ts-expect-error - Update type not correctly inferred for notifications
-            .update({ is_read: true } as any)
+            .update({ is_read: true })
             .in('id', unreadIds);
     };
-
     const clearNotification = async (id: string, e: React.MouseEvent) => {
         e.stopPropagation();
         setNotifications(prev => prev.filter(n => n.id !== id));
         await supabase.from('notifications').delete().eq('id', id);
     };
-
     const getIcon = (type: string) => {
         switch (type) {
             case 'success': return <CheckCircle2 className="w-4 h-4 text-emerald-500" />;
@@ -125,7 +104,6 @@ export function NotificationDropdown() {
             default: return <Bell className="w-4 h-4 text-primary" />;
         }
     };
-
     return (
         <div className="relative" ref={dropdownRef}>
             <button
@@ -139,7 +117,6 @@ export function NotificationDropdown() {
                     </span>
                 )}
             </button>
-
             <AnimatePresence>
                 {isOpen && (
                     <motion.div
@@ -160,7 +137,6 @@ export function NotificationDropdown() {
                                 </button>
                             )}
                         </div>
-
                         <div className="max-h-[400px] overflow-y-auto py-2 space-y-1">
                             {isLoading ? (
                                 <div className="p-4 text-center text-xs text-muted-foreground">Loading...</div>

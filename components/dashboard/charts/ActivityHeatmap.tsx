@@ -1,14 +1,10 @@
 "use client"
-
 import * as React from "react"
 import { cn } from "@/lib/utils"
-
-// Generate demo activity data for last 12 weeks
 const generateActivityData = () => {
     const days = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
     const weeks = 12
     const data: { day: string; week: number; value: number }[] = []
-
     for (let week = 0; week < weeks; week++) {
         for (let day = 0; day < 7; day++) {
             data.push({
@@ -20,9 +16,7 @@ const generateActivityData = () => {
     }
     return data
 }
-
 const activityData = generateActivityData()
-
 const getIntensityClass = (value: number) => {
     if (value === 0) return "bg-muted/30"
     if (value < 25) return "bg-emerald-500/20"
@@ -30,17 +24,13 @@ const getIntensityClass = (value: number) => {
     if (value < 75) return "bg-emerald-500/60"
     return "bg-emerald-500"
 }
-
 export function ActivityHeatmap() {
     const [mounted, setMounted] = React.useState(false)
-
     React.useEffect(() => {
         setMounted(true)
     }, [])
-
     const weeks = 12
     const days = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
-
     if (!mounted) {
         return (
             <div className="w-full h-[180px] rounded-xl bg-muted/5 animate-pulse flex items-center justify-center border border-dashed border-border/50">
@@ -51,11 +41,10 @@ export function ActivityHeatmap() {
             </div>
         )
     }
-
     return (
         <div className="w-full">
             <div className="flex gap-1">
-                {/* Day labels */}
+                {}
                 <div className="flex flex-col gap-1 pr-2 text-xs text-muted-foreground">
                     {days.map((day, i) => (
                         <div key={day} className="h-4 flex items-center">
@@ -63,8 +52,7 @@ export function ActivityHeatmap() {
                         </div>
                     ))}
                 </div>
-
-                {/* Heatmap grid */}
+                {}
                 <div className="flex gap-1 flex-1 overflow-x-auto">
                     {Array.from({ length: weeks }).map((_, weekIndex) => (
                         <div key={weekIndex} className="flex flex-col gap-1">
@@ -87,8 +75,7 @@ export function ActivityHeatmap() {
                     ))}
                 </div>
             </div>
-
-            {/* Legend */}
+            {}
             <div className="flex items-center justify-end gap-2 mt-4 text-xs text-muted-foreground">
                 <span>Less</span>
                 <div className="flex gap-1">

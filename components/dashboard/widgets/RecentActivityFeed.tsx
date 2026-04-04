@@ -1,9 +1,7 @@
 "use client"
-
 import { cn } from "@/lib/utils"
 import { UserPlus, BookOpen, CreditCard, MessageSquare} from "lucide-react"
 import { motion } from "motion/react"
-
 const activities = [
     {
         id: 1,
@@ -66,8 +64,6 @@ const activities = [
         iconColor: "text-blue-500"
     },
 ]
-
-// Animation variants
 const containerVariants = {
     hidden: { opacity: 0 },
     visible: {
@@ -78,10 +74,9 @@ const containerVariants = {
         }
     }
 }
-
 const itemVariants = {
-    hidden: { 
-        opacity: 0, 
+    hidden: {
+        opacity: 0,
         x: -30,
         y: 10
     },
@@ -96,10 +91,9 @@ const itemVariants = {
         }
     }
 }
-
 export function RecentActivityFeed() {
     return (
-        <motion.div 
+        <motion.div
             className="space-y-3"
             variants={containerVariants}
             initial="hidden"
@@ -110,34 +104,33 @@ export function RecentActivityFeed() {
                     key={activity.id}
                     variants={itemVariants}
                     className="relative flex items-start gap-3 p-3 rounded-xl hover:bg-muted/30 transition-colors group overflow-hidden"
-                    whileHover={{ 
+                    whileHover={{
                         scale: 1.01,
                         x: 4,
                         transition: { duration: 0.2 }
                     }}
                 >
-                    {/* Subtle pulse effect on hover */}
-                    <motion.div 
+                    {}
+                    <motion.div
                         className="absolute inset-0 bg-linear-to-r from-transparent via-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"
                         initial={{ x: '-100%' }}
                         whileHover={{ x: '100%' }}
                         transition={{ duration: 0.6, ease: "easeInOut" }}
                     />
-
-                    <motion.div 
+                    <motion.div
                         className={cn(
                             "w-9 h-9 rounded-xl flex items-center justify-center shrink-0 z-10",
                             activity.iconBg
                         )}
                         initial={{ scale: 0, rotate: -180 }}
                         animate={{ scale: 1, rotate: 0 }}
-                        transition={{ 
+                        transition={{
                             delay: index * 0.08 + 0.15,
                             type: "spring",
                             stiffness: 400,
                             damping: 15
                         }}
-                        whileHover={{ 
+                        whileHover={{
                             scale: 1.1,
                             rotate: 5,
                             transition: { duration: 0.2 }
@@ -145,9 +138,8 @@ export function RecentActivityFeed() {
                     >
                         <activity.icon className={cn("w-4 h-4", activity.iconColor)} />
                     </motion.div>
-                    
                     <div className="flex-1 min-w-0 space-y-0.5 z-10">
-                        <motion.p 
+                        <motion.p
                             className="text-sm font-medium truncate"
                             initial={{ opacity: 0, y: 5 }}
                             animate={{ opacity: 1, y: 0 }}
@@ -155,7 +147,7 @@ export function RecentActivityFeed() {
                         >
                             {activity.user}
                         </motion.p>
-                        <motion.p 
+                        <motion.p
                             className="text-xs text-muted-foreground truncate"
                             initial={{ opacity: 0, y: 5 }}
                             animate={{ opacity: 1, y: 0 }}
@@ -164,8 +156,7 @@ export function RecentActivityFeed() {
                             {activity.message}
                         </motion.p>
                     </div>
-                    
-                    <motion.span 
+                    <motion.span
                         className="text-xs text-muted-foreground shrink-0 z-10 whitespace-nowrap"
                         initial={{ opacity: 0, scale: 0.8 }}
                         animate={{ opacity: 1, scale: 1 }}

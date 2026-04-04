@@ -1,10 +1,8 @@
 "use client";
-
 import { X } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import { ReactNode, useEffect } from "react";
 import { cn } from "@/lib/utils";
-
 interface DialogProps {
     open: boolean;
     onClose: () => void;
@@ -12,7 +10,6 @@ interface DialogProps {
     className?: string;
     size?: 'sm' | 'md' | 'lg' | 'xl' | 'full';
 }
-
 export function Dialog({ open, onClose, children, className, size = 'md' }: DialogProps) {
     useEffect(() => {
         if (open) {
@@ -24,7 +21,6 @@ export function Dialog({ open, onClose, children, className, size = 'md' }: Dial
             document.body.style.overflow = 'unset';
         };
     }, [open]);
-
     const sizeClasses = {
         sm: 'max-w-md',
         md: 'max-w-lg',
@@ -32,7 +28,6 @@ export function Dialog({ open, onClose, children, className, size = 'md' }: Dial
         xl: 'max-w-4xl',
         full: 'max-w-7xl'
     };
-
     return (
         <AnimatePresence>
             {open && (
@@ -45,8 +40,7 @@ export function Dialog({ open, onClose, children, className, size = 'md' }: Dial
                         className="fixed inset-0 bg-black/80 backdrop-blur-md z-60"
                         style={{ height: '100dvh' }}
                     />
-
-                    <div 
+                    <div
                         className="fixed inset-0 z-70 flex items-center justify-center p-4 sm:p-6 overflow-y-auto w-full h-dvh"
                         onClick={onClose}
                     >
@@ -70,7 +64,6 @@ export function Dialog({ open, onClose, children, className, size = 'md' }: Dial
         </AnimatePresence>
     );
 }
-
 export function DialogHeader({ children, className }: { children: ReactNode; className?: string }) {
     return (
         <div className={cn("px-6 py-5 border-b border-border/40 space-y-1", className)}>
@@ -78,7 +71,6 @@ export function DialogHeader({ children, className }: { children: ReactNode; cla
         </div>
     );
 }
-
 export function DialogTitle({ children, className }: { children: ReactNode; className?: string }) {
     return (
         <h2 className={cn("text-xl font-semibold tracking-tight text-foreground", className)}>
@@ -86,7 +78,6 @@ export function DialogTitle({ children, className }: { children: ReactNode; clas
         </h2>
     );
 }
-
 export function DialogDescription({ children, className }: { children: ReactNode; className?: string }) {
     return (
         <p className={cn("text-sm text-muted-foreground leading-relaxed", className)}>
@@ -94,7 +85,6 @@ export function DialogDescription({ children, className }: { children: ReactNode
         </p>
     );
 }
-
 export function DialogBody({ children, className }: { children: ReactNode; className?: string }) {
     return (
         <div className={cn("p-6", className)}>
@@ -102,7 +92,6 @@ export function DialogBody({ children, className }: { children: ReactNode; class
         </div>
     );
 }
-
 export function DialogFooter({ children, className }: { children: ReactNode; className?: string }) {
     return (
         <div className={cn("px-6 py-4 bg-muted/20 border-t border-border/40 flex flex-col-reverse sm:flex-row sm:items-center sm:justify-end gap-3", className)}>
@@ -110,7 +99,6 @@ export function DialogFooter({ children, className }: { children: ReactNode; cla
         </div>
     );
 }
-
 export function DialogClose({ onClose }: { onClose: () => void }) {
     return (
         <button

@@ -20,7 +20,6 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { ConfirmModal } from "@/components/ui";
 
-// Google Icon Component
 const GoogleIcon = ({ className }: { className?: string }) => (
     <svg className={className} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
         <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4" />
@@ -37,7 +36,6 @@ const tabs: { value: TabValue; label: string; icon: React.ElementType; descripti
     { value: "security", label: "Security", icon: Shield, description: "Password & authentication" },
 ];
 
-// Social Platform Configuration
 const SOCIAL_PLATFORMS = {
     github: {
         name: "GitHub",
@@ -92,7 +90,6 @@ const SOCIAL_PLATFORMS = {
 
 type SocialPlatform = keyof typeof SOCIAL_PLATFORMS;
 
-
 export default function ProfilePage() {
     const { user: authUser } = useAppSelector((state) => state.auth);
     const dispatch = useAppDispatch();
@@ -110,7 +107,6 @@ export default function ProfilePage() {
         website: ""
     });
 
-    // Password change state
     const [passwordData, setPasswordData] = useState({
         currentPassword: "",
         newPassword: "",
@@ -122,7 +118,6 @@ export default function ProfilePage() {
     const [isChangingPassword, setIsChangingPassword] = useState(false);
     const [passwordErrors, setPasswordErrors] = useState<string[]>([]);
 
-    // Social Links state
     const [socialLinks, setSocialLinks] = useState<{ platform: string; url: string }[]>([]);
     const [showAddLinkDialog, setShowAddLinkDialog] = useState(false);
     const [editingLinkIndex, setEditingLinkIndex] = useState<number | null>(null);
@@ -130,7 +125,6 @@ export default function ProfilePage() {
     const [linkUrl, setLinkUrl] = useState("");
     const [linkError, setLinkError] = useState("");
 
-    // Delete Confirmation state
     const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
     const [linkToDeleteIndex, setLinkToDeleteIndex] = useState<number | null>(null);
     const [isAutoSaving, setIsAutoSaving] = useState(false);
@@ -148,7 +142,6 @@ export default function ProfilePage() {
         formData.website.trim() !== (userProfile.website || "").trim()
     );
 
-    // Calculate profile completion percentage
     const completionPercentage = useMemo(() => {
         if (!userProfile) return 0;
         const fields = [
@@ -163,7 +156,6 @@ export default function ProfilePage() {
         return Math.round((filled / fields.length) * 100);
     }, [userProfile]);
 
-    // Password strength calculation
     const passwordStrength = useMemo(() => {
         const password = passwordData.newPassword;
         if (!password) return { score: 0, label: "", color: "" };
@@ -235,12 +227,11 @@ export default function ProfilePage() {
         }
     };
 
-    // Social Links Handlers - Refined for Auto-save
     const saveSocialLinks = async (updatedLinks: any[]) => {
         if (!userProfile) return;
 
         setIsAutoSaving(true);
-        // Subtle toast for auto-save
+
         const toastId = toast.loading("Syncing links...", "Saving your social profiles automatically.");
 
         try {
@@ -252,7 +243,6 @@ export default function ProfilePage() {
                 setUserProfile(result.user);
                 setSocialLinks(result.user.social_links || []);
 
-                // Update Redux too to keep it in sync
                 dispatch(setUser({
                     ...authUser,
                     id: result.user.id,
@@ -274,7 +264,7 @@ export default function ProfilePage() {
             console.error(error);
             toast.dismiss(toastId);
             toast.error("Auto-save failed", error.message || "Failed to update social links.");
-            // Revert state on failure
+
             setSocialLinks(userProfile.social_links || []);
             return false;
         } finally {
@@ -305,7 +295,6 @@ export default function ProfilePage() {
     const handleAddLink = async () => {
         const platform = SOCIAL_PLATFORMS[selectedPlatform];
 
-        // Validate URL
         if (!linkUrl.trim()) {
             setLinkError("Please enter a URL");
             return;
@@ -316,7 +305,6 @@ export default function ProfilePage() {
             return;
         }
 
-        // Check if platform already exists (exclude current link if editing)
         const isDuplicate = socialLinks.some((link, idx) =>
             link.platform === selectedPlatform && idx !== editingLinkIndex
         );
@@ -328,11 +316,11 @@ export default function ProfilePage() {
 
         let updatedLinks;
         if (editingLinkIndex !== null) {
-            // Update existing link
+
             updatedLinks = [...socialLinks];
             updatedLinks[editingLinkIndex] = { platform: selectedPlatform, url: linkUrl };
         } else {
-            // Add new link
+
             updatedLinks = [...socialLinks, { platform: selectedPlatform, url: linkUrl }];
         }
 
@@ -341,7 +329,6 @@ export default function ProfilePage() {
         setLinkError("");
         setEditingLinkIndex(null);
 
-        // Independent auto-save
         await saveSocialLinks(updatedLinks);
     };
 
@@ -358,7 +345,6 @@ export default function ProfilePage() {
         setShowDeleteConfirm(false);
         setLinkToDeleteIndex(null);
 
-        // Independent auto-save
         await saveSocialLinks(updatedLinks);
     };
 
@@ -366,7 +352,6 @@ export default function ProfilePage() {
         setLinkUrl(value);
         setLinkError("");
     };
-
 
     const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
@@ -382,12 +367,10 @@ export default function ProfilePage() {
             return;
         }
 
-        // Create preview and set state
         const objectUrl = URL.createObjectURL(file);
         setPreviewUrl(objectUrl);
         setSelectedImageFile(file);
 
-        // Reset file input value so same file can be selected again if needed
         e.target.value = '';
 
         toast.success("Image selected", "Click 'Save Changes' to upload and update your profile.");
@@ -413,7 +396,6 @@ export default function ProfilePage() {
         try {
             let finalData = { ...cleanedData, social_links: overrideSocialLinks || socialLinks } as any;
 
-            // Handle Image Upload
             if (selectedImageFile && userProfile) {
                 const fileExt = selectedImageFile.name.split('.').pop();
                 const filePath = `${userProfile.id}-${Date.now()}.${fileExt}`;
@@ -439,7 +421,7 @@ export default function ProfilePage() {
             const result = await updateProfile(finalData);
 
             if (result.user) {
-                // Remove old avatar if a new one was uploaded
+
                 if (selectedImageFile && userProfile?.avatar_url && userProfile.avatar_url.includes('/storage/v1/object/public/avatars/')) {
                     const filename = userProfile.avatar_url.split('/avatars/').pop();
                     if (filename && (!result.user.avatar_url || !result.user.avatar_url.includes(filename))) {
@@ -448,7 +430,7 @@ export default function ProfilePage() {
                 }
 
                 setUserProfile(result.user);
-                // Also update local state to match saved data to clear hasChanges
+
                 setFormData({
                     name: result.user.name || "",
                     bio: result.user.bio || "",
@@ -468,7 +450,6 @@ export default function ProfilePage() {
                     providers: result.user.providers || [],
                 }));
 
-                // Reset image states
                 setSelectedImageFile(null);
                 setPreviewUrl(null);
 
@@ -490,7 +471,6 @@ export default function ProfilePage() {
         e.preventDefault();
         setPasswordErrors([]);
 
-        // Validation
         const errors: string[] = [];
         if (passwordData.newPassword.length < 8) {
             errors.push("Password must be at least 8 characters");
@@ -510,7 +490,7 @@ export default function ProfilePage() {
         setIsChangingPassword(true);
 
         try {
-            // First verify current password by attempting to sign in
+
             const { error: signInError } = await supabase.auth.signInWithPassword({
                 email: userProfile?.email || "",
                 password: passwordData.currentPassword
@@ -522,7 +502,6 @@ export default function ProfilePage() {
                 return;
             }
 
-            // Update password
             const { error: updateError } = await supabase.auth.updateUser({
                 password: passwordData.newPassword
             });
@@ -540,7 +519,6 @@ export default function ProfilePage() {
         }
     };
 
-    // Helper to check provider connection
     const isProviderConnected = (provider: string) => {
         return (userProfile?.providers as string[] | undefined)?.includes(provider);
     };

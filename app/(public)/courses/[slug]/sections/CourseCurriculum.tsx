@@ -1,11 +1,9 @@
 "use client";
-
 import { motion, AnimatePresence } from "motion/react";
 import { BookOpen, Layers, PlayCircle, Clock, ChevronDown, Lock as LockIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { MappedCourse } from "@/types/mapped-course";
 import { CoursePageData } from "@/types/course-page";
-
 interface CourseCurriculumProps {
     course: MappedCourse;
     pageData?: CoursePageData;
@@ -18,7 +16,6 @@ interface CourseCurriculumProps {
     totalSections: number;
     totalLectures: number;
 }
-
 export default function CourseCurriculum({
     course,
     pageData,
@@ -43,8 +40,7 @@ export default function CourseCurriculum({
                         A structured curriculum designed to build your skills from ground up to professional mastery.
                     </p>
                 </div>
-
-            {/* Stats Strip */}
+            {}
             <div className="flex flex-wrap items-center gap-6 p-6 rounded-[2rem] bg-slate-100 dark:bg-slate-900/40 border border-slate-200 dark:border-white/5 transition-colors">
                 <div className="flex items-center gap-3">
                     <div className="w-10 h-10 rounded-xl bg-white dark:bg-white/5 border border-slate-200 dark:border-transparent flex items-center justify-center shadow-sm dark:shadow-none transition-all">
@@ -66,8 +62,7 @@ export default function CourseCurriculum({
                     </div>
                 </div>
             </div>
-
-            {/* Accordion List */}
+            {}
             <div className="space-y-4">
                 {displayedModules.map((module, idx) => (
                     <div key={idx} className="group overflow-hidden rounded-[2rem] bg-slate-50 dark:bg-slate-900/20 border border-slate-200 dark:border-white/5 hover:border-primary/20 dark:hover:border-white/10 transition-all duration-300 shadow-sm dark:shadow-none">
@@ -94,7 +89,6 @@ export default function CourseCurriculum({
                                 <ChevronDown className="w-5 h-5" />
                             </div>
                         </button>
-
                         <AnimatePresence>
                             {expandedModules.includes(idx) && (
                                 <motion.div
@@ -132,7 +126,6 @@ export default function CourseCurriculum({
                     </div>
                 ))}
             </div>
-
             {filteredModules.length > 6 && (
                 <div className="flex justify-center pt-8">
                     <button

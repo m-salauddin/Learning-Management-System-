@@ -1,5 +1,4 @@
 "use client";
-
 import React from "react";
 import { Pagination } from "@/components/ui/Pagination";
 import { cn } from "@/lib/utils";
@@ -7,29 +6,19 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/Button";
 import { FileX, RotateCcw, Inbox } from "lucide-react";
 import { EmptyStateType } from "@/lib/store/utils/tableState";
-
-// ============================================================================
-// TYPES
-// ============================================================================
-
 export interface ColumnDef<T> {
     header: string | React.ReactNode;
     accessorKey?: keyof T;
     cell?: (row: T) => React.ReactNode;
     className?: string;
-    width?: string; // Optional width for grid columns
+    width?: string;
 }
-
 interface DashboardTableProps<T> {
     columns: ColumnDef<T>[];
     rows: T[];
     isLoading?: boolean;
     emptyStateType: EmptyStateType;
-
-    // UI Slots
     filterBar?: React.ReactNode;
-
-    // Pagination (Required unless hidden)
     pagination?: {
         currentPage: number;
         pageSize: number;
@@ -37,22 +26,13 @@ interface DashboardTableProps<T> {
         onPageChange: (page: number) => void;
         onPageSizeChange: (size: number) => void;
     };
-
-    // Actions
     onResetFilters?: () => void;
-
-    // Customization
     emptyDataMessage?: string;
     emptyDataDescription?: string;
     emptySearchResultsMessage?: string;
     renderEmptyDataAction?: () => React.ReactNode;
     className?: string;
 }
-
-// ============================================================================
-// COMPONENT
-// ============================================================================
-
 export function DashboardTable<T extends { id?: string | number }>({
     columns,
     rows,
@@ -67,11 +47,7 @@ export function DashboardTable<T extends { id?: string | number }>({
     renderEmptyDataAction,
     className
 }: DashboardTableProps<T>) {
-
-    // Calculate grid template columns
     const gridTemplate = columns.map(col => col.width || "1fr").join(" ");
-
-    // Helper: Render Loading Skeletons
     const renderSkeletonRows = () => {
         return Array.from({ length: 5 }).map((_, i) => (
             <div
@@ -87,8 +63,6 @@ export function DashboardTable<T extends { id?: string | number }>({
             </div>
         ));
     };
-
-    // Helper: Render Data Rows
     const renderDataRows = () => {
         return rows.map((row, i) => (
             <div
@@ -107,19 +81,14 @@ export function DashboardTable<T extends { id?: string | number }>({
             </div>
         ));
     };
-
-    // Determine content to show
     const showTable = emptyStateType === 'HAS_ROWS' || isLoading;
     const showEmptyData = !isLoading && emptyStateType === 'EMPTY_DATA';
     const showEmptyFilter = !isLoading && emptyStateType === 'EMPTY_FILTER_RESULTS';
-
     return (
         <div className={cn("space-y-4", className)}>
-
-            {/* Filter Bar */}
+            {}
             {filterBar && <div>{filterBar}</div>}
-
-            {/* Empty Data State */}
+            {}
             {showEmptyData && (
                 <div className="bg-card/30 backdrop-blur-xl border border-border/40 rounded-3xl overflow-hidden shadow-sm">
                     <div className="flex flex-col items-center justify-center py-20 px-6 text-center">
@@ -140,8 +109,7 @@ export function DashboardTable<T extends { id?: string | number }>({
                     </div>
                 </div>
             )}
-
-            {/* Empty Filter Results */}
+            {}
             {showEmptyFilter && (
                 <div className="bg-card/30 backdrop-blur-xl border border-border/40 rounded-3xl overflow-hidden shadow-sm">
                     <div className="flex flex-col items-center justify-center py-16 px-6 text-center">
@@ -170,7 +138,6 @@ export function DashboardTable<T extends { id?: string | number }>({
                     </div>
                 </div>
             )}
-
             {/* Grid Container */}
             {showTable && (
                 <div className="bg-card/30 backdrop-blur-xl border border-border/40 rounded-3xl overflow-hidden shadow-xl overflow-x-auto min-w-0">
@@ -192,7 +159,6 @@ export function DashboardTable<T extends { id?: string | number }>({
                                 </div>
                             ))}
                         </div>
-
                         {/* Body */}
                         <div className="divide-y divide-border/20">
                             {isLoading ? renderSkeletonRows() : renderDataRows()}
@@ -200,7 +166,6 @@ export function DashboardTable<T extends { id?: string | number }>({
                     </div>
                 </div>
             )}
-
             {/* Pagination Component */}
             {pagination && emptyStateType === 'HAS_ROWS' && (
                 <div className="pt-2">

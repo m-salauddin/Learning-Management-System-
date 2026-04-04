@@ -1,9 +1,3 @@
-// ============================================================================
-// COURSE PAGE REDUX SLICE
-// ============================================================================
-// State management for the public course detail page
-// ============================================================================
-
 import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
 import {
     CoursePageData,
@@ -11,52 +5,33 @@ import {
     EnrollmentBoxState,
 } from '@/types/course-page';
 import * as coursePageActions from '@/lib/actions/course-page';
-
-// ============================================================================
-// STATE INTERFACE
-// ============================================================================
-
 interface CoursePageState {
-    // Page data
     pageData: CoursePageData | null;
-
-    // Loading states
     loading: {
         page: boolean;
         enroll: boolean;
         review: boolean;
         lead: boolean;
     };
-
-    // Errors
     errors: {
         page: string | null;
         enroll: string | null;
         review: string | null;
         lead: string | null;
     };
-
-    // Enrollment box state
     enrollment: EnrollmentBoxState;
-
-    // Review form state
     reviewForm: {
         rating: number;
         text: string;
         isSubmitting: boolean;
         submitted: boolean;
     };
-
-    // Contact form state
     contactForm: {
         isSubmitting: boolean;
         submitted: boolean;
     };
-
-    // Curriculum accordion state
     expandedModules: Record<string, boolean>;
 }
-
 const initialState: CoursePageState = {
     pageData: null,
     loading: {
@@ -90,11 +65,6 @@ const initialState: CoursePageState = {
     },
     expandedModules: {},
 };
-
-// ============================================================================
-// ASYNC THUNKS
-// ============================================================================
-
 export const fetchCoursePageData = createAsyncThunk(
     'coursePage/fetchData',
     async (slug: string, { rejectWithValue }) => {
@@ -105,7 +75,6 @@ export const fetchCoursePageData = createAsyncThunk(
         return result.data;
     }
 );
-
 export const validateCoupon = createAsyncThunk(
     'coursePage/validateCoupon',
     async ({ courseId, couponCode }: { courseId: string; couponCode: string }, { rejectWithValue }) => {
@@ -116,7 +85,6 @@ export const validateCoupon = createAsyncThunk(
         return result;
     }
 );
-
 export const submitLead = createAsyncThunk(
     'coursePage/submitLead',
     async (input: Parameters<typeof coursePageActions.submitCourseLead>[0], { rejectWithValue }) => {
@@ -127,7 +95,6 @@ export const submitLead = createAsyncThunk(
         return result;
     }
 );
-
 export const submitReview = createAsyncThunk(
     'coursePage/submitReview',
     async (input: Parameters<typeof coursePageActions.submitCourseReview>[0], { rejectWithValue }) => {
@@ -138,27 +105,17 @@ export const submitReview = createAsyncThunk(
         return result;
     }
 );
-
-// ============================================================================
-// SLICE
-// ============================================================================
-
 const coursePageSlice = createSlice({
     name: 'coursePage',
     initialState,
     reducers: {
-        // Reset page state
         resetCoursePage(state) {
             return initialState;
         },
-
-        // Toggle module expansion
         toggleModule(state, action: PayloadAction<string>) {
             const moduleId = action.payload;
             state.expandedModules[moduleId] = !state.expandedModules[moduleId];
         },
-
-        // Expand all modules
         expandAllModules(state) {
             if (state.pageData) {
                 state.pageData.modules.forEach((mod) => {
@@ -166,37 +123,25 @@ const coursePageSlice = createSlice({
                 });
             }
         },
-
-        // Collapse all modules
         collapseAllModules(state) {
             state.expandedModules = {};
         },
-
-        // Set coupon code
         setCouponCode(state, action: PayloadAction<string>) {
             state.enrollment.couponCode = action.payload;
             state.enrollment.appliedCoupon = null;
             state.enrollment.error = null;
         },
-
-        // Clear coupon
         clearCoupon(state) {
             state.enrollment.couponCode = '';
             state.enrollment.appliedCoupon = null;
             state.enrollment.error = null;
         },
-
-        // Set review rating
         setReviewRating(state, action: PayloadAction<number>) {
             state.reviewForm.rating = action.payload;
         },
-
-        // Set review text
         setReviewText(state, action: PayloadAction<string>) {
             state.reviewForm.text = action.payload;
         },
-
-        // Reset review form
         resetReviewForm(state) {
             state.reviewForm = {
                 rating: 5,
@@ -205,24 +150,18 @@ const coursePageSlice = createSlice({
                 submitted: false,
             };
         },
-
-        // Reset contact form
         resetContactForm(state) {
             state.contactForm = {
                 isSubmitting: false,
                 submitted: false,
             };
         },
-
-        // Set enrollment status (for SSR hydration)
         setEnrollmentStatus(state, action: PayloadAction<boolean>) {
             state.enrollment.isEnrolled = action.payload;
             if (state.pageData) {
                 state.pageData.isEnrolled = action.payload;
             }
         },
-
-        // Clear errors
         clearErrors(state) {
             state.errors = {
                 page: null,
@@ -233,7 +172,6 @@ const coursePageSlice = createSlice({
         },
     },
     extraReducers: (builder) => {
-        // Fetch course page data
         builder
             .addCase(fetchCoursePageData.pending, (state) => {
                 state.loading.page = true;
@@ -243,8 +181,6 @@ const coursePageSlice = createSlice({
                 state.loading.page = false;
                 state.pageData = action.payload as CoursePageData;
                 state.enrollment.isEnrolled = action.payload?.isEnrolled || false;
-
-                // Auto-expand first module
                 if (action.payload?.modules?.length) {
                     state.expandedModules[action.payload.modules[0].id] = true;
                 }
@@ -253,8 +189,6 @@ const coursePageSlice = createSlice({
                 state.loading.page = false;
                 state.errors.page = action.payload as string;
             });
-
-        // Validate coupon
         builder
             .addCase(validateCoupon.pending, (state) => {
                 state.enrollment.error = null;
@@ -274,8 +208,6 @@ const coursePageSlice = createSlice({
                 state.enrollment.appliedCoupon = null;
                 state.enrollment.error = action.payload as string;
             });
-
-        // Submit lead
         builder
             .addCase(submitLead.pending, (state) => {
                 state.loading.lead = true;
@@ -292,8 +224,6 @@ const coursePageSlice = createSlice({
                 state.contactForm.isSubmitting = false;
                 state.errors.lead = action.payload as string;
             });
-
-        // Submit review
         builder
             .addCase(submitReview.pending, (state) => {
                 state.loading.review = true;
@@ -312,11 +242,6 @@ const coursePageSlice = createSlice({
             });
     },
 });
-
-// ============================================================================
-// EXPORTS
-// ============================================================================
-
 export const {
     resetCoursePage,
     toggleModule,
@@ -331,8 +256,6 @@ export const {
     setEnrollmentStatus,
     clearErrors,
 } = coursePageSlice.actions;
-
-// Selectors
 export const selectCoursePageData = (state: { coursePage: CoursePageState }) =>
     state.coursePage.pageData;
 export const selectCoursePageLoading = (state: { coursePage: CoursePageState }) =>
@@ -347,5 +270,4 @@ export const selectReviewForm = (state: { coursePage: CoursePageState }) =>
     state.coursePage.reviewForm;
 export const selectContactForm = (state: { coursePage: CoursePageState }) =>
     state.coursePage.contactForm;
-
 export default coursePageSlice.reducer;

@@ -1,5 +1,4 @@
 "use client";
-
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { motion, AnimatePresence } from "motion/react";
@@ -25,13 +24,11 @@ import { Logo } from "@/components/ui/Logo";
 import { cn } from "@/lib/utils";
 import type { UserRole } from "@/types/dashboard";
 import type { LucideIcon } from "lucide-react";
-
 interface SidebarItem {
     icon: LucideIcon;
     label: string;
     href: string;
 }
-
 const NAV_ITEMS: Record<UserRole, SidebarItem[]> = {
     student: [
         { icon: LayoutDashboard, label: "Overview", href: "/dashboard" },
@@ -61,18 +58,14 @@ const NAV_ITEMS: Record<UserRole, SidebarItem[]> = {
         { icon: User, label: "Profile", href: "/dashboard/profile" },
     ],
 };
-
 interface SidebarProps {
     role: UserRole;
     isCollapsed?: boolean;
     onToggle?: () => void;
 }
-
 export function Sidebar({ role, isCollapsed = false, onToggle }: SidebarProps) {
     const pathname = usePathname();
-
     const navItems = NAV_ITEMS[role] || NAV_ITEMS.student;
-
     return (
         <motion.aside
             initial={false}
@@ -88,16 +81,12 @@ export function Sidebar({ role, isCollapsed = false, onToggle }: SidebarProps) {
                     <Logo size="sm" showText={!isCollapsed} />
                 </Link>
             </div>
-
             <nav className={cn(
                 "flex-1 space-y-2 mt-4 px-4 custom-scrollbar",
                 isCollapsed ? "px-3 overflow-visible" : "px-4 overflow-x-hidden overflow-y-auto"
             )}>
-
-
                 {navItems.map((item) => {
                     const isActive = pathname === item.href || (item.href !== "/dashboard" && pathname.startsWith(item.href));
-
                     return (
                         <Link
                             key={item.href}
@@ -111,7 +100,7 @@ export function Sidebar({ role, isCollapsed = false, onToggle }: SidebarProps) {
                             )}
                             title={isCollapsed ? item.label : ""}
                         >
-                            {/* Visual backdrop for active item */}
+                            {}
                             {isActive && (
                                 <motion.div
                                     layoutId="active-sidebar-pill-idk-remove-me"
@@ -120,7 +109,6 @@ export function Sidebar({ role, isCollapsed = false, onToggle }: SidebarProps) {
                                     transition={{ type: "spring", stiffness: 300, damping: 30 }}
                                 />
                             )}
-
                             <motion.div
                                 layout
                                 className={cn(
@@ -132,7 +120,6 @@ export function Sidebar({ role, isCollapsed = false, onToggle }: SidebarProps) {
                                     "w-5 h-5 shrink-0 transition-colors duration-200",
                                     isActive && "text-primary"
                                 )} />
-
                                 <AnimatePresence mode="wait">
                                     {!isCollapsed && (
                                         <motion.span
@@ -147,7 +134,6 @@ export function Sidebar({ role, isCollapsed = false, onToggle }: SidebarProps) {
                                     )}
                                 </AnimatePresence>
                             </motion.div>
-
                             {isCollapsed && (
                                 <div className="absolute left-full ml-4 px-2 py-1 bg-slate-900 border border-white/10 rounded-md text-[10px] text-white opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all whitespace-nowrap z-50 pointer-events-none translate-x-[-10px] group-hover:translate-x-0">
                                     {item.label}
@@ -157,7 +143,6 @@ export function Sidebar({ role, isCollapsed = false, onToggle }: SidebarProps) {
                     )
                 })}
             </nav>
-
             <div className="p-4 border-t border-border/50 shrink-0 overflow-hidden">
                 <AnimatePresence mode="wait" initial={false}>
                     {!isCollapsed ? (

@@ -1,14 +1,9 @@
 import { createSupabaseServerClient } from '@/lib/supabase/server';
 import { BookOpen, Users, DollarSign, TrendingUp } from 'lucide-react';
 import Link from 'next/link';
-
 export default async function TeacherPanel() {
     const supabase = await createSupabaseServerClient();
-
-    // Fetch Instructor Stats via RPC
     const { data: stats } = await supabase.rpc('get_instructor_dashboard_stats');
-
-    // Fetch Instructor Courses
     const { data: courses } = await supabase
         .from('courses')
         .select(`
@@ -16,19 +11,7 @@ export default async function TeacherPanel() {
             enrollments:enrollments(count)
         `)
         .order('created_at', { ascending: false });
-    // RPC get_instructor_dashboard_stats already checks for teacher role/uid on server side for stats.
-    // For courses query, RLS will filter to only show own courses if configured correctly, 
-    // OR we should filter by instructor_id manually if RLS isn't implicit for SELECT on 'courses'. 
-    // The policy "Public can read published courses" allows reading published ones.
-    // The policy "Instructors can read own courses" allows reading drafts too?
-    // Let's rely on standard query. We might want to filter if needed, but RLS usually handles it.
-    // Wait, 'courses' table allows public read of published. So we might get ALL published courses if we don't filter.
-    // So we strictly need to filter by instructor_id. BUT we don't have the user ID easily here without calling getUser.
-    // Let's get getUser.
-
     const { data: { user } } = await supabase.auth.getUser();
-
-    // Re-fetch courses with instructor filter
     const { data: myCourses } = await supabase
         .from('courses')
         .select(`
@@ -37,15 +20,13 @@ export default async function TeacherPanel() {
         `)
         .eq('instructor_id', user?.id)
         .order('created_at', { ascending: false });
-
     const totalCourses = stats?.total_courses || 0;
     const totalStudents = stats?.total_students || 0;
     const totalEarnings = stats?.total_revenue || 0;
     const avgRating = stats?.avg_rating ? Number(stats.avg_rating).toFixed(1) : '—';
-
     return (
         <div className="space-y-8 pb-10">
-            {/* Welcome Section */}
+            {}
             <div className="flex flex-col gap-1">
                 <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">
                     Instructor Dashboard 🎓
@@ -54,8 +35,7 @@ export default async function TeacherPanel() {
                     Manage your courses, track performance, and grow your audience.
                 </p>
             </div>
-
-            {/* Stats Grid */}
+            {}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                 <div className="p-6 bg-card border border-border rounded-2xl">
                     <div className="flex items-center gap-4">
@@ -68,7 +48,6 @@ export default async function TeacherPanel() {
                         </div>
                     </div>
                 </div>
-
                 <div className="p-6 bg-card border border-border rounded-2xl">
                     <div className="flex items-center gap-4">
                         <div className="p-3 rounded-xl bg-emerald-500/10 text-emerald-500">
@@ -80,7 +59,6 @@ export default async function TeacherPanel() {
                         </div>
                     </div>
                 </div>
-
                 <div className="p-6 bg-card border border-border rounded-2xl">
                     <div className="flex items-center gap-4">
                         <div className="p-3 rounded-xl bg-amber-500/10 text-amber-500">
@@ -92,7 +70,6 @@ export default async function TeacherPanel() {
                         </div>
                     </div>
                 </div>
-
                 <div className="p-6 bg-card border border-border rounded-2xl">
                     <div className="flex items-center gap-4">
                         <div className="p-3 rounded-xl bg-blue-500/10 text-blue-500">
@@ -105,8 +82,7 @@ export default async function TeacherPanel() {
                     </div>
                 </div>
             </div>
-
-            {/* Quick Actions */}
+            {}
             <div className="space-y-4">
                 <h3 className="text-xl font-bold">Quick Actions</h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -120,8 +96,7 @@ export default async function TeacherPanel() {
                     </div>
                 </div>
             </div>
-
-            {/* My Courses */}
+            {}
             <div className="space-y-4">
                 <h3 className="text-xl font-bold">My Courses</h3>
                 {!myCourses || myCourses.length === 0 ? (

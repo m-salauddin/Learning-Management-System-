@@ -1,5 +1,4 @@
 "use client";
-
 import { useState } from "react";
 import { motion, AnimatePresence, Variants } from "framer-motion";
 import Image from "next/image";
@@ -21,9 +20,6 @@ import {
 import { Button } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/Badge";
 import { cn } from "@/lib/utils";
-
-// --- Types ---
-
 type Instructor = {
     id: string;
     name: string;
@@ -44,11 +40,7 @@ type Instructor = {
         rating: number;
     };
 };
-
-// --- Demo Data ---
-
 const categories = ["All", "Full Stack", "Frontend", "Backend", "DevOps", "Mobile", "AI/ML"];
-
 const instructors: Instructor[] = [
     {
         id: "1",
@@ -139,9 +131,6 @@ const instructors: Instructor[] = [
         stats: { courses: 4, students: 1500, rating: 5.0 },
     },
 ];
-
-// --- Animation Variants ---
-
 const containerVariants = {
     hidden: { opacity: 0 },
     visible: {
@@ -151,7 +140,6 @@ const containerVariants = {
         },
     },
 };
-
 const itemVariants: Variants = {
     hidden: { opacity: 0, y: 20, scale: 0.95, filter: "blur(10px)" },
     visible: {
@@ -177,26 +165,19 @@ const itemVariants: Variants = {
         }
     }
 };
-
-// --- Page Component ---
-
 export default function InstructorsClient() {
     const [selectedCategory, setSelectedCategory] = useState("All");
-
     const filteredInstructors =
         selectedCategory === "All"
             ? instructors
             : instructors.filter((instructor) => instructor.category.includes(selectedCategory));
-
     return (
         <div className="min-h-screen bg-background relative overflow-hidden">
-            {/* Background Gradient Elements - Consistent with theme */}
+            {}
             <div className="fixed top-0 left-0 w-[500px] h-[500px] bg-primary/10 rounded-full blur-3xl -translate-x-1/2 -translate-y-1/2 pointer-events-none" />
             <div className="fixed bottom-0 right-0 w-[500px] h-[500px] bg-blue-500/10 rounded-full blur-3xl translate-x-1/2 translate-y-1/2 pointer-events-none" />
-
             <div className="container mx-auto px-4 pt-40 pb-24 relative z-10">
-
-                {/* Header Section */}
+                {}
                 <div className="text-center max-w-4xl mx-auto mb-20 space-y-8">
                     <motion.div
                         initial={{ opacity: 0, y: 20 }}
@@ -207,7 +188,6 @@ export default function InstructorsClient() {
                         <span className="w-2 h-2 rounded-full bg-primary animate-pulse" />
                         World Class Mentors
                     </motion.div>
-
                     <motion.h1
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
@@ -217,7 +197,6 @@ export default function InstructorsClient() {
                         Meet the <span className="bg-clip-text text-transparent bg-linear-to-r from-primary via-purple-500 to-blue-500 drop-shadow-sm">Masters</span> <br />
                         Behind the Code
                     </motion.h1>
-
                     <motion.p
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
@@ -228,8 +207,7 @@ export default function InstructorsClient() {
                         We don&apos;t just teach code; we engineer careers.
                     </motion.p>
                 </div>
-
-                {/* Filter Section */}
+                {}
                 <motion.div
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
@@ -247,7 +225,7 @@ export default function InstructorsClient() {
                                     : "bg-background/40 border-border/50 text-muted-foreground hover:border-primary/50 hover:text-foreground hover:bg-muted/50 hover:scale-105"
                             )}
                         >
-                            {/* Background fill animation for active state */}
+                            {}
                             {selectedCategory === category && (
                                 <motion.div
                                     layoutId="activeFilter"
@@ -259,8 +237,7 @@ export default function InstructorsClient() {
                         </button>
                     ))}
                 </motion.div>
-
-                {/* Instructors Grid */}
+                {}
                 <motion.div
                     variants={containerVariants}
                     initial="hidden"
@@ -278,15 +255,13 @@ export default function InstructorsClient() {
                                 exit="exit"
                                 className="group relative h-full"
                             >
-                                {/* Card container with glass effect - Matching CourseCard */}
+                                {}
                                 <div className="relative h-full flex flex-col bg-card/80 dark:bg-card/60 backdrop-blur-xl border border-border rounded-3xl overflow-hidden transition-all duration-500 group-hover:border-primary/30 group-hover:shadow-2xl group-hover:-translate-y-2">
-
-                                    {/* Shine effect overlay */}
+                                    {}
                                     <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none z-0">
                                         <div className="absolute inset-0 bg-linear-to-r from-transparent via-white/5 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000" />
                                     </div>
-
-                                    {/* Image Section with Padding (Inset look) */}
+                                    {}
                                     <div className="p-4 pb-0 relative z-10">
                                         <div className="relative h-64 rounded-2xl overflow-hidden w-full">
                                             <Image
@@ -296,8 +271,7 @@ export default function InstructorsClient() {
                                                 className="object-cover transition-transform duration-700 group-hover:scale-110"
                                             />
                                             <div className="absolute inset-0 bg-linear-to-t from-card/80 via-transparent to-transparent opacity-60" />
-
-                                            {/* Social Links on Hover (Over Image) - Moved behind badges */}
+                                            {}
                                             <div className="absolute inset-0 bg-black/40 backdrop-blur-[2px] opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center gap-3 z-10 rounded-2xl">
                                                 {instructor.social.github && (
                                                     <a href={instructor.social.github} target="_blank" rel="noopener noreferrer" className="p-2.5 rounded-full bg-background/90 text-foreground hover:text-primary hover:scale-110 transition-all border border-border">
@@ -320,14 +294,12 @@ export default function InstructorsClient() {
                                                     </a>
                                                 )}
                                             </div>
-
-                                            {/* Floating Badges - Moved to Top (z-20) */}
+                                            {}
                                             <div className="absolute top-3 right-3 z-20">
                                                 <span className="px-3 py-1 rounded-full bg-black/60 backdrop-blur-md text-xs font-bold text-amber-400 border border-border shadow-lg">
                                                     {instructor.category}
                                                 </span>
                                             </div>
-
                                             <div className="absolute bottom-3 left-3 flex items-center gap-2 px-3 py-1 rounded-full bg-black/60 backdrop-blur-md border border-border shadow-lg z-20">
                                                 <div className="flex items-center gap-1">
                                                     <span className="text-yellow-400">★</span>
@@ -336,8 +308,7 @@ export default function InstructorsClient() {
                                             </div>
                                         </div>
                                     </div>
-
-                                    {/* Content Section */}
+                                    {}
                                     <div className="p-6 pt-4 flex flex-col grow relative z-10">
                                         <div className="mb-4">
                                             <h3 className="text-xl font-bold mb-1 transition-colors duration-300 group-hover:text-primary">{instructor.name}</h3>
@@ -346,7 +317,6 @@ export default function InstructorsClient() {
                                                 {instructor.bio}
                                             </p>
                                         </div>
-
                                         <div className="flex flex-wrap gap-2 mb-5">
                                             {instructor.skills.slice(0, 4).map(skill => (
                                                 <span key={skill} className="px-2.5 py-1 rounded-md bg-muted/80 text-muted-foreground text-[10px] font-medium hover:bg-primary/10 hover:text-primary transition-colors duration-300">
@@ -354,7 +324,6 @@ export default function InstructorsClient() {
                                                 </span>
                                             ))}
                                         </div>
-
                                         <div className="mt-auto pt-4 border-t border-border flex items-center justify-between">
                                             <div className="flex items-center gap-6">
                                                 <div className="flex flex-col">
@@ -370,7 +339,6 @@ export default function InstructorsClient() {
                                                     </span>
                                                 </div>
                                             </div>
-
                                             <Button size="sm" className="rounded-xl px-5 group/btn bg-primary text-primary-foreground hover:bg-primary/90">
                                                 Profile
                                                 <ArrowRight className="w-3.5 h-3.5 ml-2 transition-transform duration-300 group-hover/btn:translate-x-1" />
@@ -382,7 +350,6 @@ export default function InstructorsClient() {
                         ))}
                     </AnimatePresence>
                 </motion.div>
-
                 {filteredInstructors.length === 0 && (
                     <motion.div
                         initial={{ opacity: 0 }}
@@ -403,7 +370,6 @@ export default function InstructorsClient() {
                         </Button>
                     </motion.div>
                 )}
-
             </div>
         </div>
     );

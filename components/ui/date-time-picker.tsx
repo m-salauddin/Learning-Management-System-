@@ -1,5 +1,4 @@
 "use client";
-
 import * as React from "react";
 import { format, startOfToday } from "date-fns";
 import { Calendar as CalendarIcon, Clock } from "lucide-react";
@@ -18,14 +17,12 @@ import {
     SelectTrigger,
     SelectValue,
 } from "@/components/ui/select";
-
 interface DateTimePickerProps {
     date?: Date;
     setDate: (date: Date | undefined) => void;
     className?: string;
     placeholder?: string;
 }
-
 export function DateTimePicker({
     date,
     setDate,
@@ -33,26 +30,21 @@ export function DateTimePicker({
     placeholder = "Pick a date",
 }: DateTimePickerProps) {
     const [selectedDate, setSelectedDate] = React.useState<Date | undefined>(date);
-
     React.useEffect(() => {
         if (date) {
             setSelectedDate(date);
         }
     }, [date]);
-
     const handleDateSelect = (newDate: Date | undefined) => {
         if (!newDate) return;
-        
         const updatedDate = new Date(newDate);
         if (selectedDate) {
             updatedDate.setHours(selectedDate.getHours());
             updatedDate.setMinutes(selectedDate.getMinutes());
         }
-        
         setSelectedDate(updatedDate);
         setDate(updatedDate);
     };
-
     const handleTimeChange = (type: "hours" | "minutes" | "ampm", value: string) => {
         const updatedDate = new Date(selectedDate || new Date());
         if (type === "hours") {
@@ -72,20 +64,19 @@ export function DateTimePicker({
         setSelectedDate(updatedDate);
         setDate(updatedDate);
     };
-
     const get12Hour = (date: Date | undefined) => {
         if (!date) return "12";
         const h = date.getHours() % 12;
         return (h === 0 ? 12 : h).toString();
     };
-
     const getAMPM = (date: Date | undefined) => {
         if (!date) return "AM";
         return date.getHours() >= 12 ? "PM" : "AM";
     };
-
+    const [open, setOpen] = React.useState(false);
+    
     return (
-        <Popover>
+        <Popover open={open} onOpenChange={setOpen}>
             <PopoverTrigger asChild>
                 <button
                     type="button"
@@ -101,10 +92,26 @@ export function DateTimePicker({
                     <span className="truncate">
                         {date ? format(date, "MM/dd/yyyy hh:mm aa") : placeholder}
                     </span>
-                    <CalendarIcon className="size-4 shrink-0 text-input-dark-text opacity-70 transition-colors group-hover:text-primary group-data-[state=open]:text-primary group-data-[state=open]:opacity-100" />
+                    <CalendarIcon className="size-4 shrink-0 text-input-dark-text opacity-70 transition-colors group-hover:text-blue-500 group-data-[state=open]:text-blue-500 group-data-[state=open]:opacity-100" />
                 </button>
             </PopoverTrigger>
-            <PopoverContent className="w-auto p-0 bg-slate-950/95 backdrop-blur-2xl border-white/10 shadow-2xl rounded-2xl overflow-hidden" align="start">
+            <PopoverContent 
+                className="w-auto p-0 bg-slate-950/95 backdrop-blur-2xl border-white/10 shadow-2xl rounded-2xl overflow-hidden" 
+                align="start"
+                style={{ 
+                    // Overriding these for both CSS vars and TW theme keys
+                    '--primary': '#3b82f6', 
+                    '--color-primary': '#3b82f6',
+                    '--primary-foreground': '#ffffff',
+                    '--color-primary-foreground': '#ffffff',
+                    '--accent': 'rgba(59, 130, 246, 0.1)',
+                    '--color-accent': 'rgba(59, 130, 246, 0.1)',
+                    '--accent-foreground': '#ffffff',
+                    '--color-accent-foreground': '#ffffff',
+                    '--ring': '#3b82f6',
+                    '--color-ring': '#3b82f6'
+                } as React.CSSProperties}
+            >
                 <div className="flex flex-col md:flex-row divide-y md:divide-y-0 md:divide-x divide-white/10">
                     <div className="p-3">
                         <Calendar
@@ -113,6 +120,17 @@ export function DateTimePicker({
                             onSelect={handleDateSelect}
                             disabled={{ before: startOfToday() }}
                             initialFocus
+                            classNames={{
+                                today: "bg-blue-500/10 text-blue-400 border border-blue-500/20 rounded-lg",
+                                selected: "bg-blue-500 text-white !rounded-lg !shadow-lg",
+                                day: cn(
+                                    "flex aspect-square h-8 w-8 items-center justify-center p-0 font-normal transition-all rounded-lg",
+                                    "hover:bg-blue-500/30 hover:text-white",
+                                    "!focus-visible:ring-2 !focus-visible:ring-blue-500/50 !focus-visible:ring-offset-2",
+                                    "aria-selected:!bg-blue-500 aria-selected:!text-white aria-selected:!opacity-100",
+                                    "aria-selected:!rounded-lg"
+                                )
+                            }}
                         />
                     </div>
                     <div className="p-4 flex flex-col gap-4 bg-white/3 min-w-[140px]">
@@ -159,7 +177,6 @@ export function DateTimePicker({
                                     </Select>
                                 </div>
                             </div>
-                            
                             <div className="space-y-1.5">
                                 <label className="text-[10px] font-bold text-white/20 ml-1">Period</label>
                                 <div className="flex p-1 rounded-lg bg-white/5 border border-white/10 gap-1">
@@ -170,8 +187,8 @@ export function DateTimePicker({
                                             onClick={() => handleTimeChange("ampm", p)}
                                             className={cn(
                                                 "flex-1 py-1 rounded-md text-[10px] font-bold transition-all",
-                                                getAMPM(selectedDate) === p 
-                                                    ? "bg-blue-500 text-white shadow-lg" 
+                                                getAMPM(selectedDate) === p
+                                                    ? "bg-blue-500 text-white shadow-lg"
                                                     : "text-white/40 hover:text-white hover:bg-white/5"
                                             )}
                                         >
@@ -181,10 +198,18 @@ export function DateTimePicker({
                                 </div>
                             </div>
                         </div>
-                        <div className="mt-auto pt-4 border-t border-white/5">
+                        <div className="mt-auto pt-4 border-t border-white/5 space-y-3">
                             <div className="text-[10px] font-bold text-blue-400 text-center uppercase tracking-tighter">
                                 {selectedDate ? format(selectedDate, "hh:mm aa") : "--:-- --"}
                             </div>
+                            <Button 
+                                type="button" 
+                                size="sm" 
+                                onClick={() => setOpen(false)}
+                                className="w-full bg-blue-500 hover:bg-blue-600 text-white font-bold text-[11px] h-8 rounded-lg shadow-lg shadow-blue-500/20 active:scale-95 transition-all"
+                            >
+                                Apply
+                            </Button>
                         </div>
                     </div>
                 </div>

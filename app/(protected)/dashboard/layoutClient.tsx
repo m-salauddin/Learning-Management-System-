@@ -1,5 +1,4 @@
 "use client";
-
 import { useState } from "react";
 import { Sidebar } from "@/components/dashboard/Sidebar";
 import { Header } from "@/components/dashboard/Header";
@@ -11,13 +10,11 @@ import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
 import type { UserRole } from "@/types/dashboard";
 import type { LucideIcon } from "lucide-react";
-
 interface SidebarItem {
     icon: LucideIcon;
     label: string;
     href: string;
 }
-
 const NAV_ITEMS: Record<UserRole, SidebarItem[]> = {
     student: [
         { icon: LayoutDashboard, label: "Overview", href: "/dashboard" },
@@ -47,44 +44,34 @@ const NAV_ITEMS: Record<UserRole, SidebarItem[]> = {
         { icon: Settings, label: "Settings", href: "/dashboard/settings" },
     ],
 };
-
 interface DashboardLayoutClientProps {
     children: React.ReactNode;
     role: UserRole;
 }
-
 import { useAppSelector } from "@/lib/store/hooks";
-
 export function DashboardLayoutClient({ children, role: serverRole }: DashboardLayoutClientProps) {
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
     const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
     const pathname = usePathname();
     const { user } = useAppSelector((state) => state.auth);
-
-    // Prefer Redux role if available (client state), fallback to server role
     const role = user?.role || serverRole;
-
     const sidebarItems = NAV_ITEMS[role] || NAV_ITEMS.student;
-
     return (
         <div className="flex min-h-screen bg-background">
-            {/* Desktop Sidebar */}
+            {}
             <Sidebar role={role} isCollapsed={isSidebarCollapsed} onToggle={() => setIsSidebarCollapsed(!isSidebarCollapsed)} />
-
-            {/* Main Content */}
+            {}
             <div className="flex-1 flex flex-col min-w-0">
                 <Header
                     onMobileMenuOpen={() => setIsMobileMenuOpen(true)}
                     isSidebarCollapsed={isSidebarCollapsed}
                     onSidebarToggle={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
                 />
-
                 <main className="flex-1 p-4 sm:p-6 lg:p-8 overflow-y-auto dashboard-scrollbar">
                     {children}
                 </main>
             </div>
-
-            {/* Mobile Sidebar Overlay */}
+            {}
             <AnimatePresence>
                 {isMobileMenuOpen && (
                     <>
@@ -111,11 +98,9 @@ export function DashboardLayoutClient({ children, role: serverRole }: DashboardL
                                     <X className="w-5 h-5 group-hover:scale-110 transition-transform" />
                                 </button>
                             </div>
-
                             <nav className="flex-1 px-4 space-y-2 mt-4">
                                 {sidebarItems.map((item) => {
                                     const isActive = pathname === item.href || (item.href !== "/dashboard" && pathname.startsWith(item.href));
-
                                     return (
                                         <Link
                                             key={item.href}
@@ -134,7 +119,6 @@ export function DashboardLayoutClient({ children, role: serverRole }: DashboardL
                                     )
                                 })}
                             </nav>
-
                             <div className="p-4 border-t border-border/50">
                                 <div className="bg-primary/5 p-4 rounded-xl border border-primary/10">
                                     <h4 className="text-sm font-semibold text-primary mb-1">Mobile Access</h4>

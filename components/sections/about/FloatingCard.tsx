@@ -1,9 +1,7 @@
 "use client";
-
 import * as React from "react";
 import { LucideIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
-
 interface FloatingCardProps {
     icon: LucideIcon;
     title: string;
@@ -14,14 +12,12 @@ interface FloatingCardProps {
     showStatusDot?: boolean;
     children?: React.ReactNode;
 }
-
 const positionClasses = {
     "top-left": "top-40 left-6 xl:left-16 2xl:left-28",
     "top-right": "top-40 right-6 xl:right-16 2xl:right-28",
     "bottom-left": "bottom-[10%] left-6 xl:left-20 2xl:left-32",
     "bottom-right": "bottom-[10%] right-6 xl:right-20 2xl:right-32",
 };
-
 const glowColorClasses = {
     primary: {
         line: "via-primary",
@@ -44,7 +40,6 @@ const glowColorClasses = {
         icon: "from-success to-emerald-400",
     },
 };
-
 export function FloatingCard({
     icon: Icon,
     title,
@@ -56,7 +51,6 @@ export function FloatingCard({
     children,
 }: FloatingCardProps) {
     const colors = glowColorClasses[glowColor];
-
     return (
         <div
             className={cn(
@@ -66,7 +60,7 @@ export function FloatingCard({
             style={{ animationDelay }}
         >
             <div className="relative rounded-2xl bg-card border border-border/50 shadow-lg overflow-hidden">
-                {/* Top Side Glowing Border */}
+                {}
                 <div className={cn(
                     "absolute top-0 left-0 right-0 h-px bg-linear-to-r from-transparent to-transparent",
                     colors.line

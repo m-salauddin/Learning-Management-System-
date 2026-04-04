@@ -1,12 +1,10 @@
 "use client";
-
 import Image from "next/image";
 import { motion, AnimatePresence } from "motion/react";
 import { BookOpen, Layout, Play, Tag, ArrowRight, Share2 } from "lucide-react";
 import { MappedCourse } from "@/types/mapped-course";
 import { PrimaryCTAButton, SecondaryCTAButton } from "@/components/ui/CTAButton";
 import Breadcrumbs from "@/components/ui/Breadcrumbs";
-
 interface CourseSidebarProps {
     course: MappedCourse;
     timeLeft: { d: number, h: number, m: number, s: number } | null;
@@ -25,7 +23,6 @@ interface CourseSidebarProps {
     setShowShareModal: (show: boolean) => void;
     setShowVideoModal: (show: boolean) => void;
 }
-
 export default function CourseSidebar({
     course,
     timeLeft,
@@ -55,7 +52,6 @@ export default function CourseSidebar({
                     ]}
                 />
             </div>
-
             <div className="relative overflow-hidden rounded-[2.5rem]! bg-white dark:bg-slate-900/60 border border-slate-300 dark:border-white/10 backdrop-blur-2xl lg:sticky lg:top-[110px]">
                 <div className="p-3 pb-0">
                     <div
@@ -69,9 +65,7 @@ export default function CourseSidebar({
                             className="object-cover opacity-90 group-hover/preview:scale-110 transition-all duration-700"
                             unoptimized
                         />
-
                         <div className="absolute inset-0 bg-linear-to-t from-slate-950/60 via-transparent to-transparent opacity-60" />
-
                         <div className="absolute inset-0 flex items-center justify-center">
                             <div className="relative">
                                 <div className="absolute inset-0 rounded-full bg-primary/20 animate-ping group-hover/preview:bg-primary/40" />
@@ -82,8 +76,7 @@ export default function CourseSidebar({
                                 </div>
                             </div>
                         </div>
-
-                        {/* Preview Text */}
+                        {}
                         <div className="absolute bottom-4 left-0 right-0 text-center">
                             <span className="text-[10px] font-black text-white px-3 py-1 rounded-full bg-black/40 backdrop-blur-md border border-white/10 uppercase tracking-widest">
                                 Preview this course
@@ -91,9 +84,8 @@ export default function CourseSidebar({
                         </div>
                     </div>
                 </div>
-
                 <div className="p-5 sm:p-6 space-y-6">
-                    {/* Price Section */}
+                    {}
                     <div className="space-y-4">
                         <div className="flex flex-col gap-1">
                             <div className="flex items-center gap-3">
@@ -112,7 +104,6 @@ export default function CourseSidebar({
                                 )}
                             </div>
                         </div>
-
                         {hasDiscount && course.discountExpiresAt && (
                             <div className="inline-flex items-center gap-2.5 px-3 py-1.5 rounded-xl bg-rose-500/10 border border-rose-500/20">
                                 <div className="relative flex h-2 w-2">
@@ -125,8 +116,7 @@ export default function CourseSidebar({
                             </div>
                         )}
                     </div>
-
-                    {/* Promo Code Toggle & Section */}
+                    {}
                     <div className="py-5 border-y border-slate-300 dark:border-white/5">
                         <AnimatePresence mode="wait">
                             {!showCouponInput ? (
@@ -173,7 +163,6 @@ export default function CourseSidebar({
                                             Cancel
                                         </button>
                                     </div>
-
                                     <form onSubmit={handleApplyCoupon} className="relative group/form">
                                         <div className="relative">
                                             <input
@@ -210,7 +199,6 @@ export default function CourseSidebar({
                             )}
                         </AnimatePresence>
                     </div>
-
                     <div className="space-y-6">
                         <div className="grid grid-cols-2 gap-3 sm:gap-4">
                             <PrimaryCTAButton
@@ -226,7 +214,6 @@ export default function CourseSidebar({
                                     </div>
                                 </div>
                             </PrimaryCTAButton>
-
                             <SecondaryCTAButton
                                 onClick={() => setShowShareModal(true)}
                                 className="w-full! h-12! rounded-2xl! bg-card border border-border hover:border-slate-400 dark:hover:border-white/20 group/share px-4 sm:px-6"

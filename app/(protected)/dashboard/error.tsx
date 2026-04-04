@@ -1,9 +1,7 @@
 'use client';
-
 import { useEffect } from 'react';
 import { AlertCircle } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
-
 export default function DashboardError({
     error,
     reset,
@@ -12,10 +10,8 @@ export default function DashboardError({
     reset: () => void;
 }) {
     useEffect(() => {
-        // Log the error to an error reporting service
         console.error(error);
     }, [error]);
-
     return (
         <div className="flex h-[calc(100vh-4rem)] w-full flex-col items-center justify-center gap-4 text-center">
             <div className="rounded-full bg-destructive/10 p-4 text-destructive">

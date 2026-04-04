@@ -1,8 +1,4 @@
-
-
 import { Variants } from "motion/react"
-
-
 export const fadeIn: Variants = {
     hidden: { opacity: 0 },
     visible: {
@@ -10,7 +6,6 @@ export const fadeIn: Variants = {
         transition: { duration: 0.5, ease: "easeOut" }
     }
 }
-
 export const fadeInUp: Variants = {
     hidden: { opacity: 0, y: 20 },
     visible: {
@@ -19,7 +14,6 @@ export const fadeInUp: Variants = {
         transition: { duration: 0.5, ease: "easeOut" }
     }
 }
-
 export const fadeInDown: Variants = {
     hidden: { opacity: 0, y: -20 },
     visible: {
@@ -28,7 +22,6 @@ export const fadeInDown: Variants = {
         transition: { duration: 0.5, ease: "easeOut" }
     }
 }
-
 export const fadeInLeft: Variants = {
     hidden: { opacity: 0, x: -20 },
     visible: {
@@ -37,7 +30,6 @@ export const fadeInLeft: Variants = {
         transition: { duration: 0.5, ease: "easeOut" }
     }
 }
-
 export const fadeInRight: Variants = {
     hidden: { opacity: 0, x: 20 },
     visible: {
@@ -46,8 +38,6 @@ export const fadeInRight: Variants = {
         transition: { duration: 0.5, ease: "easeOut" }
     }
 }
-
-
 export const scaleIn: Variants = {
     hidden: { opacity: 0, scale: 0.9 },
     visible: {
@@ -56,7 +46,6 @@ export const scaleIn: Variants = {
         transition: { duration: 0.4, ease: "easeOut" }
     }
 }
-
 export const scaleUp: Variants = {
     hidden: { opacity: 0, scale: 0.5 },
     visible: {
@@ -65,8 +54,6 @@ export const scaleUp: Variants = {
         transition: { duration: 0.5, type: "spring", stiffness: 200, damping: 20 }
     }
 }
-
-
 export const slideUp: Variants = {
     hidden: { y: "100%" },
     visible: {
@@ -74,7 +61,6 @@ export const slideUp: Variants = {
         transition: { duration: 0.5, ease: [0.25, 0.1, 0.25, 1] }
     }
 }
-
 export const slideDown: Variants = {
     hidden: { y: "-100%" },
     visible: {
@@ -82,7 +68,6 @@ export const slideDown: Variants = {
         transition: { duration: 0.5, ease: [0.25, 0.1, 0.25, 1] }
     }
 }
-
 export const slideLeft: Variants = {
     hidden: { x: "100%" },
     visible: {
@@ -90,7 +75,6 @@ export const slideLeft: Variants = {
         transition: { duration: 0.5, ease: [0.25, 0.1, 0.25, 1] }
     }
 }
-
 export const slideRight: Variants = {
     hidden: { x: "-100%" },
     visible: {
@@ -98,8 +82,6 @@ export const slideRight: Variants = {
         transition: { duration: 0.5, ease: [0.25, 0.1, 0.25, 1] }
     }
 }
-
-
 export const staggerContainer: Variants = {
     hidden: { opacity: 0 },
     visible: {
@@ -110,7 +92,6 @@ export const staggerContainer: Variants = {
         }
     }
 }
-
 export const staggerContainerFast: Variants = {
     hidden: { opacity: 0 },
     visible: {
@@ -121,8 +102,6 @@ export const staggerContainerFast: Variants = {
         }
     }
 }
-
-
 export const staggerItem: Variants = {
     hidden: { opacity: 0, y: 20 },
     visible: {
@@ -131,31 +110,23 @@ export const staggerItem: Variants = {
         transition: { duration: 0.4, ease: "easeOut" }
     }
 }
-
-
 export const hoverScale = {
     scale: 1.05,
     transition: { duration: 0.2 }
 }
-
 export const tapScale = {
     scale: 0.95
 }
-
 export const hoverLift = {
     y: -5,
     transition: { duration: 0.2 }
 }
-
-
 export const springConfig = {
     gentle: { type: "spring", stiffness: 120, damping: 14 },
     bouncy: { type: "spring", stiffness: 300, damping: 10 },
     stiff: { type: "spring", stiffness: 400, damping: 30 },
     slow: { type: "spring", stiffness: 50, damping: 20 }
 } as const
-
-
 export const pageTransition: Variants = {
     initial: { opacity: 0, y: 20 },
     animate: {
@@ -169,8 +140,6 @@ export const pageTransition: Variants = {
         transition: { duration: 0.3, ease: "easeIn" }
     }
 }
-
-
 export const blurFade: Variants = {
     hidden: { opacity: 0, filter: "blur(10px)" },
     visible: {

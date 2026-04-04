@@ -1,4 +1,3 @@
-// About Page Components
 export { AnimatedCounter } from "./AnimatedCounter";
 export { FloatingCard } from "./FloatingCard";
 export { AboutHeroSection } from "./AboutHeroSection";
