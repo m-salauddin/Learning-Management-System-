@@ -1,10 +1,11 @@
 "use client";
 import { motion } from "motion/react";
-import { DollarSign, Video, Image as ImageIcon, Upload, X, Loader2, AlertCircle, Tag } from "lucide-react";
+import { DollarSign, Video, Image as ImageIcon, Upload, X, Loader2, AlertCircle, Tag, MonitorPlay } from "lucide-react";
 import Image from "next/image";
 import { cn } from "@/lib/utils";
 import { inputClasses, labelClasses } from "./constants";
 import { CreateCourseInput } from "@/types/lms";
+import { StepHeader } from "./StepHeader";
 interface StepPresentationProps {
     formData: CreateCourseInput;
     setFormData: React.Dispatch<React.SetStateAction<CreateCourseInput>>;
@@ -42,36 +43,20 @@ export const StepPresentation = ({
             className="space-y-6"
         >
             {}
-            <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                className="relative group overflow-hidden p-6 md:p-8 rounded-3xl border border-white/10 bg-slate-900/40 backdrop-blur-3xl shadow-2xl"
-            >
-                <div className="absolute top-0 right-0 w-80 h-80 bg-amber-500/10 blur-[100px] -mr-40 -mt-40 rounded-full" />
-                <div className="relative z-10 flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
-                    <div className="space-y-2">
-                        <div className="inline-flex items-center gap-2.5 px-3 py-1.5 rounded-full bg-amber-500/10 border border-amber-500/20 text-amber-500 text-[10px] font-black uppercase tracking-[0.2em]">
-                            <span className="w-1.5 h-1.5 rounded-full bg-amber-500 shadow-[0_0_8px_rgba(245,158,11,1)]" />
-                            Phase 03
-                        </div>
-                        <h2 className="text-2xl md:text-3xl font-black text-white tracking-tight">
-                            The <span className="text-amber-500">Presentation</span>
-                        </h2>
-                        <p className="text-white/40 text-xs md:text-sm max-w-lg font-medium leading-relaxed">
-                            Set the value and visual identity. Excellence in presentation determines the perceived value of your knowledge.
-                        </p>
-                    </div>
-                    <div className="w-14 h-14 md:w-16 md:h-16 rounded-2xl bg-linear-to-br from-amber-500/20 to-amber-500/5 border border-white/10 flex items-center justify-center text-amber-500 shadow-2xl backdrop-blur-md">
-                        <DollarSign className="w-7 h-7 md:w-8 md:h-8" />
-                    </div>
-                </div>
-            </motion.div>
-            <div className="p-6 rounded-3xl border border-border/50 bg-card/30 backdrop-blur-xl shadow-xl space-y-8">
+            <StepHeader
+                phase="03"
+                title="Presentation"
+                highlight="Presentation"
+                description="Establish the visual identity and financial value."
+                icon={MonitorPlay}
+                color="emerald"
+            />
+            <div className="p-6 rounded-3xl border border-border/50 bg-card/30 backdrop-blur-xl shadow-xl space-y-8 group/presentation">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
                     {}
                     <div className="space-y-4">
                         <label className={labelClasses}>
-                            <DollarSign className="w-4 h-4 text-muted-foreground" />
+                            <DollarSign className="w-4 h-4 text-muted-foreground group-focus-within/pricing:text-emerald-500 transition-colors" />
                             Pricing & Video
                         </label>
                         <div className="space-y-4">
@@ -84,7 +69,7 @@ export const StepPresentation = ({
                                             type="number"
                                             value={formData.price === 0 ? "" : formData.price}
                                             onChange={(e) => setFormData(prev => ({ ...prev, price: e.target.value === "" ? 0 : Number(e.target.value) }))}
-                                            className={cn(inputClasses, "pl-8", errors.price && "border-red-500/50 focus:border-red-500")}
+                                            className={cn(inputClasses, "pl-8 focus:border-emerald-500/50 focus:ring-2 focus:ring-emerald-500/20", errors.price && "border-red-500/50 focus:border-red-500")}
                                             placeholder="0"
                                         />
                                     </div>
@@ -105,7 +90,7 @@ export const StepPresentation = ({
                                             type="number"
                                             value={formData.discount_price === null ? "" : formData.discount_price}
                                             onChange={(e) => setFormData(prev => ({ ...prev, discount_price: e.target.value === "" ? null : Number(e.target.value) }))}
-                                            className={cn(inputClasses, "pl-8", errors.discount_price && "border-red-500/50 focus:border-red-500")}
+                                            className={cn(inputClasses, "pl-8 focus:border-emerald-500/50 focus:ring-2 focus:ring-emerald-500/20", errors.discount_price && "border-red-500/50 focus:border-red-500")}
                                             placeholder="0"
                                         />
                                     </div>
@@ -119,7 +104,7 @@ export const StepPresentation = ({
                             </div>
                             <div className="space-y-2 pt-2">
                                 <label className={labelClasses}>
-                                    <Video className="w-4 h-4 text-muted-foreground" />
+                                    <Video className="w-4 h-4 text-muted-foreground group-focus-within/pricing:text-emerald-500 transition-colors" />
                                     Preview Video
                                 </label>
                                 <input
@@ -127,16 +112,16 @@ export const StepPresentation = ({
                                     value={formData.preview_video_url}
                                     onChange={(e) => setFormData(prev => ({ ...prev, preview_video_url: e.target.value }))}
                                     placeholder="YouTube or Vimeo URL"
-                                    className={inputClasses}
+                                    className={cn(inputClasses, "focus:border-emerald-500/50 focus:ring-2 focus:ring-emerald-500/20")}
                                 />
                             </div>
                             <div className="space-y-2 pt-2">
                                 <div className="flex items-center justify-between">
                                     <label className={labelClasses}>
-                                        <Tag className="w-4 h-4 text-muted-foreground" />
+                                        <Tag className="w-4 h-4 text-muted-foreground group-focus-within/pricing:text-emerald-500 transition-colors" />
                                         Launch Coupon Code
                                     </label>
-                                    <span className="text-[9px] font-black text-amber-500 uppercase tracking-widest bg-amber-500/10 px-2 py-0.5 rounded-full border border-amber-500/20">Optional</span>
+                                    <span className="text-[9px] font-black text-emerald-500 uppercase tracking-widest bg-emerald-500/10 px-2 py-0.5 rounded-full border border-emerald-500/20">Optional</span>
                                 </div>
                                 <div className="relative group">
                                     <input
@@ -144,7 +129,7 @@ export const StepPresentation = ({
                                         value={formData.coupon_code || ""}
                                         onChange={(e) => setFormData(prev => ({ ...prev, coupon_code: e.target.value.toUpperCase().replace(/\s/g, '') }))}
                                         placeholder="E.G. NEWCOURSE20"
-                                        className={cn(inputClasses, "uppercase tracking-widest font-black")}
+                                        className={cn(inputClasses, "uppercase tracking-widest font-black focus:border-emerald-500/50 focus:ring-2 focus:ring-emerald-500/20")}
                                     />
                                     <div className="absolute right-4 top-1/2 -translate-y-1/2 opacity-0 group-focus-within:opacity-100 transition-opacity">
                                         <span className="text-[10px] font-bold text-muted-foreground tracking-normal lowercase">auto-uppercase</span>
@@ -157,9 +142,9 @@ export const StepPresentation = ({
                         </div>
                     </div>
                     {}
-                    <div className="space-y-4">
+                    <div className="space-y-4 group/thumbnail">
                         <label className={labelClasses}>
-                            <ImageIcon className="w-4 h-4 text-muted-foreground" />
+                            <ImageIcon className="w-4 h-4 text-muted-foreground group-focus-within/thumbnail:text-emerald-500 transition-colors" />
                             Course Thumbnail
                         </label>
                         <div className="space-y-1">
@@ -170,7 +155,7 @@ export const StepPresentation = ({
                                 onDrop={handleDrop}
                                 className={cn(
                                     "relative aspect-video rounded-2xl overflow-hidden border border-dashed transition-all cursor-pointer",
-                                    isDragging ? "border-primary bg-primary/5" : (errors.thumbnail_url ? "border-red-500/50 bg-red-500/5 hover:bg-red-500/10" : "border-border/50 bg-muted/20 hover:bg-muted/30")
+                                    isDragging ? "border-emerald-500 bg-emerald-500/5" : (errors.thumbnail_url ? "border-red-500/50 bg-red-500/5 hover:bg-red-500/10" : "border-border/50 bg-muted/20 hover:bg-emerald-500/5 hover:border-emerald-500/30")
                                 )}
                             >
                                 {(formData.thumbnail_url || thumbnailPreview) ? (
@@ -190,7 +175,7 @@ export const StepPresentation = ({
                                 )}
                                 {isUploadingThumbnail && (
                                     <div className="absolute inset-0 bg-background/80 backdrop-blur-sm flex items-center justify-center">
-                                        <Loader2 className="w-8 h-8 text-primary animate-spin" />
+                                        <Loader2 className="w-8 h-8 text-emerald-500 animate-spin" />
                                     </div>
                                 )}
                             </div>

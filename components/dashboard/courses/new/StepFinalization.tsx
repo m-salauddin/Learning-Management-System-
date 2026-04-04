@@ -2,11 +2,12 @@
 import { useState, useCallback, memo } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import {
-    Sparkles, FolderKanban, Plus, X, LayoutGrid, PlayCircle, Layers, ChevronDown, ChevronUp, Check, Pencil, Trash2
+    Rocket, FolderKanban, Plus, X, LayoutGrid, PlayCircle, Layers, ChevronDown, ChevronUp, Check, Pencil, Trash2
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { inputClasses } from "./constants";
 import { CreateCourseInput } from "@/types/lms";
+import { StepHeader } from "./StepHeader";
 interface StepFinalizationProps {
     formData: CreateCourseInput;
     setFormData: React.Dispatch<React.SetStateAction<CreateCourseInput>>;
@@ -25,9 +26,9 @@ const MemoizedLessonItem = memo(({
     return (
         <motion.div
             layout
-            className="p-3.5 rounded-2xl border border-slate-200/60 dark:border-white/5 bg-white dark:bg-slate-900/40 flex flex-col gap-3 group/lesson hover:border-indigo-500/40 transition-all duration-300 relative overflow-hidden"
+            className="p-3.5 rounded-2xl border border-slate-200/60 dark:border-white/5 bg-white dark:bg-slate-900/40 flex flex-col gap-3 group/lesson hover:border-violet-500/40 transition-all duration-300 relative overflow-hidden"
         >
-            <div className="absolute top-0 left-0 w-1 h-full bg-indigo-500/0 group-hover/lesson:bg-indigo-500/50 transition-all" />
+            <div className="absolute top-0 left-0 w-1 h-full bg-violet-500/0 group-hover/lesson:bg-violet-500/50 transition-all" />
             {isEditing ? (
                 <div className="flex flex-col gap-3">
                     <div className="flex gap-2">
@@ -36,7 +37,7 @@ const MemoizedLessonItem = memo(({
                                 autoFocus
                                 value={editingLesson.title}
                                 onChange={(e) => setEditingLesson({ ...editingLesson, title: e.target.value })}
-                                className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-white/10 rounded-xl px-4 py-2 text-xs font-semibold outline-none focus:ring-2 focus:ring-indigo-500/20 text-slate-900 dark:text-white transition-all"
+                                className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-white/10 rounded-xl px-4 py-2 text-xs font-semibold outline-none focus:ring-2 focus:ring-violet-500/20 text-slate-900 dark:text-white transition-all"
                                 placeholder="Lesson title"
                             />
                         </div>
@@ -46,13 +47,13 @@ const MemoizedLessonItem = memo(({
                         </div>
                     </div>
                     <div className="relative">
-                        <div className="absolute left-3 top-1/2 -translate-y-1/2 text-indigo-500/50">
+                        <div className="absolute left-3 top-1/2 -translate-y-1/2 text-violet-500/50">
                             <PlayCircle className="w-3.5 h-3.5" />
                         </div>
                         <input
                             value={editingLesson.video_url}
                             onChange={(e) => setEditingLesson({ ...editingLesson, video_url: e.target.value })}
-                            className="w-full bg-indigo-50/30 dark:bg-indigo-500/5 border border-indigo-100 dark:border-indigo-500/10 rounded-xl px-9 py-2 text-[10px] font-mono outline-none focus:ring-2 focus:ring-indigo-500/20 text-indigo-600 dark:text-indigo-400"
+                            className="w-full bg-violet-50/30 dark:bg-violet-500/5 border border-violet-100 dark:border-violet-500/10 rounded-xl px-9 py-2 text-[10px] font-mono outline-none focus:ring-2 focus:ring-violet-500/20 text-violet-600 dark:text-violet-400"
                             placeholder="Paste video URL here..."
                         />
                     </div>
@@ -60,7 +61,7 @@ const MemoizedLessonItem = memo(({
             ) : (
                 <div className="flex justify-between items-start gap-4">
                     <div className="flex items-start gap-3.5 min-w-0">
-                        <div className="w-10 h-10 rounded-xl bg-indigo-600 flex items-center justify-center shrink-0">
+                        <div className="w-10 h-10 rounded-xl bg-violet-600 flex items-center justify-center shrink-0">
                             <PlayCircle className="w-5 h-5 text-white" />
                         </div>
                         <div className="min-w-0 pt-0.5">
@@ -73,8 +74,8 @@ const MemoizedLessonItem = memo(({
                             <div className="flex flex-col gap-1">
                                 {lesson.video_url ? (
                                     <div className="flex items-center gap-1.5 max-w-full">
-                                        <div className="w-1 h-1 rounded-full bg-indigo-400 shrink-0" />
-                                        <p className="text-[10px] font-medium font-mono text-indigo-500/60 truncate">{lesson.video_url}</p>
+                                        <div className="w-1 h-1 rounded-full bg-violet-400 shrink-0" />
+                                        <p className="text-[10px] font-medium font-mono text-violet-500/60 truncate">{lesson.video_url}</p>
                                     </div>
                                 ) : (
                                     <div className="flex items-center gap-1.5">
@@ -88,7 +89,7 @@ const MemoizedLessonItem = memo(({
                     <div className="flex items-center gap-1.5 opacity-0 group-hover/lesson:opacity-100 transition-all duration-300 translate-x-2 group-hover/lesson:translate-x-0">
                         <button
                             onClick={() => setEditingLesson({ mIndex, lIndex, title: lesson.title, video_url: lesson.video_url })}
-                            className="p-2 rounded-xl text-slate-400 hover:text-indigo-600 hover:bg-white dark:hover:bg-white/5 transition-all shadow-none hover:shadow-sm active:scale-90"
+                            className="p-2 rounded-xl text-slate-400 hover:text-violet-600 hover:bg-white dark:hover:bg-white/5 transition-all shadow-none hover:shadow-sm active:scale-90"
                             title="Edit Lesson"
                         >
                             <Pencil className="w-3.5 h-3.5" />
@@ -130,13 +131,13 @@ const MemoizedModuleItem = memo(({
                 className={cn(
                     "p-3.5 flex items-center justify-between cursor-pointer transition-all duration-300",
                     isActive
-                        ? "bg-indigo-500/5 dark:bg-indigo-500/10"
+                        ? "bg-violet-500/5 dark:bg-violet-500/10"
                         : "hover:bg-slate-50 dark:hover:bg-white/2"
                 )}
                 onClick={() => setActiveModuleIndex(isActive ? null : mIndex)}
             >
                 <div className="flex items-center gap-3 flex-1 min-w-0">
-                    <div className="w-10 h-10 rounded-xl bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 flex items-center justify-center font-bold text-sm shrink-0 border border-indigo-100 dark:border-indigo-500/20">
+                    <div className="w-10 h-10 rounded-xl bg-violet-500/10 text-violet-600 dark:text-violet-400 flex items-center justify-center font-bold text-sm shrink-0 border border-violet-100 dark:border-violet-500/20">
                         {mIndex + 1}
                     </div>
                     <div className="min-w-0 flex-1 text-left">
@@ -147,7 +148,7 @@ const MemoizedModuleItem = memo(({
                                     value={editingModule.title}
                                     onChange={(e) => setEditingModule({ ...editingModule, title: e.target.value })}
                                     onKeyDown={(e) => e.key === 'Enter' && updateModule(mIndex)}
-                                    className="bg-white dark:bg-[#0b0f1a] border border-slate-200 dark:border-white/5 rounded-lg px-3 py-1.5 text-sm font-bold w-full focus:ring-2 focus:ring-indigo-500/20 outline-none"
+                                    className="bg-white dark:bg-[#0b0f1a] border border-slate-200 dark:border-white/5 rounded-lg px-3 py-1.5 text-sm font-bold w-full focus:ring-2 focus:ring-violet-500/20 outline-none"
                                 />
                                 <div className="flex gap-1">
                                     <button onClick={(e) => { e.stopPropagation(); updateModule(mIndex); }} className="p-1.5 rounded-lg bg-emerald-500/10 text-emerald-600 hover:bg-emerald-600 hover:text-white transition-all"><Check className="w-4 h-4" /></button>
@@ -168,7 +169,7 @@ const MemoizedModuleItem = memo(({
                     <div className="flex items-center gap-1.5 pr-1">
                         <button
                             onClick={(e) => { e.stopPropagation(); setEditingModule({ index: mIndex, title: module.title }); }}
-                            className="p-2 rounded-xl text-slate-400 hover:text-indigo-600 hover:bg-white dark:hover:bg-white/5 transition-all active:scale-90"
+                            className="p-2 rounded-xl text-slate-400 hover:text-violet-600 hover:bg-white dark:hover:bg-white/5 transition-all active:scale-90"
                         >
                             <Pencil className="w-3.5 h-3.5" />
                         </button>
@@ -181,7 +182,7 @@ const MemoizedModuleItem = memo(({
                         <div className={cn(
                             "w-8 h-8 rounded-lg flex items-center justify-center transition-all duration-300",
                             isActive
-                                ? "text-indigo-600 scale-110"
+                                ? "text-violet-600 scale-110"
                                 : "text-slate-300 dark:text-slate-600"
                         )}>
                             {isActive ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
@@ -209,12 +210,12 @@ const MemoizedModuleItem = memo(({
                                     value={lessonInput.video_url}
                                     onChange={(e) => setLessonInput((prev: any) => ({ ...prev, video_url: e.target.value }))}
                                     placeholder="Video URL..."
-                                    className={cn(inputClasses, "flex-1 py-1.5 h-10 text-xs font-mono rounded-lg bg-white dark:bg-slate-950 border border-slate-200 dark:border-white/5 text-indigo-600 dark:text-indigo-400")}
+                                    className={cn(inputClasses, "flex-1 py-1.5 h-10 text-xs font-mono rounded-lg bg-white dark:bg-slate-950 border border-slate-200 dark:border-white/5 text-violet-600 dark:text-violet-400")}
                                 />
                                 <button
                                     type="button"
                                     onClick={() => addLessonToModule(mIndex)}
-                                    className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-[11px] font-bold transition-all shadow-sm hover:shadow active:scale-95 flex items-center justify-center gap-2 whitespace-nowrap"
+                                    className="px-4 py-2 bg-violet-600 hover:bg-violet-700 text-white rounded-xl text-[11px] font-bold transition-all shadow-sm hover:shadow active:scale-95 flex items-center justify-center gap-2 whitespace-nowrap"
                                 >
                                     <Plus className="w-3.5 h-3.5" /> Add Lesson
                                 </button>
@@ -246,7 +247,7 @@ const MemoizedProjectItem = memo(({ project, index, editIndex, startEditingProje
             layout
             initial={{ opacity: 0, x: -20 }}
             animate={{ opacity: 1, x: 0 }}
-            className="group/project relative flex items-center gap-4 p-2.5 rounded-xl border border-slate-200 dark:border-white/5 bg-white dark:bg-slate-900/40 hover:border-indigo-500/30 transition-all"
+            className="group/project relative flex items-center gap-4 p-2.5 rounded-xl border border-slate-200 dark:border-white/5 bg-white dark:bg-slate-900/40 hover:border-violet-500/30 transition-all"
         >
             <div className="w-24 h-16 shrink-0 relative rounded-lg overflow-hidden bg-slate-100 dark:bg-black/20 border border-slate-200/50 dark:border-white/5">
                 {project.image_url ? (
@@ -254,14 +255,14 @@ const MemoizedProjectItem = memo(({ project, index, editIndex, startEditingProje
                         src={project.image_url}
                         alt={project.title}
                         className="w-full h-full object-cover"
-                        onError={(e) => { (e.target as HTMLImageElement).src = 'https://placehold.co/400x200/1e293b/indigo?text=LAB'; }}
+                        onError={(e) => { (e.target as HTMLImageElement).src = 'https://placehold.co/400x200/1e293b/violet?text=LAB'; }}
                     />
                 ) : (
                     <div className="w-full h-full flex items-center justify-center text-slate-300 dark:text-slate-700">
                         <FolderKanban className="w-6 h-6 opacity-40" />
                     </div>
                 )}
-                <div className="absolute top-1 left-1 px-1.5 py-0.5 rounded-md bg-indigo-600 text-white text-[7px] font-black uppercase tracking-tighter">
+                <div className="absolute top-1 left-1 px-1.5 py-0.5 rounded-md bg-violet-600 text-white text-[7px] font-black uppercase tracking-tighter">
                     Lab {index + 1}
                 </div>
             </div>
@@ -276,7 +277,7 @@ const MemoizedProjectItem = memo(({ project, index, editIndex, startEditingProje
                             </span>
                         ))}
                         {project.tech_stack.split(',').length > 4 && (
-                            <span className="text-[7px] font-bold px-1.5 py-0.5 rounded-full bg-slate-100 dark:bg-white/5 text-indigo-500">
+                            <span className="text-[7px] font-bold px-1.5 py-0.5 rounded-full bg-slate-100 dark:bg-white/5 text-violet-500">
                                 +{project.tech_stack.split(',').length - 4}more
                             </span>
                         )}
@@ -290,8 +291,8 @@ const MemoizedProjectItem = memo(({ project, index, editIndex, startEditingProje
                     className={cn(
                         "p-2 rounded-lg transition-all active:scale-90",
                         editIndex === index
-                            ? "bg-indigo-600 text-white"
-                            : "bg-slate-100 dark:bg-white/5 text-slate-400 hover:text-indigo-600 hover:bg-white dark:hover:bg-white/5"
+                            ? "bg-violet-600 text-white"
+                            : "bg-slate-100 dark:bg-white/5 text-slate-400 hover:text-violet-600 hover:bg-white dark:hover:bg-white/5"
                     )}
                 >
                     <Pencil className="w-3.5 h-3.5" />
@@ -434,27 +435,14 @@ export const StepFinalization = ({ formData, setFormData, errors }: StepFinaliza
             exit={{ opacity: 0, scale: 0.95 }}
             className="space-y-4"
         >
-            <div className="relative group overflow-hidden p-4 md:p-5 rounded-2xl border border-slate-200 dark:border-white/5 bg-white/80 dark:bg-slate-950/40 backdrop-blur-3xl shadow-xl dark:shadow-2xl">
-                <div className="absolute -bottom-8 -left-8 w-24 h-24 bg-indigo-500/10 blur-2xl rounded-full group-hover:bg-indigo-500/20 transition-all duration-700" />
-                <div className="absolute -top-8 -right-8 w-24 h-24 bg-emerald-500/10 blur-2xl rounded-full group-hover:bg-emerald-500/20 transition-all duration-700" />
-                <div className="relative z-10 flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
-                    <div className="space-y-2">
-                        <div className="inline-flex items-center gap-2.5 px-3 py-1.5 rounded-full bg-indigo-500/10 border border-indigo-500/20 text-indigo-500 text-[10px] font-black uppercase tracking-[0.2em]">
-                            <span className="w-1.5 h-1.5 rounded-full bg-indigo-500 shadow-[0_0_8px_rgba(99,102,241,1)]" />
-                            Phase 04
-                        </div>
-                        <h2 className="text-xl md:text-2xl font-black text-foreground dark:text-white tracking-tight">
-                            The <span className="text-indigo-500">Finalization</span>
-                        </h2>
-                        <p className="text-muted-foreground dark:text-white/40 text-[11px] max-w-lg font-medium leading-relaxed">
-                            Polish the curriculum with projects and a structured module-based learning path.
-                        </p>
-                    </div>
-                    <div className="w-11 h-11 rounded-xl bg-linear-to-br from-indigo-500/20 to-indigo-500/5 border border-slate-200 dark:border-white/10 flex items-center justify-center text-indigo-500 shadow-2xl backdrop-blur-md">
-                        <Sparkles className="w-5 h-5" />
-                    </div>
-                </div>
-            </div>
+            <StepHeader
+                phase="04"
+                title="Finalization"
+                highlight="Finalization"
+                description="Structure the curriculum and hands-on projects."
+                icon={Rocket}
+                color="violet"
+            />
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-start">
                 <div className="lg:col-span-12 space-y-4">
                     <div className="p-5 rounded-2xl border border-slate-200 dark:border-white/5 bg-white dark:bg-slate-950 shadow-sm">
@@ -462,7 +450,7 @@ export const StepFinalization = ({ formData, setFormData, errors }: StepFinaliza
                             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 dark:border-white/5 pb-3">
                                 <div className="text-left">
                                     <h3 className="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2">
-                                        <Layers className="w-5 h-5 text-indigo-500" />
+                                        <Layers className="w-5 h-5 text-violet-500" />
                                         Curriculum Modules
                                     </h3>
                                     <p className="text-xs text-slate-500 dark:text-slate-400">Structure your course into modules and lessons</p>
@@ -478,7 +466,7 @@ export const StepFinalization = ({ formData, setFormData, errors }: StepFinaliza
                                     <button
                                         type="button"
                                         onClick={addModule}
-                                        className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-[11px] font-bold transition-colors flex items-center gap-2 whitespace-nowrap"
+                                        className="px-4 py-2 bg-violet-600 hover:bg-violet-700 text-white rounded-xl text-[11px] font-bold transition-colors flex items-center gap-2 whitespace-nowrap"
                                     >
                                         <Plus className="w-3.5 h-3.5" /> Add Module
                                     </button>
@@ -523,7 +511,7 @@ export const StepFinalization = ({ formData, setFormData, errors }: StepFinaliza
                         <div className="space-y-3 text-left">
                             <div className="pb-3 border-b border-slate-100 dark:border-white/5 flex items-center justify-between">
                                 <div className="flex items-center gap-3">
-                                    <FolderKanban className="w-5 h-5 text-indigo-500" />
+                                    <FolderKanban className="w-5 h-5 text-violet-500" />
                                     <div>
                                         <h3 className="text-sm font-bold text-slate-900 dark:text-white uppercase tracking-tight">Practical Forge</h3>
                                         <p className="text-[10px] text-slate-500 dark:text-slate-400">Add hands-on projects for your students</p>
@@ -536,7 +524,7 @@ export const StepFinalization = ({ formData, setFormData, errors }: StepFinaliza
                                         "px-3 py-1.5 rounded-lg text-[10px] font-bold transition-all flex items-center gap-2",
                                         showProjectForm
                                             ? "bg-rose-500/10 text-rose-500 hover:bg-rose-500 hover:text-white"
-                                            : "bg-indigo-600 text-white hover:bg-indigo-700 shadow-lg shadow-indigo-500/20"
+                                            : "bg-violet-600 text-white hover:bg-violet-700 shadow-lg shadow-violet-500/20"
                                     )}
                                 >
                                     {showProjectForm ? <><X className="w-3.5 h-3.5" /> Close</> : <><Plus className="w-3.5 h-3.5" /> Add Project</>}
@@ -556,7 +544,7 @@ export const StepFinalization = ({ formData, setFormData, errors }: StepFinaliza
                                                 value={projectInput.title}
                                                 onChange={(e) => setProjectInput(prev => ({ ...prev, title: e.target.value }))}
                                                 placeholder="What are they building?"
-                                                className="w-full h-10 px-4 rounded-xl bg-white dark:bg-slate-950 border border-slate-200 dark:border-white/10 text-sm focus:ring-2 focus:ring-indigo-500/20 outline-none transition-all"
+                                                className="w-full h-10 px-4 rounded-xl bg-white dark:bg-slate-950 border border-slate-200 dark:border-white/10 text-sm focus:ring-2 focus:ring-violet-500/20 outline-none transition-all"
                                             />
                                         </div>
                                         <div className="space-y-1.5">
@@ -565,7 +553,7 @@ export const StepFinalization = ({ formData, setFormData, errors }: StepFinaliza
                                                 value={projectInput.image_url}
                                                 onChange={(e) => setProjectInput(prev => ({ ...prev, image_url: e.target.value }))}
                                                 placeholder="Thumbnail link (https://...)"
-                                                className="w-full h-10 px-4 rounded-xl bg-white dark:bg-slate-950 border border-slate-200 dark:border-white/10 text-sm font-mono focus:ring-2 focus:ring-indigo-500/20 outline-none transition-all"
+                                                className="w-full h-10 px-4 rounded-xl bg-white dark:bg-slate-950 border border-slate-200 dark:border-white/10 text-sm font-mono focus:ring-2 focus:ring-violet-500/20 outline-none transition-all"
                                             />
                                         </div>
                                         <div className="space-y-1.5 md:col-span-2">
@@ -574,7 +562,7 @@ export const StepFinalization = ({ formData, setFormData, errors }: StepFinaliza
                                                 value={projectInput.tech_stack}
                                                 onChange={(e) => setProjectInput(prev => ({ ...prev, tech_stack: e.target.value }))}
                                                 placeholder="React, Next.js, Tailwind, Supabase..."
-                                                className="w-full h-10 px-4 rounded-xl bg-white dark:bg-slate-950 border border-slate-200 dark:border-white/10 text-sm focus:ring-2 focus:ring-indigo-500/20 outline-none transition-all"
+                                                className="w-full h-10 px-4 rounded-xl bg-white dark:bg-slate-950 border border-slate-200 dark:border-white/10 text-sm focus:ring-2 focus:ring-violet-500/20 outline-none transition-all"
                                             />
                                         </div>
                                         <div className="md:col-span-2 space-y-1.5">
@@ -583,7 +571,7 @@ export const StepFinalization = ({ formData, setFormData, errors }: StepFinaliza
                                                 value={projectInput.description}
                                                 onChange={(e) => setProjectInput(prev => ({ ...prev, description: e.target.value }))}
                                                 placeholder="Detail the technical hurdles and final outcome the student will achieve..."
-                                                className="w-full h-24 p-4 rounded-xl bg-white dark:bg-slate-950 border border-slate-200 dark:border-white/10 text-sm resize-none focus:ring-2 focus:ring-indigo-500/20 outline-none transition-all custom-scrollbar"
+                                                className="w-full h-24 p-4 rounded-xl bg-white dark:bg-slate-950 border border-slate-200 dark:border-white/10 text-sm resize-none focus:ring-2 focus:ring-violet-500/20 outline-none transition-all custom-scrollbar"
                                             />
                                         </div>
                                         <div className="md:col-span-2 flex justify-end items-center gap-2 pt-1">
@@ -603,7 +591,7 @@ export const StepFinalization = ({ formData, setFormData, errors }: StepFinaliza
                                             <button
                                                 type="button"
                                                 onClick={addOrUpdateProject}
-                                                className="h-10 px-6 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-2 active:scale-95"
+                                                className="h-10 px-6 bg-violet-600 hover:bg-violet-700 text-white rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-2 active:scale-95"
                                             >
                                                 <Plus className="w-4 h-4 text-white/80" /> {editIndex !== null ? 'Update Project' : 'Add Project'}
                                             </button>
@@ -617,14 +605,14 @@ export const StepFinalization = ({ formData, setFormData, errors }: StepFinaliza
                                     className="flex items-center justify-between cursor-pointer group/list-header mb-2"
                                 >
                                     <div className="flex items-center gap-2">
-                                        <div className="px-2 py-0.5 rounded-md bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 text-[10px] font-bold">
+                                        <div className="px-2 py-0.5 rounded-md bg-violet-500/10 text-violet-600 dark:text-violet-400 text-[10px] font-bold">
                                             {String(formData.projects?.length || 0).padStart(2, '0')} Projects
                                         </div>
                                         <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest group-hover/list-header:text-slate-600 dark:group-hover/list-header:text-slate-300 transition-colors">Managed Labs</span>
                                     </div>
                                     <div className={cn(
                                         "w-6 h-6 rounded-lg flex items-center justify-center transition-all duration-300",
-                                        showProjectList ? "text-indigo-500 bg-indigo-500/5 rotate-0" : "text-slate-400 bg-slate-50 dark:bg-white/2 rotate-180"
+                                        showProjectList ? "text-violet-500 bg-violet-500/5 rotate-0" : "text-slate-400 bg-slate-50 dark:bg-white/2 rotate-180"
                                     )}>
                                         <ChevronDown className="w-3.5 h-3.5" />
                                     </div>

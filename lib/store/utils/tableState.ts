@@ -61,10 +61,10 @@ export function processTableData<T>(
             if (!matchesSearch) return false;
         }
         if (filters.status && filters.status !== 'all') {
-            if (item['status'] !== filters.status) return false;
+            if ((item as Record<string, unknown>)['status'] !== filters.status) return false;
         }
         if (filters.dateRange?.from && filters.dateRange?.to) {
-            const date = new Date(item['created_at']);
+            const date = new Date((item as Record<string, unknown>)['created_at'] as string);
             const from = new Date(filters.dateRange.from);
             const to = new Date(filters.dateRange.to);
             if (date < from || date > to) return false;
@@ -74,8 +74,10 @@ export function processTableData<T>(
     const totalFiltered = filtered.length;
     if (sort.field) {
         filtered.sort((a, b) => {
-            const valA = a[sort.field];
-            const valB = b[sort.field];
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            const valA = (a as Record<string, any>)[sort.field as string];
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            const valB = (b as Record<string, any>)[sort.field as string];
             if (valA < valB) return sort.order === 'asc' ? -1 : 1;
             if (valA > valB) return sort.order === 'asc' ? 1 : -1;
             return 0;

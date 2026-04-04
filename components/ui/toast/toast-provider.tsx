@@ -49,7 +49,7 @@ export const ToastProvider = ({ children }: { children: ReactNode }) => {
         <ToastContext.Provider value={{ toast: addToast, dismiss, success, error, warning, info, loading }}>
             {children}
             <div
-                className="fixed bottom-6 right-6 z-100 flex flex-col items-end pointer-events-auto w-105"
+                className="fixed bottom-4 left-4 right-4 sm:bottom-6 sm:left-auto sm:right-6 z-9999 flex flex-col items-end pointer-events-auto sm:w-[420px] w-auto"
                 onMouseEnter={() => setIsHovered(true)}
                 onMouseLeave={() => setIsHovered(false)}
             >

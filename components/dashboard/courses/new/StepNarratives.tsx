@@ -7,6 +7,7 @@ import {
 import { cn } from "@/lib/utils";
 import { inputClasses, labelClasses } from "./constants";
 import { CreateCourseInput } from "@/types/lms";
+import { StepHeader } from "./StepHeader";
 interface StepNarrativesProps {
     formData: CreateCourseInput;
     setFormData: React.Dispatch<React.SetStateAction<CreateCourseInput>>;
@@ -50,36 +51,20 @@ export const StepNarratives = ({ formData, setFormData, errors }: StepNarratives
             className="space-y-6"
         >
             {}
-            <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                className="relative group overflow-hidden p-6 md:p-8 rounded-3xl border border-white/10 bg-slate-900/40 backdrop-blur-3xl shadow-2xl"
-            >
-                <div className="absolute top-0 right-0 w-80 h-80 bg-emerald-500/10 blur-[100px] -mr-40 -mt-40 rounded-full" />
-                <div className="relative z-10 flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
-                    <div className="space-y-2">
-                        <div className="inline-flex items-center gap-2.5 px-3 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-500 text-[10px] font-black uppercase tracking-[0.2em]">
-                            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,1)]" />
-                            Phase 02
-                        </div>
-                        <h2 className="text-2xl md:text-3xl font-black text-white tracking-tight">
-                            The <span className="text-emerald-500">Narratives</span>
-                        </h2>
-                        <p className="text-white/40 text-xs md:text-sm max-w-lg font-medium leading-relaxed">
-                            Craft the story and objectives. Compelling narratives bridge the gap between curiosity and commitment.
-                        </p>
-                    </div>
-                    <div className="w-14 h-14 md:w-16 md:h-16 rounded-2xl bg-linear-to-br from-emerald-500/20 to-emerald-500/5 border border-white/10 flex items-center justify-center text-emerald-500 shadow-2xl backdrop-blur-md">
-                        <PencilLine className="w-7 h-7 md:w-8 md:h-8" />
-                    </div>
-                </div>
-            </motion.div>
-            <div className="p-6 rounded-3xl border border-border/50 bg-card/30 backdrop-blur-xl shadow-xl space-y-8">
+            <StepHeader
+                phase="02"
+                title="Narratives"
+                highlight="Narratives"
+                description="Define objectives and prerequisites for your students."
+                icon={PencilLine}
+                color="amber"
+            />
+            <div className="p-6 rounded-3xl border border-border/50 bg-card/30 backdrop-blur-xl shadow-xl space-y-8 group/narrative">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     {}
-                    <div className="space-y-3">
+                    <div className="space-y-3 group/req">
                         <label className={labelClasses}>
-                            <ListChecks className="w-4 h-4 text-muted-foreground" />
+                            <ListChecks className="w-4 h-4 text-muted-foreground group-focus-within/req:text-amber-500 transition-colors" />
                             Requirements
                         </label>
                         <div className="flex gap-2">
@@ -89,12 +74,12 @@ export const StepNarratives = ({ formData, setFormData, errors }: StepNarratives
                                 onChange={(e) => setRequirementInput(e.target.value)}
                                 onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), addArrayItem('requirements', requirementInput, setRequirementInput))}
                                 placeholder="Add requirement..."
-                                className={cn(inputClasses, "py-2", errors.requirements && "border-red-500/50 focus:border-red-500")}
+                                className={cn(inputClasses, "py-2 focus:border-amber-500/50 focus:ring-2 focus:ring-amber-500/20", errors.requirements && "border-red-500/50 focus:border-red-500")}
                             />
                             <button
                                 type="button"
                                 onClick={() => addArrayItem('requirements', requirementInput, setRequirementInput)}
-                                className="px-4 rounded-xl bg-muted border border-border/50 text-foreground hover:bg-muted/80 transition-all active:scale-95"
+                                className="px-4 rounded-xl bg-muted border border-border/50 text-foreground hover:bg-amber-500/10 hover:text-amber-500 hover:border-amber-500/30 transition-all active:scale-95"
                             >
                                 <Plus className="w-5 h-5" />
                             </button>
@@ -115,9 +100,9 @@ export const StepNarratives = ({ formData, setFormData, errors }: StepNarratives
                         )}
                     </div>
                     {}
-                    <div className="space-y-3">
+                    <div className="space-y-3 group/audience">
                         <label className={labelClasses}>
-                            <Users className="w-4 h-4 text-muted-foreground" />
+                            <Users className="w-4 h-4 text-muted-foreground group-focus-within/audience:text-amber-500 transition-colors" />
                             Target Audience
                         </label>
                         <div className="flex gap-2">
@@ -127,12 +112,12 @@ export const StepNarratives = ({ formData, setFormData, errors }: StepNarratives
                                 onChange={(e) => setAudienceInput(e.target.value)}
                                 onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), addArrayItem('target_audience', audienceInput, setAudienceInput))}
                                 placeholder="Who is this for?"
-                                className={cn(inputClasses, "py-2", errors.target_audience && "border-red-500/50 focus:border-red-500")}
+                                className={cn(inputClasses, "py-2 focus:border-amber-500/50 focus:ring-2 focus:ring-amber-500/20", errors.target_audience && "border-red-500/50 focus:border-red-500")}
                             />
                             <button
                                 type="button"
                                 onClick={() => addArrayItem('target_audience', audienceInput, setAudienceInput)}
-                                className="px-4 rounded-xl bg-muted border border-border/50 text-foreground hover:bg-muted/80 transition-all active:scale-95"
+                                className="px-4 rounded-xl bg-muted border border-border/50 text-foreground hover:bg-amber-500/10 hover:text-amber-500 hover:border-amber-500/30 transition-all active:scale-95"
                             >
                                 <Plus className="w-5 h-5" />
                             </button>
@@ -153,9 +138,9 @@ export const StepNarratives = ({ formData, setFormData, errors }: StepNarratives
                         )}
                     </div>
                     {}
-                    <div className="space-y-3">
+                    <div className="space-y-3 group/tags">
                         <label className={labelClasses}>
-                            <Tags className="w-4 h-4 text-muted-foreground" />
+                            <Tags className="w-4 h-4 text-muted-foreground group-focus-within/tags:text-amber-500 transition-colors" />
                             Search Tags
                         </label>
                         <div className="flex gap-2">
@@ -165,12 +150,12 @@ export const StepNarratives = ({ formData, setFormData, errors }: StepNarratives
                                 onChange={(e) => setTagInput(e.target.value)}
                                 onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), addArrayItem('tags', tagInput, setTagInput))}
                                 placeholder="Add tags..."
-                                className={cn(inputClasses, "py-2")}
+                                className={cn(inputClasses, "py-2 focus:border-amber-500/50 focus:ring-2 focus:ring-amber-500/20")}
                             />
                             <button
                                 type="button"
                                 onClick={() => addArrayItem('tags', tagInput, setTagInput)}
-                                className="px-4 rounded-xl bg-muted border border-border/50 text-foreground hover:bg-muted/80 transition-all active:scale-95"
+                                className="px-4 rounded-xl bg-muted border border-border/50 text-foreground hover:bg-amber-500/10 hover:text-amber-500 hover:border-amber-500/30 transition-all active:scale-95"
                             >
                                 <Plus className="w-5 h-5" />
                             </button>
@@ -186,9 +171,9 @@ export const StepNarratives = ({ formData, setFormData, errors }: StepNarratives
                     </div>
                 </div>
                 {}
-                <div className="pt-8 border-t border-border/50 space-y-6">
+                <div className="pt-8 border-t border-border/50 space-y-6 group/faq">
                     <label className={labelClasses}>
-                        <HelpCircle className="w-4 h-4 text-muted-foreground" />
+                        <HelpCircle className="w-4 h-4 text-muted-foreground group-focus-within/faq:text-amber-500 transition-colors" />
                         Course FAQs
                     </label>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
@@ -197,18 +182,18 @@ export const StepNarratives = ({ formData, setFormData, errors }: StepNarratives
                                 value={faqInput.question}
                                 onChange={(e) => setFaqInput(prev => ({ ...prev, question: e.target.value }))}
                                 placeholder="Common Student Question..."
-                                className={cn(inputClasses, "bg-background")}
+                                className={cn(inputClasses, "bg-background focus:border-amber-500/50 focus:ring-2 focus:ring-amber-500/20")}
                             />
                             <textarea
                                 value={faqInput.answer}
                                 onChange={(e) => setFaqInput(prev => ({ ...prev, answer: e.target.value }))}
                                 placeholder="The helpful answer..."
-                                className={cn(inputClasses, "h-28 resize-none py-3 bg-background")}
+                                className={cn(inputClasses, "h-28 resize-none py-3 bg-background focus:border-amber-500/50 focus:ring-2 focus:ring-amber-500/20")}
                             />
                             <button
                                 type="button"
                                 onClick={addFaq}
-                                className="w-full py-2.5 bg-primary text-white rounded-xl text-xs font-bold uppercase tracking-wider hover:bg-primary/90 transition-all active:scale-95 flex items-center justify-center gap-2"
+                                className="w-full py-2.5 bg-amber-500 text-white rounded-xl text-xs font-bold uppercase tracking-wider hover:bg-amber-600 transition-all active:scale-95 flex items-center justify-center gap-2"
                             >
                                 <Plus className="w-4 h-4" /> Add FAQ
                             </button>

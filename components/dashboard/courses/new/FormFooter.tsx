@@ -18,12 +18,12 @@ export const FormFooter = ({
 }: FormFooterProps) => {
     return (
         <div className="mt-12 sticky bottom-6 z-50">
-            <div className="max-w-xl mx-auto p-2 rounded-2xl bg-slate-900 border border-border/50 shadow-2xl flex justify-between items-center">
+            <div className="max-w-xl mx-auto p-2 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-border/50 shadow-2xl flex justify-between items-center">
                 {currentStep > 1 ? (
                     <button
                         type="button"
                         onClick={prevStep}
-                        className="px-6 py-2.5 rounded-xl text-xs font-bold text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-all flex items-center gap-2"
+                        className="px-6 py-2.5 rounded-xl text-xs font-bold text-slate-500 dark:text-muted-foreground hover:text-slate-900 dark:hover:text-foreground hover:bg-slate-100 dark:hover:bg-muted/50 transition-all flex items-center gap-2"
                     >
                         <ChevronLeft className="w-4 h-4" />
                         Back
@@ -31,7 +31,7 @@ export const FormFooter = ({
                 ) : (
                     <Link
                         href="/dashboard/courses"
-                        className="px-6 py-2.5 rounded-xl text-xs font-bold text-muted-foreground hover:text-red-500 hover:bg-red-500/5 transition-all"
+                        className="px-6 py-2.5 rounded-xl text-xs font-bold text-slate-500 dark:text-muted-foreground hover:text-red-500 hover:bg-red-500/5 transition-all"
                     >
                         Cancel
                     </Link>

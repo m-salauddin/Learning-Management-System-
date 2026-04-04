@@ -74,18 +74,20 @@ export function NotificationDropdown() {
     };
     const markAsRead = async (id: string) => {
         setNotifications(prev => prev.map(n => n.id === id ? { ...n, is_read: true } : n));
-        await supabase
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        await (supabase as any)
             .from('notifications')
-            .update({ is_read: true } as any)
+            .update({ is_read: true })
             .eq('id', id);
     };
     const markAllAsRead = async () => {
         const unreadIds = notifications.filter(n => !n.is_read).map(n => n.id);
         if (unreadIds.length === 0) return;
         setNotifications(prev => prev.map(n => ({ ...n, is_read: true })));
-        await supabase
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        await (supabase as any)
             .from('notifications')
-            .update({ is_read: true } as any)
+            .update({ is_read: true })
             .in('id', unreadIds);
     };
     const clearNotification = async (id: string, e: React.MouseEvent) => {

@@ -230,7 +230,7 @@ export default function CreateCoursePage() {
             <form onSubmit={handleSubmit} className="space-y-8">
                 {}
                 <div className="mb-8">
-                    <h1 className="text-3xl font-bold tracking-tight text-white">Initialize New Course</h1>
+                    <h1 className="text-3xl font-bold tracking-tight text-slate-900 dark:text-white">Initialize New Course</h1>
                     <p className="text-muted-foreground mt-1 font-medium">Configure the core details, curriculum, and presentation for your new educational program.</p>
                 </div>
                 <StepIndicator currentStep={currentStep} setCurrentStep={setCurrentStep} />

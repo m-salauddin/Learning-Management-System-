@@ -73,8 +73,10 @@ export function DateTimePicker({
         if (!date) return "AM";
         return date.getHours() >= 12 ? "PM" : "AM";
     };
+    const [open, setOpen] = React.useState(false);
+    
     return (
-        <Popover>
+        <Popover open={open} onOpenChange={setOpen}>
             <PopoverTrigger asChild>
                 <button
                     type="button"
@@ -90,10 +92,26 @@ export function DateTimePicker({
                     <span className="truncate">
                         {date ? format(date, "MM/dd/yyyy hh:mm aa") : placeholder}
                     </span>
-                    <CalendarIcon className="size-4 shrink-0 text-input-dark-text opacity-70 transition-colors group-hover:text-primary group-data-[state=open]:text-primary group-data-[state=open]:opacity-100" />
+                    <CalendarIcon className="size-4 shrink-0 text-input-dark-text opacity-70 transition-colors group-hover:text-blue-500 group-data-[state=open]:text-blue-500 group-data-[state=open]:opacity-100" />
                 </button>
             </PopoverTrigger>
-            <PopoverContent className="w-auto p-0 bg-slate-950/95 backdrop-blur-2xl border-white/10 shadow-2xl rounded-2xl overflow-hidden" align="start">
+            <PopoverContent 
+                className="w-auto p-0 bg-slate-950/95 backdrop-blur-2xl border-white/10 shadow-2xl rounded-2xl overflow-hidden" 
+                align="start"
+                style={{ 
+                    // Overriding these for both CSS vars and TW theme keys
+                    '--primary': '#3b82f6', 
+                    '--color-primary': '#3b82f6',
+                    '--primary-foreground': '#ffffff',
+                    '--color-primary-foreground': '#ffffff',
+                    '--accent': 'rgba(59, 130, 246, 0.1)',
+                    '--color-accent': 'rgba(59, 130, 246, 0.1)',
+                    '--accent-foreground': '#ffffff',
+                    '--color-accent-foreground': '#ffffff',
+                    '--ring': '#3b82f6',
+                    '--color-ring': '#3b82f6'
+                } as React.CSSProperties}
+            >
                 <div className="flex flex-col md:flex-row divide-y md:divide-y-0 md:divide-x divide-white/10">
                     <div className="p-3">
                         <Calendar
@@ -102,6 +120,17 @@ export function DateTimePicker({
                             onSelect={handleDateSelect}
                             disabled={{ before: startOfToday() }}
                             initialFocus
+                            classNames={{
+                                today: "bg-blue-500/10 text-blue-400 border border-blue-500/20 rounded-lg",
+                                selected: "bg-blue-500 text-white !rounded-lg !shadow-lg",
+                                day: cn(
+                                    "flex aspect-square h-8 w-8 items-center justify-center p-0 font-normal transition-all rounded-lg",
+                                    "hover:bg-blue-500/30 hover:text-white",
+                                    "!focus-visible:ring-2 !focus-visible:ring-blue-500/50 !focus-visible:ring-offset-2",
+                                    "aria-selected:!bg-blue-500 aria-selected:!text-white aria-selected:!opacity-100",
+                                    "aria-selected:!rounded-lg"
+                                )
+                            }}
                         />
                     </div>
                     <div className="p-4 flex flex-col gap-4 bg-white/3 min-w-[140px]">
@@ -169,10 +198,18 @@ export function DateTimePicker({
                                 </div>
                             </div>
                         </div>
-                        <div className="mt-auto pt-4 border-t border-white/5">
+                        <div className="mt-auto pt-4 border-t border-white/5 space-y-3">
                             <div className="text-[10px] font-bold text-blue-400 text-center uppercase tracking-tighter">
                                 {selectedDate ? format(selectedDate, "hh:mm aa") : "--:-- --"}
                             </div>
+                            <Button 
+                                type="button" 
+                                size="sm" 
+                                onClick={() => setOpen(false)}
+                                className="w-full bg-blue-500 hover:bg-blue-600 text-white font-bold text-[11px] h-8 rounded-lg shadow-lg shadow-blue-500/20 active:scale-95 transition-all"
+                            >
+                                Apply
+                            </Button>
                         </div>
                     </div>
                 </div>
