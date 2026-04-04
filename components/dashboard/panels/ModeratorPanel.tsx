@@ -1,21 +1,15 @@
 import { createSupabaseServerClient } from '@/lib/supabase/server';
 import { Flag, MessageSquare, AlertTriangle, CheckCircle } from 'lucide-react';
-
 export default async function ModeratorPanel() {
     const supabase = await createSupabaseServerClient();
-
-    // Fetch Moderator Stats via RPC
     const { data: stats } = await supabase.rpc('get_moderator_dashboard_stats');
-
-    // Default to 0 if null
     const pendingReports = stats?.pending_reports || 0;
     const reviewsToCheck = stats?.reviews_to_check || 0;
     const flaggedContent = stats?.flagged_content || 0;
     const resolvedToday = stats?.resolved_today || 0;
-
     return (
         <div className="space-y-8 pb-10">
-            {/* Welcome Section */}
+            {}
             <div className="flex flex-col gap-1">
                 <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">
                     Moderator Dashboard 🛡️
@@ -24,8 +18,7 @@ export default async function ModeratorPanel() {
                     Review reports, manage content, and keep the community safe.
                 </p>
             </div>
-
-            {/* Stats Grid */}
+            {}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                 <div className="p-6 bg-card border border-border rounded-2xl">
                     <div className="flex items-center gap-4">
@@ -38,7 +31,6 @@ export default async function ModeratorPanel() {
                         </div>
                     </div>
                 </div>
-
                 <div className="p-6 bg-card border border-border rounded-2xl">
                     <div className="flex items-center gap-4">
                         <div className="p-3 rounded-xl bg-amber-500/10 text-amber-500">
@@ -50,7 +42,6 @@ export default async function ModeratorPanel() {
                         </div>
                     </div>
                 </div>
-
                 <div className="p-6 bg-card border border-border rounded-2xl">
                     <div className="flex items-center gap-4">
                         <div className="p-3 rounded-xl bg-orange-500/10 text-orange-500">
@@ -62,7 +53,6 @@ export default async function ModeratorPanel() {
                         </div>
                     </div>
                 </div>
-
                 <div className="p-6 bg-card border border-border rounded-2xl">
                     <div className="flex items-center gap-4">
                         <div className="p-3 rounded-xl bg-emerald-500/10 text-emerald-500">
@@ -75,8 +65,7 @@ export default async function ModeratorPanel() {
                     </div>
                 </div>
             </div>
-
-            {/* Quick Actions */}
+            {}
             <div className="space-y-4">
                 <h3 className="text-xl font-bold">Moderation Queue</h3>
                 {pendingReports === 0 && reviewsToCheck === 0 ? (
@@ -95,8 +84,7 @@ export default async function ModeratorPanel() {
                     </div>
                 )}
             </div>
-
-            {/* Recent Activity */}
+            {}
             <div className="space-y-4">
                 <h3 className="text-xl font-bold">Recent Activity</h3>
                 <div className="p-6 bg-card border border-border rounded-2xl">

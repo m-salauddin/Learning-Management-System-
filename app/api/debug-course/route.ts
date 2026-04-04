@@ -1,17 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getCoursePageData } from '@/lib/actions/course-page';
-
 export async function GET(request: NextRequest) {
     const slug = request.nextUrl.searchParams.get('slug') || 'complete-web-development-bootcamp-2026';
-
     const result = await getCoursePageData(slug);
-
     if (!result.success) {
         return NextResponse.json({ error: result.error }, { status: 404 });
     }
-
     const { data } = result;
-
     return NextResponse.json({
         course: {
             id: data?.course.id,

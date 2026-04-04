@@ -1,8 +1,6 @@
 "use client"
-
 import * as React from "react"
 import { Line, LineChart, CartesianGrid, XAxis, YAxis, ResponsiveContainer, Tooltip, Legend } from "recharts"
-
 const chartData = [
     { month: "Jan", enrollments: 234, completions: 180, revenue: 12500 },
     { month: "Feb", enrollments: 356, completions: 220, revenue: 18900 },
@@ -17,7 +15,6 @@ const chartData = [
     { month: "Nov", enrollments: 812, completions: 690, revenue: 54200 },
     { month: "Dec", enrollments: 890, completions: 750, revenue: 62300 },
 ]
-
 export function EnrollmentTrendChart() {
     return (
         <div className="w-full h-[350px]">

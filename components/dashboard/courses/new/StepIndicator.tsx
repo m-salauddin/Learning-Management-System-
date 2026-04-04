@@ -1,20 +1,16 @@
 "use client";
-
 import { motion, AnimatePresence } from "motion/react";
 import { Info, PencilLine, DollarSign, Sparkles, Check, LucideIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
-
 interface StepIndicatorProps {
     currentStep: number;
     setCurrentStep: (step: number) => void;
 }
-
 interface Step {
     n: number;
     icon: LucideIcon;
     color: string;
 }
-
 export const StepIndicator = ({ currentStep, setCurrentStep }: StepIndicatorProps) => {
     const steps: Step[] = [
         { n: 1, icon: Info, color: "#3b82f6" },
@@ -22,7 +18,6 @@ export const StepIndicator = ({ currentStep, setCurrentStep }: StepIndicatorProp
         { n: 3, icon: DollarSign, color: "#10b981" },
         { n: 4, icon: Sparkles, color: "#8b5cf6" }
     ];
-
     return (
         <div className="mb-8 md:mb-16 mt-4 md:mt-8 relative w-full max-w-7xl mx-auto px-6 sm:px-12 lg:px-20 select-none flex items-center justify-between h-12 sm:h-16 lg:h-20">
             {steps.map((step, i) => (
@@ -53,7 +48,6 @@ export const StepIndicator = ({ currentStep, setCurrentStep }: StepIndicatorProp
                             >
                                 {step.n}
                             </div>
-
                             <AnimatePresence mode="wait">
                                 {currentStep > step.n ? (
                                     <motion.div key="check" initial={{ scale: 0 }} animate={{ scale: 1 }}>
@@ -71,15 +65,12 @@ export const StepIndicator = ({ currentStep, setCurrentStep }: StepIndicatorProp
                             </AnimatePresence>
                         </div>
                     </motion.button>
-
                     {i < steps.length - 1 && (
                         <div className="flex-1 px-2.5 sm:px-4 md:px-6 relative pointer-events-none">
                             <div className="w-full h-4 relative flex items-center">
                                 <div className="w-full h-px bg-white/10 rounded-full shrink-0" />
-
                                 <div className="absolute left-0 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[7px] h-[7px] sm:w-[8px] sm:h-[8px] rounded-full border border-white/20 bg-slate-950 z-10" />
                                 <div className="absolute right-0 top-1/2 translate-x-1/2 -translate-y-1/2 w-[7px] h-[7px] sm:w-[8px] sm:h-[8px] rounded-full border border-white/20 bg-slate-950 z-10" />
-
                                 <div className="absolute inset-x-0 top-1/2 -translate-y-1/2 h-px pointer-events-none overflow-hidden rounded-full">
                                     <motion.div
                                         initial={false}
@@ -89,7 +80,6 @@ export const StepIndicator = ({ currentStep, setCurrentStep }: StepIndicatorProp
                                         style={{ backgroundColor: step.color }}
                                     />
                                 </div>
-
                                 <AnimatePresence>
                                     {currentStep > step.n && (
                                         <>

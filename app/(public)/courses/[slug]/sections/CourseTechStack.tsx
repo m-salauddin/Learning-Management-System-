@@ -1,15 +1,11 @@
 "use client";
-
 import { Code } from "lucide-react";
 import { getTechBadgeData } from "@/components/ui/TechBadge";
-
 interface CourseTechStackProps {
     tags: string[];
 }
-
 export default function CourseTechStack({ tags }: CourseTechStackProps) {
     if (!tags || tags.length === 0) return null;
-
     return (
         <div className="space-y-8">
             <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">

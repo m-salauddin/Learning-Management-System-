@@ -1,8 +1,6 @@
 "use client"
-
 import * as React from "react"
 import { cn } from "@/lib/utils"
-
 const Table = React.forwardRef<
   HTMLTableElement,
   React.ComponentProps<"table"> & { as?: any }
@@ -19,7 +17,6 @@ const Table = React.forwardRef<
   </div>
 ))
 Table.displayName = "Table"
-
 const TableHeader = React.forwardRef<
   HTMLTableSectionElement,
   React.ComponentProps<"thead"> & { as?: any }
@@ -32,7 +29,6 @@ const TableHeader = React.forwardRef<
   />
 ))
 TableHeader.displayName = "TableHeader"
-
 const TableBody = React.forwardRef<
   HTMLTableSectionElement,
   React.ComponentProps<"tbody"> & { as?: any }
@@ -45,7 +41,6 @@ const TableBody = React.forwardRef<
   />
 ))
 TableBody.displayName = "TableBody"
-
 const TableFooter = React.forwardRef<
   HTMLTableSectionElement,
   React.ComponentProps<"tfoot"> & { as?: any }
@@ -58,7 +53,6 @@ const TableFooter = React.forwardRef<
   />
 ))
 TableFooter.displayName = "TableFooter"
-
 const TableRow = React.forwardRef<
   HTMLTableRowElement,
   React.ComponentProps<"tr"> & { as?: any }
@@ -74,7 +68,6 @@ const TableRow = React.forwardRef<
   />
 ))
 TableRow.displayName = "TableRow"
-
 const TableHead = React.forwardRef<
   HTMLTableCellElement,
   React.ComponentProps<"th"> & { as?: any }
@@ -90,7 +83,6 @@ const TableHead = React.forwardRef<
   />
 ))
 TableHead.displayName = "TableHead"
-
 const TableCell = React.forwardRef<
   HTMLTableCellElement,
   React.ComponentProps<"td"> & { as?: any }
@@ -106,7 +98,6 @@ const TableCell = React.forwardRef<
   />
 ))
 TableCell.displayName = "TableCell"
-
 const TableCaption = React.forwardRef<
   HTMLTableCaptionElement,
   React.ComponentProps<"caption"> & { as?: any }
@@ -119,7 +110,6 @@ const TableCaption = React.forwardRef<
   />
 ))
 TableCaption.displayName = "TableCaption"
-
 export {
   Table,
   TableHeader,

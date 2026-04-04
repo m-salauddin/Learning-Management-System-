@@ -1,5 +1,4 @@
 "use client";
-
 import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { Plus, Trash2, Ticket, Users, Copy, Check, Search, Download, RefreshCw, X } from "lucide-react";
@@ -10,19 +9,15 @@ import { useAppDispatch } from "@/lib/store/hooks";
 import { fetchCoupons } from "@/lib/store/features/admin/couponsSlice";
 import { Dialog, DialogHeader, DialogTitle, DialogDescription, DialogBody, DialogFooter } from "@/components/ui/Dialog";
 import { cn } from "@/lib/utils";
-
 interface Course {
     id: string;
     title: string;
 }
-
 export default function CouponsPage() {
     const dispatch = useAppDispatch();
     const [courses, setCourses] = useState<Course[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [isCreating, setIsCreating] = useState(false);
-
-    // Form State
     const [formData, setFormData] = useState({
         code: "",
         type: "percentage" as "percentage" | "fixed",
@@ -33,14 +28,11 @@ export default function CouponsPage() {
         apply_to: "all" as "all" | "specific",
         selected_courses: [] as string[],
     });
-
     const { success, error: toastError } = useToast();
     const supabase = createClient();
-
     useEffect(() => {
         fetchData();
     }, []);
-
     const fetchData = async () => {
         try {
             setIsLoading(true);
@@ -48,7 +40,6 @@ export default function CouponsPage() {
                 .from('courses')
                 .select('id, title')
                 .order('title');
-
             if (coursesError) throw coursesError;
             setCourses(coursesData || []);
         } catch (error) {
@@ -57,21 +48,18 @@ export default function CouponsPage() {
             setIsLoading(false);
         }
     };
-
     const generateCode = () => {
         const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
         let result = "";
         for (let i = 0; i < 8; i++) result += chars.charAt(Math.floor(Math.random() * chars.length));
         setFormData(prev => ({ ...prev, code: result }));
     };
-
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         if (!formData.code || !formData.value) {
             toastError("Required parameters missing");
             return;
         }
-
         try {
             const { data: newCoupon, error: couponError } = await (supabase as any)
                 .from('coupon_codes')
@@ -86,9 +74,7 @@ export default function CouponsPage() {
                 })
                 .select()
                 .single();
-
             if (couponError) throw couponError;
-
             if (formData.apply_to === 'specific' && formData.selected_courses.length > 0) {
                 const mappings = formData.selected_courses.map(courseId => ({
                     coupon_id: newCoupon.id,
@@ -97,7 +83,6 @@ export default function CouponsPage() {
                 const { error: mappingError } = await (supabase as any).from('coupon_courses').insert(mappings);
                 if (mappingError) throw mappingError;
             }
-
             success("Protocol accepted. Coupon established.");
             setIsCreating(false);
             setFormData({ code: "", type: "percentage", value: "", max_uses: "", starts_at: "", ends_at: "", apply_to: "all", selected_courses: [] });
@@ -107,7 +92,6 @@ export default function CouponsPage() {
             toastError(error.message || "Protocol failure: Could not record coupon");
         }
     };
-
     const toggleCourseSelection = (courseId: string) => {
         setFormData(prev => {
             const exists = prev.selected_courses.includes(courseId);
@@ -119,10 +103,9 @@ export default function CouponsPage() {
             };
         });
     };
-
     return (
         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-6 pb-10 font-sans text-foreground">
-            {/* Header */}
+            {}
             <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-6">
                 <div>
                     <h1 className="text-3xl font-black tracking-tight uppercase italic text-foreground">Token Repository</h1>
@@ -135,13 +118,11 @@ export default function CouponsPage() {
                     <Plus className="w-4 h-4" /> Forge Token
                 </button>
             </div>
-
-            {/* List */}
+            {}
             <div className="rounded-[2.5rem] border border-border/40 bg-card/30 backdrop-blur-xl overflow-hidden shadow-2xl">
                 <AdminCouponsTable onCreate={() => setIsCreating(true)} />
             </div>
-
-            {/* Creation Modal */}
+            {}
             <Dialog open={isCreating} onClose={() => setIsCreating(false)} size="lg">
                 <DialogHeader>
                     <DialogTitle className="italic">Forge New Token</DialogTitle>
@@ -149,7 +130,7 @@ export default function CouponsPage() {
                 </DialogHeader>
                 <form onSubmit={handleSubmit}>
                     <DialogBody className="space-y-8">
-                        {/* Token Identity */}
+                        {}
                         <div className="grid md:grid-cols-2 gap-6">
                             <div className="space-y-2">
                                 <label className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground ml-1">Unique Identifier</label>
@@ -194,8 +175,7 @@ export default function CouponsPage() {
                                 </div>
                             </div>
                         </div>
-
-                        {/* Scope Selection */}
+                        {}
                         <div className="space-y-4">
                             <label className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground ml-1">Application Scope</label>
                             <div className="flex gap-6 px-1">
@@ -218,7 +198,6 @@ export default function CouponsPage() {
                                     <span className={cn("text-xs font-black uppercase tracking-widest transition-all", formData.apply_to === 'specific' ? "text-foreground" : "text-muted-foreground")}>Targeted Entities</span>
                                 </label>
                             </div>
-
                             <AnimatePresence>
                                 {formData.apply_to === 'specific' && (
                                     <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }} className="overflow-hidden">
@@ -243,8 +222,7 @@ export default function CouponsPage() {
                                 )}
                             </AnimatePresence>
                         </div>
-
-                        {/* Limits & Scheduling */}
+                        {}
                         <div className="grid md:grid-cols-3 gap-6">
                             <div className="space-y-2">
                                 <label className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground ml-1">Usage Ceiling</label>

@@ -1,13 +1,10 @@
 "use client";
-
 import { Layout, BookOpen, Building, FolderKanban, Award } from "lucide-react";
 import { cn } from "@/lib/utils";
-
 interface CourseFeaturesProps {
     totalLectures: number;
     projectCount: number;
 }
-
 export default function CourseFeatures({ totalLectures, projectCount }: CourseFeaturesProps) {
     const features = [
         { icon: Layout, label: 'ACCESS', value: 'Lifetime', color: 'emerald' },
@@ -16,7 +13,6 @@ export default function CourseFeatures({ totalLectures, projectCount }: CourseFe
         { icon: FolderKanban, label: 'HANDS-ON', value: projectCount > 0 ? `${projectCount} Real World Projects` : 'Real Projects', color: 'amber' },
         { icon: Award, label: 'CREDENTIALS', value: 'Verified Certificate', color: 'rose' }
     ];
-
     return (
         <div className="grid grid-cols-2 lg:grid-cols-5 gap-4">
             {features.map((item, i) => (

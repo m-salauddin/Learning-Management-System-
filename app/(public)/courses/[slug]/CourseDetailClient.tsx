@@ -1,5 +1,4 @@
 "use client";
-
 import { useRouter } from "next/navigation";
 import { useState, useMemo, useEffect } from "react";
 import {
@@ -10,8 +9,6 @@ import { CoursePageData } from "@/types/course-page";
 import { createClient } from "@/lib/supabase/client";
 import { useToast } from "@/components/ui/toast";
 import { submitCourseLead, submitCourseReview } from "@/lib/actions/course-page";
-
-// Section Components
 import CourseHero from "./sections/CourseHero";
 import CourseFeatures from "./sections/CourseFeatures";
 import CourseTechStack from "./sections/CourseTechStack";
@@ -26,18 +23,15 @@ import RelatedCourses from "./sections/RelatedCourses";
 import CourseSidebar from "./sections/CourseSidebar";
 import CourseModals from "./sections/CourseModals";
 import CourseDescription from "./sections/CourseDescription";
-
 interface CourseDetailClientProps {
     course: MappedCourse;
     pageData?: CoursePageData;
 }
-
 export default function CourseDetailClient({ course, pageData }: CourseDetailClientProps) {
     const router = useRouter();
     const [loading, setLoading] = useState(false);
     const [expandedModules, setExpandedModules] = useState<number[]>([]);
     const [expandedFaq, setExpandedFaq] = useState<number | null>(null);
-
     const [showAllModules, setShowAllModules] = useState(false);
     const [showAllReviews, setShowAllReviews] = useState(false);
     const [showCouponInput, setShowCouponInput] = useState(false);
@@ -53,10 +47,8 @@ export default function CourseDetailClient({ course, pageData }: CourseDetailCli
     const [isApplyingCoupon, setIsApplyingCoupon] = useState(false);
     const [linkCopied, setLinkCopied] = useState(false);
     const [timeLeft, setTimeLeft] = useState<{ d: number, h: number, m: number, s: number } | null>(null);
-
     const supabase = createClient();
     const { success, error, info } = useToast();
-
     const {
         projects = [],
         faq = [],
@@ -64,7 +56,6 @@ export default function CourseDetailClient({ course, pageData }: CourseDetailCli
         ratingBreakdown = { average: course.rating, total: course.reviews, distribution: { 5: 0, 4: 0, 3: 0, 2: 0, 1: 0 } },
         relatedCourses = [] as any[]
     } = pageData || {};
-
     const mappedRelatedCourses = useMemo(() => {
         return (relatedCourses || []).map((c: any) => ({
             id: c.id,
@@ -98,23 +89,18 @@ export default function CourseDetailClient({ course, pageData }: CourseDetailCli
             priceType: c.price > 0 ? "Paid" : "Free"
         })) as MappedCourse[];
     }, [relatedCourses]);
-
     const isLive = !!(course.type?.toLowerCase().includes('live') || pageData?.batches?.some(b => b.is_active));
-
     useEffect(() => {
         const targetStr = course.discountExpiresAt ||
             (pageData?.batches?.find(b => b.is_active)?.start_date);
-
         if (!targetStr) {
             setTimeLeft(null);
             return;
         }
-
         const targetDate = new Date(targetStr);
         const timer = setInterval(() => {
             const now = new Date().getTime();
             const distance = targetDate.getTime() - now;
-
             if (distance < 0) {
                 clearInterval(timer);
                 setTimeLeft(null);
@@ -127,13 +113,10 @@ export default function CourseDetailClient({ course, pageData }: CourseDetailCli
                 });
             }
         }, 1000);
-
         return () => clearInterval(timer);
     }, [course.discountExpiresAt, pageData?.batches]);
-
     const shareUrl = typeof window !== 'undefined' ? window.location.href : '';
     const shareText = `Check out this course: ${course.title}`;
-
     const handleCopyLink = async () => {
         try {
             await navigator.clipboard.writeText(shareUrl);
@@ -144,7 +127,6 @@ export default function CourseDetailClient({ course, pageData }: CourseDetailCli
             error('Failed to copy link');
         }
     };
-
     const shareOptions = [
         {
             name: 'Twitter / X',
@@ -171,12 +153,10 @@ export default function CourseDetailClient({ course, pageData }: CourseDetailCli
             action: () => window.open(`https://wa.me/?text=${encodeURIComponent(shareText + ' ' + shareUrl)}`, '_blank')
         },
     ];
-
     const handleApplyCoupon = (e: React.FormEvent) => {
         e.preventDefault();
         if (!couponCode) return;
         setIsApplyingCoupon(true);
-
         setTimeout(() => {
             setIsApplyingCoupon(false);
             if (couponCode.toUpperCase() === 'WELCOME50') {
@@ -186,7 +166,6 @@ export default function CourseDetailClient({ course, pageData }: CourseDetailCli
             }
         }, 1500);
     };
-
     const outlineModules = useMemo(() => {
         if (pageData?.courseOutline && pageData.courseOutline.length > 0) {
             return pageData.courseOutline.map(m => ({
@@ -202,15 +181,12 @@ export default function CourseDetailClient({ course, pageData }: CourseDetailCli
         }
         return course.curriculum || [];
     }, [pageData?.courseOutline, course.curriculum]);
-
     const filteredModules = useMemo(() => {
         return outlineModules;
     }, [outlineModules]);
-
     const displayedModules = showAllModules ? filteredModules : filteredModules.slice(0, 6);
     const totalLectures = filteredModules.reduce((acc, m) => acc + (m.lessons?.length || 0), 0);
     const totalSections = filteredModules.length;
-
     const handleLeadSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setSubmitting(true);
@@ -228,7 +204,6 @@ export default function CourseDetailClient({ course, pageData }: CourseDetailCli
             error(res.error || "Failed to send message");
         }
     };
-
     const handleReviewSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setSubmitting(true);
@@ -246,18 +221,15 @@ export default function CourseDetailClient({ course, pageData }: CourseDetailCli
             error(res.error || "Failed to submit review");
         }
     };
-
     const handleEnroll = async () => {
         setLoading(true);
         const { data: { user } } = await supabase.auth.getUser();
-
         if (!user) {
             error("Please login to enroll");
             router.push(`/login?next=/courses/${course.slug}`);
             setLoading(false);
             return;
         }
-
         if (course.priceType === "Free") {
             try {
                 const res = await fetch('/api/enroll', {
@@ -265,12 +237,10 @@ export default function CourseDetailClient({ course, pageData }: CourseDetailCli
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ courseId: course.id })
                 });
-
                 if (!res.ok) {
                     const err = await res.json();
                     throw new Error(err.error || "Enrollment failed");
                 }
-
                 success("Enrolled successfully!");
                 router.refresh();
                 router.push(`/dashboard`);
@@ -282,7 +252,6 @@ export default function CourseDetailClient({ course, pageData }: CourseDetailCli
         }
         setLoading(false);
     };
-
     const toggleModule = (index: number) => {
         setExpandedModules(prev =>
             prev.includes(index)
@@ -290,30 +259,25 @@ export default function CourseDetailClient({ course, pageData }: CourseDetailCli
                 : [...prev, index]
         );
     };
-
     const toggleFaq = (index: number) => {
         setExpandedFaq(prev => prev === index ? null : index);
     };
-
     const hasDiscount = course.discountPrice && course.discountPrice !== course.price;
     const formattedPrice = course.priceType === "Free" ? "Free" : (course.discountPrice || course.price);
     const originalPrice = hasDiscount ? course.price : course.originalPrice;
-
     const discountPercentage = hasDiscount && course.originalPrice
         ? Math.round((1 - parseFloat(course.discountPrice!.replace(/[^\d]/g, '')) / parseFloat(course.originalPrice.replace(/[^\d]/g, ''))) * 100)
         : null;
-
     return (
         <div className="min-h-screen bg-background text-foreground relative pt-20">
-            {/* Background Gradients */}
+            {}
             <div className="fixed inset-0 pointer-events-none overflow-hidden">
                 <div className="absolute top-0 -left-[10%] w-[70%] h-[70%] bg-primary/5 rounded-full blur-[120px] opacity-50" />
                 <div className="absolute bottom-0 -right-[10%] w-[60%] h-[60%] bg-accent/5 rounded-full blur-[100px] opacity-30" />
             </div>
-
             <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-16 pb-8 lg:pb-12 z-10">
                 <div className="grid lg:grid-cols-12 gap-8 xl:gap-14">
-                    {/* Left Column (Content) */}
+                    {}
                     <div className="lg:col-span-7 xl:col-span-8">
                         <CourseHero
                             course={course}
@@ -324,20 +288,15 @@ export default function CourseDetailClient({ course, pageData }: CourseDetailCli
                             loading={loading}
                             setShowVideoModal={setShowVideoModal}
                         />
-
-                        {/* All Sections - Sequential View */}
+                        {}
                         <div className="mt-12 sm:mt-16 space-y-20">
                             <CourseFeatures totalLectures={totalLectures} projectCount={projects.length} />
-
                             <CourseTechStack tags={course.tags || []} />
-
                             <CoursePrerequisites
                                 requirements={course.requirements || []}
                                 targetAudience={course.targetAudience || []}
                             />
-
                             <CourseDescription description={course.longDescription || ""} />
-
                             <CourseCurriculum
                                 course={course}
                                 pageData={pageData}
@@ -350,13 +309,10 @@ export default function CourseDetailClient({ course, pageData }: CourseDetailCli
                                 totalSections={totalSections}
                                 totalLectures={totalLectures}
                             />
-
                             <CourseInstructor
                                 course={course}
                             />
-
                             <CourseProjects projects={projects} />
-
                             {reviews.length > 0 && (
                                 <CourseReviews
                                     reviews={reviews}
@@ -366,21 +322,17 @@ export default function CourseDetailClient({ course, pageData }: CourseDetailCli
                                     setShowReviewModal={setShowReviewModal}
                                 />
                             )}
-
                             <CourseCertification course={course} />
-
                             <CourseFAQSection
                                 faq={faq}
                                 expandedFaq={expandedFaq}
                                 toggleFaq={toggleFaq}
                                 setShowLeadModal={setShowLeadModal}
                             />
-
                             <RelatedCourses relatedCourses={mappedRelatedCourses} />
                         </div>
                     </div>
-
-                    {/* Right Column (Sidebar) */}
+                    {}
                     <CourseSidebar
                         course={course}
                         timeLeft={timeLeft}
@@ -401,7 +353,6 @@ export default function CourseDetailClient({ course, pageData }: CourseDetailCli
                     />
                 </div>
             </div>
-
             <CourseModals
                 course={course}
                 showLeadModal={showLeadModal}

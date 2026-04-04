@@ -1,24 +1,10 @@
-// ============================================================================
-// ADMIN REDUX SLICE
-// ============================================================================
-// State management for admin dashboard, analytics, and user management
-// ============================================================================
-
 import { createSlice, createAsyncThunk, PayloadAction } from "@reduxjs/toolkit";
 import {
     AdminDashboardStats, UserManagement, AuditLogEntry
 } from "@/types/lms";
 import * as adminActions from "@/lib/actions/admin";
-
-// ============================================================================
-// STATE INTERFACE
-// ============================================================================
-
 interface AdminState {
-    // Dashboard stats
     dashboardStats: AdminDashboardStats | null;
-    
-    // Platform metrics
     platformMetrics: {
         totalUsers: number;
         activeUsers: number;
@@ -29,26 +15,18 @@ interface AdminState {
         totalRevenue: number;
         averageRating: number;
     } | null;
-    
-    // Revenue metrics
     revenueMetrics: {
         total: number;
         byPeriod: { period: string; amount: number }[];
         byCourse: { courseId: string; title: string; amount: number }[];
     } | null;
-    
-    // Popular courses
     popularCourses: Array<{
         course_id: string;
         title: string;
         enrollment_count: number;
         avg_rating: number;
     }>;
-    
-    // Enrollment trends
     enrollmentTrends: Array<{ date: string; count: number }>;
-    
-    // User management
     users: UserManagement[];
     totalUsers: number;
     usersPage: number;
@@ -60,18 +38,12 @@ interface AdminState {
         sortBy?: string;
         sortOrder?: 'asc' | 'desc';
     };
-    
-    // Audit log
     auditLog: AuditLogEntry[];
     auditLogTotal: number;
     auditLogPage: number;
     auditLogPageSize: number;
     auditLogTotalPages: number;
-    
-    // Daily active users
     dailyActiveUsers: number;
-    
-    // Loading states
     loading: {
         stats: boolean;
         metrics: boolean;
@@ -80,8 +52,6 @@ interface AdminState {
         auditLog: boolean;
         userAction: boolean;
     };
-    
-    // Error states
     errors: {
         stats: string | null;
         metrics: string | null;
@@ -91,7 +61,6 @@ interface AdminState {
         userAction: string | null;
     };
 }
-
 const initialState: AdminState = {
     dashboardStats: null,
     platformMetrics: null,
@@ -127,11 +96,6 @@ const initialState: AdminState = {
         userAction: null
     }
 };
-
-// ============================================================================
-// ASYNC THUNKS
-// ============================================================================
-
 export const fetchDashboardStats = createAsyncThunk(
     'admin/fetchDashboardStats',
     async (_, { rejectWithValue }) => {
@@ -146,7 +110,6 @@ export const fetchDashboardStats = createAsyncThunk(
         }
     }
 );
-
 export const fetchPlatformMetrics = createAsyncThunk(
     'admin/fetchPlatformMetrics',
     async (_, { rejectWithValue }) => {
@@ -161,7 +124,6 @@ export const fetchPlatformMetrics = createAsyncThunk(
         }
     }
 );
-
 export const fetchRevenueMetrics = createAsyncThunk(
     'admin/fetchRevenueMetrics',
     async (params: {
@@ -180,7 +142,6 @@ export const fetchRevenueMetrics = createAsyncThunk(
         }
     }
 );
-
 export const fetchPopularCourses = createAsyncThunk(
     'admin/fetchPopularCourses',
     async (limit: number = 5, { rejectWithValue }) => {
@@ -195,7 +156,6 @@ export const fetchPopularCourses = createAsyncThunk(
         }
     }
 );
-
 export const fetchEnrollmentTrends = createAsyncThunk(
     'admin/fetchEnrollmentTrends',
     async (days: number = 30, { rejectWithValue }) => {
@@ -210,7 +170,6 @@ export const fetchEnrollmentTrends = createAsyncThunk(
         }
     }
 );
-
 export const fetchDailyActiveUsers = createAsyncThunk(
     'admin/fetchDailyActiveUsers',
     async (days: number = 7, { rejectWithValue }) => {
@@ -225,7 +184,6 @@ export const fetchDailyActiveUsers = createAsyncThunk(
         }
     }
 );
-
 export const fetchUsers = createAsyncThunk(
     'admin/fetchUsers',
     async (params: {
@@ -244,7 +202,6 @@ export const fetchUsers = createAsyncThunk(
         }
     }
 );
-
 export const updateUserRole = createAsyncThunk(
     'admin/updateUserRole',
     async (params: {
@@ -262,7 +219,6 @@ export const updateUserRole = createAsyncThunk(
         }
     }
 );
-
 export const suspendUser = createAsyncThunk(
     'admin/suspendUser',
     async (params: {
@@ -280,7 +236,6 @@ export const suspendUser = createAsyncThunk(
         }
     }
 );
-
 export const fetchAuditLog = createAsyncThunk(
     'admin/fetchAuditLog',
     async (params: {
@@ -300,7 +255,6 @@ export const fetchAuditLog = createAsyncThunk(
         }
     }
 );
-
 export const approveCourse = createAsyncThunk(
     'admin/approveCourse',
     async (courseId: string, { rejectWithValue }) => {
@@ -315,7 +269,6 @@ export const approveCourse = createAsyncThunk(
         }
     }
 );
-
 export const rejectCourse = createAsyncThunk(
     'admin/rejectCourse',
     async (params: { courseId: string; reason: string }, { rejectWithValue }) => {
@@ -330,11 +283,6 @@ export const rejectCourse = createAsyncThunk(
         }
     }
 );
-
-// ============================================================================
-// SLICE
-// ============================================================================
-
 const adminSlice = createSlice({
     name: 'admin',
     initialState,
@@ -363,7 +311,6 @@ const adminSlice = createSlice({
         }
     },
     extraReducers: (builder) => {
-        // Dashboard stats
         builder
             .addCase(fetchDashboardStats.pending, (state) => {
                 state.loading.stats = true;
@@ -377,8 +324,6 @@ const adminSlice = createSlice({
                 state.loading.stats = false;
                 state.errors.stats = action.payload as string;
             });
-        
-        // Platform metrics
         builder
             .addCase(fetchPlatformMetrics.pending, (state) => {
                 state.loading.metrics = true;
@@ -392,8 +337,6 @@ const adminSlice = createSlice({
                 state.loading.metrics = false;
                 state.errors.metrics = action.payload as string;
             });
-        
-        // Revenue metrics
         builder
             .addCase(fetchRevenueMetrics.pending, (state) => {
                 state.loading.revenue = true;
@@ -407,26 +350,18 @@ const adminSlice = createSlice({
                 state.loading.revenue = false;
                 state.errors.revenue = action.payload as string;
             });
-        
-        // Popular courses
         builder
             .addCase(fetchPopularCourses.fulfilled, (state, action) => {
                 state.popularCourses = action.payload || [];
             });
-        
-        // Enrollment trends
         builder
             .addCase(fetchEnrollmentTrends.fulfilled, (state, action) => {
                 state.enrollmentTrends = action.payload || [];
             });
-        
-        // Daily active users
         builder
             .addCase(fetchDailyActiveUsers.fulfilled, (state, action) => {
                 state.dailyActiveUsers = action.payload || 0;
             });
-        
-        // Fetch users
         builder
             .addCase(fetchUsers.pending, (state) => {
                 state.loading.users = true;
@@ -444,8 +379,6 @@ const adminSlice = createSlice({
                 state.loading.users = false;
                 state.errors.users = action.payload as string;
             });
-        
-        // Update user role
         builder
             .addCase(updateUserRole.pending, (state) => {
                 state.loading.userAction = true;
@@ -463,8 +396,6 @@ const adminSlice = createSlice({
                 state.loading.userAction = false;
                 state.errors.userAction = action.payload as string;
             });
-        
-        // Suspend user
         builder
             .addCase(suspendUser.pending, (state) => {
                 state.loading.userAction = true;
@@ -472,14 +403,11 @@ const adminSlice = createSlice({
             })
             .addCase(suspendUser.fulfilled, (state, action) => {
                 state.loading.userAction = false;
-                // Could update user status in list if we have a status field
             })
             .addCase(suspendUser.rejected, (state, action) => {
                 state.loading.userAction = false;
                 state.errors.userAction = action.payload as string;
             });
-        
-        // Audit log
         builder
             .addCase(fetchAuditLog.pending, (state) => {
                 state.loading.auditLog = true;
@@ -499,7 +427,6 @@ const adminSlice = createSlice({
             });
     }
 });
-
 export const {
     setUsersFilters,
     clearUsersFilters,
@@ -507,5 +434,4 @@ export const {
     setAuditLogPage,
     clearErrors
 } = adminSlice.actions;
-
 export default adminSlice.reducer;

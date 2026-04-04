@@ -1,9 +1,7 @@
 "use client";
-
 import * as React from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { Check } from "lucide-react";
-
 interface AnimatedCheckboxProps {
     id: string;
     checked?: boolean;
@@ -11,7 +9,6 @@ interface AnimatedCheckboxProps {
     label?: React.ReactNode;
     className?: string;
 }
-
 export function AnimatedCheckbox({
     id,
     checked = false,
@@ -20,17 +17,14 @@ export function AnimatedCheckbox({
     className = "",
 }: AnimatedCheckboxProps) {
     const [isChecked, setIsChecked] = React.useState(checked);
-
     React.useEffect(() => {
         setIsChecked(checked);
     }, [checked]);
-
     const handleToggle = () => {
         const newValue = !isChecked;
         setIsChecked(newValue);
         onChange?.(newValue);
     };
-
     const handleLabelClick = (e: React.MouseEvent) => {
         if ((e.target as HTMLElement).closest('a')) {
             return;
@@ -38,7 +32,6 @@ export function AnimatedCheckbox({
         e.preventDefault();
         handleToggle();
     };
-
     return (
         <div className={`flex items-center gap-3 ${className}`}>
             <button
@@ -74,7 +67,6 @@ export function AnimatedCheckbox({
                         )}
                     </AnimatePresence>
                 </motion.div>
-
                 <motion.div
                     className="absolute inset-0 rounded-md bg-primary/20 pointer-events-none"
                     initial={{ scale: 0, opacity: 0.5 }}
@@ -83,7 +75,6 @@ export function AnimatedCheckbox({
                     transition={{ duration: 0.4 }}
                 />
             </button>
-
             {label && (
                 <div
                     onClick={handleLabelClick}
@@ -95,19 +86,15 @@ export function AnimatedCheckbox({
         </div>
     );
 }
-
 interface ControlledCheckboxProps extends Omit<AnimatedCheckboxProps, 'checked' | 'onChange'> {
     value?: boolean;
     onValueChange?: (checked: boolean) => void;
 }
-
 export const ControlledAnimatedCheckbox = React.forwardRef<HTMLInputElement, ControlledCheckboxProps & {
     onChange?: (e: { target: { value: boolean } }) => void
 }>(({ value, onChange, onValueChange, ...props }, ref) => {
     const inputRef = React.useRef<HTMLInputElement>(null);
-
     React.useImperativeHandle(ref, () => inputRef.current!);
-
     const handleChange = (checked: boolean) => {
         if (inputRef.current) {
             inputRef.current.checked = checked;
@@ -115,7 +102,6 @@ export const ControlledAnimatedCheckbox = React.forwardRef<HTMLInputElement, Con
         onChange?.({ target: { value: checked } });
         onValueChange?.(checked);
     };
-
     return (
         <>
             <input
@@ -133,5 +119,4 @@ export const ControlledAnimatedCheckbox = React.forwardRef<HTMLInputElement, Con
         </>
     );
 });
-
 ControlledAnimatedCheckbox.displayName = "ControlledAnimatedCheckbox";

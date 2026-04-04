@@ -2,14 +2,12 @@ import React from 'react';
 import Link from 'next/link';
 import { ChevronRight, Home, LucideIcon } from 'lucide-react';
 import { cn } from '@/lib/utils';
-
 export interface BreadcrumbItem {
     label: string;
     href?: string;
     icon?: LucideIcon;
     active?: boolean;
 }
-
 interface BreadcrumbsProps {
     items: BreadcrumbItem[];
     className?: string;
@@ -18,7 +16,6 @@ interface BreadcrumbsProps {
     rootHref?: string;
     rootIcon?: LucideIcon;
 }
-
 const Breadcrumbs: React.FC<BreadcrumbsProps> = ({
     items,
     className,
@@ -50,11 +47,9 @@ const Breadcrumbs: React.FC<BreadcrumbsProps> = ({
                     )}
                 </div>
             )}
-
             {items.map((item, index) => {
                 const isLast = index === items.length - 1;
                 const isActive = item.active || isLast;
-
                 return (
                     <React.Fragment key={index}>
                         <div className={cn("flex items-center", isLast ? "min-w-0" : "shrink-0")}>
@@ -80,7 +75,6 @@ const Breadcrumbs: React.FC<BreadcrumbsProps> = ({
                                     </span>
                                 </span>
                             )}
-
                             {!isLast && (
                                 <ChevronRight className="w-3 h-3 md:w-3.5 md:h-3.5 text-muted-foreground/50 mx-0.5 md:mx-1 shrink-0" />
                             )}
@@ -91,5 +85,4 @@ const Breadcrumbs: React.FC<BreadcrumbsProps> = ({
         </nav>
     );
 };
-
 export default Breadcrumbs;

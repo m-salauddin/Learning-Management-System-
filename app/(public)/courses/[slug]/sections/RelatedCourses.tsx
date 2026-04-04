@@ -1,17 +1,13 @@
 "use client";
-
 import Link from "next/link";
 import Image from "next/image";
 import { Star, Users, ArrowRight, Library } from "lucide-react";
 import { MappedCourse } from "@/types/mapped-course";
-
 interface RelatedCoursesProps {
     relatedCourses: MappedCourse[];
 }
-
 export default function RelatedCourses({ relatedCourses }: RelatedCoursesProps) {
     if (!relatedCourses || relatedCourses.length === 0) return null;
-
     return (
         <div className="mt-24 sm:mt-32 space-y-12 pb-12 sm:pb-20">
             <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-6">
@@ -31,7 +27,6 @@ export default function RelatedCourses({ relatedCourses }: RelatedCoursesProps) 
                     <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
                 </Link>
             </div>
-
             <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
                 {relatedCourses.map((rCourse) => (
                         <Link

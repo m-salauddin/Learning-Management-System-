@@ -1,17 +1,14 @@
 import { Navbar } from "@/components/Navbar";
 import { FileText, Users, CreditCard, BookOpen, AlertTriangle, Scale } from "lucide-react";
-
 export const metadata = {
     title: "Terms of Service",
     description: "Read the terms and conditions for using DokkhotaIT's platform and services.",
 };
-
 const sections = [
     {
         icon: Users,
         title: "Account Terms",
         content: `By creating an account on DokkhotaIT, you agree to the following:
-
 • You must be at least 16 years old to use our services
 • You are responsible for maintaining the security of your account credentials
 • You must provide accurate and complete information during registration
@@ -23,7 +20,6 @@ const sections = [
         icon: BookOpen,
         title: "Course Access & Usage",
         content: `When you purchase or enroll in a course:
-
 • You receive a personal, non-transferable license to access the course content
 • Course access duration depends on the specific course terms (lifetime or limited)
 • You may not share, redistribute, or resell course materials
@@ -35,7 +31,6 @@ const sections = [
         icon: CreditCard,
         title: "Payments & Refunds",
         content: `Our payment and refund policies:
-
 • All prices are displayed in BDT (Bangladeshi Taka) unless otherwise stated
 • Payment is required before accessing paid course content
 • We accept various payment methods including bKash, Nagad, and cards
@@ -47,7 +42,6 @@ const sections = [
         icon: FileText,
         title: "Intellectual Property",
         content: `Regarding content and intellectual property:
-
 • All course content, materials, and platform design are owned by DokkhotaIT or our instructors
 • You may not copy, modify, distribute, or create derivative works from our content
 • Trademarks, logos, and brand elements are protected intellectual property
@@ -58,7 +52,6 @@ const sections = [
         icon: AlertTriangle,
         title: "Prohibited Conduct",
         content: `You agree not to:
-
 • Use the platform for any illegal purpose or in violation of any laws
 • Share account credentials or allow unauthorized access
 • Attempt to hack, reverse engineer, or compromise our systems
@@ -72,24 +65,19 @@ const sections = [
         icon: Scale,
         title: "Limitation of Liability",
         content: `Important legal limitations:
-
 • Our platform is provided "as is" without warranties of any kind
 • We do not guarantee specific outcomes from taking our courses
 • We are not liable for indirect, incidental, or consequential damages
 • Our total liability is limited to the amount you paid for the specific service
 • We are not responsible for third-party content or services linked from our platform
 • Force majeure events may affect service availability
-
 **Governing Law**: These terms are governed by the laws of Bangladesh. Any disputes shall be resolved in the courts of Dhaka.`,
     },
 ];
-
 export default function TermsPage() {
     return (
         <main className="min-h-screen bg-background">
-
-
-            {/* Hero Section */}
+            {}
             <section className="pt-32 pb-16 px-4">
                 <div className="max-w-4xl mx-auto text-center">
                     <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 border border-primary/20 mb-6">
@@ -107,8 +95,7 @@ export default function TermsPage() {
                     </p>
                 </div>
             </section>
-
-            {/* Content Sections */}
+            {}
             <section className="pb-24 px-4">
                 <div className="max-w-4xl mx-auto space-y-8">
                     {sections.map((section, index) => {
@@ -134,8 +121,7 @@ export default function TermsPage() {
                             </div>
                         );
                     })}
-
-                    {/* Contact Section */}
+                    {}
                     <div className="bg-primary/5 border border-primary/20 rounded-2xl p-6 md:p-8 text-center">
                         <h3 className="text-lg font-bold mb-2">Questions About These Terms?</h3>
                         <p className="text-muted-foreground mb-4">

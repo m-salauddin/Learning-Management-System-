@@ -1,8 +1,6 @@
 "use client";
-
 import { Award } from "lucide-react";
 import Link from "next/link";
-
 export default function CertificatesPage() {
     return (
         <div className="space-y-6">
@@ -10,7 +8,6 @@ export default function CertificatesPage() {
                 <h1 className="text-2xl font-bold">Certificates</h1>
                 <p className="text-muted-foreground text-sm">View and download your earned certificates</p>
             </div>
-
             <div className="flex flex-col items-center justify-center py-24 text-center border rounded-2xl border-dashed border-border/50 bg-card/30">
                 <div className="p-4 bg-muted/50 rounded-full mb-4">
                     <Award className="w-10 h-10 text-muted-foreground opacity-50" />

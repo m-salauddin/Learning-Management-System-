@@ -1,11 +1,9 @@
 "use client";
-
 import { Star, MessageCircle, Quote, Calendar, Hash } from "lucide-react";
 import { motion } from "motion/react";
 import Image from "next/image";
 import { ReviewWithUser, RatingBreakdown } from "@/types/course-page";
 import { cn } from "@/lib/utils";
-
 interface CourseReviewsProps {
     reviews: ReviewWithUser[];
     ratingBreakdown: RatingBreakdown;
@@ -13,7 +11,6 @@ interface CourseReviewsProps {
     setShowAllReviews: (show: boolean) => void;
     setShowReviewModal: (show: boolean) => void;
 }
-
 export default function CourseReviews({
     reviews,
     ratingBreakdown,
@@ -22,7 +19,6 @@ export default function CourseReviews({
     setShowReviewModal
 }: CourseReviewsProps) {
     const displayedReviews = showAllReviews ? reviews : reviews.slice(0, 6);
-
     return (
         <div className="mt-12 sm:mt-16 space-y-12">
             <div className="flex flex-col md:flex-row md:items-end justify-between gap-8">
@@ -36,12 +32,10 @@ export default function CourseReviews({
                         Real stories from real people who have transformed their careers through our courses.
                     </p>
                 </div>
-
             </div>
-
-            {/* Rating Summary Sections - Now at the Top */}
+            {}
             <div className="grid md:grid-cols-2 gap-6">
-                {/* Score Card */}
+                {}
                 <div className="p-10 rounded-[2.5rem] bg-card/40 border border-slate-300 dark:border-white/10 space-y-6 text-center flex flex-col items-center justify-center transition-all duration-500">
                     <div className="text-[5rem] font-black text-slate-900 dark:text-white tracking-tighter leading-none drop-shadow-2xl">
                         {(ratingBreakdown.average || 0).toFixed(1)}
@@ -63,8 +57,7 @@ export default function CourseReviews({
                         {ratingBreakdown.total || 0} TOTAL REVIEWS
                     </p>
                 </div>
-
-                {/* Distribution Card */}
+                {}
                 <div className="p-10 rounded-[2.5rem] bg-card/70 border border-slate-300 dark:border-white/10 space-y-5 flex flex-col justify-center transition-all">
                     <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest px-2 opacity-50">Rating Breakdown</p>
                     <div className="space-y-4">
@@ -95,8 +88,7 @@ export default function CourseReviews({
                     </div>
                 </div>
             </div>
-
-            {/* Reviews List */}
+            {}
             <div className="space-y-8">
                 {reviews.length > 0 && (
                     <>
@@ -116,7 +108,6 @@ export default function CourseReviews({
                                     <div className="absolute top-6 right-8 opacity-10 dark:opacity-5 group-hover:opacity-70 dark:group-hover:opacity-70  transition-opacity">
                                         <Quote className="w-10 h-10 text-primary rotate-180" />
                                     </div>
-
                                     <div className="relative z-10 flex-1 space-y-6">
                                         <div className="flex gap-1">
                                             {[1, 2, 3, 4, 5].map((s) => (
@@ -131,14 +122,12 @@ export default function CourseReviews({
                                                 />
                                             ))}
                                         </div>
-
                                         <div className="relative">
                                             <p className="text-slate-600 dark:text-slate-300 text-sm leading-relaxed font-medium line-clamp-4 italic">
                                                 "{review.review_text}"
                                             </p>
                                         </div>
                                     </div>
-
                                     <div className="flex items-center gap-4 pt-8 mt-auto relative z-10">
                                         <div className="w-12 h-12 rounded-2xl overflow-hidden transition-all duration-500 relative bg-primary/8 dark:bg-slate-900 shadow-inner block shrink-0">
                                             {review.user?.avatar_url ? (
@@ -156,7 +145,7 @@ export default function CourseReviews({
                                             )}
                                         </div>
                                         <div className="min-w-0">
-                                            <p className="text-sm font-bold text-slate-900 dark:text-white leading-tight truncate group-hover:text-primary 
+                                            <p className="text-sm font-bold text-slate-900 dark:text-white leading-tight truncate group-hover:text-primary
                                             dark:group-hover:text-primary transition-colors">
                                                 {review.user?.name || 'Anonymous User'}
                                             </p>
@@ -173,7 +162,6 @@ export default function CourseReviews({
                                 </motion.div>
                             ))}
                         </div>
-
                         {reviews.length > 6 && (
                             <div className="flex justify-center pt-8">
                                 <button

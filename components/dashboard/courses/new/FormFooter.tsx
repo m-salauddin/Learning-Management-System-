@@ -1,9 +1,7 @@
 "use client";
-
 import Link from "next/link";
 import { ChevronLeft, ChevronRight, Sparkles, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
-
 interface FormFooterProps {
     currentStep: number;
     totalSteps: number;
@@ -11,7 +9,6 @@ interface FormFooterProps {
     nextStep: () => void;
     isSubmitting: boolean;
 }
-
 export const FormFooter = ({
     currentStep,
     totalSteps,
@@ -39,7 +36,6 @@ export const FormFooter = ({
                         Cancel
                     </Link>
                 )}
-
                 <div className="flex items-center gap-3">
                     {currentStep < totalSteps ? (
                         <button

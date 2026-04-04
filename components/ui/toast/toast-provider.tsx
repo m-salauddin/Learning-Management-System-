@@ -1,19 +1,14 @@
 "use client";
-
 import React, { createContext, useContext, useState, useCallback, ReactNode } from "react";
 import { AnimatePresence, motion } from "motion/react";
 import { ToastItem } from "@/components/ui/toast/toast-item";
-
-// Toast Types
 export type ToastVariant = "success" | "error" | "warning" | "info" | "loading";
-
 export interface ToastData {
     id: string;
     title: string;
     description?: string;
     variant: ToastVariant;
 }
-
 interface ToastContextType {
     toast: (data: Omit<ToastData, "id">) => string;
     dismiss: (id: string) => void;
@@ -23,44 +18,33 @@ interface ToastContextType {
     info: (title: string, description?: string) => string;
     loading: (title: string, description?: string) => string;
 }
-
 const ToastContext = createContext<ToastContextType | undefined>(undefined);
-
 export const ToastProvider = ({ children }: { children: ReactNode }) => {
     const [toasts, setToasts] = useState<ToastData[]>([]);
-
     const addToast = useCallback((data: Omit<ToastData, "id">) => {
         const id = Math.random().toString(36).substring(2, 9);
         setToasts((prev) => [...prev, { ...data, id }]);
         return id;
     }, []);
-
     const dismiss = useCallback((id: string) => {
         setToasts((prev) => prev.filter((toast) => toast.id !== id));
     }, []);
-
     const success = useCallback((title: string, description?: string) => {
         return addToast({ title, description, variant: "success" });
     }, [addToast]);
-
     const error = useCallback((title: string, description?: string) => {
         return addToast({ title, description, variant: "error" });
     }, [addToast]);
-
     const warning = useCallback((title: string, description?: string) => {
         return addToast({ title, description, variant: "warning" });
     }, [addToast]);
-
     const info = useCallback((title: string, description?: string) => {
         return addToast({ title, description, variant: "info" });
     }, [addToast]);
-
     const loading = useCallback((title: string, description?: string) => {
         return addToast({ title, description, variant: "loading" });
     }, [addToast]);
-
     const [isHovered, setIsHovered] = useState(false);
-
     return (
         <ToastContext.Provider value={{ toast: addToast, dismiss, success, error, warning, info, loading }}>
             {children}
@@ -71,19 +55,14 @@ export const ToastProvider = ({ children }: { children: ReactNode }) => {
             >
                 <AnimatePresence mode="popLayout" initial={false}>
                     {toasts.slice(-3).map((t, index, arr) => {
-                        // Reverse index for stacking (0 is front/bottom-most visual)
                         const reverseIndex = arr.length - 1 - index;
                         const isVisible = reverseIndex < 3;
-
-                        // Stacking logic
-                        const offset = 15; // spacing between stacked cards
+                        const offset = 15;
                         const scale = 1 - reverseIndex * 0.05;
                         const y = isHovered
-                            ? -(reverseIndex * (100 + 15)) + "%" // Expand upwards with gap
-                            : -(reverseIndex * offset); // Collapse
-
+                            ? -(reverseIndex * (100 + 15)) + "%"
+                            : -(reverseIndex * offset);
                         if (!isVisible) return null;
-
                         return (
                             <motion.div
                                 key={t.id}
@@ -125,7 +104,6 @@ export const ToastProvider = ({ children }: { children: ReactNode }) => {
         </ToastContext.Provider>
     );
 };
-
 export const useToast = () => {
     const context = useContext(ToastContext);
     if (!context) {

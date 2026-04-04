@@ -1,9 +1,7 @@
 "use client";
-
 import { motion } from "motion/react";
 import { PlayCircle } from "lucide-react";
 import Link from "next/link";
-
 interface CourseProgressCardProps {
     slug: string;
     title: string;
@@ -12,7 +10,6 @@ interface CourseProgressCardProps {
     totalLessons: number;
     completedLessons: number;
 }
-
 export function CourseProgressCard({ slug, title, image, progress, totalLessons, completedLessons }: CourseProgressCardProps) {
     return (
         <motion.div
@@ -30,15 +27,12 @@ export function CourseProgressCard({ slug, title, image, progress, totalLessons,
                     {progress}%
                 </div>
             </div>
-
             <div className="p-4 sm:p-5">
                 <h4 className="font-bold text-base sm:text-lg mb-2 line-clamp-1 group-hover:text-primary transition-colors">{title}</h4>
-
                 <div className="flex justify-between text-xs text-muted-foreground mb-2">
                     <span>Progress</span>
                     <span>{completedLessons}/{totalLessons} Lessons</span>
                 </div>
-
                 <div className="h-2 w-full bg-muted rounded-full overflow-hidden">
                     <motion.div
                         initial={{ width: 0 }}

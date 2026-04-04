@@ -1,21 +1,14 @@
 "use client";
-
 import { FileText, ChevronDown, ChevronUp } from "lucide-react";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
-
 interface CourseDescriptionProps {
     description: string;
 }
-
 export default function CourseDescription({ description }: CourseDescriptionProps) {
     const [isExpanded, setIsExpanded] = useState(false);
-
     if (!description) return null;
-
-    // Detect if content is likely HTML or plain text
     const isHtml = /<[a-z][\s\S]*>/i.test(description);
-
     return (
         <div id="description" className="mt-12 sm:mt-16 space-y-8 scroll-mt-24">
             <div className="space-y-4">
@@ -27,16 +20,15 @@ export default function CourseDescription({ description }: CourseDescriptionProp
                     About this course
                 </h2>
             </div>
-
             <div className="relative group">
-                {/* Main Content Container */}
-                <div 
+                {}
+                <div
                     className={cn(
                         "relative overflow-hidden transition-all duration-700 ease-in-out",
                         !isExpanded ? "max-h-[400px]" : "max-h-[4000px]"
                     )}
                 >
-                    <div 
+                    <div
                         className={cn(
                             "text-slate-600 dark:text-slate-300 text-sm sm:text-base leading-relaxed sm:leading-loose font-medium space-y-6",
                             "prose dark:prose-invert prose-slate max-w-none prose-p:leading-loose prose-li:leading-relaxed"
@@ -50,14 +42,12 @@ export default function CourseDescription({ description }: CourseDescriptionProp
                             </div>
                         )}
                     </div>
-
-                    {/* Gradient Overlay for collapsed state */}
+                    {}
                     {!isExpanded && (
                         <div className="absolute inset-x-0 bottom-0 h-40 bg-linear-to-t from-background via-background/80 to-transparent z-10 pointer-events-none" />
                     )}
                 </div>
-
-                {/* Show More / Less Trigger */}
+                {}
                 <div className="mt-8 flex justify-start">
                     <button
                         onClick={() => setIsExpanded(!isExpanded)}

@@ -11,19 +11,15 @@ import {
   CTASection,
   FAQSection,
 } from "@/components/sections";
-
 import { FloatingNav } from "@/components/FloatingNav";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { MappedCourse } from "@/types/mapped-course";
-
 export const metadata: Metadata = {
   title: "Best IT Training & Skill Development Platform",
   description: "Join Dokkhota IT to master Web Development, App Development, and AI. Rated #1 IT Training Center in Bangladesh with job placement support.",
 };
-
 export default async function Home() {
   const supabase = await createSupabaseServerClient();
-
   const { data: coursesData, error: coursesError } = await supabase
     .from('courses')
     .select(`
@@ -53,15 +49,12 @@ export default async function Home() {
     .eq('status', 'published')
     .order('serial_number', { ascending: true })
     .limit(6);
-
   if (coursesError) {
     console.error("Error fetching homepage courses:", coursesError);
   }
-
   const mappedCourses: MappedCourse[] = (coursesData || []).map((course: any) => {
     const instructorProfile = Array.isArray(course.instructor) ? course.instructor[0] : course.instructor;
     const instructorData = Array.isArray(instructorProfile?.users) ? instructorProfile.users[0] : instructorProfile?.users;
-
     return {
       id: course.id,
       slug: course.slug,
@@ -91,7 +84,6 @@ export default async function Home() {
       batchNo: course.batch_no
     };
   });
-
   const jsonLd = {
     "@context": "https://schema.org",
     "@type": "Organization",
@@ -105,7 +97,6 @@ export default async function Home() {
     ],
     "description": "Dokkhota IT is the premier IT training platform in Bangladesh offering courses in Web Development, App Development, and AI."
   };
-
   return (
     <main className="min-h-screen">
       <script

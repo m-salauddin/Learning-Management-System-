@@ -1,5 +1,4 @@
 "use client";
-
 import Link from "next/link";
 import {
     ShieldCheck, Tags, Ticket, Users, ArrowRight, BookOpen, BarChart3,
@@ -21,8 +20,6 @@ import { PendingActionsWidget } from "@/components/dashboard/widgets/PendingActi
 import { motion } from "motion/react";
 import { useEffect, useState } from "react";
 import { cn } from "@/lib/utils";
-
-// Animation variants
 const containerVariants = {
     hidden: { opacity: 0 },
     visible: {
@@ -30,7 +27,6 @@ const containerVariants = {
         transition: { staggerChildren: 0.08 }
     }
 };
-
 const itemVariants = {
     hidden: { y: 20, opacity: 0 },
     visible: {
@@ -39,8 +35,6 @@ const itemVariants = {
         transition: { type: "spring" as const, stiffness: 100 }
     }
 };
-
-// Quick stat card component
 function QuickStatCard({
     title,
     value,
@@ -62,9 +56,8 @@ function QuickStatCard({
 }) {
     return (
         <div className="group relative p-5 rounded-2xl bg-card/50 backdrop-blur-xl border border-border/50 hover:border-primary/50 transition-all duration-300 hover:shadow-lg hover:shadow-primary/5 overflow-hidden">
-            {/* Subtle gradient overlay */}
+            {}
             <div className="absolute inset-0 bg-linear-to-br from-transparent via-transparent to-primary/5 opacity-0 group-hover:opacity-100 transition-opacity" />
-
             <div className="relative">
                 <div className="flex justify-between items-start mb-3">
                     <div className={cn("p-2.5 rounded-xl", iconBg, "group-hover:scale-110 transition-transform duration-300")}>
@@ -89,8 +82,6 @@ function QuickStatCard({
         </div>
     );
 }
-
-// Section header component
 function SectionHeader({ title, icon: Icon, action }: { title: string; icon?: any; action?: React.ReactNode }) {
     return (
         <div className="flex items-center justify-between mb-4">
@@ -102,7 +93,6 @@ function SectionHeader({ title, icon: Icon, action }: { title: string; icon?: an
         </div>
     );
 }
-
 export default function AdminPanel() {
     const [stats, setStats] = useState({
         total_users: 0,
@@ -113,16 +103,13 @@ export default function AdminPanel() {
     });
     const [loading, setLoading] = useState(true);
     const [selectedPeriod, setSelectedPeriod] = useState<"7d" | "30d" | "90d" | "1y">("30d");
-
     useEffect(() => {
         const fetchData = async () => {
             try {
                 const supabase = createClient();
                 const { data, error } = await supabase.rpc('get_admin_dashboard_stats');
-
                 if (error) {
                     console.error('Error fetching admin stats:', error);
-                    // Fallback to basic counts if RPC fails/not accessible
                     const { count: userCount } = await supabase.from('users').select('*', { count: 'exact', head: true });
                     const { count: courseCount } = await supabase.from('courses').select('*', { count: 'exact', head: true });
                     setStats(prev => ({ ...prev, total_users: userCount || 0, total_courses: courseCount || 0 }));
@@ -137,14 +124,12 @@ export default function AdminPanel() {
         };
         fetchData();
     }, []);
-
     const totalRevenue = stats.total_revenue || 0;
     const activeStudents = stats.active_enrollments || 0;
     const completionRate = stats.total_enrollments > 0
         ? Math.round(((stats.total_enrollments - stats.active_enrollments) / stats.total_enrollments) * 100)
-        : 78; // Default to old mock if no enrollments
+        : 78;
     const avgRating = 4.8;
-
     return (
         <motion.div
             className="space-y-6 pb-10"
@@ -152,7 +137,7 @@ export default function AdminPanel() {
             initial="hidden"
             animate="visible"
         >
-            {/* Header Section */}
+            {}
             <motion.div variants={itemVariants} className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
                 <div className="flex items-start gap-4">
                     <div className="p-3 rounded-2xl bg-linear-to-br from-primary/20 to-primary/5 ring-1 ring-primary/20 shadow-lg shadow-primary/10">
@@ -167,8 +152,7 @@ export default function AdminPanel() {
                         </p>
                     </div>
                 </div>
-
-                {/* Period Selector & Actions */}
+                {}
                 <div className="flex items-center gap-3">
                     <div className="flex items-center bg-muted/50 rounded-xl p-1">
                         {(["7d", "30d", "90d", "1y"] as const).map((period) => (
@@ -194,8 +178,7 @@ export default function AdminPanel() {
                     </button>
                 </div>
             </motion.div>
-
-            {/* Quick Stats Grid */}
+            {}
             <motion.div variants={itemVariants} className="grid grid-cols-2 lg:grid-cols-4 gap-4">
                 <QuickStatCard
                     title="Total Users"
@@ -238,8 +221,7 @@ export default function AdminPanel() {
                     subtitle="Currently learning"
                 />
             </motion.div>
-
-            {/* Secondary Stats Row */}
+            {}
             <motion.div variants={itemVariants} className="grid grid-cols-2 md:grid-cols-4 gap-4">
                 <div className="p-4 rounded-2xl bg-linear-to-br from-violet-500/10 to-purple-500/5 border border-violet-500/20">
                     <div className="flex items-center gap-2 mb-2">
@@ -270,10 +252,9 @@ export default function AdminPanel() {
                     <p className="text-2xl font-bold">892</p>
                 </div>
             </motion.div>
-
-            {/* Charts Section - Bento Grid */}
+            {}
             <motion.div variants={itemVariants} className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                {/* Revenue Chart - Takes 2 columns */}
+                {}
                 <div className="lg:col-span-2 p-6 rounded-3xl bg-card/50 backdrop-blur-xl border border-border/50">
                     <SectionHeader
                         title="Revenue Overview"
@@ -286,15 +267,13 @@ export default function AdminPanel() {
                     />
                     <RevenueChart />
                 </div>
-
-                {/* User Distribution - 1 column */}
+                {}
                 <div className="p-6 rounded-3xl bg-card/50 backdrop-blur-xl border border-border/50">
                     <SectionHeader title="User Distribution" icon={Users} />
                     <UserDistributionChart />
                 </div>
             </motion.div>
-
-            {/* Enrollment Trends & Course Performance */}
+            {}
             <motion.div variants={itemVariants} className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 <div className="p-6 rounded-3xl bg-card/50 backdrop-blur-xl border border-border/50">
                     <SectionHeader
@@ -308,14 +287,12 @@ export default function AdminPanel() {
                     />
                     <EnrollmentTrendChart />
                 </div>
-
                 <div className="p-6 rounded-3xl bg-card/50 backdrop-blur-xl border border-border/50">
                     <SectionHeader title="Top Performing Courses" icon={BookOpen} />
                     <CoursePerformanceChart />
                 </div>
             </motion.div>
-
-            {/* Activity Heatmap & Platform Health */}
+            {}
             <motion.div variants={itemVariants} className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                 <div className="lg:col-span-2 p-6 rounded-3xl bg-card/50 backdrop-blur-xl border border-border/50">
                     <SectionHeader
@@ -325,20 +302,17 @@ export default function AdminPanel() {
                     />
                     <ActivityHeatmap />
                 </div>
-
                 <div className="p-6 rounded-3xl bg-card/50 backdrop-blur-xl border border-border/50">
                     <SectionHeader title="Platform Health" icon={Sparkles} />
                     <PlatformHealthChart />
                 </div>
             </motion.div>
-
-            {/* Revenue Breakdown & Pending Actions */}
+            {}
             <motion.div variants={itemVariants} className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                 <div className="p-6 rounded-3xl bg-card/50 backdrop-blur-xl border border-border/50">
                     <SectionHeader title="Revenue Sources" icon={DollarSign} />
                     <RevenueBreakdownChart />
                 </div>
-
                 <div className="lg:col-span-2 p-6 rounded-3xl bg-card/50 backdrop-blur-xl border border-border/50">
                     <SectionHeader
                         title="Pending Actions"
@@ -352,8 +326,7 @@ export default function AdminPanel() {
                     <PendingActionsWidget />
                 </div>
             </motion.div>
-
-            {/* Top Courses Table */}
+            {}
             <motion.div variants={itemVariants} className="p-6 rounded-3xl bg-card/50 backdrop-blur-xl border border-border/50">
                 <SectionHeader
                     title="Top Performing Courses"
@@ -371,10 +344,9 @@ export default function AdminPanel() {
                 />
                 <TopCoursesTable />
             </motion.div>
-
-            {/* Recent Activity & Quick Actions */}
+            {}
             <motion.div variants={itemVariants} className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                {/* Recent Activity Feed */}
+                {}
                 <div className="lg:col-span-2 p-6 rounded-3xl bg-card/50 backdrop-blur-xl border border-border/50">
                     <SectionHeader
                         title="Recent Activity"
@@ -387,8 +359,7 @@ export default function AdminPanel() {
                     />
                     <RecentActivityFeed />
                 </div>
-
-                {/* Quick Management Links */}
+                {}
                 <div className="p-6 rounded-3xl bg-card/50 backdrop-blur-xl border border-border/50">
                     <SectionHeader title="Quick Access" icon={Zap} />
                     <div className="space-y-3">

@@ -1,5 +1,4 @@
 "use client";
-
 import Link from "next/link";
 import { useState, useMemo, useEffect, Suspense, useRef } from "react";
 import { useRouter, useSearchParams, usePathname } from "next/navigation";
@@ -11,13 +10,11 @@ import { CourseCard } from "@/components/CourseCard";
 import { MappedCourse } from "@/types/mapped-course";
 import Breadcrumbs from "@/components/ui/Breadcrumbs";
 import { BookOpen, Layout } from "lucide-react";
-
 const CATEGORIES = ["All Topics", "Web Development", "Data Science", "Mobile Development", "Cyber Security", "Cloud Computing", "Design"];
 const LEVELS = ["Beginner", "Intermediate", "Advanced"];
 const TYPES = ["Live", "Recorded", "Career Path"];
 const PRICES = ["Paid", "Free"];
 const ITEMS_PER_PAGE = 9;
-
 const itemVariants: Variants = {
     hidden: { opacity: 0, y: 20, scale: 0.95, filter: "blur(10px)" },
     visible: {
@@ -43,14 +40,10 @@ const itemVariants: Variants = {
         }
     }
 };
-
 function CoursesContent({ initialCourses }: { initialCourses: MappedCourse[] }) {
     const router = useRouter();
     const pathname = usePathname();
-
-
     const [searchInput, setSearchInput] = useState("");
-
     const [selectedCategory, setSelectedCategory] = useState("All Topics");
     const [selectedLevels, setSelectedLevels] = useState<string[]>([]);
     const [selectedTypes, setSelectedTypes] = useState<string[]>([]);
@@ -62,19 +55,15 @@ function CoursesContent({ initialCourses }: { initialCourses: MappedCourse[] }) 
     const categoryContainerRef = useRef<HTMLDivElement>(null);
     const [canScrollLeft, setCanScrollLeft] = useState(false);
     const [canScrollRight, setCanScrollRight] = useState(false);
-
     useEffect(() => {
         const checkScroll = () => {
             if (categoryContainerRef.current) {
                 const { scrollLeft, scrollWidth, clientWidth } = categoryContainerRef.current;
                 setCanScrollLeft(scrollLeft > 0);
-                // Use a small buffer (1px) to avoid precision issues
                 setCanScrollRight(Math.ceil(scrollLeft + clientWidth) < scrollWidth - 1);
             }
         };
-
         checkScroll();
-
         const container = categoryContainerRef.current;
         if (container) {
             const observer = new ResizeObserver(() => checkScroll());
@@ -86,34 +75,26 @@ function CoursesContent({ initialCourses }: { initialCourses: MappedCourse[] }) 
             };
         }
     }, [mounted]);
-
     const scroll = (direction: 'left' | 'right') => {
         if (categoryContainerRef.current) {
             const scrollAmount = 300;
             const newScrollLeft = direction === 'left'
                 ? categoryContainerRef.current.scrollLeft - scrollAmount
                 : categoryContainerRef.current.scrollLeft + scrollAmount;
-
             categoryContainerRef.current.scrollTo({
                 left: newScrollLeft,
                 behavior: 'smooth'
             });
         }
     };
-
-
-    // Initialize state from URL once on mount
     useEffect(() => {
-        // Use window.location.search to avoid Next.js router/suspense triggering on updates
         const params = new URLSearchParams(window.location.search);
-
         const q = params.get("q") || "";
         const category = params.get("category") || "All Topics";
         const levels = params.get("levels")?.split(",").filter(Boolean) || [];
         const types = params.get("types")?.split(",").filter(Boolean) || [];
         const prices = params.get("prices")?.split(",").filter(Boolean) || [];
         const page = params.get("page") ? parseInt(params.get("page")!, 10) : 1;
-
         setSearchInput(q);
         setSelectedCategory(category);
         setSelectedLevels(levels);
@@ -122,8 +103,6 @@ function CoursesContent({ initialCourses }: { initialCourses: MappedCourse[] }) 
         setCurrentPage(page);
         setMounted(true);
     }, []);
-
-    // Silent URL update helper
     const updateUrlSilently = (
         term: string,
         category: string,
@@ -139,26 +118,16 @@ function CoursesContent({ initialCourses }: { initialCourses: MappedCourse[] }) 
         if (types.length > 0) params.set("types", types.join(","));
         if (prices.length > 0) params.set("prices", prices.join(","));
         if (page > 1) params.set("page", page.toString());
-
         const newUrl = `${pathname}?${params.toString()}`;
-
-        // Update URL without triggering Next.js navigation/suspense
         window.history.replaceState(null, '', newUrl);
     };
-
-    // Effect to update URL when state changes (Debounced for search, immediate for filters)
     useEffect(() => {
         if (!mounted) return;
-
         const timer = setTimeout(() => {
             updateUrlSilently(searchInput, selectedCategory, selectedLevels, selectedTypes, selectedPrices, currentPage);
-
         }, 300);
-
         return () => clearTimeout(timer);
     }, [searchInput, selectedCategory, selectedLevels, selectedTypes, selectedPrices, currentPage, mounted]);
-
-
     const toggleFilter = (item: string, current: string[], setter: (val: string[]) => void) => {
         const newSelection = current.includes(item)
             ? current.filter(i => i !== item)
@@ -166,7 +135,6 @@ function CoursesContent({ initialCourses }: { initialCourses: MappedCourse[] }) 
         setter(newSelection);
         setCurrentPage(1);
     };
-
     const handleClearAll = () => {
         setSearchInput("");
         setSelectedCategory("All Topics");
@@ -174,42 +142,30 @@ function CoursesContent({ initialCourses }: { initialCourses: MappedCourse[] }) 
         setSelectedTypes([]);
         setSelectedPrices([]);
         setCurrentPage(1);
-        // URL will update automatically via key effect
     };
-
     const filteredCourses = useMemo(() => {
         return initialCourses.filter((course) => {
-            // Use searchInput directly for instant feedback (client-side filtering best practice)
             const matchesSearch = course.title.toLowerCase().includes(searchInput.toLowerCase()) ||
                 course.description.toLowerCase().includes(searchInput.toLowerCase()) ||
                 course.tags?.some(tag => tag.toLowerCase().includes(searchInput.toLowerCase()));
-
-            // Note: Categories in DB might not match CATEGORIES const exactly. Should probably fetch categories dynamically too.
             const matchesCategory = selectedCategory === "All Topics" || course.category === selectedCategory || (selectedCategory === "Web Development" && course.tags?.some(t => t.includes("Web")));
-
             const matchesLevel = selectedLevels.length === 0 || selectedLevels.includes(course.level);
-            // Type and PriceType matching needs to be robust against case differences
             const matchesType = selectedTypes.length === 0 || selectedTypes.some(t => t.toLowerCase() === course.type?.toLowerCase());
             const matchesPrice = selectedPrices.length === 0 || selectedPrices.some(p => p.toLowerCase() === course.priceType?.toLowerCase());
-
             return matchesSearch && matchesCategory && matchesLevel && matchesType && matchesPrice;
         });
     }, [searchInput, selectedCategory, selectedLevels, selectedTypes, selectedPrices, initialCourses]);
-
     const totalPages = Math.ceil(filteredCourses.length / ITEMS_PER_PAGE);
     const paginatedCourses = filteredCourses.slice(
         (currentPage - 1) * ITEMS_PER_PAGE,
         currentPage * ITEMS_PER_PAGE
     );
-
     const activeFilterCount = selectedLevels.length + selectedTypes.length + selectedPrices.length;
     const hasActiveFilters = searchInput !== "" || selectedCategory !== "All Topics" || selectedLevels.length > 0 || selectedTypes.length > 0 || selectedPrices.length > 0;
-
     const handlePageChange = (page: number) => {
         setCurrentPage(page);
         window.scrollTo({ top: 0, behavior: 'smooth' });
     };
-
     const getGridClass = () => {
         switch (gridCols) {
             case 1: return "grid-cols-1";
@@ -218,12 +174,9 @@ function CoursesContent({ initialCourses }: { initialCourses: MappedCourse[] }) 
             default: return "grid-cols-1 md:grid-cols-2 lg:grid-cols-3";
         }
     };
-
     if (!mounted) return null;
-
     return (
         <div className="min-h-screen bg-background selection:bg-primary/20">
-
             <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 pt-28 pb-20">
                 <div className="mb-8 space-y-6">
                     <motion.div initial="hidden" animate="visible" variants={fadeInUp}>
@@ -239,17 +192,15 @@ function CoursesContent({ initialCourses }: { initialCourses: MappedCourse[] }) 
                             Find the perfect course to upgrade your skills.
                         </p>
                     </motion.div>
-
                     <motion.div
                         initial={{ opacity: 0, y: -10 }}
                         animate={{ opacity: 1, y: 0 }}
                         className="sticky top-24 z-30 mb-8"
                     >
                         <div className="bg-card dark:bg-[#030712] border border-border p-2 rounded-2xl shadow-2xl shadow-black/5 dark:shadow-black/50 flex flex-col xl:flex-row gap-4 items-center max-w-full overflow-hidden">
-
-                            {/* Categories - Scrollable Area */}
+                            {}
                             <div className="w-full xl:w-auto flex-1 min-w-0 relative group/categories">
-                                {/* Left Scroll Button */}
+                                {}
                                 {canScrollLeft && (
                                     <motion.button
                                         initial={{ opacity: 0, x: -10 }}
@@ -260,11 +211,9 @@ function CoursesContent({ initialCourses }: { initialCourses: MappedCourse[] }) 
                                         <ChevronLeft className="w-4 h-4" />
                                     </motion.button>
                                 )}
-
-                                {/* Gradient Masks */}
+                                {}
                                 {canScrollLeft && <div className="absolute left-0 top-0 bottom-0 w-12 bg-linear-to-r from-card dark:from-[#030712] to-transparent z-30 pointer-events-none" />}
                                 {canScrollRight && <div className="absolute right-0 top-0 bottom-0 w-12 bg-linear-to-l from-card dark:from-[#030712] to-transparent z-30 pointer-events-none" />}
-
                                 <div
                                     ref={categoryContainerRef}
                                     className="overflow-x-auto flex gap-1.5 p-1 px-2 scrollbar-hide"
@@ -293,8 +242,7 @@ function CoursesContent({ initialCourses }: { initialCourses: MappedCourse[] }) 
                                         </button>
                                     ))}
                                 </div>
-
-                                {/* Right Scroll Button */}
+                                {}
                                 {canScrollRight && (
                                     <motion.button
                                         initial={{ opacity: 0, x: 10 }}
@@ -306,11 +254,9 @@ function CoursesContent({ initialCourses }: { initialCourses: MappedCourse[] }) 
                                     </motion.button>
                                 )}
                             </div>
-
-                            {/* Separator for desktop */}
+                            {}
                             <div className="hidden xl:block w-px h-8 bg-border mx-2" />
-
-                            {/* Right Actions: Search & Toggles */}
+                            {}
                             <div className="flex items-center gap-3 w-full xl:w-auto shrink-0">
                                 <div className="relative grow sm:grow-0">
                                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
@@ -322,19 +268,16 @@ function CoursesContent({ initialCourses }: { initialCourses: MappedCourse[] }) 
                                         className="w-full sm:w-64 pl-10 pr-4 py-2.5 rounded-xl bg-black/5 dark:bg-white/5 border border-transparent focus:border-primary/50 focus:bg-background focus:ring-0 outline-none transition-all text-sm text-foreground placeholder:text-muted-foreground"
                                     />
                                 </div>
-
                                 <div className="hidden lg:flex bg-black/5 dark:bg-white/5 p-1 rounded-xl border border-border">
                                     <button
                                         onClick={() => setGridCols(1)}
                                         className={`p-2 rounded-lg transition-all ${gridCols === 1 ? 'bg-primary text-white dark:text-black shadow-sm' : 'text-muted-foreground hover:text-foreground'}`}
-
                                     >
                                         <AlignJustify className="w-4 h-4" />
                                     </button>
                                     <button
                                         onClick={() => setGridCols(2)}
                                         className={`p-2 rounded-lg transition-all ${gridCols === 2 ? 'bg-primary text-white dark:text-black shadow-sm' : 'text-muted-foreground hover:text-foreground'}`}
-
                                     >
                                         <LayoutGrid className="w-4 h-4" />
                                     </button>
@@ -345,7 +288,6 @@ function CoursesContent({ initialCourses }: { initialCourses: MappedCourse[] }) 
                                         <Grip className="w-4 h-4" />
                                     </button>
                                 </div>
-
                                 <button
                                     onClick={() => setShowMobileFilters(!showMobileFilters)}
                                     className={`lg:hidden p-2.5 rounded-xl border border-border bg-black/5 dark:bg-white/5 text-foreground relative hover:bg-black/10 dark:hover:bg-white/10 transition-colors ${activeFilterCount > 0 ? 'text-primary' : ''}`}
@@ -359,9 +301,7 @@ function CoursesContent({ initialCourses }: { initialCourses: MappedCourse[] }) 
                         </div>
                     </motion.div>
                 </div>
-
                 <div className="flex flex-col lg:flex-row gap-8 items-start">
-
                     <motion.aside
                         className={`
                             ${showMobileFilters ? 'fixed inset-0 z-50 bg-background p-6 overflow-y-auto' : 'hidden'}
@@ -374,7 +314,6 @@ function CoursesContent({ initialCourses }: { initialCourses: MappedCourse[] }) 
                                 <button onClick={() => setShowMobileFilters(false)}><X className="w-6 h-6" /></button>
                             </div>
                         )}
-
                         <div className="space-y-8 pr-4">
                             <div>
                                 <h3 className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-3">Level</h3>
@@ -395,7 +334,6 @@ function CoursesContent({ initialCourses }: { initialCourses: MappedCourse[] }) 
                                     ))}
                                 </div>
                             </div>
-
                             <div>
                                 <h3 className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-3">Type</h3>
                                 <div className="space-y-3">
@@ -415,7 +353,6 @@ function CoursesContent({ initialCourses }: { initialCourses: MappedCourse[] }) 
                                     ))}
                                 </div>
                             </div>
-
                             <div>
                                 <h3 className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-3">Price</h3>
                                 <div className="space-y-3">
@@ -435,7 +372,6 @@ function CoursesContent({ initialCourses }: { initialCourses: MappedCourse[] }) 
                                     ))}
                                 </div>
                             </div>
-
                             {hasActiveFilters && (
                                 <button
                                     onClick={handleClearAll}
@@ -447,7 +383,6 @@ function CoursesContent({ initialCourses }: { initialCourses: MappedCourse[] }) 
                             )}
                         </div>
                     </motion.aside>
-
                     <div className="grow w-full">
                         <AnimatePresence mode="popLayout">
                             {paginatedCourses.length > 0 ? (
@@ -466,7 +401,6 @@ function CoursesContent({ initialCourses }: { initialCourses: MappedCourse[] }) 
                                             </motion.div>
                                         ))}
                                     </div>
-
                                     {totalPages > 1 && (
                                         <div className="mt-12 flex justify-center items-center gap-2">
                                             <button
@@ -476,7 +410,6 @@ function CoursesContent({ initialCourses }: { initialCourses: MappedCourse[] }) 
                                             >
                                                 <ChevronLeft className="w-5 h-5" />
                                             </button>
-
                                             {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
                                                 <button
                                                     key={page}
@@ -492,7 +425,6 @@ function CoursesContent({ initialCourses }: { initialCourses: MappedCourse[] }) 
                                                     {page}
                                                 </button>
                                             ))}
-
                                             <button
                                                 onClick={() => handlePageChange(Math.min(totalPages, currentPage + 1))}
                                                 disabled={currentPage === totalPages}
@@ -533,7 +465,6 @@ function CoursesContent({ initialCourses }: { initialCourses: MappedCourse[] }) 
         </div >
     );
 }
-
 export default function CoursesClient({ initialCourses }: { initialCourses: MappedCourse[] }) {
     return (
         <Suspense fallback={<div className="min-h-screen bg-background flex items-center justify-center"><div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin"></div></div>}>

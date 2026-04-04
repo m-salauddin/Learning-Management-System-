@@ -1,8 +1,6 @@
 "use client"
-
 import * as React from "react"
 import { Area, AreaChart, CartesianGrid, XAxis, ResponsiveContainer, Tooltip, YAxis } from "recharts"
-
 const chartData = [
     { day: "Mon", current: 4000, previous: 2400 },
     { day: "Tue", current: 9310, previous: 1398 },
@@ -12,7 +10,6 @@ const chartData = [
     { day: "Sat", current: 16745, previous: 3800 },
     { day: "Sun", current: 10000, previous: 4300 },
 ]
-
 export function RevenueChart() {
     return (
         <div className="flex flex-col h-full w-full">
@@ -31,7 +28,6 @@ export function RevenueChart() {
                     <span className="text-xl font-medium text-muted-foreground">this week</span>
                 </div>
             </div>
-
             <div className="h-[300px] w-full">
                 <ResponsiveContainer width="100%" height="100%">
                     <AreaChart
@@ -59,7 +55,7 @@ export function RevenueChart() {
                             fontSize={12}
                         />
                         <YAxis
-                            hide={true} // Hide Y axis to match clean look
+                            hide={true}
                             domain={[0, 'auto']}
                         />
                         <Tooltip

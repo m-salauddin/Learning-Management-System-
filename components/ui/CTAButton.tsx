@@ -1,24 +1,20 @@
 "use client";
-
 import * as React from "react";
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 import { cn } from "@/lib/utils";
-
 interface CTAButtonProps {
     href?: string;
     onClick?: (e: React.MouseEvent<HTMLElement>) => void;
     children: React.ReactNode;
     variant?: "primary" | "secondary";
     className?: string;
-    isAnchor?: boolean; // true for same-page anchors (#courses), false for Next.js routing
+    isAnchor?: boolean;
     disabled?: boolean;
     loading?: boolean;
     type?: "button" | "submit" | "reset";
     hideIcon?: boolean;
 }
-
-
 export function PrimaryCTAButton({
     href,
     onClick,
@@ -40,12 +36,10 @@ export function PrimaryCTAButton({
             )}
         </>
     );
-
     const buttonClasses = cn(
         "group/btn flex items-center justify-center gap-2.5 sm:gap-4 pl-6 sm:pl-10 pr-2 py-2 bg-[#0036F9] dark:bg-primary hover:bg-[#0036F9]/90 dark:hover:bg-primary/90 rounded-full transition-all duration-300 active:scale-95 cursor-pointer h-[34px] sm:h-11 disabled:opacity-70 disabled:cursor-not-allowed",
         className
     );
-
     if (onClick || type !== "button" || !href) {
         return (
             <button
@@ -58,7 +52,6 @@ export function PrimaryCTAButton({
             </button>
         );
     }
-
     if (isAnchor) {
         return (
             <a href={href} className={buttonClasses}>
@@ -66,15 +59,12 @@ export function PrimaryCTAButton({
             </a>
         );
     }
-
     return (
         <Link href={href} className={buttonClasses}>
             {buttonContent}
         </Link>
     );
 }
-
-
 export function SecondaryCTAButton({
     href,
     onClick,
@@ -93,12 +83,10 @@ export function SecondaryCTAButton({
             </span>
         </>
     );
-
     const buttonClasses = cn(
         "group/shimmer relative flex items-center justify-center gap-2 sm:gap-3 px-4 sm:px-8 py-2 sm:py-2.5 bg-card border border-border hover:border-slate-400 dark:hover:border-white/20 rounded-full transition-all duration-300 active:scale-95 cursor-pointer h-[34px] sm:h-11 overflow-hidden disabled:opacity-70 disabled:cursor-not-allowed",
         className
     );
-
     if (onClick || type !== "button" || !href) {
         return (
             <button
@@ -111,7 +99,6 @@ export function SecondaryCTAButton({
             </button>
         );
     }
-
     if (isAnchor) {
         return (
             <a href={href} className={buttonClasses}>
@@ -119,7 +106,6 @@ export function SecondaryCTAButton({
             </a>
         );
     }
-
     return (
         <Link href={href} className={buttonClasses}>
             {buttonContent}

@@ -1,26 +1,22 @@
 "use client";
-
 import Image from "next/image";
 import { Eye, Image as ImageIcon, Users, BookOpen } from "lucide-react";
 import { CreateCourseInput } from "@/types/lms";
-
 interface CoursePreviewProps {
     formData: CreateCourseInput;
     thumbnailPreview: string | null;
 }
-
 export const CoursePreview = ({ formData, thumbnailPreview }: CoursePreviewProps) => {
     return (
         <div className="sticky top-24 hidden xl:block">
             <div className="p-4 rounded-[2rem] border border-border/50 bg-card/50 backdrop-blur-2xl shadow-2xl relative overflow-hidden group">
-                {/* Header Label */}
+                {}
                 <div className="flex items-center gap-2 mb-4 px-2">
                     <div className="w-2 h-2 rounded-full bg-primary animate-pulse" />
                     <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Live Content Preview</span>
                 </div>
-
                 <div className="relative flex flex-col bg-card border border-border/50 rounded-2xl overflow-hidden shadow-xl">
-                    {/* Image Section */}
+                    {}
                     <div className="relative p-3">
                         <div className="relative h-48 rounded-xl overflow-hidden bg-muted">
                             {(thumbnailPreview || formData.thumbnail_url) ? (
@@ -36,17 +32,14 @@ export const CoursePreview = ({ formData, thumbnailPreview }: CoursePreviewProps
                                     <p className="text-[10px] font-bold uppercase tracking-widest mt-2">No Visual Asset</p>
                                 </div>
                             )}
-
                             <div className="absolute inset-0 bg-linear-to-t from-black/60 via-transparent to-transparent" />
-
                             <div className="absolute top-3 right-3 flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-black/60 backdrop-blur-md text-white text-[10px] font-bold border border-white/10">
                                 <Users className="w-3 h-3 text-emerald-400" />
                                 <span>0 students</span>
                             </div>
                         </div>
                     </div>
-
-                    {/* Content Section */}
+                    {}
                     <div className="px-4 pb-5 flex flex-col">
                         <div className="flex items-center gap-2 mb-3">
                             <span className="inline-flex items-center gap-1 text-[9px] font-bold uppercase tracking-wider text-primary bg-primary/10 border border-primary/20 px-2 py-0.5 rounded-full">
@@ -56,15 +49,12 @@ export const CoursePreview = ({ formData, thumbnailPreview }: CoursePreviewProps
                                 {formData.language}
                             </span>
                         </div>
-
                         <h3 className="text-base font-bold leading-tight mb-2 text-foreground line-clamp-2 min-h-10">
                             {formData.title || "Untiled Amazing Course"}
                         </h3>
-
                         <p className="text-muted-foreground text-[11px] leading-relaxed mb-4 line-clamp-2">
                             {formData.short_description || "A captivating course description that sells the dream of mastery and excellence."}
                         </p>
-
                         <div className="flex items-center gap-3 py-2 px-3 mb-4 rounded-lg bg-muted/30 border border-border/50">
                             <div className="flex items-center gap-1.5">
                                 <Users className="w-3 h-3 text-secondary" />
@@ -76,7 +66,6 @@ export const CoursePreview = ({ formData, thumbnailPreview }: CoursePreviewProps
                                 <span className="text-[10px] font-medium text-foreground">0 lessons</span>
                             </div>
                         </div>
-
                         <div className="flex items-end justify-between pt-4 border-t border-border/50">
                             <div className="flex flex-col">
                                 {formData.discount_price ? (
@@ -94,7 +83,6 @@ export const CoursePreview = ({ formData, thumbnailPreview }: CoursePreviewProps
                                     </>
                                 )}
                             </div>
-
                             <div className="flex items-center gap-2 pl-4 pr-1.5 py-1.5 bg-primary rounded-full opacity-50 grayscale cursor-not-allowed">
                                 <span className="text-[10px] font-bold text-white uppercase tracking-wider">Draft</span>
                                 <div className="flex h-5 w-5 items-center justify-center rounded-full bg-white text-primary">
@@ -104,8 +92,7 @@ export const CoursePreview = ({ formData, thumbnailPreview }: CoursePreviewProps
                         </div>
                     </div>
                 </div>
-
-                {/* Status Cards */}
+                {}
                 <div className="mt-6 grid grid-cols-2 gap-3">
                     <div className="p-3 rounded-2xl bg-emerald-500/5 border border-emerald-500/10">
                         <p className="text-[9px] font-bold text-emerald-500/50 uppercase tracking-widest mb-1">Status</p>

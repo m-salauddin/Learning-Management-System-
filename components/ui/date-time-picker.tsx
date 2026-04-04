@@ -1,5 +1,4 @@
 "use client";
-
 import * as React from "react";
 import { format, startOfToday } from "date-fns";
 import { Calendar as CalendarIcon, Clock } from "lucide-react";
@@ -18,14 +17,12 @@ import {
     SelectTrigger,
     SelectValue,
 } from "@/components/ui/select";
-
 interface DateTimePickerProps {
     date?: Date;
     setDate: (date: Date | undefined) => void;
     className?: string;
     placeholder?: string;
 }
-
 export function DateTimePicker({
     date,
     setDate,
@@ -33,26 +30,21 @@ export function DateTimePicker({
     placeholder = "Pick a date",
 }: DateTimePickerProps) {
     const [selectedDate, setSelectedDate] = React.useState<Date | undefined>(date);
-
     React.useEffect(() => {
         if (date) {
             setSelectedDate(date);
         }
     }, [date]);
-
     const handleDateSelect = (newDate: Date | undefined) => {
         if (!newDate) return;
-        
         const updatedDate = new Date(newDate);
         if (selectedDate) {
             updatedDate.setHours(selectedDate.getHours());
             updatedDate.setMinutes(selectedDate.getMinutes());
         }
-        
         setSelectedDate(updatedDate);
         setDate(updatedDate);
     };
-
     const handleTimeChange = (type: "hours" | "minutes" | "ampm", value: string) => {
         const updatedDate = new Date(selectedDate || new Date());
         if (type === "hours") {
@@ -72,18 +64,15 @@ export function DateTimePicker({
         setSelectedDate(updatedDate);
         setDate(updatedDate);
     };
-
     const get12Hour = (date: Date | undefined) => {
         if (!date) return "12";
         const h = date.getHours() % 12;
         return (h === 0 ? 12 : h).toString();
     };
-
     const getAMPM = (date: Date | undefined) => {
         if (!date) return "AM";
         return date.getHours() >= 12 ? "PM" : "AM";
     };
-
     return (
         <Popover>
             <PopoverTrigger asChild>
@@ -159,7 +148,6 @@ export function DateTimePicker({
                                     </Select>
                                 </div>
                             </div>
-                            
                             <div className="space-y-1.5">
                                 <label className="text-[10px] font-bold text-white/20 ml-1">Period</label>
                                 <div className="flex p-1 rounded-lg bg-white/5 border border-white/10 gap-1">
@@ -170,8 +158,8 @@ export function DateTimePicker({
                                             onClick={() => handleTimeChange("ampm", p)}
                                             className={cn(
                                                 "flex-1 py-1 rounded-md text-[10px] font-bold transition-all",
-                                                getAMPM(selectedDate) === p 
-                                                    ? "bg-blue-500 text-white shadow-lg" 
+                                                getAMPM(selectedDate) === p
+                                                    ? "bg-blue-500 text-white shadow-lg"
                                                     : "text-white/40 hover:text-white hover:bg-white/5"
                                             )}
                                         >

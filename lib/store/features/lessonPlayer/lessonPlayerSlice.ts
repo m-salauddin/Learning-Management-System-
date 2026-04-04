@@ -1,23 +1,9 @@
-// ============================================================================
-// LESSON PLAYER REDUX SLICE
-// ============================================================================
-// State management for the lesson player / video player
-// ============================================================================
-
 import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
 import { LessonPlayerState } from '@/types/course-page';
 import * as coursePageActions from '@/lib/actions/course-page';
 import * as enrollmentActions from '@/lib/actions/enrollments';
-
-// ============================================================================
-// STATE INTERFACE
-// ============================================================================
-
 interface LessonPlayerSliceState extends LessonPlayerState {
-    // Current course context
     courseId: string | null;
-
-    // Modules/lessons for navigation
     modules: Array<{
         id: string;
         title: string;
@@ -29,12 +15,8 @@ interface LessonPlayerSliceState extends LessonPlayerState {
             is_completed: boolean;
         }>;
     }>;
-
-    // Auto-save progress interval
     lastSavedAt: string | null;
     isDirty: boolean;
-
-    // Video player state
     videoState: {
         isPlaying: boolean;
         currentTime: number;
@@ -44,7 +26,6 @@ interface LessonPlayerSliceState extends LessonPlayerState {
         isFullscreen: boolean;
     };
 }
-
 const initialState: LessonPlayerSliceState = {
     currentLessonId: null,
     courseId: null,
@@ -70,11 +51,6 @@ const initialState: LessonPlayerSliceState = {
         isFullscreen: false,
     },
 };
-
-// ============================================================================
-// ASYNC THUNKS
-// ============================================================================
-
 export const fetchLessonContent = createAsyncThunk(
     'lessonPlayer/fetchContent',
     async (lessonId: string, { rejectWithValue }) => {
@@ -85,7 +61,6 @@ export const fetchLessonContent = createAsyncThunk(
         return { lessonId, ...result.data };
     }
 );
-
 export const fetchSignedVideoUrl = createAsyncThunk(
     'lessonPlayer/fetchVideoUrl',
     async (lessonId: string, { rejectWithValue }) => {
@@ -96,7 +71,6 @@ export const fetchSignedVideoUrl = createAsyncThunk(
         return result;
     }
 );
-
 export const saveProgress = createAsyncThunk(
     'lessonPlayer/saveProgress',
     async (
@@ -115,7 +89,6 @@ export const saveProgress = createAsyncThunk(
         return { lessonId, watchedSeconds, isCompleted };
     }
 );
-
 export const markComplete = createAsyncThunk(
     'lessonPlayer/markComplete',
     async (lessonId: string, { rejectWithValue }) => {
@@ -126,24 +99,16 @@ export const markComplete = createAsyncThunk(
         return { lessonId };
     }
 );
-
-// ============================================================================
-// SLICE
-// ============================================================================
-
 const lessonPlayerSlice = createSlice({
     name: 'lessonPlayer',
     initialState,
     reducers: {
-        // Set current lesson
         setCurrentLesson(state, action: PayloadAction<string>) {
             state.currentLessonId = action.payload;
             state.lessonContent = null;
             state.signedVideoUrl = null;
             state.error = null;
         },
-
-        // Set course context
         setCourseContext(state, action: PayloadAction<{
             courseId: string;
             modules: LessonPlayerSliceState['modules'];
@@ -151,13 +116,9 @@ const lessonPlayerSlice = createSlice({
             state.courseId = action.payload.courseId;
             state.modules = action.payload.modules;
         },
-
-        // Update video playback state
         updateVideoState(state, action: PayloadAction<Partial<LessonPlayerSliceState['videoState']>>) {
             state.videoState = { ...state.videoState, ...action.payload };
         },
-
-        // Update progress locally (before syncing to server)
         updateLocalProgress(state, action: PayloadAction<{
             watchedSeconds: number;
             totalSeconds?: number;
@@ -168,14 +129,10 @@ const lessonPlayerSlice = createSlice({
             }
             state.isDirty = true;
         },
-
-        // Mark progress as synced
         markProgressSynced(state) {
             state.isDirty = false;
             state.lastSavedAt = new Date().toISOString();
         },
-
-        // Update lesson completion in navigation
         updateLessonCompletion(state, action: PayloadAction<{ lessonId: string; isCompleted: boolean }>) {
             const { lessonId, isCompleted } = action.payload;
             state.modules.forEach((mod) => {
@@ -188,30 +145,21 @@ const lessonPlayerSlice = createSlice({
                 state.progress.isCompleted = isCompleted;
             }
         },
-
-        // Clear video URL (for expiry handling)
         clearVideoUrl(state) {
             state.signedVideoUrl = null;
             state.videoExpiry = null;
         },
-
-        // Reset player state
         resetPlayer(state) {
             return initialState;
         },
-
-        // Set error
         setError(state, action: PayloadAction<string>) {
             state.error = action.payload;
         },
-
-        // Clear error
         clearError(state) {
             state.error = null;
         },
     },
     extraReducers: (builder) => {
-        // Fetch lesson content
         builder
             .addCase(fetchLessonContent.pending, (state) => {
                 state.loading = true;
@@ -231,8 +179,6 @@ const lessonPlayerSlice = createSlice({
                 state.loading = false;
                 state.error = action.payload as string;
             });
-
-        // Fetch signed video URL
         builder
             .addCase(fetchSignedVideoUrl.pending, (state) => {
                 state.loading = true;
@@ -251,8 +197,6 @@ const lessonPlayerSlice = createSlice({
                 state.loading = false;
                 state.error = action.payload as string;
             });
-
-        // Save progress
         builder
             .addCase(saveProgress.fulfilled, (state, action) => {
                 state.isDirty = false;
@@ -261,12 +205,9 @@ const lessonPlayerSlice = createSlice({
                     state.progress.isCompleted = true;
                 }
             });
-
-        // Mark complete
         builder
             .addCase(markComplete.fulfilled, (state, action) => {
                 state.progress.isCompleted = true;
-                // Update in navigation
                 state.modules.forEach((mod) => {
                     const lesson = mod.lessons.find((l) => l.id === action.payload.lessonId);
                     if (lesson) {
@@ -276,11 +217,6 @@ const lessonPlayerSlice = createSlice({
             });
     },
 });
-
-// ============================================================================
-// EXPORTS
-// ============================================================================
-
 export const {
     setCurrentLesson,
     setCourseContext,
@@ -293,8 +229,6 @@ export const {
     setError,
     clearError,
 } = lessonPlayerSlice.actions;
-
-// Selectors
 export const selectCurrentLesson = (state: { lessonPlayer: LessonPlayerSliceState }) =>
     state.lessonPlayer.currentLessonId;
 export const selectLessonContent = (state: { lessonPlayer: LessonPlayerSliceState }) =>
@@ -313,12 +247,9 @@ export const selectPlayerLoading = (state: { lessonPlayer: LessonPlayerSliceStat
     state.lessonPlayer.loading;
 export const selectPlayerError = (state: { lessonPlayer: LessonPlayerSliceState }) =>
     state.lessonPlayer.error;
-
-// Computed selectors
 export const selectNextLesson = (state: { lessonPlayer: LessonPlayerSliceState }) => {
     const { currentLessonId, modules } = state.lessonPlayer;
     if (!currentLessonId) return null;
-
     let foundCurrent = false;
     for (const mod of modules) {
         for (const lesson of mod.lessons) {
@@ -332,11 +263,9 @@ export const selectNextLesson = (state: { lessonPlayer: LessonPlayerSliceState }
     }
     return null;
 };
-
 export const selectPrevLesson = (state: { lessonPlayer: LessonPlayerSliceState }) => {
     const { currentLessonId, modules } = state.lessonPlayer;
     if (!currentLessonId) return null;
-
     let prevLesson: { moduleTitle: string; id: string; title: string } | null = null;
     for (const mod of modules) {
         for (const lesson of mod.lessons) {
@@ -348,5 +277,4 @@ export const selectPrevLesson = (state: { lessonPlayer: LessonPlayerSliceState }
     }
     return null;
 };
-
 export default lessonPlayerSlice.reducer;

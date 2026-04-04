@@ -1,5 +1,4 @@
 "use client";
-
 import * as React from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -11,8 +10,6 @@ import { fadeInUp } from "@/lib/motion";
 import { AnimatedCheckbox } from "@/components/ui/AnimatedCheckbox";
 import { login, signInWithGoogle, signInWithGithub } from "@/lib/actions/auth";
 import { useToast } from "@/components/ui/toast";
-
-
 const loginSchema = z.object({
     email: z
         .string()
@@ -24,9 +21,7 @@ const loginSchema = z.object({
         .min(6, "Password must be at least 6 characters"),
     rememberMe: z.boolean().optional(),
 });
-
 type LoginFormData = z.infer<typeof loginSchema>;
-
 export default function LoginPage() {
     const router = useRouter();
     const [showPassword, setShowPassword] = React.useState(false);
@@ -39,8 +34,6 @@ export default function LoginPage() {
     const [errors, setErrors] = React.useState<Record<string, string>>({});
     const [isSubmitted, setIsSubmitted] = React.useState(false);
     const toast = useToast();
-
-    // Real-time validation (Watch Mode) - Debounced for performance
     React.useEffect(() => {
         if (isSubmitted) {
             const timer = setTimeout(() => {
@@ -58,17 +51,14 @@ export default function LoginPage() {
             return () => clearTimeout(timer);
         }
     }, [formData, isSubmitted]);
-
     const onSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setIsSubmitted(true);
         setErrors({});
         setIsLoading(true);
         const loadingToastId = toast.loading("Logging in...", "Please wait while we authenticate you.");
-
         try {
             loginSchema.parse(formData);
-
             const result = await login(formData);
             if (result?.error) {
                 toast.dismiss(loadingToastId);
@@ -94,12 +84,8 @@ export default function LoginPage() {
             setIsLoading(false);
         }
     };
-
     return (
         <div className="min-h-screen bg-background flex flex-col" suppressHydrationWarning>
-
-
-
             <main className="flex-1 flex items-center justify-center px-4 py-28">
                 <motion.div
                     initial="hidden"
@@ -107,9 +93,7 @@ export default function LoginPage() {
                     variants={fadeInUp}
                     className="w-full max-w-md"
                 >
-
                     <div className="bg-card/80 dark:bg-card/60 backdrop-blur-xl border border-border rounded-3xl p-8 shadow-2xl">
-
                         <div className="text-center mb-8">
                             <div className="flex justify-center mb-4">
                                 <Logo />
@@ -119,10 +103,7 @@ export default function LoginPage() {
                                 Sign in to continue your learning journey
                             </p>
                         </div>
-
-
                         <form onSubmit={onSubmit} className="space-y-5">
-
                             <div className="space-y-2">
                                 <label htmlFor="email" className="block text-sm font-medium">
                                     Email Address
@@ -150,8 +131,6 @@ export default function LoginPage() {
                                     )}
                                 </div>
                             </div>
-
-
                             <div className="space-y-2">
                                 <div className="flex items-center justify-between">
                                     <label htmlFor="password" className="block text-sm font-medium">
@@ -198,8 +177,6 @@ export default function LoginPage() {
                                     )}
                                 </div>
                             </div>
-
-
                             <div className="flex items-center gap-2">
                                 <AnimatedCheckbox
                                     id="rememberMe"
@@ -208,10 +185,6 @@ export default function LoginPage() {
                                     label="Remember me for 30 days"
                                 />
                             </div>
-
-
-
-
                             <button
                                 type="submit"
                                 disabled={isLoading}
@@ -230,8 +203,6 @@ export default function LoginPage() {
                                 )}
                             </button>
                         </form>
-
-
                         <div className="relative my-6">
                             <div className="absolute inset-0 flex items-center">
                                 <div className="w-full border-t border-border/50" />
@@ -242,8 +213,6 @@ export default function LoginPage() {
                                 </span>
                             </div>
                         </div>
-
-
                         <div className="grid grid-cols-2 gap-3">
                             <button
                                 onClick={async () => {
@@ -295,8 +264,6 @@ export default function LoginPage() {
                                 GitHub
                             </button>
                         </div>
-
-
                         <p className="text-center text-sm text-muted-foreground mt-6">
                             Don't have an account?{" "}
                             <Link href="/register" className="text-primary font-medium hover:underline">

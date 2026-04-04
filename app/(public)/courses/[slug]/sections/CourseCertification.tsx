@@ -1,38 +1,27 @@
 "use client";
-
 import { useRef, useEffect, useState } from "react";
 import { Award, ShieldCheck, Share2 } from "lucide-react";
 import { MappedCourse } from "@/types/mapped-course";
-
 interface CourseCertificationProps {
     course: MappedCourse;
 }
-
-// Fixed design dimensions for the certificate (like a real certificate page)
 const CERT_WIDTH = 900;
 const CERT_HEIGHT = 620;
-
 export default function CourseCertification({ course }: CourseCertificationProps) {
     const containerRef = useRef<HTMLDivElement>(null);
     const [scale, setScale] = useState(1);
-
     useEffect(() => {
         const container = containerRef.current;
         if (!container) return;
-
         const updateScale = () => {
             const containerWidth = container.offsetWidth;
             setScale(Math.min(containerWidth / CERT_WIDTH, 1));
         };
-
         updateScale();
-
         const observer = new ResizeObserver(updateScale);
         observer.observe(container);
-
         return () => observer.disconnect();
     }, []);
-
     return (
         <div className="mt-12 sm:mt-16 space-y-12">
             <div className="flex flex-col md:flex-row md:items-end justify-between gap-8">
@@ -47,8 +36,7 @@ export default function CourseCertification({ course }: CourseCertificationProps
                     </p>
                 </div>
             </div>
-
-            {/* Scalable Certificate Container */}
+            {}
             <div
                 ref={containerRef}
                 className="w-full relative overflow-hidden"
@@ -62,33 +50,28 @@ export default function CourseCertification({ course }: CourseCertificationProps
                         transform: `scale(${scale})`,
                     }}
                 >
-                    {/* Certificate Card */}
+                    {}
                     <div className="relative w-full h-full bg-white rounded-3xl shadow-2xl shadow-primary/10 border border-slate-100 flex flex-col overflow-hidden">
-                        {/* Visual Layer: Modern Background Accents */}
+                        {}
                         <div className="absolute inset-0 pointer-events-none">
-                            {/* Dot Grid Pattern */}
+                            {}
                             <div className="absolute inset-0 opacity-[0.03]"
                                 style={{ backgroundImage: 'radial-gradient(circle, #000 1px, transparent 1px)', backgroundSize: '24px 24px' }} />
-
-                            {/* Gradient Orbs */}
+                            {}
                             <div className="absolute top-0 right-0 w-1/2 h-full bg-linear-to-bl from-primary/5 via-transparent to-transparent" />
                             <div className="absolute -bottom-24 -left-24 w-96 h-96 bg-primary/5 rounded-full blur-3xl" />
                             <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-primary/2 rounded-full blur-[100px]" />
-
-                            {/* Floating Geometric Shapes */}
+                            {}
                             <div className="absolute top-20 right-[15%] w-32 h-32 border border-primary/10 rounded-full rotate-12" />
                             <div className="absolute bottom-[20%] left-[10%] w-24 h-24 border border-accent/10 rounded-xl -rotate-12" />
-
-                            {/* Watermark Logo */}
+                            {}
                             <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 opacity-[0.02] scale-[3] select-none">
                                 <Award className="w-64 h-64 text-slate-900" />
                             </div>
                         </div>
-
-                        {/* Left Accent Bar */}
+                        {}
                         <div className="absolute top-0 left-0 w-2.5 h-full bg-linear-to-b from-primary via-accent to-primary/40 z-20" />
-
-                        {/* Top Content: Branding & Logo */}
+                        {}
                         <div className="p-12 flex justify-between items-start relative z-10 font-sans">
                             <div className="space-y-1">
                                 <div className="flex items-center gap-2">
@@ -106,21 +89,18 @@ export default function CourseCertification({ course }: CourseCertificationProps
                                 </div>
                             </div>
                         </div>
-
-                        {/* Center Content: Student & Achievement */}
+                        {}
                         <div className="flex-1 flex flex-col items-center justify-center px-12 text-center relative z-10">
                             <div className="space-y-2 mb-8">
                                 <h5 className="text-xs font-black text-primary uppercase tracking-[0.3em]">Certificate of Completion</h5>
                                 <p className="text-slate-500 text-sm">This honor is officially presented to</p>
                             </div>
-
                             <div className="relative mb-10">
                                 <h3 className="text-6xl font-black text-slate-900 tracking-tight whitespace-nowrap">Student Name</h3>
                                 <div className="absolute -bottom-4 left-0 w-full h-1 bg-slate-100 rounded-full overflow-hidden">
                                     <div className="w-24 h-full bg-primary rounded-full" />
                                 </div>
                             </div>
-
                             <div className="space-y-4 max-w-2xl px-8">
                                 <p className="text-slate-500 text-sm leading-relaxed">
                                     for successfully demonstrating professional mastery and fulfilling all requirements for
@@ -130,10 +110,9 @@ export default function CourseCertification({ course }: CourseCertificationProps
                                 </h4>
                             </div>
                         </div>
-
-                        {/* Bottom Content: Verification & Signatures */}
+                        {}
                         <div className="p-12 grid grid-cols-3 items-end relative z-10">
-                            {/* Issued By */}
+                            {}
                             <div className="space-y-4">
                                 <div className="space-y-1">
                                     <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest leading-none">Issue Date</p>
@@ -144,8 +123,7 @@ export default function CourseCertification({ course }: CourseCertificationProps
                                     <p className="text-xs font-black text-slate-900 uppercase transition-colors">DK-8293-XP02</p>
                                 </div>
                             </div>
-
-                            {/* Digital Badge Center */}
+                            {}
                             <div className="flex justify-center">
                                 <div className="relative">
                                     <div className="absolute inset-0 bg-primary/20 rounded-2xl blur-xl" />
@@ -157,8 +135,7 @@ export default function CourseCertification({ course }: CourseCertificationProps
                                     </div>
                                 </div>
                             </div>
-
-                            {/* Verification QR / Signature */}
+                            {}
                             <div className="flex flex-col items-end gap-6">
                                 <div className="text-right space-y-3">
                                     <div className="w-32 h-px bg-slate-200 ml-auto" />
@@ -167,7 +144,7 @@ export default function CourseCertification({ course }: CourseCertificationProps
                                         <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Academic Director</p>
                                     </div>
                                 </div>
-                                {/* Mock QR Area */}
+                                {}
                                 <div className="w-12 h-12 border border-slate-100 rounded-lg bg-slate-50 flex items-center justify-center p-1 opacity-50">
                                     <Share2 className="w-6 h-6 text-slate-300" />
                                 </div>

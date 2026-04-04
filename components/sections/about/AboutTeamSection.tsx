@@ -1,11 +1,9 @@
 "use client";
-
 import * as React from "react";
 import { motion, useMotionTemplate, useMotionValue } from "motion/react";
 import { Users } from "lucide-react";
 import { staggerContainer, staggerItem } from "@/lib/motion";
 import { Badge } from "@/components/ui/Badge";
-
 interface TeamMember {
     name: string;
     role: string;
@@ -13,7 +11,6 @@ interface TeamMember {
     gradient: string;
     bio: string;
 }
-
 const TEAM: TeamMember[] = [
     {
         name: "Shuvo Rahman",
@@ -44,14 +41,12 @@ const TEAM: TeamMember[] = [
         bio: "Building bridges between learners, mentors, and industry leaders.",
     },
 ];
-
 export function AboutTeamSection() {
     return (
         <section className="relative py-32 bg-muted/20 overflow-hidden">
-            {/* Ambient Lights */}
+            {}
             <div className="absolute top-0 left-1/4 w-[500px] h-[500px] bg-primary/10 rounded-full blur-[120px] animate-gentle-pulse" />
             <div className="absolute bottom-0 right-1/4 w-[500px] h-[500px] bg-accent/10 rounded-full blur-[120px] animate-gentle-pulse" style={{ animationDelay: "1.5s" }} />
-
             <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 <motion.div
                     initial={{ opacity: 0, y: 20 }}
@@ -73,7 +68,6 @@ export function AboutTeamSection() {
                         A passionate team of educators, engineers, and dreamers united by a common goal.
                     </p>
                 </motion.div>
-
                 <motion.div
                     variants={staggerContainer}
                     initial="hidden"
@@ -89,24 +83,21 @@ export function AboutTeamSection() {
         </section>
     );
 }
-
 function TeamCard({ member, index }: { member: TeamMember; index: number }) {
     const mouseX = useMotionValue(0);
     const mouseY = useMotionValue(0);
-
     function handleMouseMove({ currentTarget, clientX, clientY }: React.MouseEvent) {
         const { left, top } = currentTarget.getBoundingClientRect();
         mouseX.set(clientX - left);
         mouseY.set(clientY - top);
     }
-
     return (
         <motion.div
             variants={staggerItem}
             className="group relative rounded-3xl"
             onMouseMove={handleMouseMove}
         >
-            {/* Dynamic Border Glow (Behind) */}
+            {}
             <motion.div
                 className="absolute -inset-px rounded-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-300"
                 style={{
@@ -119,9 +110,8 @@ function TeamCard({ member, index }: { member: TeamMember; index: number }) {
                     `,
                 }}
             />
-
             <div className="relative h-full p-6 rounded-3xl bg-card border border-border/50 dark:border-white/10 overflow-hidden text-center transition-colors duration-300">
-                {/* Cursor Follow Glow - Inner (Smaller Size) */}
+                {}
                 <motion.div
                     className="pointer-events-none absolute -inset-px opacity-0 group-hover:opacity-100 transition duration-300"
                     style={{
@@ -134,14 +124,12 @@ function TeamCard({ member, index }: { member: TeamMember; index: number }) {
                         `,
                     }}
                 />
-
-                {/* Avatar */}
+                {}
                 <div className={`relative w-20 h-20 rounded-full bg-linear-to-br ${member.gradient} p-[3px] mx-auto mb-5 shadow-xl`}>
                     <div className="w-full h-full rounded-full bg-card flex items-center justify-center text-xl font-bold relative z-10">
                         {member.avatar}
                     </div>
                 </div>
-
                 <h3 className="relative z-10 text-lg font-bold mb-1 group-hover:text-primary transition-colors duration-300">
                     {member.name}
                 </h3>

@@ -1,26 +1,20 @@
 "use client";
-
 import Link from "next/link";
 import { motion, AnimatePresence } from "motion/react";
 import { Home, ArrowLeft, X, Send, AlertCircle } from "lucide-react";
 import { Logo } from "@/components/ui/Logo";
 import { useState } from "react";
 import { z, ZodError } from "zod";
-
-
 const feedbackSchema = z.object({
     message: z.string().min(10, "Please describe the issue in at least 10 characters."),
 });
-
 type FeedbackFormValues = z.infer<typeof feedbackSchema>;
-
 export default function NotFound() {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [isSubmitted, setIsSubmitted] = useState(false);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [formData, setFormData] = useState<FeedbackFormValues>({ message: "" });
     const [errors, setErrors] = useState<Record<string, string>>({});
-
     const onSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setErrors({});
@@ -46,39 +40,30 @@ export default function NotFound() {
             setIsSubmitting(false);
         }
     };
-
     return (
         <div
             className="relative min-h-screen bg-background flex flex-col items-center justify-center p-4 font-space-grotesk overflow-hidden selection:bg-primary/30 transition-colors duration-300"
             suppressHydrationWarning
         >
-
             <div className="absolute inset-0 overflow-hidden pointer-events-none">
                 <div className="absolute top-[-10%] left-[-10%] w-[50vw] h-[50vw] bg-linear-to-br from-primary/20 via-accent/10 to-transparent rounded-full blur-[120px]" />
                 <div className="absolute bottom-[-10%] right-[-10%] w-[50vw] h-[50vw] bg-linear-to-tr from-secondary/20 via-primary/10 to-transparent rounded-full blur-[120px]" />
             </div>
-
-
             <div
                 className="absolute inset-0 bg-[linear-gradient(to_right,#00000008_1px,transparent_1px),linear-gradient(to_bottom,#00000008_1px,transparent_1px)] dark:bg-[linear-gradient(to_right,#80808012_1px,transparent_1px),linear-gradient(to_bottom,#80808012_1px,transparent_1px)] bg-size-[24px_24px] mask-[radial-gradient(ellipse_60%_50%_at_50%_0%,#000_70%,transparent_100%)] pointer-events-none"
             />
-
-
             <motion.div
                 initial={{ opacity: 0, y: 30 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
                 className="relative z-10 w-full max-w-2xl px-6"
             >
-
                 <div className="flex justify-center mb-12">
                     <div className="relative p-6 pr-10 rounded-3xl bg-white/10 dark:bg-black/20 border border-border backdrop-blur-2xl shadow-2xl dark:shadow-black/50 overflow-hidden group">
                         <div className="absolute inset-0 bg-linear-to-br from-white/20 via-transparent to-transparent opacity-50 pointer-events-none" />
                         <Logo />
                     </div>
                 </div>
-
-
                 <div className="relative text-center mb-12">
                     <h1 className="select-none text-[120px] sm:text-[180px] font-bold leading-[0.8] tracking-tighter text-transparent bg-clip-text bg-linear-to-b from-black/5 to-transparent dark:from-white/10 dark:to-transparent">
                         404
@@ -101,8 +86,6 @@ export default function NotFound() {
                         </h2>
                     </div>
                 </div>
-
-
                 <motion.p
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
@@ -111,8 +94,6 @@ export default function NotFound() {
                 >
                     The learning path you're looking for seems to have vanished. Let's get you back to your studies.
                 </motion.p>
-
-
                 <motion.div
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
@@ -128,7 +109,6 @@ export default function NotFound() {
                             Return Home
                         </span>
                     </Link>
-
                     <button
                         onClick={() => window.history.back()}
                         className="w-full sm:w-auto flex items-center justify-center gap-2 px-8 py-3.5 rounded-xl border border-input bg-background hover:bg-muted/50 text-foreground font-medium text-sm transition-all focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 cursor-pointer"
@@ -137,8 +117,6 @@ export default function NotFound() {
                         Go Back
                     </button>
                 </motion.div>
-
-
                 <motion.div
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
@@ -153,12 +131,9 @@ export default function NotFound() {
                     </button>
                 </motion.div>
             </motion.div>
-
-
             <AnimatePresence>
                 {isModalOpen && (
                     <>
-
                         <motion.div
                             initial={{ opacity: 0 }}
                             animate={{ opacity: 1 }}
@@ -166,8 +141,6 @@ export default function NotFound() {
                             onClick={() => setIsModalOpen(false)}
                             className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm"
                         />
-
-
                         <motion.div
                             initial={{ opacity: 0, scale: 0.95, y: 20 }}
                             animate={{ opacity: 1, scale: 1, y: 0 }}
@@ -175,7 +148,6 @@ export default function NotFound() {
                             className="fixed z-50 left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-md p-6"
                         >
                             <div className="bg-[#020617] border border-border rounded-2xl shadow-2xl p-0 relative overflow-hidden text-slate-200 w-full">
-
                                 <div className="px-6 py-5 border-b border-border flex items-center justify-between bg-white/2">
                                     <div className="flex items-center gap-3">
                                         <div className="w-10 h-10 rounded-lg bg-orange-500/10 border border-orange-500/20 flex items-center justify-center text-orange-500 shadow-inner">
@@ -193,7 +165,6 @@ export default function NotFound() {
                                         <X className="w-5 h-5" />
                                     </button>
                                 </div>
-
                                 <div className="p-6">
                                     {isSubmitted ? (
                                         <motion.div
@@ -241,7 +212,6 @@ export default function NotFound() {
                                                     </p>
                                                 )}
                                             </div>
-
                                             <div className="grid grid-cols-2 gap-3 pt-2">
                                                 <button
                                                     type="button"

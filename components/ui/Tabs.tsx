@@ -1,16 +1,13 @@
 "use client";
-
 import { motion } from "motion/react";
 import { ReactNode } from "react";
 import { cn } from "@/lib/utils";
-
 interface TabsProps {
     value: string;
     onValueChange: (value: string) => void;
     children: ReactNode;
     className?: string;
 }
-
 export function Tabs({  children, className }: TabsProps) {
     return (
         <div className={cn("w-full", className)}>
@@ -18,12 +15,10 @@ export function Tabs({  children, className }: TabsProps) {
         </div>
     );
 }
-
 interface TabsListProps {
     children: ReactNode;
     className?: string;
 }
-
 export function TabsList({ children, className }: TabsListProps) {
     return (
         <div className={cn(
@@ -34,7 +29,6 @@ export function TabsList({ children, className }: TabsListProps) {
         </div>
     );
 }
-
 interface TabsTriggerProps {
     value: string;
     children: ReactNode;
@@ -44,10 +38,8 @@ interface TabsTriggerProps {
     icon?: ReactNode;
     badge?: string | number;
 }
-
 export function TabsTrigger({ value, children, className, activeValue, onClick, icon, badge }: TabsTriggerProps) {
     const isActive = activeValue === value;
-    
     return (
         <button
             onClick={() => onClick(value)}
@@ -80,17 +72,14 @@ export function TabsTrigger({ value, children, className, activeValue, onClick, 
         </button>
     );
 }
-
 interface TabsContentProps {
     value: string;
     children: ReactNode;
     activeValue: string;
     className?: string;
 }
-
 export function TabsContent({ value, children, activeValue, className }: TabsContentProps) {
     if (value !== activeValue) return null;
-    
     return (
         <motion.div
             initial={{ opacity: 0, y: 10 }}

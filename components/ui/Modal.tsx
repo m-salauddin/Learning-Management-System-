@@ -1,11 +1,9 @@
 "use client";
-
 import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 import { motion, AnimatePresence } from "motion/react";
 import { AlertCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
-
 interface ModalProps {
     isOpen: boolean;
     onClose: () => void;
@@ -19,7 +17,6 @@ interface ModalProps {
     icon?: React.ElementType;
     showFooter?: boolean;
 }
-
 export function Modal({
     isOpen,
     onClose,
@@ -34,13 +31,10 @@ export function Modal({
     showFooter = true,
 }: ModalProps) {
     const [mounted, setMounted] = useState(false);
-
     useEffect(() => {
         setMounted(true);
     }, []);
-
     if (!mounted) return null;
-
     const variantStyles = {
         danger: {
             iconBg: "bg-destructive/10",
@@ -58,14 +52,12 @@ export function Modal({
             buttonBg: "bg-blue-500 text-white hover:bg-blue-600",
         },
     };
-
     const styles = variantStyles[variant];
-
     return createPortal(
         <AnimatePresence>
             {isOpen && (
                 <div className="fixed inset-0 z-200 flex items-center justify-center p-4">
-                    {/* Backdrop */}
+                    {}
                     <motion.div
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
@@ -73,8 +65,7 @@ export function Modal({
                         onClick={onClose}
                         className="absolute inset-0 bg-black/40 backdrop-blur-sm"
                     />
-
-                    {/* Modal */}
+                    {}
                     <motion.div
                         initial={{ opacity: 0, scale: 0.95, y: 10 }}
                         animate={{ opacity: 1, scale: 1, y: 0 }}
@@ -90,15 +81,12 @@ export function Modal({
                                     <h3 className="text-lg font-bold mb-2">{title}</h3>
                                 </>
                             )}
-
                             {description && (
                                 <p className="text-muted-foreground text-sm mb-6">
                                     {description}
                                 </p>
                             )}
-
                             {children}
-
                             {showFooter && onConfirm && (
                                 <div className="grid grid-cols-2 gap-3 mt-6">
                                     <button

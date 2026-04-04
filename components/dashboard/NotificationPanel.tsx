@@ -1,12 +1,9 @@
 "use client";
-
 import { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { Bell, Check, Clock, Info, Shield, BookOpen, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Skeleton } from "@/components/ui/skeleton";
-
-// Mock Data
 const MOCK_NOTIFICATIONS = [
     {
         id: "1",
@@ -41,8 +38,6 @@ const MOCK_NOTIFICATIONS = [
         unread: false,
     },
 ];
-
-// Animation variants for cleaner, professional animations
 const panelVariants = {
     hidden: {
         opacity: 0,
@@ -68,7 +63,6 @@ const panelVariants = {
         }
     }
 };
-
 const listContainerVariants = {
     hidden: { opacity: 0 },
     visible: {
@@ -79,57 +73,46 @@ const listContainerVariants = {
         }
     }
 };
-
-
 export function NotificationPanel() {
     const [isOpen, setIsOpen] = useState(false);
     const [notifications, setNotifications] = useState(MOCK_NOTIFICATIONS);
     const [activeTab, setActiveTab] = useState<'all' | 'unread'>('all');
     const [isLoading, setIsLoading] = useState(false);
     const wrapperRef = useRef<HTMLDivElement>(null);
-
     const handleToggleOpen = () => {
         const newOpenState = !isOpen;
         setIsOpen(newOpenState);
         if (newOpenState) {
             setIsLoading(true);
-            setTimeout(() => setIsLoading(false), 1500); // Simulate network latency
+            setTimeout(() => setIsLoading(false), 1500);
         }
     };
-
     useEffect(() => {
         const handleClickOutside = (event: MouseEvent) => {
             if (wrapperRef.current && !wrapperRef.current.contains(event.target as Node)) {
                 setIsOpen(false);
             }
         };
-
         if (isOpen) {
             document.addEventListener("mousedown", handleClickOutside);
         }
-
         return () => {
             document.removeEventListener("mousedown", handleClickOutside);
         };
     }, [isOpen]);
-
     const unreadCount = notifications.filter(n => n.unread).length;
     const filteredNotifications = activeTab === 'all'
         ? notifications
         : notifications.filter(n => n.unread);
-
     const markAllAsRead = () => {
         setNotifications(notifications.map(n => ({ ...n, unread: false })));
     };
-
     const markAsRead = (id: string) => {
         setNotifications(notifications.map(n => n.id === id ? ({ ...n, unread: false }) : n));
     };
-
     const deleteNotification = (id: string) => {
         setNotifications(notifications.filter(n => n.id !== id));
     };
-
     const getIcon = (type: string) => {
         switch (type) {
             case 'security': return <Shield className="w-4 h-4 text-red-500" />;
@@ -138,7 +121,6 @@ export function NotificationPanel() {
             default: return <Bell className="w-4 h-4 text-primary" />;
         }
     };
-
     const getIconBg = (type: string) => {
         switch (type) {
             case 'security': return "bg-red-500/10";
@@ -147,10 +129,9 @@ export function NotificationPanel() {
             default: return "bg-primary/10";
         }
     };
-
     return (
         <div className="relative" ref={wrapperRef}>
-            {/* Bell Button */}
+            {}
             <motion.button
                 onClick={handleToggleOpen}
                 className={cn(
@@ -176,8 +157,7 @@ export function NotificationPanel() {
                     )}
                 </AnimatePresence>
             </motion.button>
-
-            {/* Dropdown Panel */}
+            {}
             <AnimatePresence>
                 {isOpen && (
                     <motion.div
@@ -187,7 +167,7 @@ export function NotificationPanel() {
                         exit="exit"
                         className="absolute right-0 top-14.5 mt-2 w-80 sm:w-96 rounded-2xl border border-white/20 dark:border-white/10 bg-white dark:bg-slate-950 shadow-xl overflow-hidden z-50 flex flex-col max-h-[80vh]"
                     >
-                        {/* Header */}
+                        {}
                         <div className="px-4 py-3 border-b border-border/30 flex items-center justify-between bg-muted/30">
                             <div className="flex items-center gap-2">
                                 <h3 className="font-semibold text-sm">Notifications</h3>
@@ -206,8 +186,7 @@ export function NotificationPanel() {
                                 </button>
                             )}
                         </div>
-
-                        {/* Tabs */}
+                        {}
                         <div className="flex p-1.5 gap-1 border-b border-border/30 bg-muted/20">
                             {(['all', 'unread'] as const).map((tab) => (
                                 <button
@@ -236,8 +215,7 @@ export function NotificationPanel() {
                                 </button>
                             ))}
                         </div>
-
-                        {/* Notification List */}
+                        {}
                         <div className="flex-1 overflow-y-auto overflow-x-hidden scrollbar-none" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
                             <AnimatePresence mode="popLayout">
                                 {isLoading ? (
@@ -307,15 +285,14 @@ export function NotificationPanel() {
                                                     )}
                                                     onClick={() => notification.unread && markAsRead(notification.id)}
                                                 >
-                                                    {/* Icon */}
+                                                    {}
                                                     <div className={cn(
                                                         "w-9 h-9 rounded-lg flex items-center justify-center shrink-0",
                                                         getIconBg(notification.type)
                                                     )}>
                                                         {getIcon(notification.type)}
                                                     </div>
-
-                                                    {/* Content */}
+                                                    {}
                                                     <div className="flex-1 min-w-0 space-y-0.5 pr-8">
                                                         <p className={cn(
                                                             "text-sm",
@@ -335,8 +312,7 @@ export function NotificationPanel() {
                                                             </span>
                                                         </div>
                                                     </div>
-
-                                                    {/* Action Buttons - Always visible */}
+                                                    {}
                                                     <div className="absolute top-2 right-2 flex items-center gap-0.5">
                                                         {notification.unread && (
                                                             <motion.button

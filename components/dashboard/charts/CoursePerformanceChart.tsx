@@ -1,8 +1,6 @@
 "use client"
-
 import * as React from "react"
 import { Bar, BarChart, XAxis, YAxis, ResponsiveContainer, Tooltip, Cell } from "recharts"
-
 const chartData = [
     { name: "Web Dev", students: 1234, rating: 4.8, completion: 78 },
     { name: "Python", students: 987, rating: 4.7, completion: 82 },
@@ -11,9 +9,7 @@ const chartData = [
     { name: "Data Science", students: 543, rating: 4.5, completion: 65 },
     { name: "UI/UX", students: 432, rating: 4.8, completion: 85 },
 ]
-
 const colors = ["#8b5cf6", "#3b82f6", "#10b981", "#f59e0b", "#ef4444", "#ec4899"]
-
 export function CoursePerformanceChart() {
     return (
         <div className="w-full h-[300px]">

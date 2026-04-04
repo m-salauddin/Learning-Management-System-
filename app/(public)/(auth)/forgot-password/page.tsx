@@ -1,5 +1,4 @@
 "use client";
-
 import * as React from "react";
 import Link from "next/link";
 import { motion } from "motion/react";
@@ -8,17 +7,13 @@ import { Mail, ArrowRight, Loader2, ArrowLeft, AlertCircle } from "lucide-react"
 import { fadeInUp } from "@/lib/motion";
 import { forgotPassword } from "@/lib/actions/auth";
 import { useToast } from "@/components/ui/toast";
-
-
 const forgotPasswordSchema = z.object({
     email: z
         .string()
         .min(1, "Email is required")
         .email("Please enter a valid email address"),
 });
-
 type ForgotPasswordFormData = z.infer<typeof forgotPasswordSchema>;
-
 export default function ForgotPasswordPage() {
     const [isLoading, setIsLoading] = React.useState(false);
     const [isSuccess, setIsSuccess] = React.useState(false);
@@ -28,8 +23,6 @@ export default function ForgotPasswordPage() {
     const [errors, setErrors] = React.useState<Record<string, string>>({});
     const [isSubmitted, setIsSubmitted] = React.useState(false);
     const toast = useToast();
-
-    // Real-time validation (Watch Mode) - Debounced for performance
     React.useEffect(() => {
         if (isSubmitted) {
             const timer = setTimeout(() => {
@@ -47,7 +40,6 @@ export default function ForgotPasswordPage() {
             return () => clearTimeout(timer);
         }
     }, [formData, isSubmitted]);
-
     const onSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setIsSubmitted(true);
@@ -58,11 +50,9 @@ export default function ForgotPasswordPage() {
             const result = await forgotPassword(formData.email);
             if (result?.error) {
                 let errorMessage = result.error;
-
                 if (errorMessage.toLowerCase().includes("rate limit")) {
                     errorMessage = "Too many attempts. Please wait a minute before trying again.";
                 }
-
                 setErrors({ root: errorMessage });
                 toast.error("Request Failed", errorMessage);
             } else {
@@ -85,10 +75,8 @@ export default function ForgotPasswordPage() {
             setIsLoading(false);
         }
     };
-
     return (
         <div className="min-h-screen bg-background flex flex-col" suppressHydrationWarning>
-
             <main className="flex-1 flex items-center justify-center px-4 py-28">
                 <motion.div
                     initial="hidden"
@@ -96,17 +84,13 @@ export default function ForgotPasswordPage() {
                     variants={fadeInUp}
                     className="w-full max-w-md"
                 >
-
                     <div className="bg-card/80 dark:bg-card/60 backdrop-blur-xl border border-border rounded-3xl p-8 shadow-2xl">
-
                         <div className="text-center mb-8">
                             <h1 className="text-2xl font-bold mb-2">Forgot Password</h1>
                             <p className="text-muted-foreground text-sm">
                                 Enter your email to reset your password
                             </p>
                         </div>
-
-
                         {isSuccess ? (
                             <div className="text-center py-8 space-y-4">
                                 <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto text-primary">
@@ -124,9 +108,7 @@ export default function ForgotPasswordPage() {
                                 </Link>
                             </div>
                         ) : (
-
                             <form onSubmit={onSubmit} className="space-y-5">
-
                                 <div className="space-y-2">
                                     <label htmlFor="email" className="block text-sm font-medium">
                                         Email Address
@@ -154,15 +136,11 @@ export default function ForgotPasswordPage() {
                                         )}
                                     </div>
                                 </div>
-
-
                                 {errors.root && (
                                     <div className="p-3 rounded-lg bg-destructive/10 border border-destructive/20 text-destructive text-sm text-center">
                                         {errors.root}
                                     </div>
                                 )}
-
-
                                 <button
                                     type="submit"
                                     disabled={isLoading}
@@ -180,8 +158,6 @@ export default function ForgotPasswordPage() {
                                         </>
                                     )}
                                 </button>
-
-
                                 <div className="text-center mt-6">
                                     <Link href="/login" className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors">
                                         <ArrowLeft className="w-4 h-4" />

@@ -1,12 +1,10 @@
 "use client";
-
 import { motion, AnimatePresence } from "motion/react";
 import { Star, Share2, X, Check as CheckIcon, Copy, X as XIcon } from "lucide-react";
 import Image from "next/image";
 import { Dialog, DialogHeader, DialogTitle, DialogDescription, DialogClose, DialogBody, DialogFooter } from "@/components/ui/Dialog";
 import { MappedCourse } from "@/types/mapped-course";
 import { cn } from "@/lib/utils";
-
 interface CourseModalsProps {
     course: MappedCourse;
     showLeadModal: boolean;
@@ -31,7 +29,6 @@ interface CourseModalsProps {
     showVideoModal: boolean;
     setShowVideoModal: (show: boolean) => void;
 }
-
 export default function CourseModals({
     course,
     showLeadModal,
@@ -120,7 +117,6 @@ export default function CourseModals({
                     </button>
                 </DialogFooter>
             </Dialog>
-
             <Dialog open={showReviewModal} onClose={() => setShowReviewModal(false)} size="md">
                 <DialogHeader>
                     <DialogTitle>Write a Review</DialogTitle>
@@ -192,7 +188,6 @@ export default function CourseModals({
                     </button>
                 </DialogFooter>
             </Dialog>
-
             <AnimatePresence>
                 {showShareModal && (
                     <motion.div
@@ -227,7 +222,6 @@ export default function CourseModals({
                                     <XIcon className="w-4 h-4" />
                                 </button>
                             </div>
-
                             <div className="p-5 space-y-5">
                                 <div className="flex gap-4 p-4 bg-muted/30 rounded-xl border border-border/50">
                                     <div className="w-16 h-16 rounded-lg overflow-hidden shrink-0 relative">
@@ -244,7 +238,6 @@ export default function CourseModals({
                                         <p className="text-xs text-muted-foreground mt-1">by {course.instructor?.name || 'Instructor'}</p>
                                     </div>
                                 </div>
-
                                 <div>
                                     <p className="text-xs font-medium text-muted-foreground mb-3 uppercase tracking-wider">Share on social media</p>
                                     <div className="grid grid-cols-4 gap-3">
@@ -266,7 +259,6 @@ export default function CourseModals({
                                         ))}
                                     </div>
                                 </div>
-
                                 <div>
                                     <p className="text-xs font-medium text-muted-foreground mb-3 uppercase tracking-wider">Or copy link</p>
                                     <div className="flex gap-2">
@@ -301,11 +293,10 @@ export default function CourseModals({
                     </motion.div>
                 )}
             </AnimatePresence>
-            
             <Dialog open={showVideoModal} onClose={() => setShowVideoModal(false)} size="xl">
                 <DialogHeader className="border-none absolute top-0 right-0 z-50 p-2">
                     <DialogTitle className="sr-only">Course Preview Video</DialogTitle>
-                    <button 
+                    <button
                         onClick={() => setShowVideoModal(false)}
                         className="w-10 h-10 rounded-full bg-black/60 backdrop-blur-md border border-white/20 text-white flex items-center justify-center hover:bg-black/80 transition-all shadow-2xl"
                     >
@@ -319,8 +310,8 @@ export default function CourseModals({
                 <DialogBody className="p-0 overflow-hidden bg-black aspect-video rounded-2xl border border-white/5">
                     {course.previewVideoUrl ? (
                         <iframe
-                            src={course.previewVideoUrl.includes('?') 
-                                ? `${course.previewVideoUrl}&autoplay=1` 
+                            src={course.previewVideoUrl.includes('?')
+                                ? `${course.previewVideoUrl}&autoplay=1`
                                 : `${course.previewVideoUrl}?autoplay=1`}
                             className="w-full h-full"
                             allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"

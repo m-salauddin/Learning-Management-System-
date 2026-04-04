@@ -1,5 +1,4 @@
 "use client";
-
 import Link from "next/link";
 import { motion } from "motion/react";
 import { ArrowRight, GraduationCap, BookOpen } from "lucide-react";
@@ -7,7 +6,6 @@ import { staggerContainer, staggerItem } from "@/lib/motion";
 import { Badge } from "@/components/ui/Badge";
 import { CourseCard } from "@/components/CourseCard";
 import { MappedCourse } from "@/types/mapped-course";
-
 export function CoursesSection({ courses }: { courses: MappedCourse[] }) {
     return (
         <section id="courses" className="py-24">
@@ -31,17 +29,14 @@ export function CoursesSection({ courses }: { courses: MappedCourse[] }) {
                         className="group relative mt-4 md:mt-0 flex items-center justify-between gap-4 overflow-hidden rounded-full border border-border/80 bg-card pl-6 pr-1.5 py-1.5"
                     >
                         <div className="absolute inset-0 translate-x-[-100%] bg-linear-to-r from-primary/0 via-primary/10 to-primary/0 transition-transform duration-700 ease-in-out group-hover:translate-x-[100%]" />
-
                         <span className="relative z-10 text-sm font-bold tracking-wide text-foreground/80 transition-colors group-hover:text-foreground">
                             View all courses
                         </span>
-
                         <div className="relative z-10 flex h-8 w-8 items-center justify-center rounded-full bg-primary transition-all duration-500 text-primary-foreground group-hover:-rotate-45">
                             <ArrowRight className="h-4 w-4" />
                         </div>
                     </Link>
                 </motion.div>
-
                 <motion.div
                     variants={staggerContainer}
                     initial="hidden"

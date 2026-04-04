@@ -1,5 +1,4 @@
 "use client";
-
 import { motion } from "motion/react";
 import {
     Users,
@@ -15,7 +14,6 @@ import {
 } from "lucide-react";
 import { PrimaryCTAButton, SecondaryCTAButton } from "@/components/ui/CTAButton";
 import { Badge } from "@/components/ui/Badge";
-
 export function CTASection() {
     return (
         <motion.section
@@ -25,14 +23,12 @@ export function CTASection() {
             transition={{ duration: 1, ease: [0.22, 1, 0.36, 1] }}
             className="py-32 relative group px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto"
         >
-            {/* main container */}
+            {}
             <div className="relative p-8 md:p-16 lg:p-20 rounded-[3.5rem] bg-white dark:bg-[#020617] border border-border overflow-hidden shadow-2xl dark:shadow-black/50">
-
-                {/* Deep Ambient Backgrounds */}
+                {}
                 <div className="absolute top-0 left-1/4 w-[600px] h-[600px] bg-primary/10 rounded-full blur-[120px] -translate-y-1/2 pointer-events-none opacity-50 transition-colors duration-1000 group-hover:bg-primary/15" />
                 <div className="absolute bottom-0 right-1/4 w-[500px] h-[500px] bg-secondary/5 rounded-full blur-[100px] translate-y-1/2 pointer-events-none opacity-50" />
                 <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-[0.03] mix-blend-overlay pointer-events-none" />
-
                 <div className="space-y-8 mb-20 relative z-10 flex flex-col items-center text-center">
                     <motion.div
                         initial={{ opacity: 0, scale: 0.9 }}
@@ -44,7 +40,6 @@ export function CTASection() {
                             Why Choose Dokkho IT?
                         </Badge>
                     </motion.div>
-
                     <div className="space-y-6">
                         <h2 className="text-4xl md:text-5xl lg:text-7xl font-black text-slate-900 dark:text-white tracking-tighter leading-tight">
                             The Dokkho IT <span className="text-transparent bg-clip-text bg-linear-to-r from-primary via-indigo-400 to-secondary selection:text-white">Advantage</span>
@@ -54,7 +49,6 @@ export function CTASection() {
                         </p>
                     </div>
                 </div>
-
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 gap-4 relative z-10 mb-20">
                     {[
                         { icon: Users, title: "Industry Expert", desc: "Mentor Guidelines", color: "#F05032" },
@@ -76,12 +70,11 @@ export function CTASection() {
                             transition={{ delay: i * 0.05 + 0.3, duration: 0.6 }}
                             className="group/card relative flex flex-col p-7 rounded-[2rem] bg-slate-50 dark:bg-white/5 border border-border hover:bg-slate-100 dark:hover:bg-white/10 hover:border-slate-400 dark:hover:border-white/10 transition-all duration-500 hover:-translate-y-2 overflow-hidden"
                         >
-                            {/* card glow */}
+                            {}
                             <div
                                 className="absolute -top-12 -right-12 w-24 h-24 blur-[60px] opacity-20 transition-all duration-700 group-hover/card:opacity-40 group-hover/card:scale-125"
                                 style={{ backgroundColor: item.color }}
                             />
-
                             <div className="relative z-10 flex flex-col items-center text-center space-y-5">
                                 <div
                                     className="w-14 h-14 rounded-2xl flex items-center justify-center transition-all duration-500 shadow-lg group-hover/card:scale-110 group-hover/card:rotate-6 bg-white dark:bg-transparent"
@@ -97,8 +90,7 @@ export function CTASection() {
                         </motion.div>
                     ))}
                 </div>
-
-                {/* Integrated CTA Buttons */}
+                {}
                 <div className="relative z-10 flex flex-row flex-wrap gap-4 justify-center items-center">
                     <PrimaryCTAButton href="/courses">
                         Get Started

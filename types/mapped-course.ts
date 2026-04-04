@@ -2,7 +2,7 @@ export interface Instructor {
     id?: string;
     name: string;
     title: string;
-    avatar: string; // URL
+    avatar: string;
     bio: string;
     expertise?: string[];
     social_links?: {
@@ -17,20 +17,17 @@ export interface Instructor {
     rating?: number;
     role?: 'main' | 'support';
 }
-
 export interface LessonItem {
     title: string;
-    isFreePreview: boolean; // Add this
-    duration: string; // Add formatted duration
+    isFreePreview: boolean;
+    duration: string;
     type?: string;
 }
-
 export interface CurriculumModule {
     title: string;
     duration: string;
-    lessons: LessonItem[]; // Update to object
+    lessons: LessonItem[];
 }
-
 export interface MappedCourse {
     id: string;
     slug: string;
@@ -66,4 +63,3 @@ export interface MappedCourse {
     batchNo?: number;
     previewVideoUrl?: string;
 }
-

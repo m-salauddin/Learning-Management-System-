@@ -1,19 +1,15 @@
 "use client"
-
 import * as React from "react"
 import { Moon, Sun, Monitor } from "lucide-react"
 import { useTheme } from "next-themes"
 import { motion, AnimatePresence } from "motion/react"
 import { cn } from "@/lib/utils"
-
 export function ThemeToggle() {
     const { theme, setTheme } = useTheme()
     const [mounted, setMounted] = React.useState(false)
-
     React.useEffect(() => {
         setMounted(true)
     }, [])
-
     if (!mounted) {
         return (
             <div className="flex items-center gap-1 p-1 rounded-full bg-muted/50 border border-border/50 animate-pulse">
@@ -23,20 +19,15 @@ export function ThemeToggle() {
             </div>
         )
     }
-
     const themes = [
         { value: "light", icon: Sun, label: "Light" },
         { value: "dark", icon: Moon, label: "Dark" },
         { value: "system", icon: Monitor, label: "System" },
     ]
-
-    // Each button is w-8 (32px), gap-1 (4px gap between items)
-    // Slide distance per step = 32 + 4 = 36px
     const activeIndex = themes.findIndex(t => t.value === theme)
-
     return (
         <div className="relative flex items-center gap-1 p-1 rounded-full bg-muted/50 border border-border/50">
-            {/* The sliding indicator — uses index math, immune to scroll/layout bugs */}
+            {}
             <motion.div
                 className="absolute left-1 top-1 w-8 h-8 bg-primary rounded-full z-0 shadow-sm"
                 initial={false}
@@ -61,23 +52,18 @@ export function ThemeToggle() {
         </div>
     )
 }
-
-// Compact version for navbar
 export function ThemeToggleCompact() {
     const { theme, setTheme, resolvedTheme } = useTheme()
     const [mounted, setMounted] = React.useState(false)
-
     React.useEffect(() => {
         setMounted(true)
     }, [])
-
     const cycleTheme = () => {
         const themes = ["light", "dark", "system"]
         const currentIndex = themes.indexOf(theme || "system")
         const nextIndex = (currentIndex + 1) % themes.length
         setTheme(themes[nextIndex])
     }
-
     if (!mounted) {
         return (
             <div className="flex items-center justify-center w-10 h-10 rounded-xl border border-border/50 bg-muted/50 animate-pulse">
@@ -85,7 +71,6 @@ export function ThemeToggleCompact() {
             </div>
         )
     }
-
     return (
         <button
             onClick={cycleTheme}

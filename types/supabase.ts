@@ -5,7 +5,6 @@ export type Json =
     | null
     | { [key: string]: Json | undefined }
     | Json[]
-
 export interface Database {
     public: {
         Tables: {
@@ -152,7 +151,6 @@ export interface Database {
                     published: boolean
                     created_at: string
                     updated_at: string
-                    // Extended columns
                     slug: string | null
                     short_description: string | null
                     preview_video_url: string | null
@@ -337,7 +335,7 @@ export interface Database {
                     course_id: string
                     enrolled_at: string
                     expires_at: string | null
-                    status: string | null // 'active' | 'expired' | 'cancelled' | 'refunded'
+                    status: string | null
                     progress_percentage: number | null
                     completed_lessons: number | null
                     total_lessons: number | null

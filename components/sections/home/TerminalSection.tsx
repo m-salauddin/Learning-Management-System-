@@ -1,16 +1,13 @@
 "use client";
-
 import * as React from "react";
 import { motion } from "motion/react";
 import { Terminal, Zap, GitBranch, Clock, Cpu, CheckCircle2, Loader2, Folder } from "lucide-react";
 import { Badge } from "@/components/ui/Badge";
-
 interface TerminalLine {
     type: "command" | "success" | "info" | "warning" | "output" | "error";
     text: string;
     id: string;
 }
-
 const TERMINAL_SEQUENCE = [
     {
         cmd: "npx create-next-app@latest dokkhota-it", output: [
@@ -45,8 +42,6 @@ const TERMINAL_SEQUENCE = [
         ]
     }
 ];
-
-
 const TerminalCursor = () => (
     <motion.span
         className="inline-block w-[10px] h-[18px] bg-[#FCB900] ml-0.5 rounded-[2px]"
@@ -54,11 +49,8 @@ const TerminalCursor = () => (
         transition={{ duration: 0.5, repeat: Infinity, repeatType: "reverse" }}
     />
 );
-
-
 const OmpPrompt = ({ showTime = true, className }: { showTime?: boolean; className?: string }) => {
     const [time, setTime] = React.useState("");
-
     React.useEffect(() => {
         const updateTime = () => {
             const now = new Date();
@@ -68,62 +60,43 @@ const OmpPrompt = ({ showTime = true, className }: { showTime?: boolean; classNa
         const interval = setInterval(updateTime, 1000);
         return () => clearInterval(interval);
     }, []);
-
     return (
         <div className={`flex items-center text-[13px] font-medium leading-none select-none shrink-0 gap-1 ${className ?? "mr-3"}`}>
-
             <div className="bg-[#FCB900] text-[#1a1a1a] px-3 py-[5px] rounded-full flex items-center font-semibold">
                 <span>dev</span>
             </div>
-
-
             <div className="bg-[#22D3EE] text-[#0a2540] px-3 py-[5px] rounded-full flex items-center gap-1.5 font-semibold">
                 <Folder className="w-3.5 h-3.5" />
                 <span>dokkhota-it</span>
             </div>
-
-
             <div className="bg-[#A78BFA] text-white px-3 py-[5px] rounded-full flex items-center gap-1.5 font-semibold">
                 <GitBranch className="w-3.5 h-3.5" />
                 <span>main</span>
             </div>
-
-
             <div className="bg-[#34D399] text-[#064e3b] px-2 py-[5px] rounded-full flex items-center">
                 <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3">
                     <path d="M5 12l5 5L20 7" />
                 </svg>
             </div>
-
-
             {showTime && time && (
                 <span className="ml-2 text-muted-foreground text-xs">{time}</span>
             )}
         </div>
     );
 };
-
-
 const OmpPromptCompact = () => (
     <div className="flex items-center text-xs font-medium leading-none mr-2 select-none shrink-0 gap-1">
-
         <div className="bg-[#FCB900] text-[#1a1a1a] px-2 py-[3px] rounded-full flex items-center font-semibold">
             <span>dev</span>
         </div>
-
-
         <div className="bg-[#22D3EE] text-[#0a2540] px-2 py-[3px] rounded-full flex items-center gap-1 font-semibold">
             <Folder className="w-2.5 h-2.5" />
             <span>dokkhota-it</span>
         </div>
-
-
         <div className="bg-[#A78BFA] text-white px-2 py-[3px] rounded-full flex items-center gap-1 font-semibold">
             <GitBranch className="w-2.5 h-2.5" />
             <span>main</span>
         </div>
-
-
         <div className="bg-[#34D399] text-[#064e3b] px-1.5 py-[3px] rounded-full flex items-center">
             <svg className="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3">
                 <path d="M5 12l5 5L20 7" />
@@ -131,25 +104,19 @@ const OmpPromptCompact = () => (
         </div>
     </div>
 );
-
 export function TerminalSection() {
     const [history, setHistory] = React.useState<TerminalLine[]>([]);
     const [currentLineIndex, setCurrentLineIndex] = React.useState(0);
     const [currentText, setCurrentText] = React.useState("");
     const [isTyping, setIsTyping] = React.useState(true);
     const containerRef = React.useRef<HTMLDivElement>(null);
-
-
     React.useEffect(() => {
         if (containerRef.current) {
             containerRef.current.scrollTop = containerRef.current.scrollHeight;
         }
     }, [currentText, history]);
-
-
     React.useEffect(() => {
         let timeout: NodeJS.Timeout;
-
         const processSequence = async () => {
             if (currentLineIndex >= TERMINAL_SEQUENCE.length) {
                 timeout = setTimeout(() => {
@@ -160,9 +127,7 @@ export function TerminalSection() {
                 }, 5000);
                 return;
             }
-
             const step = TERMINAL_SEQUENCE[currentLineIndex];
-
             if (currentText.length < step.cmd.length) {
                 timeout = setTimeout(() => {
                     setCurrentText(step.cmd.slice(0, currentText.length + 1));
@@ -192,12 +157,9 @@ export function TerminalSection() {
                 }
             }
         };
-
         processSequence();
         return () => clearTimeout(timeout);
     }, [currentLineIndex, currentText, isTyping]);
-
-
     return (
         <section className="py-24 bg-background relative overflow-hidden">
             <div className="absolute inset-0 pointer-events-none">
@@ -205,7 +167,6 @@ export function TerminalSection() {
                 <div className="absolute bottom-1/3 right-1/4 w-[400px] h-[400px] bg-[#22D3EE]/10 rounded-full blur-[120px]" />
                 <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[300px] bg-[#A78BFA]/8 rounded-full blur-[100px]" />
             </div>
-
             <div className="relative max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
                 <motion.div
                     initial={{ opacity: 0, y: 20 }}
@@ -229,7 +190,6 @@ export function TerminalSection() {
                         <code className="px-2 py-0.5 rounded bg-muted text-[#34D399] font-mono text-sm">deploy</code>.
                     </p>
                 </motion.div>
-
                 <motion.div
                     initial={{ opacity: 0, scale: 0.95, y: 20 }}
                     whileInView={{ opacity: 1, scale: 1, y: 0 }}
@@ -237,27 +197,20 @@ export function TerminalSection() {
                     transition={{ delay: 0.1 }}
                     className="relative group"
                 >
-
                     <div className="absolute -inset-1 bg-linear-to-r from-[#FCB900]/40 via-[#22D3EE]/30 to-[#A78BFA]/40 rounded-2xl blur-xl opacity-60 group-hover:opacity-90 transition-opacity duration-500" />
-
                     <div className="relative rounded-xl overflow-hidden border border-indigo-200 dark:border-white/10 shadow-2xl shadow-indigo-200/50 dark:shadow-black/60 bg-white dark:bg-[#0F172A]">
-
                         <div className="bg-indigo-50/50 dark:bg-transparent dark:bg-linear-to-b dark:from-[#0F172A] dark:to-[#1E293B] px-4 py-3 flex items-center justify-between border-b border-indigo-100 dark:border-white/10">
                             <div className="flex items-center gap-2">
                                 <div className="w-3 h-3 rounded-full bg-[#EF4444] hover:bg-[#EF4444]/80 transition-colors cursor-pointer shadow-lg shadow-[#EF4444]/40" />
                                 <div className="w-3 h-3 rounded-full bg-[#FCB900] hover:bg-[#FCB900]/80 transition-colors cursor-pointer shadow-lg shadow-[#FCB900]/40" />
                                 <div className="w-3 h-3 rounded-full bg-[#34D399] hover:bg-[#34D399]/80 transition-colors cursor-pointer shadow-lg shadow-[#34D399]/40" />
                             </div>
-
-
                             <div className="absolute left-1/2 -translate-x-1/2 flex items-center gap-2">
                                 <div className="p-1 rounded bg-linear-to-br from-[#FCB900]/20 to-[#22D3EE]/20">
                                     <Terminal className="w-3.5 h-3.5 text-[#FCB900] dark:text-[#FCB900]" />
                                 </div>
                                 <span className="text-xs font-medium text-slate-600 dark:text-muted-foreground">dokkhota-it</span>
                             </div>
-
-
                             <div className="flex items-center gap-3 text-slate-400 dark:text-muted-foreground">
                                 <div className="flex items-center gap-1.5 text-xs">
                                     <Cpu className="w-3 h-3 text-emerald-600 dark:text-[#34D399]" />
@@ -269,8 +222,6 @@ export function TerminalSection() {
                                 </div>
                             </div>
                         </div>
-
-
                         <div
                             ref={containerRef}
                             className="px-8 py-6 pb-12 h-[480px] overflow-hidden font-mono text-sm leading-relaxed bg-white dark:bg-[#030712] selection:bg-[#FCB900]/30 selection:text-white"
@@ -281,7 +232,6 @@ export function TerminalSection() {
                                 `
                             }}
                         >
-
                             {history.length === 0 && !currentText && (
                                 <motion.div
                                     initial={{ opacity: 0 }}
@@ -295,7 +245,6 @@ export function TerminalSection() {
                                     <span className="text-amber-600 dark:text-[#FCB900]">Oh My Posh</span>
                                 </motion.div>
                             )}
-
                             {history.map((line) => (
                                 <motion.div
                                     key={line.id}
@@ -310,35 +259,30 @@ export function TerminalSection() {
                                             <span className="text-slate-900 dark:text-white font-semibold tracking-wide">{line.text}</span>
                                         </div>
                                     )}
-
                                     {line.type === "success" && (
                                         <div className="flex items-center gap-2 text-emerald-600 dark:text-[#34D399] font-medium pl-2 py-0.5">
                                             <CheckCircle2 className="w-3.5 h-3.5 shrink-0" />
                                             <span>{line.text}</span>
                                         </div>
                                     )}
-
                                     {line.type === "info" && (
                                         <div className="text-slate-600 dark:text-muted-foreground pl-2 py-0.5 flex items-center gap-2">
                                             <span className="text-cyan-600 dark:text-[#22D3EE]">│</span>
                                             <span>{line.text}</span>
                                         </div>
                                     )}
-
                                     {line.type === "warning" && (
                                         <div className="flex items-center gap-2 text-amber-600 dark:text-[#FCB900] pl-2 py-0.5">
                                             <Loader2 className="w-3.5 h-3.5 animate-spin shrink-0" />
                                             <span>{line.text}</span>
                                         </div>
                                     )}
-
                                     {line.type === "output" && (
                                         <div className="text-cyan-700 dark:text-[#22D3EE] pl-2 py-0.5 font-medium flex items-center gap-2">
                                             <span className="text-purple-600 dark:text-[#A78BFA]">→</span>
                                             <span>{line.text}</span>
                                         </div>
                                     )}
-
                                     {line.type === "error" && (
                                         <div className="text-red-600 dark:text-[#EF4444] pl-2 py-0.5 flex items-center gap-2">
                                             <span>✗</span>
@@ -347,8 +291,6 @@ export function TerminalSection() {
                                     )}
                                 </motion.div>
                             ))}
-
-
                             <div className="flex items-center flex-wrap gap-1 mt-4 min-h-[32px]">
                                 {isTyping && (
                                     <>
@@ -375,8 +317,6 @@ export function TerminalSection() {
                                 )}
                             </div>
                         </div>
-
-
                         <div className="bg-indigo-50/50 dark:bg-transparent dark:bg-linear-to-r dark:from-[#0F172A] dark:to-[#1E293B] px-4 py-1.5 flex items-center justify-between border-t border-indigo-100 dark:border-white/10 text-[10px] text-slate-500 dark:text-muted-foreground">
                             <div className="flex items-center gap-4">
                                 <span className="flex items-center gap-1">

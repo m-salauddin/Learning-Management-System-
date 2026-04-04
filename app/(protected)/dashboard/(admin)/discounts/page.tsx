@@ -1,5 +1,4 @@
 "use client";
-
 import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { Plus, Trash2, Calendar, Tag, Percent, DollarSign, Search, Filter, RefreshCw, X } from "lucide-react";
@@ -7,17 +6,15 @@ import { motion, AnimatePresence } from "motion/react";
 import { useToast } from "@/components/ui/toast";
 import { cn } from "@/lib/utils";
 import { Dialog, DialogHeader, DialogTitle, DialogDescription, DialogBody, DialogFooter } from "@/components/ui/Dialog";
-
 interface Course {
     id: string;
     title: string;
     price: number;
 }
-
 interface Discount {
     id: string;
     course_id: string;
-    course: Course; // Joined
+    course: Course;
     type: 'percentage' | 'fixed';
     value: number;
     starts_at: string | null;
@@ -25,14 +22,11 @@ interface Discount {
     is_active: boolean;
     created_at: string;
 }
-
 export default function DiscountsPage() {
     const [discounts, setDiscounts] = useState<Discount[]>([]);
     const [courses, setCourses] = useState<Course[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [isCreating, setIsCreating] = useState(false);
-
-    // Form State
     const [formData, setFormData] = useState({
         course_id: "",
         type: "percentage" as "percentage" | "fixed",
@@ -40,14 +34,11 @@ export default function DiscountsPage() {
         starts_at: "",
         ends_at: "",
     });
-
     const { success, error: toastError } = useToast();
     const supabase = createClient();
-
     useEffect(() => {
         fetchData();
     }, []);
-
     const fetchData = async () => {
         try {
             setIsLoading(true);
@@ -55,16 +46,12 @@ export default function DiscountsPage() {
                 .from('course_discounts')
                 .select(`*, course:courses(id, title, price)`)
                 .order('created_at', { ascending: false });
-
             if (discountsError) throw discountsError;
-
             const { data: coursesData, error: coursesError } = await (supabase as any)
                 .from('courses')
                 .select('id, title, price')
                 .order('title');
-
             if (coursesError) throw coursesError;
-
             setDiscounts(discountsData || []);
             setCourses(coursesData || []);
         } catch (error) {
@@ -73,14 +60,12 @@ export default function DiscountsPage() {
             setIsLoading(false);
         }
     };
-
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         if (!formData.course_id || !formData.value) {
             toastError("Please fill in required fields");
             return;
         }
-
         try {
             const payload = {
                 course_id: formData.course_id,
@@ -90,10 +75,8 @@ export default function DiscountsPage() {
                 ends_at: formData.ends_at || null,
                 is_active: true
             };
-
             const { error } = await (supabase as any).from('course_discounts').insert(payload);
             if (error) throw error;
-
             success("Discount generated successfully");
             setIsCreating(false);
             setFormData({ course_id: "", type: "percentage", value: "", starts_at: "", ends_at: "" });
@@ -102,7 +85,6 @@ export default function DiscountsPage() {
             toastError(error.message || "Failed to create discount");
         }
     };
-
     const toggleActive = async (id: string, currentState: boolean) => {
         try {
             const { error } = await (supabase as any).from('course_discounts').update({ is_active: !currentState }).eq('id', id);
@@ -113,7 +95,6 @@ export default function DiscountsPage() {
             toastError("Failed to update status");
         }
     };
-
     const handleDelete = async (id: string) => {
         if (!confirm("Are you sure you want to delete this discount?")) return;
         try {
@@ -125,10 +106,9 @@ export default function DiscountsPage() {
             toastError("Failed to delete discount");
         }
     };
-
     return (
         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-6 pb-10 font-sans text-foreground">
-            {/* Header */}
+            {}
             <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-6">
                 <div>
                     <h1 className="text-3xl font-black tracking-tight uppercase italic">Monetization Adjustments</h1>
@@ -141,8 +121,7 @@ export default function DiscountsPage() {
                     <Plus className="w-4 h-4" /> New Adjustment
                 </button>
             </div>
-
-            {/* List */}
+            {}
             <div className="rounded-[2.5rem] border border-border/40 bg-card/30 backdrop-blur-xl overflow-hidden shadow-2xl">
                 <div className="p-6 bg-muted/5 border-b border-border/20 flex justify-between items-center">
                     <h2 className="text-xs font-black uppercase tracking-[0.2em] text-muted-foreground opacity-60 px-2">Operational Overrides / {discounts.length} Active</h2>
@@ -150,7 +129,6 @@ export default function DiscountsPage() {
                         <RefreshCw className={cn("w-4 h-4", isLoading && "animate-spin")} />
                     </button>
                 </div>
-
                 {isLoading ? (
                     <div className="py-24 text-center">
                         <RefreshCw className="w-10 h-10 animate-spin text-primary/30 mx-auto" />
@@ -163,7 +141,7 @@ export default function DiscountsPage() {
                     </div>
                 ) : (
                     <div className="min-w-[900px]">
-                        {/* Grid Head */}
+                        {}
                         <div className="grid grid-cols-[1.5fr_1fr_120px_1fr_80px] px-8 py-5 bg-muted/5 border-b border-border/20 items-center">
                             <div className="px-4 text-[10px] font-black uppercase tracking-widest text-muted-foreground/60">Target Course Identity</div>
                             <div className="px-4 text-[10px] font-black uppercase tracking-widest text-muted-foreground/60">Value Delta</div>
@@ -171,8 +149,7 @@ export default function DiscountsPage() {
                             <div className="px-4 text-[10px] font-black uppercase tracking-widest text-muted-foreground/60 text-center">Temporal Bounds</div>
                             <div className="px-4 text-[10px] font-black uppercase tracking-widest text-muted-foreground/60 text-right">Action</div>
                         </div>
-
-                        {/* Grid Body */}
+                        {}
                         <div className="divide-y divide-border/10">
                             {discounts.map((discount) => (
                                 <div key={discount.id} className="grid grid-cols-[1.5fr_1fr_120px_1fr_80px] px-8 py-5 items-center hover:bg-primary/5 transition-all duration-300 group">
@@ -232,8 +209,7 @@ export default function DiscountsPage() {
                     </div>
                 )}
             </div>
-
-            {/* Creation Modal */}
+            {}
             <Dialog open={isCreating} onClose={() => setIsCreating(false)} size="md">
                 <DialogHeader>
                     <DialogTitle className="italic">Forge Adjustment</DialogTitle>
@@ -257,7 +233,6 @@ export default function DiscountsPage() {
                                 ))}
                             </select>
                         </div>
-
                         <div className="grid grid-cols-2 gap-4">
                             <div className="space-y-2">
                                 <label className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground ml-1">Algorithm</label>
@@ -286,7 +261,6 @@ export default function DiscountsPage() {
                                 />
                             </div>
                         </div>
-
                         <div className="grid grid-cols-2 gap-4">
                             <div className="space-y-2">
                                 <label className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground ml-1">Temporal Start</label>

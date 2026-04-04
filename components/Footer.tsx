@@ -1,7 +1,6 @@
 import { Globe, ChevronRight } from "lucide-react";
 import { SiGit } from "react-icons/si";
 import { Logo } from "@/components/ui/Logo";
-
 const FOOTER_SECTIONS = [
     {
         title: "Platform",
@@ -31,21 +30,18 @@ const FOOTER_SECTIONS = [
         ]
     },
 ] as const;
-
 const SOCIAL_ICONS = [Globe, SiGit] as const;
-
 const LEGAL_LINKS = [
     { text: "Privacy", href: "/privacy" },
     { text: "Terms", href: "/terms" },
     { text: "Cookies", href: "#" }
 ] as const;
-
 export function Footer() {
     return (
         <footer className="border-t border-slate-200 dark:border-white/5 bg-slate-50 dark:bg-[#020817] pt-24 pb-12 transition-colors duration-300">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-5 gap-12 lg:gap-8 mb-20">
-                    {/* Brand Column - Wider on desktop */}
+                    {}
                     <div className="col-span-2 lg:col-span-2">
                         <div className="mb-6">
                             <Logo />
@@ -66,8 +62,7 @@ export function Footer() {
                             ))}
                         </div>
                     </div>
-
-                    {/* Link Columns */}
+                    {}
                     {FOOTER_SECTIONS.map((section) => (
                         <div key={section.title} className="col-span-1">
                             <h4 className="font-bold text-slate-900 dark:text-slate-100 mb-6">{section.title}</h4>
@@ -89,8 +84,7 @@ export function Footer() {
                         </div>
                     ))}
                 </div>
-
-                {/* Bottom Bar */}
+                {}
                 <div className="pt-8 border-t border-slate-200 dark:border-white/5 flex flex-col md:flex-row items-center justify-between gap-6">
                     <p className="text-slate-500 text-sm font-medium">
                         © {new Date().getFullYear()} DokkhotaIT. All rights reserved.

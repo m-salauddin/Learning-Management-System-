@@ -1,69 +1,43 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
-
-/**
- * POST /api/admin/users/delete
- * Soft-deletes a user (admin only)
- * 
- * Request body: { userId: string }
- * 
- * Response:
- * - 200: { success: true, message: string }
- * - 400: { success: false, error: string, course_count?: number }
- * - 401: { success: false, error: "Unauthorized" }
- * - 500: { success: false, error: string }
- */
 export async function POST(request: NextRequest) {
     try {
         const supabase = await createClient();
-
-        // Verify authenticated user
         const { data: { user }, error: authError } = await supabase.auth.getUser();
-
         if (authError || !user) {
             return NextResponse.json(
                 { success: false, error: "Unauthorized" },
                 { status: 401 }
             );
         }
-
-        // Verify admin role (server-side check before RPC)
         const { data: currentUser, error: userError } = await supabase
             .from("users")
             .select("role, is_deleted, is_banned")
             .eq("id", user.id)
             .single();
-
         if (userError || !currentUser || currentUser.role !== "admin") {
             return NextResponse.json(
                 { success: false, error: "Only administrators can delete users" },
                 { status: 403 }
             );
         }
-
         if (currentUser.is_deleted || currentUser.is_banned) {
             return NextResponse.json(
                 { success: false, error: "Your account is not active" },
                 { status: 403 }
             );
         }
-
-        // Parse request body
         const body = await request.json();
         const { userId } = body;
-
         if (!userId || typeof userId !== "string") {
             return NextResponse.json(
                 { success: false, error: "Missing or invalid userId" },
                 { status: 400 }
             );
         }
-
-        // Call the admin RPC function
         const { data, error } = await supabase.rpc("admin_soft_delete_user", {
             p_user_id: userId
         });
-
         if (error) {
             console.error("[admin/users/delete] RPC error:", error);
             return NextResponse.json(
@@ -71,15 +45,12 @@ export async function POST(request: NextRequest) {
                 { status: 500 }
             );
         }
-
-        // RPC returns JSON with success/error
         const result = data as {
             success: boolean;
             error?: string;
             message?: string;
             course_count?: number;
         };
-
         if (!result.success) {
             return NextResponse.json(
                 {
@@ -90,12 +61,10 @@ export async function POST(request: NextRequest) {
                 { status: 400 }
             );
         }
-
         return NextResponse.json({
             success: true,
             message: result.message || "User has been soft-deleted"
         });
-
     } catch (error) {
         console.error("[admin/users/delete] Unexpected error:", error);
         return NextResponse.json(

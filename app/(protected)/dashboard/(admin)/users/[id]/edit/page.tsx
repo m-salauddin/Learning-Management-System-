@@ -1,5 +1,4 @@
 "use client";
-
 import { useState, useEffect } from "react";
 import { useRouter, useParams } from "next/navigation";
 import { motion } from "motion/react";
@@ -20,34 +19,26 @@ import {
     SelectValue,
 } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
-
-
-
 export default function EditUserPage() {
     const router = useRouter();
     const params = useParams();
     const userId = params?.id as string;
     const toast = useToast();
-
     const [isLoading, setIsLoading] = useState(true);
     const [isUpdating, setIsUpdating] = useState(false);
     const [isChangingPassword, setIsChangingPassword] = useState(false);
     const [user, setUser] = useState<ExtendedUser | null>(null);
     const [newPassword, setNewPassword] = useState("");
-
     const [formData, setFormData] = useState({
         name: "",
         email: "",
         role: "student" as UserRole,
         status: "active" as UserStatus
     });
-
     const [profileErrors, setProfileErrors] = useState<Record<string, string>>({});
     const [passwordErrors, setPasswordErrors] = useState<Record<string, string>>({});
     const [isProfileSubmitted, setIsProfileSubmitted] = useState(false);
     const [isPasswordSubmitted, setIsPasswordSubmitted] = useState(false);
-
-    // Real-time Profile Validation - Debounced
     useEffect(() => {
         if (isProfileSubmitted) {
             const timer = setTimeout(() => {
@@ -65,8 +56,6 @@ export default function EditUserPage() {
             return () => clearTimeout(timer);
         }
     }, [formData, isProfileSubmitted]);
-
-    // Real-time Password Validation - Debounced
     useEffect(() => {
         if (isPasswordSubmitted) {
             const timer = setTimeout(() => {
@@ -84,9 +73,6 @@ export default function EditUserPage() {
             return () => clearTimeout(timer);
         }
     }, [newPassword, isPasswordSubmitted]);
-
-
-
     useEffect(() => {
         const fetchUser = async () => {
             if (!userId) return;
@@ -107,16 +93,13 @@ export default function EditUserPage() {
             }
             setIsLoading(false);
         };
-
         fetchUser();
     }, [userId, router, toast]);
-
     const handleUpdateUser = async (e: React.FormEvent) => {
         e.preventDefault();
         setIsProfileSubmitted(true);
         setProfileErrors({});
         if (!userId) return;
-
         setIsUpdating(true);
         try {
             userUpdateSchema.parse(formData);
@@ -142,13 +125,11 @@ export default function EditUserPage() {
             setIsUpdating(false);
         }
     };
-
     const handlePasswordUpdate = async (e: React.FormEvent) => {
         e.preventDefault();
         setIsPasswordSubmitted(true);
         setPasswordErrors({});
         if (!userId || !newPassword) return;
-
         setIsChangingPassword(true);
         try {
             userPasswordSchema.parse({ password: newPassword });
@@ -173,7 +154,6 @@ export default function EditUserPage() {
             setIsChangingPassword(false);
         }
     };
-
     if (isLoading) {
         return (
             <div className="flex flex-col items-center justify-center min-h-[400px] gap-4">
@@ -182,23 +162,19 @@ export default function EditUserPage() {
             </div>
         );
     }
-
     return (
         <div className="max-w-4xl mx-auto py-8 px-4 sm:px-6">
-
-
-            {/* Header */}
+            {}
             <div className="mb-8">
                 <h1 className="text-3xl font-bold tracking-tight">Edit User</h1>
                 <p className="text-muted-foreground mt-1">Update profile information, access role, and account status.</p>
             </div>
-
             <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 className="grid grid-cols-1 lg:grid-cols-3 gap-8"
             >
-                {/* Main Edit Form */}
+                {}
                 <div className="lg:col-span-2 space-y-8">
                     <form onSubmit={handleUpdateUser} className="space-y-6">
                         <div className="p-6 rounded-3xl border border-border/50 bg-card/30 backdrop-blur-xl shadow-xl space-y-6">
@@ -206,9 +182,8 @@ export default function EditUserPage() {
                                 <User className="w-5 h-5 text-primary" />
                                 Profile Information
                             </h3>
-
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                {/* Full Name */}
+                                {}
                                 <div className="space-y-2">
                                     <label className="text-sm font-medium text-foreground flex items-center gap-2">
                                         Full Name
@@ -232,8 +207,7 @@ export default function EditUserPage() {
                                         )}
                                     </div>
                                 </div>
-
-                                {/* Email */}
+                                {}
                                 <div className="space-y-2">
                                     <label className="text-sm font-medium text-foreground flex items-center gap-2">
                                         Email Address
@@ -257,8 +231,7 @@ export default function EditUserPage() {
                                         )}
                                     </div>
                                 </div>
-
-                                {/* Role Selection */}
+                                {}
                                 <div className="space-y-2">
                                     <label className="text-sm font-medium text-foreground flex items-center gap-2">
                                         Account Role
@@ -278,8 +251,7 @@ export default function EditUserPage() {
                                         </SelectContent>
                                     </Select>
                                 </div>
-
-                                {/* Status */}
+                                {}
                                 <div className="space-y-2">
                                     <label className="text-sm font-medium text-foreground flex items-center gap-2">
                                         Account Status
@@ -300,7 +272,6 @@ export default function EditUserPage() {
                                     </Select>
                                 </div>
                             </div>
-
                             <div className="pt-4 flex flex-col sm:flex-row gap-3">
                                 <button
                                     type="submit"
@@ -320,15 +291,13 @@ export default function EditUserPage() {
                             </div>
                         </div>
                     </form>
-
-                    {/* Password Change Form */}
+                    {}
                     <form onSubmit={handlePasswordUpdate} className="space-y-6">
                         <div className="p-6 rounded-3xl border border-border/50 bg-card/30 backdrop-blur-xl shadow-xl space-y-6">
                             <h3 className="font-bold flex items-center gap-2 text-lg text-amber-500">
                                 <Lock className="w-5 h-5" />
                                 Security Settings
                             </h3>
-
                             <div className="space-y-4">
                                 <div className="space-y-2">
                                     <label className="text-sm font-medium text-foreground">
@@ -359,7 +328,6 @@ export default function EditUserPage() {
                                         </p>
                                     </div>
                                 </div>
-
                                 <button
                                     type="submit"
                                     disabled={isChangingPassword || !newPassword}
@@ -372,8 +340,7 @@ export default function EditUserPage() {
                         </div>
                     </form>
                 </div>
-
-                {/* Account Summary Sidebar */}
+                {}
                 <div className="space-y-6">
                     <div className="p-6 rounded-3xl border border-border/50 bg-muted/20 space-y-6">
                         <div className="text-center space-y-4">
@@ -395,7 +362,6 @@ export default function EditUserPage() {
                                 <p className="text-sm text-muted-foreground">{user?.email}</p>
                             </div>
                         </div>
-
                         <div className="space-y-4 pt-4 border-t border-border/40">
                             <div className="flex items-center justify-between text-sm">
                                 <span className="text-muted-foreground">User ID</span>
@@ -411,7 +377,6 @@ export default function EditUserPage() {
                             </div>
                         </div>
                     </div>
-
                     <div className="p-6 rounded-3xl border border-border/50 bg-rose-500/5 space-y-3">
                         <h3 className="font-bold text-sm text-rose-500">Admin Actions</h3>
                         <p className="text-xs text-muted-foreground leading-relaxed">

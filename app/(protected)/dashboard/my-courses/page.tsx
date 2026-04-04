@@ -1,6 +1,4 @@
 "use client";
-
-
 import { useAppSelector } from "@/lib/store/hooks";
 import { CourseProgressCard } from "@/components/dashboard/CourseProgressCard";
 import { motion } from "motion/react";
@@ -8,7 +6,6 @@ import { Search, BookOpen } from "lucide-react";
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
-
 const container = {
     hidden: { opacity: 0 },
     show: {
@@ -18,12 +15,10 @@ const container = {
         }
     }
 };
-
 const item = {
     hidden: { opacity: 0, scale: 0.95 },
     show: { opacity: 1, scale: 1 }
 };
-
 interface EnrolledCourse {
     course: {
         id: string;
@@ -35,23 +30,19 @@ interface EnrolledCourse {
     completed_lessons: number;
     progress_percentage: number;
 }
-
 export default function MyCoursesPage() {
     const { user } = useAppSelector((state) => state.auth);
     const [searchQuery, setSearchQuery] = useState("");
     const [enrolledCourses, setEnrolledCourses] = useState<EnrolledCourse[]>([]);
     const [loading, setLoading] = useState(true);
-
     useEffect(() => {
         const fetchCourses = async () => {
             const supabase = createClient();
             const { data: { user } } = await supabase.auth.getUser();
-
             if (!user) {
                 setLoading(false);
                 return;
             }
-
             const { data, error } = await supabase
                 .from('enrollments')
                 .select(`
@@ -67,20 +58,16 @@ export default function MyCoursesPage() {
                 `)
                 .eq('user_id', user.id)
                 .eq('status', 'active');
-
             if (data) {
                 setEnrolledCourses(data as unknown as EnrolledCourse[]);
             }
             setLoading(false);
         };
-
         fetchCourses();
     }, []);
-
     const filteredCourses = enrolledCourses.filter(enrollment =>
         enrollment.course.title.toLowerCase().includes(searchQuery.toLowerCase())
     );
-
     return (
         <div className="space-y-6 pb-10">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
@@ -88,7 +75,6 @@ export default function MyCoursesPage() {
                     <h1 className="text-2xl font-bold">My Courses</h1>
                     <p className="text-muted-foreground text-sm">Manage and track your learning progress</p>
                 </div>
-
                 <div className="relative w-full sm:w-64">
                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                     <input
@@ -100,7 +86,6 @@ export default function MyCoursesPage() {
                     />
                 </div>
             </div>
-
             {loading ? (
                 <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
                     {[1, 2, 3].map((i) => (

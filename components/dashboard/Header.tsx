@@ -1,6 +1,5 @@
 "use client";
 import { useEffect, useState } from "react";
-
 import { usePathname } from "next/navigation";
 import {
     Bell, Menu, Search, Layers, BookOpen, Users, Settings,
@@ -15,7 +14,6 @@ import { useAppSelector } from "@/lib/store/hooks";
 import { ThemeToggleCompact } from "@/components/ui/theme-toggle";
 import { NotificationPanel } from "./NotificationPanel";
 import { Skeleton } from "@/components/ui/skeleton";
-
 const AuthSkeleton = () => (
     <Skeleton className="flex items-center gap-2 sm:gap-3 pl-1 pr-2 sm:pl-1 sm:pr-4 py-1.5 rounded-full">
         <div className="w-8 h-8 rounded-full bg-muted-foreground/20" />
@@ -26,28 +24,20 @@ const AuthSkeleton = () => (
         <div className="w-4 h-4 rounded-full bg-muted-foreground/20 hidden sm:block" />
     </Skeleton>
 );
-
 interface HeaderProps {
     onMobileMenuOpen: () => void;
     isSidebarCollapsed: boolean;
     onSidebarToggle: () => void;
 }
-
 export function Header({ onMobileMenuOpen, isSidebarCollapsed, onSidebarToggle }: HeaderProps) {
     const pathname = usePathname();
     const { user, isLoading: authLoading } = useAppSelector((state) => state.auth);
     const [mounted, setMounted] = useState(false);
-
     useEffect(() => {
         setMounted(true);
     }, []);
-
-    // Show loading state if auth is loading OR if not yet mounted to avoid hydration mismatch
     const isLoading = !mounted || authLoading;
-
-    // Generate breadcrumbs from path
     const pathSegments = pathname?.split("/").filter(p => p !== "" && p !== "dashboard") || [];
-
     const breadcrumbItems = pathSegments.map((segment, index) => {
         const href = `/dashboard/${pathSegments.slice(0, index + 1).join("/")}`;
         const IconMap: Record<string, any> = {
@@ -65,28 +55,18 @@ export function Header({ onMobileMenuOpen, isSidebarCollapsed, onSidebarToggle }
             "certificates": Award,
             "edit": Edit
         };
-
         let icon = IconMap[segment] || Hash;
         let label = segment.split("-").map(s => s.charAt(0).toUpperCase() + s.slice(1)).join(" ");
-
-        // Handle 'new' segments specifically
         if (segment === "new" && index > 0) {
             const parent = pathSegments[index - 1];
-            // Simple singularization: remove trailing 's' if present
             const parentSingular = parent.endsWith('s') ? parent.slice(0, -1) : parent;
             const entityName = parentSingular.charAt(0).toUpperCase() + parentSingular.slice(1);
-
             label = `Create ${entityName}`;
-
-            // Context-aware icons for creation
             if (parent === "users") icon = UserPlus;
             else if (parent === "courses") icon = FilePlus;
             else icon = PlusCircle;
         }
-
-        // Disable link for current page
         const isLast = index === pathSegments.length - 1;
-
         return {
             label,
             href: isLast ? undefined : href,
@@ -94,7 +74,6 @@ export function Header({ onMobileMenuOpen, isSidebarCollapsed, onSidebarToggle }
             active: isLast
         };
     });
-
     return (
         <header className="h-20 px-6 flex items-center justify-between border-b border-border/50 bg-background/50 backdrop-blur-xl sticky top-0 z-30">
             <div className="flex items-center gap-4">
@@ -104,7 +83,6 @@ export function Header({ onMobileMenuOpen, isSidebarCollapsed, onSidebarToggle }
                 >
                     <AlignLeft className="w-5 h-5 group-hover:scale-110 transition-transform" />
                 </button>
-
                 <Breadcrumbs
                     items={breadcrumbItems}
                     showHomeIcon={true}
@@ -114,7 +92,6 @@ export function Header({ onMobileMenuOpen, isSidebarCollapsed, onSidebarToggle }
                     rootIcon={LayoutDashboard}
                 />
             </div>
-
             <div className="flex items-center gap-2 sm:gap-4">
                 {isLoading ? (
                     <>
@@ -125,7 +102,7 @@ export function Header({ onMobileMenuOpen, isSidebarCollapsed, onSidebarToggle }
                     </>
                 ) : (
                     <>
-                        {/* Sidebar Toggle Button (Desktop) */}
+                        {}
                         <motion.button
                             whileTap={{ scale: 0.95 }}
                             onClick={onSidebarToggle}
@@ -138,7 +115,6 @@ export function Header({ onMobileMenuOpen, isSidebarCollapsed, onSidebarToggle }
                                 <PanelLeftClose className="w-5 h-5 group-hover:scale-110 transition-transform" />
                             </motion.div>
                         </motion.button>
-
                         <ThemeToggleCompact />
                         <NotificationPanel />
                         {user && <UserDropdown user={user} />}

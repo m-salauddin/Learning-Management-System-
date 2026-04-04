@@ -1,18 +1,15 @@
 "use client";
-
 import * as React from "react";
 import { motion, useScroll, useTransform } from "motion/react";
 import { Rocket, BookOpen, TrendingUp, Globe, LucideIcon } from "lucide-react";
 import { staggerContainer, staggerItem } from "@/lib/motion";
 import { Badge } from "@/components/ui/Badge";
-
 interface TimelineItem {
     year: string;
     title: string;
     description: string;
     icon: LucideIcon;
 }
-
 const TIMELINE: TimelineItem[] = [
     {
         year: "2026",
@@ -39,7 +36,6 @@ const TIMELINE: TimelineItem[] = [
         icon: Globe,
     },
 ];
-
 export function AboutTimelineSection() {
     return (
         <section className="relative py-32 overflow-hidden">
@@ -64,33 +60,27 @@ export function AboutTimelineSection() {
                         From a small idea to Bangladesh's leading tech education platform – and we're just getting started.
                     </p>
                 </motion.div>
-
                 {/* Timeline */}
                 <TimelineContainer />
             </div>
         </section>
     );
 }
-
 function TimelineContainer() {
     const containerRef = React.useRef<HTMLDivElement>(null);
     const { scrollYProgress } = useScroll({
         target: containerRef,
         offset: ["start center", "end center"]
     });
-
     return (
         <div ref={containerRef} className="relative">
             {/* Timeline Line Base */}
             <div className="absolute left-4 lg:left-1/2 top-0 bottom-0 w-px bg-border/50 block" />
-
             {/* Scroll Progress Line */}
             <motion.div
                 className="absolute left-4 lg:left-1/2 top-0 w-px bg-linear-to-b from-primary via-secondary to-primary block origin-top"
                 style={{ height: "100%", scaleY: scrollYProgress, willChange: "transform" }}
             />
-
-
             <motion.div
                 variants={staggerContainer}
                 initial="hidden"
@@ -130,7 +120,6 @@ function TimelineContainer() {
                                     {/* Top Side Glowing Border */}
                                     <div className="absolute top-0 left-0 right-0 h-px bg-linear-to-r from-transparent via-primary to-transparent" />
                                     <div className="absolute top-0 left-0 right-0 h-8 bg-linear-to-b from-primary/10 to-transparent" />
-
                                     {/* Card Content */}
                                     <div className="relative p-6 pt-8">
                                         {/* Header Row */}
@@ -149,15 +138,13 @@ function TimelineContainer() {
                                             >
                                                 <item.icon className="w-6 h-6 text-white" />
                                             </motion.div>
-
                                             {/* Year Badge */}
                                             <div className={`flex flex-col ${index % 2 === 0 ? 'items-end' : 'items-start'}`}>
                                                 <span className="text-xs text-muted-foreground uppercase tracking-widest font-medium">Milestone</span>
                                                 <span className="text-lg font-bold text-primary">{item.year}</span>
                                             </div>
                                         </div>
-
-                                        {/* Title & Description */}
+                                        {}
                                         <h3 className="text-xl font-bold mb-2 group-hover:text-primary transition-colors duration-300">
                                             {item.title}
                                         </h3>
@@ -168,8 +155,7 @@ function TimelineContainer() {
                                 </div>
                             </motion.div>
                         </div>
-
-                        {/* Center Dot - Now responsive to scroll using shared value */}
+                        {}
                         <TimelineDot index={index} total={TIMELINE.length} scrollYProgress={scrollYProgress} />
                     </motion.div>
                 ))}
@@ -177,23 +163,14 @@ function TimelineContainer() {
         </div>
     );
 }
-
 function TimelineDot({ index, total, scrollYProgress }: { index: number; total: number; scrollYProgress: any }) {
-    // Calculate progress based on index approximately
     const progressStart = index / total;
-
-    // Animate the dot when the scroll line passes it
-    // Use opacity instead of booleans for smoother rendering
-    const activeOpacity = useTransform(scrollYProgress, (value) => {
-        // @ts-ignore
+    const activeOpacity = useTransform(scrollYProgress, (value: number) => {
         return value > progressStart + 0.05 ? 1 : 0;
     });
-
-    const scale = useTransform(scrollYProgress, (value) => {
-        // @ts-ignore
+    const scale = useTransform(scrollYProgress, (value: number) => {
         return value > progressStart + 0.05 ? 1.5 : 1;
     });
-
     return (
         <motion.div
             style={{ scale }}

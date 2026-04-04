@@ -1,10 +1,3 @@
-// ============================================================================
-// SERVER ACTIONS INDEX
-// ============================================================================
-// Centralized exports for all server actions
-// ============================================================================
-
-// Course Actions
 export {
     getCourses,
     getCourseBySlug,
@@ -17,8 +10,6 @@ export {
     getInstructorCourses,
     getCategories
 } from './courses';
-
-// Module & Lesson Actions
 export {
     createModule,
     updateModule,
@@ -32,8 +23,6 @@ export {
     updateLessonAsset,
     getSignedVideoUrl
 } from './lessons';
-
-// Enrollment Actions
 export {
     getMyEnrollments,
     getEnrollment,
@@ -44,8 +33,6 @@ export {
     getCourseProgress,
     getAllEnrollments
 } from './enrollments';
-
-// Payment Actions
 export {
     validateCoupon,
     createTransaction,
@@ -56,8 +43,6 @@ export {
     updateCoupon,
     getCoupons
 } from './payments';
-
-// Admin Actions
 export {
     getAdminDashboardStats,
     getRevenueMetrics,
@@ -73,8 +58,6 @@ export {
     getPlatformMetrics,
     getEnrollmentTrends
 } from './admin';
-
-// Certificate Actions
 export {
     getMyCertificates,
     getCertificate,
@@ -84,8 +67,6 @@ export {
     getCertificatesForCourse,
     getCertificateDownloadUrl
 } from './certificates';
-
-// Dashboard Actions
 export {
     getInstructorDashboardStats,
     getInstructorRevenue,
@@ -94,8 +75,6 @@ export {
     submitCourseReview,
     getStudentDashboardStats
 } from './dashboard';
-
-// Types re-export for convenience
 export type {
     InstructorDashboardStats,
     StudentDashboardStats

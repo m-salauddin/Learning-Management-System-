@@ -6,11 +6,9 @@ import { setUser, setLoading } from "@/lib/store/features/auth/authSlice";
 import { Session } from "@supabase/supabase-js";
 import { Database } from "@/types/supabase";
 import { usePathname } from "next/navigation";
-
 export function AuthListener() {
     const dispatch = useAppDispatch();
     const pathname = usePathname();
-
     const fetchAndDispatchUser = useCallback(async (session: Session | null) => {
         const supabase = createClient();
         if (session?.user) {
@@ -20,14 +18,10 @@ export function AuthListener() {
                     .select('*')
                     .eq('id', session.user.id)
                     .maybeSingle();
-
-                // Explicitly type profile to avoid 'never' inference
                 const profile = rawProfile as Database['public']['Tables']['users']['Row'] | null;
-
                 if (error) {
                     console.error('Error fetching user profile:', JSON.stringify(error, null, 2));
                 }
-
                 if (profile) {
                     dispatch(setUser({
                         id: session.user.id,
@@ -41,7 +35,6 @@ export function AuthListener() {
                     }));
                 } else {
                     console.warn("User profile not found in database. Using session data.");
-                    // Fallback to session data if DB profile missing
                     dispatch(setUser({
                         id: session.user.id,
                         email: session.user.email!,
@@ -61,17 +54,13 @@ export function AuthListener() {
         }
         dispatch(setLoading(false));
     }, [dispatch]);
-
     useEffect(() => {
         const supabase = createClient();
-
         const initSession = async () => {
             const { data: { session } } = await supabase.auth.getSession();
             await fetchAndDispatchUser(session);
         };
-
         initSession();
-
         const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
             if (event === 'SIGNED_OUT') {
                 dispatch(setUser(null));
@@ -82,11 +71,9 @@ export function AuthListener() {
                 dispatch(setLoading(false));
             }
         });
-
         return () => {
             subscription.unsubscribe();
         };
     }, [dispatch, fetchAndDispatchUser, pathname]);
-
     return null;
 }

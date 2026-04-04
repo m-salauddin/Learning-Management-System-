@@ -1,8 +1,7 @@
 "use client";
-
 import React, { useEffect } from "react";
 import { useAppDispatch, useAppSelector } from "@/lib/store/hooks";
-import { fetchUsers, setUsersFilters, clearUsersFilters, setUsersPage } from "@/lib/store/features/admin/adminSlice"; // Import from Slice
+import { fetchUsers, setUsersFilters, clearUsersFilters, setUsersPage } from "@/lib/store/features/admin/adminSlice";
 import { usersTableSelectors } from "@/lib/store/features/admin/adminSelectors";
 import { DashboardTable, ColumnDef } from "@/components/dashboard/shared/DashboardTable";
 import { UserManagement } from "@/types/lms";
@@ -18,26 +17,16 @@ import {
 } from "@/components/ui/select";
 import { Search, UserPlus } from "lucide-react";
 import { cn } from "@/lib/utils";
-
 export function AdminUsersTable() {
     const dispatch = useAppDispatch();
-
-
-    const users = useAppSelector(usersTableSelectors.selectDisplayedRows) as UserManagement[]; // Type cast as necessary
+    const users = useAppSelector(usersTableSelectors.selectDisplayedRows) as UserManagement[];
     const isLoading = useAppSelector(usersTableSelectors.selectLoading);
     const emptyStateType = useAppSelector(usersTableSelectors.selectEmptyStateType);
     const filters = useAppSelector(usersTableSelectors.selectFilters);
     const totalUsers = useAppSelector(usersTableSelectors.selectTotal);
-
-
-
     const page = useAppSelector((state) => state.admin.usersPage);
     const pageSize = useAppSelector((state) => state.admin.usersPageSize);
-
-
     useEffect(() => {
-
-
         dispatch(fetchUsers({
             page,
             pageSize,
@@ -45,25 +34,20 @@ export function AdminUsersTable() {
             search: filters.search
         }));
     }, [dispatch, page, pageSize, filters.role, filters.search]);
-
     const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
         dispatch(setUsersFilters({ search: e.target.value }));
         dispatch(setUsersPage(1));
     };
-
     const handleRoleChange = (val: string) => {
         dispatch(setUsersFilters({ role: val }));
         dispatch(setUsersPage(1));
     };
-
     const handleReset = () => {
         dispatch(clearUsersFilters());
         dispatch(setUsersPage(1));
     };
-
     const handleInvite = () => {
     };
-
     const columns: ColumnDef<UserManagement>[] = [
         {
             header: "User",
@@ -106,7 +90,6 @@ export function AdminUsersTable() {
             )
         }
     ];
-
     const FilterBar = (
         <div className="flex flex-col sm:flex-row gap-3 items-center justify-between pb-4">
             <div className="flex items-center gap-2 w-full sm:w-auto">
@@ -144,7 +127,6 @@ export function AdminUsersTable() {
             </Button>
         </div>
     );
-
     return (
         <DashboardTable
             columns={columns}

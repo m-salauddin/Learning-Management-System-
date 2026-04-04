@@ -2,15 +2,10 @@ import { getUserAndRole } from '@/lib/auth/server';
 import { BookOpen, CheckCircle, Clock, Trophy } from 'lucide-react';
 import Link from 'next/link';
 import { createClient } from '@/lib/supabase/server';
-
 export default async function StudentPanel() {
     const { user, profile } = await getUserAndRole();
     const supabase = await createClient();
-
-    // Fetch Student Stats via RPC
     const { data: stats } = await supabase.rpc('get_student_dashboard_stats');
-
-    // Fetch Enrolled Courses with progress, explicitly invoking joins
     const { data: enrollments } = await supabase
         .from('enrollments')
         .select(`
@@ -21,18 +16,15 @@ export default async function StudentPanel() {
         .eq('status', 'active')
         .order('last_accessed_at', { ascending: false })
         .limit(3);
-
     const fullName = profile?.fullName || user?.email || 'Student';
     const firstName = fullName.split(' ')[0];
-
     const inProgressCount = stats?.in_progress_courses || 0;
     const completedCount = stats?.completed_courses || 0;
-    const hoursSpent = Math.round((stats?.total_learning_time || 0) / 3600); // Convert seconds to hours
+    const hoursSpent = Math.round((stats?.total_learning_time || 0) / 3600);
     const avgScore = Math.round(stats?.avg_progress || 0);
-
     return (
         <div className="space-y-8 pb-10">
-            {/* Welcome Section */}
+            {}
             <div className="flex flex-col gap-1">
                 <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">
                     Welcome back, {firstName}! 👋
@@ -41,8 +33,7 @@ export default async function StudentPanel() {
                     You have {inProgressCount} courses in progress. Keep pushing forward!
                 </p>
             </div>
-
-            {/* Stats Grid */}
+            {}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                 <div className="p-6 bg-card border border-border rounded-2xl">
                     <div className="flex items-center gap-4">
@@ -55,7 +46,6 @@ export default async function StudentPanel() {
                         </div>
                     </div>
                 </div>
-
                 <div className="p-6 bg-card border border-border rounded-2xl">
                     <div className="flex items-center gap-4">
                         <div className="p-3 rounded-xl bg-emerald-500/10 text-emerald-500">
@@ -67,7 +57,6 @@ export default async function StudentPanel() {
                         </div>
                     </div>
                 </div>
-
                 <div className="p-6 bg-card border border-border rounded-2xl">
                     <div className="flex items-center gap-4">
                         <div className="p-3 rounded-xl bg-amber-500/10 text-amber-500">
@@ -79,7 +68,6 @@ export default async function StudentPanel() {
                         </div>
                     </div>
                 </div>
-
                 <div className="p-6 bg-card border border-border rounded-2xl">
                     <div className="flex items-center gap-4">
                         <div className="p-3 rounded-xl bg-blue-500/10 text-blue-500">
@@ -92,8 +80,7 @@ export default async function StudentPanel() {
                     </div>
                 </div>
             </div>
-
-            {/* Continue Learning */}
+            {}
             <div className="space-y-5">
                 <div className="flex items-center justify-between">
                     <h3 className="text-xl font-bold">Continue Learning</h3>
@@ -101,7 +88,6 @@ export default async function StudentPanel() {
                         View All Courses
                     </Link>
                 </div>
-
                 {enrollments && enrollments.length > 0 ? (
                     <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
                         {enrollments.map((enrollment: any) => (

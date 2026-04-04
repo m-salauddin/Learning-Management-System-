@@ -1,29 +1,23 @@
 "use client"
-
 import * as React from "react"
 import * as SelectPrimitive from "@radix-ui/react-select"
 import { CheckIcon, ChevronDownIcon, ChevronUpIcon } from "lucide-react"
-
 import { cn } from "@/lib/utils"
-
 function Select({
   ...props
 }: React.ComponentProps<typeof SelectPrimitive.Root>) {
   return <SelectPrimitive.Root data-slot="select" {...props} />
 }
-
 function SelectGroup({
   ...props
 }: React.ComponentProps<typeof SelectPrimitive.Group>) {
   return <SelectPrimitive.Group data-slot="select-group" {...props} />
 }
-
 function SelectValue({
   ...props
 }: React.ComponentProps<typeof SelectPrimitive.Value>) {
   return <SelectPrimitive.Value data-slot="select-value" {...props} />
 }
-
 function SelectTrigger({
   className,
   size = "default",
@@ -39,14 +33,10 @@ function SelectTrigger({
       data-slot="select-trigger"
       data-size={size}
       className={cn(
-        // Base styles
         "group flex w-full items-center justify-between gap-2 rounded-xl px-3 py-2.5 text-sm font-medium transition-all duration-200 outline-none disabled:cursor-not-allowed disabled:opacity-50",
         "**:data-[slot=select-value]:line-clamp-1 data-placeholder:text-input-dark-text [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
-        // Dark input styling - consistent across variants
         "bg-input-dark border border-input-dark-border text-foreground/90",
-        // Hover state
         "hover:bg-input-dark-hover hover:border-input-dark-border",
-        // Focus/Active state with glow
         "focus:shadow-[0_0_0_2px_var(--input-dark-glow)] focus:border-input-dark-border",
         "data-[state=open]:shadow-[0_0_0_2px_var(--input-dark-glow)] data-[state=open]:border-input-dark-border",
         className
@@ -60,7 +50,6 @@ function SelectTrigger({
     </SelectPrimitive.Trigger>
   )
 }
-
 function SelectContent({
   className,
   children,
@@ -99,7 +88,6 @@ function SelectContent({
     </SelectPrimitive.Portal>
   )
 }
-
 function SelectLabel({
   className,
   ...props
@@ -112,7 +100,6 @@ function SelectLabel({
     />
   )
 }
-
 function SelectItem({
   className,
   children,
@@ -139,7 +126,6 @@ function SelectItem({
     </SelectPrimitive.Item>
   )
 }
-
 function SelectSeparator({
   className,
   ...props
@@ -152,7 +138,6 @@ function SelectSeparator({
     />
   )
 }
-
 function SelectScrollUpButton({
   className,
   ...props
@@ -170,7 +155,6 @@ function SelectScrollUpButton({
     </SelectPrimitive.ScrollUpButton>
   )
 }
-
 function SelectScrollDownButton({
   className,
   ...props
@@ -188,7 +172,6 @@ function SelectScrollDownButton({
     </SelectPrimitive.ScrollDownButton>
   )
 }
-
 export {
   Select,
   SelectContent,

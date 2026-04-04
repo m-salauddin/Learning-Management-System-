@@ -1,9 +1,8 @@
 "use client";
-
 import { useState, useEffect } from "react";
 import { motion } from "motion/react";
 import {
-    BookOpen, Layers, Users, BarChart, Globe, Info, PencilLine, FileText,
+    BookOpen, Layers, Users, BarChart, Globe, Info, PencilLine,
     Smartphone, Palette, TrendingUp, Briefcase, Database, Code, Shield, Cloud,
     GraduationCap, UserRound, Hash, AlertCircle,
     SignalLow, SignalMedium, SignalHigh, BookOpenText, Target,
@@ -21,7 +20,7 @@ import { inputClasses, labelClasses, selectTriggerClasses } from "./constants";
 import { CreateCourseInput } from "@/types/lms";
 import { getNextBatchNumber } from "@/lib/actions/courses";
 import { DateTimePicker } from "@/components/ui/date-time-picker";
-
+import { BlockEditor } from "@/components/ui/BlockEditor";
 interface StepFoundationsProps {
     formData: CreateCourseInput;
     setFormData: React.Dispatch<React.SetStateAction<CreateCourseInput>>;
@@ -29,7 +28,6 @@ interface StepFoundationsProps {
     teachers: any[];
     errors: Record<string, string>;
 }
-
 const iconMap: Record<string, any> = {
     'Globe': Globe,
     'Smartphone': Smartphone,
@@ -46,7 +44,6 @@ const iconMap: Record<string, any> = {
     'Shield': Shield,
     'Cloud': Cloud
 };
-
 interface InstructorSelectProps {
     label: string;
     icon: any;
@@ -61,7 +58,6 @@ interface InstructorSelectProps {
     error?: string;
     type: 'main' | 'support';
 }
-
 const InstructorSelect = ({
     label,
     icon: Icon,
@@ -79,7 +75,6 @@ const InstructorSelect = ({
     const [search, setSearch] = useState("");
     const isMain = type === 'main';
     const RoleIcon = isMain ? GraduationCap : UserRound;
-
     return (
         <div className="space-y-2">
             <div className="flex items-center justify-between">
@@ -168,8 +163,7 @@ const InstructorSelect = ({
                         </div>
                     </SelectContent>
                 </Select>
-
-                {/* Selected Badges */}
+                {}
                 <div className="flex flex-wrap gap-2">
                     {selectedIds.map(id => {
                         const teacher = teachers.find(t => t.id === id);
@@ -195,7 +189,6 @@ const InstructorSelect = ({
                         );
                     })}
                 </div>
-
                 {error && (
                     <p className="text-[10px] text-red-500 font-bold ml-1 flex items-center gap-1">
                         <AlertCircle className="w-3 h-3" />
@@ -206,23 +199,18 @@ const InstructorSelect = ({
         </div>
     );
 };
-
 export const StepFoundations = ({ formData, setFormData, categories, teachers, errors }: StepFoundationsProps) => {
     const [categorySearch, setCategorySearch] = useState("");
-
     useEffect(() => {
         if (!formData.title.trim()) return;
-
         const timer = setTimeout(async () => {
             const result = await getNextBatchNumber(formData.title);
             if (result.success && result.data !== undefined) {
                 setFormData(prev => ({ ...prev, batch_no: result.data }));
             }
         }, 500);
-
         return () => clearTimeout(timer);
     }, [formData.title, setFormData]);
-
     return (
         <motion.div
             key="step1"
@@ -231,7 +219,7 @@ export const StepFoundations = ({ formData, setFormData, categories, teachers, e
             exit={{ opacity: 0, scale: 0.95 }}
             className="space-y-6"
         >
-            {/* Section Header */}
+            {}
             <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -258,7 +246,7 @@ export const StepFoundations = ({ formData, setFormData, categories, teachers, e
             </motion.div>
             <div className="p-6 rounded-3xl border border-border/50 bg-card/30 backdrop-blur-xl shadow-xl space-y-6">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    {/* Course Title */}
+                    {}
                     <div className="md:col-span-2 space-y-2">
                         <label className={labelClasses}>
                             <BookOpen className="w-4 h-4 text-muted-foreground" />
@@ -281,8 +269,7 @@ export const StepFoundations = ({ formData, setFormData, categories, teachers, e
                             )}
                         </div>
                     </div>
-
-                    {/* Short Description */}
+                    {}
                     <div className="md:col-span-2 space-y-2">
                         <label className={labelClasses}>
                             <PencilLine className="w-4 h-4 text-muted-foreground" />
@@ -305,19 +292,18 @@ export const StepFoundations = ({ formData, setFormData, categories, teachers, e
                             )}
                         </div>
                     </div>
-
-                    {/* Long Description */}
+                    {}
                     <div className="md:col-span-2 space-y-2">
                         <label className={labelClasses}>
-                            <FileText className="w-4 h-4 text-muted-foreground" />
-                            Long Description
+                            <Layers className="w-4 h-4 text-muted-foreground" />
+                            Block Diagram
                         </label>
                         <div className="space-y-1">
-                            <textarea
-                                value={formData.description}
-                                onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
-                                placeholder="Dive deep into what makes this course special..."
-                                className={cn(inputClasses, "resize-none h-32 py-3", errors.description && "border-red-500/50 focus:border-red-500")}
+                            <BlockEditor
+                                value={formData.description || ''}
+                                onChange={(val) => setFormData(prev => ({ ...prev, description: val }))}
+                                placeholder="Establish the visual and textual architecture of your course here..."
+                                error={errors.description}
                             />
                             {errors.description && (
                                 <p className="text-[10px] text-red-500 font-bold ml-1 flex items-center gap-1">
@@ -327,8 +313,7 @@ export const StepFoundations = ({ formData, setFormData, categories, teachers, e
                             )}
                         </div>
                     </div>
-
-                    {/* Category */}
+                    {}
                     <div className="space-y-2">
                         <label className={labelClasses}>
                             <Layers className="w-4 h-4 text-muted-foreground" />
@@ -391,8 +376,7 @@ export const StepFoundations = ({ formData, setFormData, categories, teachers, e
                             )}
                         </div>
                     </div>
-
-                    {/* Batch Number */}
+                    {}
                     <div className="space-y-2">
                         <label className={labelClasses}>
                             <Hash className="w-4 h-4 text-muted-foreground" />
@@ -414,8 +398,7 @@ export const StepFoundations = ({ formData, setFormData, categories, teachers, e
                             )}
                         </div>
                     </div>
-
-                    {/* Enrollment Ends In */}
+                    {}
                     <div className="space-y-2">
                         <label className={labelClasses}>
                             <Clock className="w-4 h-4 text-muted-foreground" />
@@ -436,8 +419,7 @@ export const StepFoundations = ({ formData, setFormData, categories, teachers, e
                             )}
                         </div>
                     </div>
-
-                    {/* Course Level */}
+                    {}
                     <div className="space-y-2">
                         <label className={labelClasses}>
                             <BarChart className="w-4 h-4 text-muted-foreground" />
@@ -477,8 +459,7 @@ export const StepFoundations = ({ formData, setFormData, categories, teachers, e
                             )}
                         </div>
                     </div>
-
-                    {/* Main Instructors */}
+                    {}
                     <InstructorSelect
                         label="Main Instructors"
                         icon={Users}
@@ -493,8 +474,7 @@ export const StepFoundations = ({ formData, setFormData, categories, teachers, e
                         onRemove={(id) => setFormData(prev => ({ ...prev, instructor_ids: prev.instructor_ids?.filter(tid => tid !== id) }))}
                         onClearAll={() => setFormData(prev => ({ ...prev, instructor_ids: [] }))}
                     />
-
-                    {/* Support Instructors */}
+                    {}
                     <InstructorSelect
                         label="Support Instructors"
                         icon={UserRound}
@@ -508,8 +488,7 @@ export const StepFoundations = ({ formData, setFormData, categories, teachers, e
                         onRemove={(id) => setFormData(prev => ({ ...prev, support_instructor_ids: prev.support_instructor_ids?.filter(tid => tid !== id) }))}
                         onClearAll={() => setFormData(prev => ({ ...prev, support_instructor_ids: [] }))}
                     />
-
-                    {/* Course Type */}
+                    {}
                     <div className="space-y-2">
                         <label className={labelClasses}>
                             <Info className="w-4 h-4 text-muted-foreground" />
@@ -549,8 +528,7 @@ export const StepFoundations = ({ formData, setFormData, categories, teachers, e
                             )}
                         </div>
                     </div>
-
-                    {/* Language */}
+                    {}
                     <div className="space-y-2">
                         <label className={labelClasses}>
                             <Globe className="w-4 h-4 text-muted-foreground" />

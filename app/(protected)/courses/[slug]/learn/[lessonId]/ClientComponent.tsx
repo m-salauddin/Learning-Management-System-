@@ -1,5 +1,4 @@
 "use client";
-
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -18,9 +17,7 @@ import { twMerge } from "tailwind-merge";
 import { createClient } from "@/lib/supabase/client";
 import { useToast } from "@/components/ui/toast";
 import type { Database } from "@/types/supabase";
-
 type LessonProgressInsert = Database['public']['Tables']['lesson_progress']['Insert'];
-
 function cn_local(...inputs: ClassValue[]) {
     return twMerge(clsx(inputs));
 }
@@ -34,7 +31,6 @@ interface Lesson {
     duration_minutes?: number | null;
     is_free_preview?: boolean | null;
 }
-
 interface CoursePlayerClientProps {
     course: any;
     currentLesson: Lesson;
@@ -43,7 +39,6 @@ interface CoursePlayerClientProps {
     userId: string;
     enrollmentId?: string;
 }
-
 export function CoursePlayerClient({ course, currentLesson, asset, hasAccess, userId, enrollmentId }: CoursePlayerClientProps) {
     const router = useRouter();
     const [sidebarOpen, setSidebarOpen] = useState(true);
@@ -51,13 +46,11 @@ export function CoursePlayerClient({ course, currentLesson, asset, hasAccess, us
     const [loadingVideo, setLoadingVideo] = useState(false);
     const supabase = createClient();
     const { success, error } = useToast();
-
     useEffect(() => {
         if (!hasAccess || !asset?.video_path) {
             setVideoUrl(null);
             return;
         }
-
         setLoadingVideo(true);
         fetch(`/api/lessons/${currentLesson.id}/video`)
             .then(async res => {
@@ -69,27 +62,21 @@ export function CoursePlayerClient({ course, currentLesson, asset, hasAccess, us
             })
             .catch(err => console.error(err))
             .finally(() => setLoadingVideo(false));
-
     }, [currentLesson.id, hasAccess, asset]);
-
-    // Flatten lessons for navigation
     const allLessons = course.modules.flatMap((m: any) => m.lessons);
     const currentIndex = allLessons.findIndex((l: any) => l.id === currentLesson.id);
     const nextLesson = allLessons[currentIndex + 1];
     const prevLesson = allLessons[currentIndex - 1];
-
     const handleNext = () => {
         if (nextLesson) {
             router.push(`/courses/${course.slug}/learn/${nextLesson.id}`);
         }
     };
-
     const handlePrev = () => {
         if (prevLesson) {
             router.push(`/courses/${course.slug}/learn/${prevLesson.id}`);
         }
     };
-
     const handleCompleteAndNext = async () => {
         if (!enrollmentId) {
             if (nextLesson) {
@@ -99,7 +86,6 @@ export function CoursePlayerClient({ course, currentLesson, asset, hasAccess, us
             }
             return;
         }
-
         const progressData: LessonProgressInsert = {
             user_id: userId,
             lesson_id: currentLesson.id,
@@ -108,12 +94,9 @@ export function CoursePlayerClient({ course, currentLesson, asset, hasAccess, us
             completed_at: new Date().toISOString(),
             updated_at: new Date().toISOString()
         };
-
         try {
             await (supabase.from('lesson_progress') as any).upsert(progressData, { onConflict: 'user_id,lesson_id' });
-
             success("Lesson completed!");
-
             if (nextLesson) {
                 router.push(`/courses/${course.slug}/learn/${nextLesson.id}`);
             } else {
@@ -122,14 +105,12 @@ export function CoursePlayerClient({ course, currentLesson, asset, hasAccess, us
             }
         } catch (err) {
             console.error("Failed to save progress:", err);
-            // Fallback navigation
             handleNext();
         }
     };
-
     return (
         <div className="flex h-screen bg-background overflow-hidden">
-            {/* Sidebar */}
+            {}
             <aside
                 className={cn_local(
                     "fixed inset-y-0 left-0 z-50 w-80 bg-card border-r border-border transform transition-transform duration-300 ease-in-out lg:relative lg:translate-x-0",
@@ -137,7 +118,7 @@ export function CoursePlayerClient({ course, currentLesson, asset, hasAccess, us
                 )}
             >
                 <div className="flex flex-col h-full">
-                    {/* Sidebar Header */}
+                    {}
                     <div className="p-4 border-b border-border flex items-center justify-between">
                         <Link href={`/courses/${course.slug}`} className="flex items-center gap-2 text-sm text-muted-foreground hover:text-primary transition-colors">
                             <ArrowLeft className="w-4 h-4" />
@@ -150,14 +131,12 @@ export function CoursePlayerClient({ course, currentLesson, asset, hasAccess, us
                             <ChevronLeft className="w-4 h-4" />
                         </button>
                     </div>
-
-                    {/* Course Title */}
+                    {}
                     <div className="p-4 border-b border-border bg-muted/30">
                         <h2 className="font-bold line-clamp-2">{course.title}</h2>
-                        {/* Progress UI would go here fetching from DB or passed props */}
+                        {}
                     </div>
-
-                    {/* Modules List */}
+                    {}
                     <div className="flex-1 overflow-y-auto p-4 space-y-6">
                         {course.modules.map((module: any, idx: number) => (
                             <div key={module.id}>
@@ -205,10 +184,9 @@ export function CoursePlayerClient({ course, currentLesson, asset, hasAccess, us
                     </div>
                 </div>
             </aside>
-
-            {/* Main Content */}
+            {}
             <main className="flex-1 flex flex-col h-full overflow-hidden relative w-full">
-                {/* Mobile Header */}
+                {}
                 <header className="h-16 border-b border-border flex items-center px-4 lg:hidden shrink-0">
                     <button
                         onClick={() => setSidebarOpen(true)}
@@ -218,10 +196,9 @@ export function CoursePlayerClient({ course, currentLesson, asset, hasAccess, us
                     </button>
                     <h1 className="ml-3 font-semibold truncate">{currentLesson.title}</h1>
                 </header>
-
                 <div className="flex-1 overflow-y-auto">
                     <div className="max-w-4xl mx-auto w-full">
-                        {/* Video Player */}
+                        {}
                         <div className="bg-black aspect-video w-full relative">
                             {hasAccess ? (
                                 loadingVideo ? (
@@ -258,8 +235,7 @@ export function CoursePlayerClient({ course, currentLesson, asset, hasAccess, us
                                 </div>
                             )}
                         </div>
-
-                        {/* Content Area */}
+                        {}
                         <div className="p-6 lg:p-10 space-y-8">
                             <div className="flex items-start justify-between gap-4 border-b border-border pb-6">
                                 <div>
@@ -287,8 +263,7 @@ export function CoursePlayerClient({ course, currentLesson, asset, hasAccess, us
                                     </button>
                                 </div>
                             </div>
-
-                            {/* Markdown/Text Content */}
+                            {}
                             {asset?.content_markdown && hasAccess && (
                                 <div className="prose dark:prose-invert max-w-none">
                                     <div className="whitespace-pre-wrap font-sans text-muted-foreground leading-relaxed">
@@ -296,8 +271,7 @@ export function CoursePlayerClient({ course, currentLesson, asset, hasAccess, us
                                     </div>
                                 </div>
                             )}
-
-                            {/* Navigation Footer */}
+                            {}
                             <div className="flex items-center justify-between pt-6 border-t border-border">
                                 {prevLesson ? (
                                     <button
@@ -308,7 +282,6 @@ export function CoursePlayerClient({ course, currentLesson, asset, hasAccess, us
                                         <span className="text-sm font-medium">Previous: {prevLesson.title}</span>
                                     </button>
                                 ) : <div />}
-
                                 {nextLesson ? (
                                     <button
                                         onClick={handleCompleteAndNext}

@@ -1,9 +1,7 @@
 "use client";
-
 import { motion, AnimatePresence } from "motion/react";
 import { Trash2, AlertCircle, HelpCircle, LucideIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
-
 interface ConfirmModalProps {
     isOpen: boolean;
     onClose: () => void;
@@ -16,7 +14,6 @@ interface ConfirmModalProps {
     isLoading?: boolean;
     icon?: LucideIcon;
 }
-
 export function ConfirmModal({
     isOpen,
     onClose,
@@ -29,8 +26,6 @@ export function ConfirmModal({
     isLoading = false,
     icon: Icon
 }: ConfirmModalProps) {
-
-    // Default icons based on variant
     const getIcon = () => {
         if (Icon) return Icon;
         switch (variant) {
@@ -39,9 +34,7 @@ export function ConfirmModal({
             default: return HelpCircle;
         }
     };
-
     const DefaultIcon = getIcon();
-
     const variantStyles = {
         danger: {
             iconContainer: "bg-red-500/10 ring-red-500/5",
@@ -59,9 +52,7 @@ export function ConfirmModal({
             confirmButton: "bg-primary shadow-primary/25 hover:opacity-90",
         }
     };
-
     const styles = variantStyles[variant];
-
     return (
         <AnimatePresence>
             {isOpen && (
@@ -82,14 +73,12 @@ export function ConfirmModal({
                         <div className={cn("w-20 h-20 rounded-full flex items-center justify-center mx-auto ring-8", styles.iconContainer)}>
                             <DefaultIcon className={cn("w-10 h-10", styles.icon)} />
                         </div>
-
                         <div className="space-y-2">
                             <h3 className="text-2xl font-bold text-foreground">{title}</h3>
                             <p className="text-muted-foreground text-sm leading-relaxed">
                                 {description}
                             </p>
                         </div>
-
                         <div className="flex gap-3">
                             <button
                                 type="button"

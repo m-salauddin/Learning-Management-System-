@@ -1,5 +1,4 @@
 "use client";
-
 import {
     Plus, Search, Edit2, Trash2, MoreHorizontal, Layers,
     Globe, Smartphone, Palette, TrendingUp, Briefcase,
@@ -14,7 +13,6 @@ import { useEffect, useState, useMemo, memo } from "react";
 import { cn } from "@/lib/utils";
 import Image from "next/image";
 import Link from "next/link";
-
 import {
     closestCenter,
     DndContext,
@@ -33,7 +31,6 @@ import {
     verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
-
 import {
     CourseWithInstructor, CourseStatus
 } from "@/types/lms";
@@ -65,10 +62,8 @@ import { useToast } from "@/components/ui/toast";
 import { AnimatedCheckbox } from "@/components/ui/AnimatedCheckbox";
 import { useAppDispatch } from "@/lib/store/hooks";
 import { reorderCourses } from "@/lib/store/features/courses/coursesSlice";
-
 import { SearchInput } from "@/components/dashboard/shared/SearchInput";
 import { StatusBadge, LevelBadge } from "@/components/dashboard/shared/Badges";
-
 const CourseRow = memo(({
     course,
     isSelected,
@@ -92,12 +87,10 @@ const CourseRow = memo(({
         transition,
         isDragging,
     } = useSortable({ id: course.id });
-
     const style = {
         transform: CSS.Transform.toString(transform),
         transition: transition || undefined,
     };
-
     return (
         <div
             ref={setNodeRef}
@@ -216,14 +209,11 @@ const CourseRow = memo(({
         </div>
     );
 });
-
 CourseRow.displayName = "CourseRow";
-
 export default function CourseManagementPage() {
     const toast = useToast();
     const router = useRouter();
     const dispatch = useAppDispatch();
-
     const sensors = useSensors(
         useSensor(MouseSensor, {
             activationConstraint: {
@@ -238,13 +228,11 @@ export default function CourseManagementPage() {
         }),
         useSensor(KeyboardSensor, {})
     );
-
     const [courses, setCourses] = useState<CourseWithInstructor[]>([]);
     const [stats, setStats] = useState<any | null>(null);
     const [categories, setCategories] = useState<{ id: string, name: string }[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [selectedCourses, setSelectedCourses] = useState<Set<string>>(new Set());
-
     const [searchTerm, setSearchTerm] = useState("");
     const [categoryFilter, setCategoryFilter] = useState("all");
     const [statusFilter, setStatusFilter] = useState("all");
@@ -253,9 +241,7 @@ export default function CourseManagementPage() {
     const [pageSize, setPageSize] = useState(10);
     const [totalCourses, setTotalCourses] = useState(0);
     const [onlyLatestBatch, setOnlyLatestBatch] = useState(true);
-
     const [exportModal, setExportModal] = useState(false);
-
     const fetchCoursesData = async () => {
         setIsLoading(true);
         try {
@@ -269,7 +255,6 @@ export default function CourseManagementPage() {
                 sort: 'serial',
                 onlyLatestBatch: onlyLatestBatch
             });
-
             if (result.data) {
                 setCourses(result.data);
                 setTotalCourses(result.total);
@@ -282,30 +267,25 @@ export default function CourseManagementPage() {
         }
         setIsLoading(false);
     };
-
     const fetchStatsData = async () => {
         const result = await getCourseStats();
         if (result.stats) {
             setStats(result.stats);
         }
     };
-
     const fetchCategoriesData = async () => {
         const result = await getCategories();
         if (result.data) {
             setCategories(result.data);
         }
     };
-
     useEffect(() => {
         fetchCoursesData();
     }, [searchTerm, categoryFilter, statusFilter, levelFilter, currentPage, pageSize, onlyLatestBatch]);
-
     useEffect(() => {
         fetchStatsData();
         fetchCategoriesData();
     }, []);
-
     const toggleSelectAll = () => {
         if (selectedCourses.size === courses.length && courses.length > 0) {
             setSelectedCourses(new Set());
@@ -313,7 +293,6 @@ export default function CourseManagementPage() {
             setSelectedCourses(new Set(courses.map(c => c.id)));
         }
     };
-
     const toggleSelectCourse = (courseId: string) => {
         const newSelected = new Set(selectedCourses);
         if (newSelected.has(courseId)) {
@@ -323,14 +302,11 @@ export default function CourseManagementPage() {
         }
         setSelectedCourses(newSelected);
     };
-
     const clearSelection = () => {
         setSelectedCourses(new Set());
     };
-
     const handleDeleteCourse = async (courseId: string) => {
         if (!confirm("Are you sure you want to delete this course?")) return;
-
         const result = await deleteCourse(courseId);
         if (result.success) {
             toast.success('Course deleted successfully');
@@ -340,7 +316,6 @@ export default function CourseManagementPage() {
             toast.error('Failed to delete course');
         }
     };
-
     const handleBulkAction = async (action: 'delete' | 'publish' | 'unpublish') => {
         if (action === 'delete') {
             if (!confirm(`Are you sure you want to delete ${selectedCourses.size} courses?`)) return;
@@ -365,32 +340,24 @@ export default function CourseManagementPage() {
                 toast.error('Failed to unpublish courses');
             }
         }
-
         setSelectedCourses(new Set());
         fetchCoursesData();
         fetchStatsData();
     };
-
     const handleDragEnd = async (event: DragEndEvent) => {
         const { active, over } = event;
-
         if (over && active.id !== over.id) {
             const oldIndex = courses.findIndex((item) => item.id === active.id);
             const newIndex = courses.findIndex((item) => item.id === over.id);
-
             const newOrder = arrayMove(courses, oldIndex, newIndex);
-
             const localOrder = newOrder.map((c, i) => ({
                 ...c,
                 serial_number: i + 1 + (currentPage - 1) * pageSize
             }));
-
             setCourses(localOrder);
-
             const loadingId = toast.loading("Serializing...", "Synchronizing catalog structure");
             const resultAction = await dispatch(reorderCourses(localOrder as any));
             toast.dismiss(loadingId);
-
             if (reorderCourses.rejected.match(resultAction)) {
                 toast.error(resultAction.payload as string || "Failed to synchronize order");
                 fetchCoursesData();
@@ -399,11 +366,9 @@ export default function CourseManagementPage() {
             }
         }
     };
-
     const togglePublishStatus = async (course: CourseWithInstructor) => {
         const action = course.status === 'published' ? unpublishCourse : publishCourse;
         const result = await action(course.id);
-
         if (result.success) {
             toast.success(`Course ${course.status === 'published' ? 'unpublished' : 'published'} successfully`);
             fetchCoursesData();
@@ -412,7 +377,6 @@ export default function CourseManagementPage() {
             toast.error(`Failed to update status`);
         }
     };
-
     const handleExportCSV = async () => {
         const result = await exportCoursesToCSV({ search: searchTerm, category: categoryFilter, status: statusFilter as any });
         if (result.csv) {
@@ -429,7 +393,6 @@ export default function CourseManagementPage() {
             toast.error('Failed to export courses');
         }
     };
-
     const handleExportJSON = async () => {
         const result = await exportCoursesToJSON({ search: searchTerm, category: categoryFilter, status: statusFilter as any });
         if (result.json) {
@@ -446,32 +409,25 @@ export default function CourseManagementPage() {
             toast.error('Failed to export courses');
         }
     };
-
     const handleExportPDF = async () => {
         const result = await exportCoursesToJSON({ search: searchTerm, category: categoryFilter, status: statusFilter as any });
-
         if (result.json) {
             try {
                 const coursesData = JSON.parse(result.json);
                 const doc = new jsPDF();
-
                 doc.setFillColor(63, 81, 181);
                 doc.rect(0, 0, 210, 40, 'F');
-
                 doc.setTextColor(255, 255, 255);
                 doc.setFontSize(22);
                 doc.setFont("helvetica", "bold");
                 doc.text("Dokkhota IT LMS", 14, 25);
-
                 doc.setFontSize(12);
                 doc.setFont("helvetica", "normal");
                 doc.text("Course Report", 14, 33);
-
                 doc.setTextColor(100, 100, 100);
                 doc.setFontSize(10);
                 doc.text(`Generated on: ${new Date().toLocaleDateString()}`, 14, 50);
                 doc.text(`Total Courses: ${coursesData.length}`, 14, 56);
-
                 const tableColumn = ["Title", "Category", "Status", "Price", "Students"];
                 const tableRows = coursesData.map((course: any) => [
                     course.title,
@@ -480,7 +436,6 @@ export default function CourseManagementPage() {
                     `BDT ${course.price}`,
                     course.total_students || 0
                 ]);
-
                 autoTable(doc, {
                     head: [tableColumn],
                     body: tableRows,
@@ -489,7 +444,6 @@ export default function CourseManagementPage() {
                     styles: { fontSize: 9 },
                     headStyles: { fillColor: [63, 81, 181] }
                 });
-
                 doc.save(`courses-export-${new Date().toISOString().split('T')[0]}.pdf`);
                 toast.success('Courses exported to PDF');
                 setExportModal(false);
@@ -499,7 +453,6 @@ export default function CourseManagementPage() {
             }
         }
     };
-
     return (
         <motion.div
             initial={{ opacity: 0 }}
@@ -524,7 +477,6 @@ export default function CourseManagementPage() {
                         Create, edit, and track performance of all courses
                     </motion.p>
                 </div>
-
                 <div className="flex flex-wrap items-center gap-3">
                     <motion.button
                         whileHover={{ scale: 1.02 }}
@@ -547,7 +499,6 @@ export default function CourseManagementPage() {
                     </Link>
                 </div>
             </div>
-
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                 {!stats ? (
                     [...Array(4)].map((_, i) => (
@@ -585,7 +536,6 @@ export default function CourseManagementPage() {
                     ))
                 )}
             </div>
-
             <div className="rounded-3xl border border-border/40 bg-card/30 backdrop-blur-xl overflow-hidden shadow-xl">
                 <div className="p-6 border-b border-border/20 flex flex-col lg:flex-row gap-4 justify-between">
                     <div className="flex items-center gap-2 w-full lg:max-w-md">
@@ -606,7 +556,6 @@ export default function CourseManagementPage() {
                             <RefreshCw className={cn("w-4 h-4", isLoading && "animate-spin")} />
                         </button>
                     </div>
-
                     <div className="flex flex-wrap items-center gap-3">
                         <Select value={categoryFilter} onValueChange={setCategoryFilter}>
                             <SelectTrigger className="w-full sm:w-fit min-w-[140px] rounded-xl">
@@ -617,7 +566,6 @@ export default function CourseManagementPage() {
                                 {categories.map(c => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)}
                             </SelectContent>
                         </Select>
-
                         <Select value={statusFilter} onValueChange={setStatusFilter}>
                             <SelectTrigger className="w-full sm:w-fit min-w-[140px] rounded-xl">
                                 <SelectValue placeholder="Status" />
@@ -629,7 +577,6 @@ export default function CourseManagementPage() {
                                 <SelectItem value="archived">Archived</SelectItem>
                             </SelectContent>
                         </Select>
-
                         <Select value={levelFilter} onValueChange={setLevelFilter}>
                             <SelectTrigger className="w-full sm:w-fit min-w-[140px] rounded-xl">
                                 <SelectValue placeholder="Level" />
@@ -641,7 +588,6 @@ export default function CourseManagementPage() {
                                 <SelectItem value="advanced">Advanced</SelectItem>
                             </SelectContent>
                         </Select>
-
                         <button
                             onClick={() => setOnlyLatestBatch(!onlyLatestBatch)}
                             className={cn(
@@ -654,7 +600,6 @@ export default function CourseManagementPage() {
                             <Layers className="w-3.5 h-3.5" />
                             <span>Latest Batch {onlyLatestBatch ? 'Active' : 'Disabled'}</span>
                         </button>
-
                         {(searchTerm || categoryFilter !== 'all' || statusFilter !== 'all' || levelFilter !== 'all') && (
                             <button
                                 onClick={() => {
@@ -672,7 +617,6 @@ export default function CourseManagementPage() {
                         )}
                     </div>
                 </div>
-
                 {isLoading ? (
                     <div className="py-24 text-center flex flex-col items-center justify-center space-y-4">
                         <RefreshCw className="w-10 h-10 animate-spin text-primary/40" />
@@ -703,7 +647,6 @@ export default function CourseManagementPage() {
                             <div className="px-4 text-[10px] uppercase tracking-widest font-black text-muted-foreground/60 text-center">Impact</div>
                             <div className="px-4 text-[10px] uppercase tracking-widest font-black text-muted-foreground/60 text-right">Action</div>
                         </div>
-
                         <DndContext
                             sensors={sensors}
                             collisionDetection={closestCenter}
@@ -729,10 +672,8 @@ export default function CourseManagementPage() {
                                 </div>
                             </SortableContext>
                         </DndContext>
-
                     </div>
                 )}
-
                 {!isLoading && totalCourses > pageSize && (
                     <div className="p-6 border-t border-border/20 bg-muted/5">
                         <Pagination
@@ -749,7 +690,6 @@ export default function CourseManagementPage() {
                     </div>
                 )}
             </div>
-
             <AnimatePresence>
                 {selectedCourses.size > 0 && (
                     <motion.div
@@ -781,7 +721,6 @@ export default function CourseManagementPage() {
                     </motion.div>
                 )}
             </AnimatePresence>
-
             <Dialog open={exportModal} onClose={() => setExportModal(false)} size="sm">
                 <DialogHeader>
                     <DialogTitle>Export Academic Catalog</DialogTitle>
@@ -820,4 +759,3 @@ export default function CourseManagementPage() {
         </motion.div>
     );
 }
-

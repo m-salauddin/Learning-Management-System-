@@ -1,15 +1,4 @@
-// ============================================================================
-// COURSE PAGE TYPES
-// ============================================================================
-// Types for the comprehensive course detail page
-// ============================================================================
-
 import { User, Course, CourseReview, Module, Lesson, Category } from './lms';
-
-// ============================================================================
-// COURSE DETAILS (Extended Marketing Content)
-// ============================================================================
-
 export interface CourseDetails {
     course_id: string;
     description_long: string;
@@ -26,11 +15,6 @@ export interface CourseDetails {
     created_at: string;
     updated_at: string;
 }
-
-// ============================================================================
-// COURSE PROJECTS
-// ============================================================================
-
 export interface CourseProject {
     id: string;
     course_id: string;
@@ -45,13 +29,7 @@ export interface CourseProject {
     created_at: string;
     updated_at: string;
 }
-
-// ============================================================================
-// COURSE RESOURCES
-// ============================================================================
-
 export type ResourceType = 'file' | 'link' | 'pdf' | 'code' | 'video';
-
 export interface CourseResource {
     id: string;
     course_id: string;
@@ -66,13 +44,7 @@ export interface CourseResource {
     created_at: string;
     updated_at: string;
 }
-
-// ============================================================================
-// COURSE OUTLINE (Curriculum Display)
-// ============================================================================
-
 export type OutlineTopicType = 'video' | 'text' | 'quiz' | 'assignment' | 'live';
-
 export interface CourseOutlineTopic {
     id: string;
     module_id: string;
@@ -87,7 +59,6 @@ export interface CourseOutlineTopic {
     created_at: string;
     updated_at: string;
 }
-
 export interface CourseOutlineModule {
     id: string;
     course_id: string;
@@ -100,11 +71,6 @@ export interface CourseOutlineModule {
     updated_at: string;
     topics: CourseOutlineTopic[];
 }
-
-// ============================================================================
-// COURSE FAQ
-// ============================================================================
-
 export interface CourseFAQ {
     id: string;
     course_id: string;
@@ -115,11 +81,6 @@ export interface CourseFAQ {
     created_at: string;
     updated_at: string;
 }
-
-// ============================================================================
-// COURSE LEADS (Contact Form)
-// ============================================================================
-
 export interface CourseLead {
     id: string;
     course_id: string | null;
@@ -134,7 +95,6 @@ export interface CourseLead {
     created_at: string;
     updated_at: string;
 }
-
 export interface CreateLeadInput {
     course_id?: string;
     name: string;
@@ -143,11 +103,6 @@ export interface CreateLeadInput {
     message: string;
     source?: string;
 }
-
-// ============================================================================
-// INSTRUCTOR WITH PROFILE
-// ============================================================================
-
 export interface InstructorInfo {
     id: string;
     name: string;
@@ -167,11 +122,6 @@ export interface InstructorInfo {
     rating: number;
     role?: 'main' | 'support';
 }
-
-// ============================================================================
-// RATING BREAKDOWN
-// ============================================================================
-
 export interface RatingBreakdown {
     average: number;
     total: number;
@@ -183,11 +133,6 @@ export interface RatingBreakdown {
         1: number;
     };
 }
-
-// ============================================================================
-// REVIEW WITH USER
-// ============================================================================
-
 export interface ReviewWithUser extends CourseReview {
     user: {
         id: string;
@@ -195,11 +140,6 @@ export interface ReviewWithUser extends CourseReview {
         avatar_url: string;
     };
 }
-
-// ============================================================================
-// MODULE WITH LESSONS (For Curriculum Display)
-// ============================================================================
-
 export interface LessonPreview {
     id: string;
     title: string;
@@ -210,7 +150,6 @@ export interface LessonPreview {
     is_free_preview: boolean;
     is_published: boolean;
 }
-
 export interface ModuleWithLessonsPreview {
     id: string;
     course_id: string;
@@ -222,58 +161,27 @@ export interface ModuleWithLessonsPreview {
     total_duration_minutes: number;
     lesson_count: number;
 }
-
-// ============================================================================
-// COURSE PAGE DATA (Complete Page Payload)
-// ============================================================================
-
 export interface CoursePageData {
-    // Core course info
     course: Course;
     details: CourseDetails | null;
-
-    // Instructor (Primary)
     instructor: InstructorInfo;
-
-    // All Instructors (Main + Support)
     instructors?: InstructorInfo[];
-
-    // Curriculum
     modules: ModuleWithLessonsPreview[];
     totalLessons: number;
     totalDuration: number;
-
-    // Course Outline (for marketing display)
     courseOutline: CourseOutlineModule[];
-
-    // Sections
     projects: CourseProject[];
     resources: CourseResource[];
     faq: CourseFAQ[];
-
-    // Reviews
     reviews: ReviewWithUser[];
     ratingBreakdown: RatingBreakdown;
-
-    // Related
     relatedCourses: Course[];
-
-    // Category
     category: Category | null;
-
-    // User-specific (only if logged in)
     isEnrolled: boolean;
     enrollmentId: string | null;
     userProgress: number;
-
-    // Batches
     batches: CourseBatch[];
 }
-
-// ============================================================================
-// COURSE BATCHES
-// ============================================================================
-
 export interface CourseBatch {
     id: string;
     course_id: string;
@@ -285,11 +193,6 @@ export interface CourseBatch {
     class_schedule: string;
     is_active: boolean;
 }
-
-// ============================================================================
-// ENROLLMENT BOX STATE
-// ============================================================================
-
 export interface EnrollmentBoxState {
     isEnrolled: boolean;
     isPurchasing: boolean;
@@ -303,11 +206,6 @@ export interface EnrollmentBoxState {
     } | null;
     error: string | null;
 }
-
-// ============================================================================
-// LESSON PLAYER STATE
-// ============================================================================
-
 export interface LessonPlayerState {
     currentLessonId: string | null;
     lessonContent: {
@@ -328,16 +226,10 @@ export interface LessonPlayerState {
     loading: boolean;
     error: string | null;
 }
-
-// ============================================================================
-// API RESPONSES
-// ============================================================================
-
 export interface SignedVideoResponse {
     url: string;
     expires_at: string;
 }
-
 export interface ValidateCouponResponse {
     valid: boolean;
     error?: string;
@@ -347,18 +239,12 @@ export interface ValidateCouponResponse {
     discount_amount?: number;
     final_price?: number;
 }
-
 export interface EnrollCourseResponse {
     success: boolean;
     enrollment_id?: string;
     error?: string;
     transaction_id?: string;
 }
-
-// ============================================================================
-// SUBMIT REVIEW INPUT
-// ============================================================================
-
 export interface SubmitReviewInput {
     course_id: string;
     rating: number;

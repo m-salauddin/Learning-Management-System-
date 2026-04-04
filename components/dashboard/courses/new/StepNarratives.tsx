@@ -1,5 +1,4 @@
 "use client";
-
 import { useState } from "react";
 import { motion } from "motion/react";
 import {
@@ -8,19 +7,16 @@ import {
 import { cn } from "@/lib/utils";
 import { inputClasses, labelClasses } from "./constants";
 import { CreateCourseInput } from "@/types/lms";
-
 interface StepNarrativesProps {
     formData: CreateCourseInput;
     setFormData: React.Dispatch<React.SetStateAction<CreateCourseInput>>;
     errors: Record<string, string>;
 }
-
 export const StepNarratives = ({ formData, setFormData, errors }: StepNarrativesProps) => {
     const [requirementInput, setRequirementInput] = useState("");
     const [audienceInput, setAudienceInput] = useState("");
     const [tagInput, setTagInput] = useState("");
     const [faqInput, setFaqInput] = useState({ question: "", answer: "" });
-
     const addArrayItem = (field: 'requirements' | 'target_audience' | 'tags', value: string, setter: (v: string) => void) => {
         if (value.trim()) {
             setFormData(prev => ({
@@ -30,25 +26,21 @@ export const StepNarratives = ({ formData, setFormData, errors }: StepNarratives
             setter("");
         }
     };
-
     const removeArrayItem = (field: 'requirements' | 'target_audience' | 'tags', index: number) => {
         setFormData(prev => ({
             ...prev,
             [field]: (prev[field] as string[]).filter((_, i) => i !== index)
         }));
     };
-
     const addFaq = () => {
         if (faqInput.question.trim() && faqInput.answer.trim()) {
             setFormData(prev => ({ ...prev, faqs: [...(prev.faqs || []), faqInput] }));
             setFaqInput({ question: "", answer: "" });
         }
     };
-
     const removeFaq = (index: number) => {
         setFormData(prev => ({ ...prev, faqs: (prev.faqs || []).filter((_, i) => i !== index) }));
     };
-
     return (
         <motion.div
             key="step2"
@@ -57,7 +49,7 @@ export const StepNarratives = ({ formData, setFormData, errors }: StepNarratives
             exit={{ opacity: 0, scale: 0.95 }}
             className="space-y-6"
         >
-            {/* Section Header */}
+            {}
             <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -84,8 +76,7 @@ export const StepNarratives = ({ formData, setFormData, errors }: StepNarratives
             </motion.div>
             <div className="p-6 rounded-3xl border border-border/50 bg-card/30 backdrop-blur-xl shadow-xl space-y-8">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-
-                    {/* Requirements */}
+                    {}
                     <div className="space-y-3">
                         <label className={labelClasses}>
                             <ListChecks className="w-4 h-4 text-muted-foreground" />
@@ -123,8 +114,7 @@ export const StepNarratives = ({ formData, setFormData, errors }: StepNarratives
                             </p>
                         )}
                     </div>
-
-                    {/* Target Audience */}
+                    {}
                     <div className="space-y-3">
                         <label className={labelClasses}>
                             <Users className="w-4 h-4 text-muted-foreground" />
@@ -162,8 +152,7 @@ export const StepNarratives = ({ formData, setFormData, errors }: StepNarratives
                             </p>
                         )}
                     </div>
-
-                    {/* Tags */}
+                    {}
                     <div className="space-y-3">
                         <label className={labelClasses}>
                             <Tags className="w-4 h-4 text-muted-foreground" />
@@ -196,8 +185,7 @@ export const StepNarratives = ({ formData, setFormData, errors }: StepNarratives
                         </div>
                     </div>
                 </div>
-
-                {/* FAQ Section */}
+                {}
                 <div className="pt-8 border-t border-border/50 space-y-6">
                     <label className={labelClasses}>
                         <HelpCircle className="w-4 h-4 text-muted-foreground" />
@@ -205,21 +193,21 @@ export const StepNarratives = ({ formData, setFormData, errors }: StepNarratives
                     </label>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                         <div className="space-y-4 p-5 rounded-2xl bg-muted/20 border border-border/50">
-                            <input 
-                                value={faqInput.question} 
-                                onChange={(e) => setFaqInput(prev => ({ ...prev, question: e.target.value }))} 
-                                placeholder="Common Student Question..." 
-                                className={cn(inputClasses, "bg-background")} 
+                            <input
+                                value={faqInput.question}
+                                onChange={(e) => setFaqInput(prev => ({ ...prev, question: e.target.value }))}
+                                placeholder="Common Student Question..."
+                                className={cn(inputClasses, "bg-background")}
                             />
-                            <textarea 
-                                value={faqInput.answer} 
-                                onChange={(e) => setFaqInput(prev => ({ ...prev, answer: e.target.value }))} 
-                                placeholder="The helpful answer..." 
-                                className={cn(inputClasses, "h-28 resize-none py-3 bg-background")} 
+                            <textarea
+                                value={faqInput.answer}
+                                onChange={(e) => setFaqInput(prev => ({ ...prev, answer: e.target.value }))}
+                                placeholder="The helpful answer..."
+                                className={cn(inputClasses, "h-28 resize-none py-3 bg-background")}
                             />
-                            <button 
-                                type="button" 
-                                onClick={addFaq} 
+                            <button
+                                type="button"
+                                onClick={addFaq}
                                 className="w-full py-2.5 bg-primary text-white rounded-xl text-xs font-bold uppercase tracking-wider hover:bg-primary/90 transition-all active:scale-95 flex items-center justify-center gap-2"
                             >
                                 <Plus className="w-4 h-4" /> Add FAQ

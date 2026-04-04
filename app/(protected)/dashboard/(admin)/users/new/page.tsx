@@ -1,5 +1,4 @@
 "use client";
-
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { motion } from "motion/react";
@@ -12,7 +11,6 @@ import { UserRole } from "@/types/user";
 import { useToast } from "@/components/ui/toast";
 import { userCreateSchema } from "@/lib/validations/user";
 import { ZodError } from "zod";
-
 import {
     Select,
     SelectContent,
@@ -21,7 +19,6 @@ import {
     SelectValue,
 } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
-
 export default function AddUserPage() {
     const router = useRouter();
     const toast = useToast();
@@ -34,8 +31,6 @@ export default function AddUserPage() {
     });
     const [errors, setErrors] = useState<Record<string, string>>({});
     const [isSubmitted, setIsSubmitted] = useState(false);
-
-    // Real-time validation (Watch Mode) - Debounced for performance
     useEffect(() => {
         if (isSubmitted) {
             const timer = setTimeout(() => {
@@ -53,17 +48,14 @@ export default function AddUserPage() {
             return () => clearTimeout(timer);
         }
     }, [userData, isSubmitted]);
-
     const handleCreateUser = async (e: React.FormEvent) => {
         e.preventDefault();
         setIsSubmitted(true);
         setErrors({});
         setIsCreating(true);
-
         try {
             userCreateSchema.parse(userData);
             const result = await createUser(userData);
-
             if (result.success) {
                 toast.success("User created", "New user has been added successfully");
                 router.push("/dashboard/users");
@@ -85,27 +77,23 @@ export default function AddUserPage() {
             setIsCreating(false);
         }
     };
-
     return (
         <div className="max-w-4xl mx-auto py-8 px-4 sm:px-6">
-
-
-            {/* Header */}
+            {}
             <div className="mb-8">
                 <h1 className="text-3xl font-bold tracking-tight">Add New User</h1>
                 <p className="text-muted-foreground mt-1">Create a new user account with specific role and permissions.</p>
             </div>
-
             <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 className="space-y-8"
             >
-                {/* Main Form */}
+                {}
                 <form onSubmit={handleCreateUser} className="space-y-6">
                     <div className="p-6 rounded-3xl border border-border/50 bg-card/30 backdrop-blur-xl shadow-xl space-y-6">
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            {/* Full Name */}
+                            {}
                             <div className="space-y-2">
                                 <label className="text-sm font-medium text-foreground flex items-center gap-2">
                                     <User className="w-4 h-4 text-muted-foreground" />
@@ -130,8 +118,7 @@ export default function AddUserPage() {
                                     )}
                                 </div>
                             </div>
-
-                            {/* Email Address */}
+                            {}
                             <div className="space-y-2">
                                 <label className="text-sm font-medium text-foreground flex items-center gap-2">
                                     <Mail className="w-4 h-4 text-muted-foreground" />
@@ -156,8 +143,7 @@ export default function AddUserPage() {
                                     )}
                                 </div>
                             </div>
-
-                            {/* Password */}
+                            {}
                             <div className="space-y-2">
                                 <label className="text-sm font-medium text-foreground flex items-center gap-2">
                                     <Lock className="w-4 h-4 text-muted-foreground" />
@@ -182,8 +168,7 @@ export default function AddUserPage() {
                                     )}
                                 </div>
                             </div>
-
-                            {/* Role Selection */}
+                            {}
                             <div className="space-y-2">
                                 <label className="text-sm font-medium text-foreground flex items-center gap-2">
                                     <Shield className="w-4 h-4 text-muted-foreground" />
@@ -225,7 +210,6 @@ export default function AddUserPage() {
                                 </Select>
                             </div>
                         </div>
-
                         <div className="pt-4 flex flex-col sm:flex-row gap-3">
                             <button
                                 type="submit"
@@ -246,15 +230,14 @@ export default function AddUserPage() {
                         </div>
                     </div>
                 </form>
-
-                {/* Role Permissions Information Cards */}
+                {}
                 <div className="space-y-4">
                     <h3 className="font-bold flex items-center gap-2 text-lg px-1">
                         <Shield className="w-5 h-5 text-primary" />
                         Role Permissions
                     </h3>
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                        {/* Student */}
+                        {}
                         <div className="p-5 rounded-3xl border border-border/50 bg-card/30 hover:bg-muted/20 transition-all space-y-2 group">
                             <div className="flex items-center gap-2">
                                 <User className="w-4 h-4 text-blue-500 group-hover:scale-110 transition-transform" />
@@ -264,7 +247,7 @@ export default function AddUserPage() {
                                 Regular access to courses and learning materials.
                             </p>
                         </div>
-                        {/* Teacher */}
+                        {}
                         <div className="p-5 rounded-3xl border border-border/50 bg-card/30 hover:bg-muted/20 transition-all space-y-2 group">
                             <div className="flex items-center gap-2">
                                 <Award className="w-4 h-4 text-violet-500 group-hover:scale-110 transition-transform" />
@@ -274,7 +257,7 @@ export default function AddUserPage() {
                                 Can create courses, manage lessons, and interact with students.
                             </p>
                         </div>
-                        {/* Moderator */}
+                        {}
                         <div className="p-5 rounded-3xl border border-border/50 bg-card/30 hover:bg-muted/20 transition-all space-y-2 group">
                             <div className="flex items-center gap-2">
                                 <Settings className="w-4 h-4 text-amber-500 group-hover:scale-110 transition-transform" />
@@ -284,7 +267,7 @@ export default function AddUserPage() {
                                 Can manage content, reviews, and community discussions.
                             </p>
                         </div>
-                        {/* Admin */}
+                        {}
                         <div className="p-5 rounded-3xl border border-border/50 bg-card/30 hover:bg-muted/20 transition-all space-y-2 group">
                             <div className="flex items-center gap-2">
                                 <Shield className="w-4 h-4 text-rose-500 group-hover:scale-110 transition-transform" />
@@ -296,8 +279,7 @@ export default function AddUserPage() {
                         </div>
                     </div>
                 </div>
-
-                {/* Security Tip */}
+                {}
                 <div className="p-4 rounded-2xl border border-border/50 bg-primary/5 flex items-start gap-3">
                     <Lock className="w-5 h-5 text-primary mt-0.5 shrink-0" />
                     <div className="space-y-1">

@@ -1,9 +1,7 @@
 "use client";
-
 import { motion } from "motion/react";
 import { LucideIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
-
 interface StatsCardProps {
     title: string;
     value: string | number;
@@ -13,7 +11,6 @@ interface StatsCardProps {
     description?: string;
     delay?: number;
 }
-
 export function StatsCard({ title, value, icon: Icon, trend, trendUp, description, delay = 0 }: StatsCardProps) {
     return (
         <motion.div
@@ -37,7 +34,6 @@ export function StatsCard({ title, value, icon: Icon, trend, trendUp, descriptio
                     </div>
                 )}
             </div>
-
             <h3 className="text-sm font-medium text-muted-foreground mb-1">{title}</h3>
             <div className="flex items-baseline gap-2">
                 <h2 className="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-foreground to-foreground/70">

@@ -1,19 +1,8 @@
-// ============================================================================
-// ENROLLMENTS REDUX SLICE
-// ============================================================================
-// State management for enrollments and progress tracking
-// ============================================================================
-
 import { createSlice, createAsyncThunk, PayloadAction } from "@reduxjs/toolkit";
 import {
     EnrollmentWithCourse, EnrollmentWithProgress, LessonProgress
 } from "@/types/lms";
 import * as enrollmentActions from "@/lib/actions/enrollments";
-
-// ============================================================================
-// STATE INTERFACE
-// ============================================================================
-
 interface CourseProgressSummary {
     enrollment_id: string;
     course_id: string;
@@ -22,44 +11,28 @@ interface CourseProgressSummary {
     total_lessons: number;
     completed_at: string | null;
 }
-
 interface EnrollmentsState {
-    // User's enrollments
     enrollments: EnrollmentWithCourse[];
     totalEnrollments: number;
     currentPage: number;
     pageSize: number;
     totalPages: number;
-    
-    // Current enrollment (for course player)
     currentEnrollment: EnrollmentWithProgress | null;
-    
-    // Lesson progress map (lessonId -> progress)
     lessonProgress: Record<string, LessonProgress>;
-    
-    // Course progress summary
     courseProgress: CourseProgressSummary | null;
-    
-    // Resume lesson
     resumeLesson: {
         lesson_id: string;
         lesson_title: string;
         module_title: string;
         watched_seconds: number;
     } | null;
-    
-    // Enrollment check cache
     enrollmentCache: Record<string, boolean>;
-    
-    // Loading states
     loading: {
         list: boolean;
         single: boolean;
         progress: boolean;
         update: boolean;
     };
-    
-    // Error states
     errors: {
         list: string | null;
         single: string | null;
@@ -67,7 +40,6 @@ interface EnrollmentsState {
         update: string | null;
     };
 }
-
 const initialState: EnrollmentsState = {
     enrollments: [],
     totalEnrollments: 0,
@@ -92,11 +64,6 @@ const initialState: EnrollmentsState = {
         update: null
     }
 };
-
-// ============================================================================
-// ASYNC THUNKS
-// ============================================================================
-
 export const fetchMyEnrollments = createAsyncThunk(
     'enrollments/fetchMy',
     async (params: {
@@ -112,7 +79,6 @@ export const fetchMyEnrollments = createAsyncThunk(
         }
     }
 );
-
 export const fetchEnrollment = createAsyncThunk(
     'enrollments/fetchOne',
     async (courseId: string, { rejectWithValue }) => {
@@ -127,7 +93,6 @@ export const fetchEnrollment = createAsyncThunk(
         }
     }
 );
-
 export const checkEnrollment = createAsyncThunk(
     'enrollments/check',
     async (courseId: string, { rejectWithValue }) => {
@@ -139,7 +104,6 @@ export const checkEnrollment = createAsyncThunk(
         }
     }
 );
-
 export const fetchCourseProgress = createAsyncThunk(
     'enrollments/fetchProgress',
     async (courseId: string, { rejectWithValue }) => {
@@ -154,7 +118,6 @@ export const fetchCourseProgress = createAsyncThunk(
         }
     }
 );
-
 export const fetchResumeLesson = createAsyncThunk(
     'enrollments/fetchResumeLesson',
     async (courseId: string, { rejectWithValue }) => {
@@ -169,7 +132,6 @@ export const fetchResumeLesson = createAsyncThunk(
         }
     }
 );
-
 export const updateLessonProgress = createAsyncThunk(
     'enrollments/updateProgress',
     async (params: {
@@ -192,7 +154,6 @@ export const updateLessonProgress = createAsyncThunk(
         }
     }
 );
-
 export const markLessonComplete = createAsyncThunk(
     'enrollments/markComplete',
     async (lessonId: string, { rejectWithValue }) => {
@@ -207,11 +168,6 @@ export const markLessonComplete = createAsyncThunk(
         }
     }
 );
-
-// ============================================================================
-// SLICE
-// ============================================================================
-
 const enrollmentsSlice = createSlice({
     name: 'enrollments',
     initialState,
@@ -262,7 +218,6 @@ const enrollmentsSlice = createSlice({
         }
     },
     extraReducers: (builder) => {
-        // Fetch my enrollments
         builder
             .addCase(fetchMyEnrollments.pending, (state) => {
                 state.loading.list = true;
@@ -280,8 +235,6 @@ const enrollmentsSlice = createSlice({
                 state.loading.list = false;
                 state.errors.list = action.payload as string;
             });
-        
-        // Fetch single enrollment
         builder
             .addCase(fetchEnrollment.pending, (state) => {
                 state.loading.single = true;
@@ -290,8 +243,6 @@ const enrollmentsSlice = createSlice({
             .addCase(fetchEnrollment.fulfilled, (state, action) => {
                 state.loading.single = false;
                 state.currentEnrollment = action.payload as EnrollmentWithProgress;
-                
-                // Build lesson progress map
                 const enrollment = action.payload as any;
                 if (enrollment?.lesson_progress) {
                     state.lessonProgress = {};
@@ -304,14 +255,10 @@ const enrollmentsSlice = createSlice({
                 state.loading.single = false;
                 state.errors.single = action.payload as string;
             });
-        
-        // Check enrollment
         builder
             .addCase(checkEnrollment.fulfilled, (state, action) => {
                 state.enrollmentCache[action.payload.courseId] = action.payload.isEnrolled;
             });
-        
-        // Fetch course progress
         builder
             .addCase(fetchCourseProgress.pending, (state) => {
                 state.loading.progress = true;
@@ -324,14 +271,10 @@ const enrollmentsSlice = createSlice({
                 state.loading.progress = false;
                 state.errors.progress = action.payload as string;
             });
-        
-        // Fetch resume lesson
         builder
             .addCase(fetchResumeLesson.fulfilled, (state, action) => {
                 state.resumeLesson = action.payload as any;
             });
-        
-        // Update lesson progress
         builder
             .addCase(updateLessonProgress.pending, (state) => {
                 state.loading.update = true;
@@ -347,8 +290,6 @@ const enrollmentsSlice = createSlice({
                 state.loading.update = false;
                 state.errors.update = action.payload as string;
             });
-        
-        // Mark lesson complete
         builder
             .addCase(markLessonComplete.fulfilled, (state, action) => {
                 const { lessonId } = action.payload;
@@ -360,12 +301,10 @@ const enrollmentsSlice = createSlice({
             });
     }
 });
-
 export const {
     setCurrentPage,
     clearCurrentEnrollment,
     updateLocalProgress,
     clearErrors
 } = enrollmentsSlice.actions;
-
 export default enrollmentsSlice.reducer;

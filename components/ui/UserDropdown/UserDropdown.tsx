@@ -1,5 +1,4 @@
 "use client";
-
 import { useState, useRef, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
@@ -19,12 +18,10 @@ import { AuthUser, logout } from "@/lib/store/features/auth/authSlice";
 import { useAppDispatch } from "@/lib/store/hooks";
 import { Modal } from "@/components/ui/Modal";
 import { cn } from "@/lib/utils";
-
 interface UserDropdownProps {
     user: AuthUser;
     onOpen?: () => void;
 }
-
 export function UserDropdown({ user, onOpen }: UserDropdownProps) {
     const [isOpen, setIsOpen] = useState(false);
     const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
@@ -32,8 +29,6 @@ export function UserDropdown({ user, onOpen }: UserDropdownProps) {
     const router = useRouter();
     const dispatch = useAppDispatch();
     const toast = useToast();
-
-
     useEffect(() => {
         function handleClickOutside(event: MouseEvent) {
             if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
@@ -43,45 +38,30 @@ export function UserDropdown({ user, onOpen }: UserDropdownProps) {
         document.addEventListener("mousedown", handleClickOutside);
         return () => document.removeEventListener("mousedown", handleClickOutside);
     }, []);
-
     const handleSignOutClick = () => {
         setIsOpen(false);
         setShowLogoutConfirm(true);
     };
-
     const confirmLogout = async () => {
         setShowLogoutConfirm(false);
         const loadingToastId = toast.loading("Logging out...", "Please wait while we sign you out.");
-
         try {
-
             const supabase = createClient();
             await supabase.auth.signOut();
-
-
             await signOut();
-
-
             dispatch(logout());
-
             toast.dismiss(loadingToastId);
             toast.success("Logged Out", "You have been logged out successfully.");
-
-
             router.refresh();
             router.push('/login');
-
         } catch (error) {
             console.error("Logout error:", error);
             toast.dismiss(loadingToastId);
-
             dispatch(logout());
             router.refresh();
             router.push('/login');
         }
     };
-
-
     const getInitials = (name: string) => {
         return name
             .split(" ")
@@ -90,13 +70,10 @@ export function UserDropdown({ user, onOpen }: UserDropdownProps) {
             .toUpperCase()
             .substring(0, 2);
     };
-
     const displayName = user.fullName || user.email?.split("@")[0] || "User";
     const userRole = user.role;
-
     const [imageError, setImageError] = useState(false);
     const [imageLoaded, setImageLoaded] = useState(false);
-
     return (
         <div className="relative" ref={dropdownRef}>
             <button
@@ -141,7 +118,6 @@ export function UserDropdown({ user, onOpen }: UserDropdownProps) {
                 </div>
                 <ChevronDown className={`w-4 h-4 text-muted-foreground group-hover:text-foreground transition-all duration-200 hidden sm:block ${isOpen ? "rotate-180" : ""}`} />
             </button>
-
             <AnimatePresence>
                 {isOpen && (
                     <motion.div
@@ -151,13 +127,10 @@ export function UserDropdown({ user, onOpen }: UserDropdownProps) {
                         transition={{ type: "spring", stiffness: 300, damping: 30 }}
                         className="absolute top-full right-0 lg:mt-6.5 mt-5 w-64 bg-white dark:bg-slate-950 border border-white/20 dark:border-white/10 rounded-2xl shadow-xl overflow-hidden z-50 p-2"
                     >
-
                         <div className="px-4 py-3 mb-2 bg-muted/30 rounded-xl">
                             <p className="font-semibold text-sm truncate">{displayName}</p>
                             <p className="text-xs text-muted-foreground truncate">{user.email}</p>
                         </div>
-
-
                         <div className="flex flex-col gap-1">
                             <Link
                                 href="/dashboard"
@@ -176,10 +149,7 @@ export function UserDropdown({ user, onOpen }: UserDropdownProps) {
                                 My Profile
                             </Link>
                         </div>
-
                         <div className="h-px bg-border/50 my-2" />
-
-
                         <button
                             onClick={handleSignOutClick}
                             className="w-full flex items-center gap-3 px-4 py-2.5 text-sm font-medium text-destructive hover:bg-destructive/10 rounded-xl transition-colors cursor-pointer"
@@ -190,8 +160,6 @@ export function UserDropdown({ user, onOpen }: UserDropdownProps) {
                     </motion.div>
                 )}
             </AnimatePresence>
-
-
             <Modal
                 isOpen={showLogoutConfirm}
                 onClose={() => setShowLogoutConfirm(false)}

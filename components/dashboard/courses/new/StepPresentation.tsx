@@ -1,12 +1,10 @@
 "use client";
-
 import { motion } from "motion/react";
 import { DollarSign, Video, Image as ImageIcon, Upload, X, Loader2, AlertCircle, Tag } from "lucide-react";
 import Image from "next/image";
 import { cn } from "@/lib/utils";
 import { inputClasses, labelClasses } from "./constants";
 import { CreateCourseInput } from "@/types/lms";
-
 interface StepPresentationProps {
     formData: CreateCourseInput;
     setFormData: React.Dispatch<React.SetStateAction<CreateCourseInput>>;
@@ -21,7 +19,6 @@ interface StepPresentationProps {
     removeThumbnail: () => void;
     errors: Record<string, string>;
 }
-
 export const StepPresentation = ({
     formData,
     setFormData,
@@ -44,7 +41,7 @@ export const StepPresentation = ({
             exit={{ opacity: 0, scale: 0.95 }}
             className="space-y-6"
         >
-            {/* Section Header */}
+            {}
             <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -71,7 +68,7 @@ export const StepPresentation = ({
             </motion.div>
             <div className="p-6 rounded-3xl border border-border/50 bg-card/30 backdrop-blur-xl shadow-xl space-y-8">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
-                    {/* Pricing */}
+                    {}
                     <div className="space-y-4">
                         <label className={labelClasses}>
                             <DollarSign className="w-4 h-4 text-muted-foreground" />
@@ -159,8 +156,7 @@ export const StepPresentation = ({
                             </div>
                         </div>
                     </div>
-
-                    {/* Thumbnail */}
+                    {}
                     <div className="space-y-4">
                         <label className={labelClasses}>
                             <ImageIcon className="w-4 h-4 text-muted-foreground" />

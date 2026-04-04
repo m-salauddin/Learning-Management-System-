@@ -1,5 +1,4 @@
 "use client";
-
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { motion } from "motion/react";
@@ -15,7 +14,6 @@ import {
 } from "lucide-react";
 import { Logo } from "@/components/ui/Logo";
 import { cn } from "@/lib/utils";
-
 const sidebarItems = [
     { icon: LayoutDashboard, label: "Overview", href: "/admin" },
     { icon: Users, label: "User Management", href: "/admin/users" },
@@ -25,10 +23,8 @@ const sidebarItems = [
     { icon: BarChart3, label: "Analytics", href: "/admin/analytics" },
     { icon: Settings, label: "Settings", href: "/admin/settings" },
 ];
-
 export function AdminSidebar() {
     const pathname = usePathname();
-
     return (
         <aside className="hidden lg:flex flex-col w-72 h-screen sticky top-0 border-r border-border/50 bg-background/30 backdrop-blur-2xl z-40">
             <div className="p-6">
@@ -39,7 +35,6 @@ export function AdminSidebar() {
                     </span>
                 </div>
             </div>
-
             <nav className="flex-1 px-4 space-y-2 mt-4">
                 {sidebarItems.map((item) => {
                     const isActive = item.href === "/admin"
@@ -70,7 +65,6 @@ export function AdminSidebar() {
                     )
                 })}
             </nav>
-
             <div className="p-4 border-t border-border/50">
                 <div className="bg-linear-to-br from-red-500/5 to-transparent p-4 rounded-2xl border border-red-500/10 relative overflow-hidden group hover:border-red-500/20 transition-colors">
                     <div className="absolute top-0 right-0 w-20 h-20 bg-red-500/10 blur-2xl rounded-full -mr-10 -mt-10 pointer-events-none group-hover:bg-red-500/20 transition-all" />

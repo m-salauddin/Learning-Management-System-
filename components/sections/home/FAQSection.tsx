@@ -1,16 +1,13 @@
 "use client";
-
 import * as React from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { HelpCircle, ChevronDown, Plus, Minus } from "lucide-react";
 import { staggerContainer, staggerItem } from "@/lib/motion";
 import { Badge } from "@/components/ui/Badge";
-
 interface FAQItem {
     question: string;
     answer: string;
 }
-
 const FAQ_DATA: FAQItem[] = [
     {
         question: "How do I get started with Dokkho IT?",
@@ -45,7 +42,6 @@ const FAQ_DATA: FAQItem[] = [
         answer: "Our platform is fully responsive and works seamlessly on all devices. We're also developing dedicated iOS and Android apps with offline learning capabilities, coming soon in 2026!"
     }
 ];
-
 function FAQItem({ item, index, isOpen, onClick }: {
     item: FAQItem;
     index: number;
@@ -68,14 +64,13 @@ function FAQItem({ item, index, isOpen, onClick }: {
                     border backdrop-blur-sm
                 `}
             >
-                {/* Subtle glow effect on hover */}
+                {}
                 <div className={`
                     absolute inset-0 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none
                     ${isOpen ? "bg-linear-to-r from-primary/5 via-transparent to-primary/5" : ""}
                 `} />
-
                 <div className="relative flex items-start justify-between gap-4">
-                    {/* Question number */}
+                    {}
                     <div className={`
                         shrink-0 w-8 h-8 rounded-xl flex items-center justify-center text-sm font-bold
                         transition-all duration-300
@@ -86,8 +81,7 @@ function FAQItem({ item, index, isOpen, onClick }: {
                     `}>
                         {String(index + 1).padStart(2, '0')}
                     </div>
-
-                    {/* Question text */}
+                    {}
                     <div className="flex-1 min-w-0">
                         <h3 className={`
                             text-base sm:text-lg font-semibold transition-colors duration-300
@@ -95,8 +89,7 @@ function FAQItem({ item, index, isOpen, onClick }: {
                         `}>
                             {item.question}
                         </h3>
-
-                        {/* Answer with AnimatePresence - Optimized for smooth animations */}
+                        {}
                         <AnimatePresence initial={false} mode="wait">
                             {isOpen && (
                                 <motion.div
@@ -140,8 +133,7 @@ function FAQItem({ item, index, isOpen, onClick }: {
                             )}
                         </AnimatePresence>
                     </div>
-
-                    {/* Toggle icon */}
+                    {}
                     <motion.div
                         animate={{ rotate: isOpen ? 180 : 0 }}
                         transition={{
@@ -169,29 +161,22 @@ function FAQItem({ item, index, isOpen, onClick }: {
         </motion.div>
     );
 }
-
 export function FAQSection() {
     const [openIndex, setOpenIndex] = React.useState<number | null>(0);
-
     const handleToggle = (index: number) => {
         setOpenIndex(openIndex === index ? null : index);
     };
-
-    // Split FAQs into two columns
     const leftColumnFAQs = FAQ_DATA.filter((_, i) => i % 2 === 0);
     const rightColumnFAQs = FAQ_DATA.filter((_, i) => i % 2 === 1);
-
     return (
         <section id="faq" className="py-24 relative overflow-hidden">
-            {/* Background gradient */}
+            {}
             <div className="absolute inset-0 bg-linear-to-b from-background via-muted/20 to-background" />
-
-            {/* Decorative elements */}
+            {}
             <div className="absolute top-1/4 left-0 w-[400px] h-[400px] bg-primary/5 rounded-full blur-[100px] pointer-events-none" />
             <div className="absolute bottom-1/4 right-0 w-[400px] h-[400px] bg-secondary/5 rounded-full blur-[100px] pointer-events-none" />
-
             <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                {/* Header */}
+                {}
                 <motion.div
                     initial={{ opacity: 0, y: 20 }}
                     whileInView={{ opacity: 1, y: 0 }}
@@ -212,9 +197,8 @@ export function FAQSection() {
                         Find answers to common questions about our platform, courses, and learning experience
                     </p>
                 </motion.div>
-
-                {/* FAQ Grid - Single column on mobile, two columns on large screens */}
-                {/* Mobile: Single column with all FAQs in order */}
+                {}
+                {}
                 <motion.div
                     variants={staggerContainer}
                     initial="hidden"
@@ -232,10 +216,9 @@ export function FAQSection() {
                         />
                     ))}
                 </motion.div>
-
-                {/* Desktop: Two columns */}
+                {}
                 <div className="hidden lg:grid lg:grid-cols-2 gap-6">
-                    {/* Left Column */}
+                    {}
                     <motion.div
                         variants={staggerContainer}
                         initial="hidden"
@@ -256,8 +239,7 @@ export function FAQSection() {
                             );
                         })}
                     </motion.div>
-
-                    {/* Right Column */}
+                    {}
                     <motion.div
                         variants={staggerContainer}
                         initial="hidden"
@@ -279,8 +261,7 @@ export function FAQSection() {
                         })}
                     </motion.div>
                 </div>
-
-                {/* Bottom CTA */}
+                {}
                 <motion.div
                     initial={{ opacity: 0, y: 20 }}
                     whileInView={{ opacity: 1, y: 0 }}

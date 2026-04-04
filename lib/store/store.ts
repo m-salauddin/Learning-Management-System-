@@ -7,7 +7,6 @@ import couponsReducer from './features/admin/couponsSlice';
 import categoriesReducer from './features/admin/categoriesSlice';
 import coursePageReducer from './features/coursePage/coursePageSlice';
 import lessonPlayerReducer from './features/lessonPlayer/lessonPlayerSlice';
-
 export const store = configureStore({
     reducer: {
         auth: authReducer,
@@ -15,12 +14,11 @@ export const store = configureStore({
         enrollments: enrollmentsReducer,
         admin: adminReducer,
         coupons: couponsReducer,
-        categories: categoriesReducer, // Added categories slice
+        categories: categoriesReducer,
         coursePage: coursePageReducer,
         lessonPlayer: lessonPlayerReducer,
     },
     devTools: process.env.NODE_ENV !== 'production',
 });
-
 export type RootState = ReturnType<typeof store.getState>;
 export type AppDispatch = typeof store.dispatch;
