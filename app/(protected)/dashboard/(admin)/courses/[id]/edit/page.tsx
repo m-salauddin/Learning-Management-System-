@@ -68,8 +68,30 @@ export default function EditCoursePage({ params }: { params: Promise<{ id: strin
         course_type: "recorded" as "recorded" | "live" | "hybrid",
         projects: [] as { title: string; description: string }[],
         faqs: [] as { question: string; answer: string }[],
-        resources: [] as { title: string; type: string; url: string }[]
+        resources: [] as { title: string; type: string; url: string }[],
+        community_facebook_url: "",
+        community_whatsapp_url: "",
+        bkash_automatic_enabled: false,
+        manual_payment_methods: {
+            bkash: "",
+            nagad: "",
+            upay: "",
+            rocket: ""
+        }
     });
+
+    const DRAFT_KEY = `dokkhoit_course_edit_v1_${courseId}`;
+
+    // Save draft on change
+    useEffect(() => {
+        if (!isLoading) {
+            const timer = setTimeout(() => {
+                localStorage.setItem(DRAFT_KEY, JSON.stringify(formData));
+            }, 500);
+            return () => clearTimeout(timer);
+        }
+    }, [formData, isLoading, DRAFT_KEY]);
+
     useEffect(() => {
         if (submittedSteps.has(currentStep)) {
             const timer = setTimeout(() => {
@@ -167,8 +189,31 @@ export default function EditCoursePage({ params }: { params: Promise<{ id: strin
                             title: l.title || "",
                             video_url: l.lesson_assets?.[0]?.video_path || ""
                         }))
-                    })) || []
+                    })) || [],
+                    community_facebook_url: course.community_facebook_url || "",
+                    community_whatsapp_url: course.community_whatsapp_url || "",
+                    bkash_automatic_enabled: course.bkash_automatic_enabled || false,
+                    manual_payment_methods: course.manual_payment_methods || {
+                        bkash: "",
+                        nagad: "",
+                        upay: "",
+                        rocket: ""
+                    }
                 });
+
+                // Check for local draft after loading from DB
+                const savedDraft = localStorage.getItem(DRAFT_KEY);
+                if (savedDraft) {
+                    try {
+                        const parsed = JSON.parse(savedDraft);
+                        setFormData(prev => ({ ...prev, ...parsed }));
+                        if (parsed.thumbnail_url) setThumbnailPreview(parsed.thumbnail_url);
+                        toast.success("Unsaved Changes Restored", "We've restored your last session's edits for this course.");
+                    } catch (e) {
+                        console.error("Failed to parse edit draft", e);
+                    }
+                }
+
                 if (course.thumbnail_url) {
                     setThumbnailPreview(course.thumbnail_url);
                 }
@@ -184,6 +229,10 @@ export default function EditCoursePage({ params }: { params: Promise<{ id: strin
         }
     };
     const handleThumbnailUpload = async (file: File) => {
+        if (file.size > 1 * 1024 * 1024) {
+            toast.error("File excessively large", "Maximum allowed thumbnail size is 1MB. Please compress your image.");
+            return;
+        }
         setIsUploadingThumbnail(true);
         try {
             const fileExt = file.name.split('.').pop();
@@ -236,6 +285,12 @@ export default function EditCoursePage({ params }: { params: Promise<{ id: strin
     };
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+        
+        if (currentStep < totalSteps) {
+            nextStep();
+            return;
+        }
+
         setSubmittedSteps(prev => new Set(prev).add(4));
         setErrors({});
         try {
@@ -246,6 +301,7 @@ export default function EditCoursePage({ params }: { params: Promise<{ id: strin
                 ...formData
             });
             if (result.success) {
+                localStorage.removeItem(DRAFT_KEY);
                 toast.success("Course updated successfully!");
                 router.push("/dashboard/courses");
             } else {

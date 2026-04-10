@@ -2,7 +2,6 @@
 import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "motion/react";
-import { GraduationCap } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { useToast } from "@/components/ui/toast";
 import { createCourse, getCategories, getTeachers } from "@/lib/actions/courses";
@@ -55,8 +54,9 @@ export default function CreateCoursePage() {
         category_id: "",
         instructor_ids: [] as string[],
         support_instructor_ids: [] as string[],
-        level: "beginner" as CourseLevel,
-        language: "Bengali",
+        level: "" as any,
+        course_type: "" as any,
+        language: "",
         thumbnail_url: "",
         preview_video_url: "",
         requirements: [] as string[],
@@ -67,8 +67,41 @@ export default function CreateCoursePage() {
         faqs: [] as { question: string; answer: string }[],
         resources: [] as { title: string; type: string; url: string }[],
         modules: [] as { title: string; lessons: { title: string; video_url: string }[] }[],
-        coupon_code: ""
+        community_facebook_url: "",
+        community_whatsapp_url: "",
+        bkash_automatic_enabled: false,
+        manual_payment_methods: {
+            bkash: "",
+            nagad: "",
+            upay: "",
+            rocket: ""
+        }
     });
+    const DRAFT_KEY = "dokkhoit_course_draft_v1";
+
+    useEffect(() => {
+        const savedDraft = localStorage.getItem(DRAFT_KEY);
+        if (savedDraft) {
+            try {
+                const parsed = JSON.parse(savedDraft);
+                setFormData(prev => ({ ...prev, ...parsed }));
+                if (parsed.thumbnail_url) {
+                    setThumbnailPreview(parsed.thumbnail_url);
+                }
+                toast.success("Draft Restored", "Your previous progress has been automatically loaded.");
+            } catch (err) {
+                console.error("Failed to parse draft", err);
+            }
+        }
+    }, []);
+
+    useEffect(() => {
+        const timer = setTimeout(() => {
+            localStorage.setItem(DRAFT_KEY, JSON.stringify(formData));
+        }, 500);
+        return () => clearTimeout(timer);
+    }, [formData]);
+
     useEffect(() => {
         if (submittedSteps.has(currentStep)) {
             const timer = setTimeout(() => {
@@ -77,17 +110,21 @@ export default function CreateCoursePage() {
                 else if (currentStep === 2) schema = courseStep2Schema;
                 else if (currentStep === 3) schema = courseStep3Schema;
                 else if (currentStep === 4) schema = courseStep4Schema;
+
                 if (schema) {
                     const result = schema.safeParse(formData);
+                    const newErrors: Record<string, string> = {};
                     if (!result.success) {
-                        const newErrors: Record<string, string> = {};
                         result.error.issues.forEach((issue) => {
                             if (issue.path[0]) newErrors[issue.path[0] as string] = issue.message;
                         });
-                        setErrors(newErrors);
-                    } else {
-                        setErrors({});
                     }
+
+                    // Only update if errors actually changed to prevent infinite loops
+                    setErrors(prev => {
+                        const hasChanged = JSON.stringify(prev) !== JSON.stringify(newErrors);
+                        return hasChanged ? newErrors : prev;
+                    });
                 }
             }, 300);
             return () => clearTimeout(timer);
@@ -117,6 +154,10 @@ export default function CreateCoursePage() {
         }
     };
     const handleThumbnailUpload = async (file: File) => {
+        if (file.size > 1 * 1024 * 1024) {
+            toast.error("File excessively large", "Maximum allowed thumbnail size is 1MB. Please compress your image.");
+            return;
+        }
         setIsUploadingThumbnail(true);
         try {
             const fileExt = file.name.split('.').pop();
@@ -180,6 +221,7 @@ export default function CreateCoursePage() {
             setIsSubmitting(true);
             const result = await createCourse(formData);
             if (result.success) {
+                localStorage.removeItem(DRAFT_KEY);
                 toast.success("Course created successfully!");
                 router.push("/dashboard/courses");
             } else {
@@ -217,6 +259,8 @@ export default function CreateCoursePage() {
                     if (issue.path[0]) newErrors[issue.path[0] as string] = issue.message;
                 });
                 setErrors(newErrors);
+                toast.error("Validation Error", "Please check the form for missing or invalid fields.");
+                window.scrollTo({ top: 0, behavior: 'smooth' });
             }
         }
     };
@@ -265,7 +309,10 @@ export default function CreateCoursePage() {
                                     handleDragLeave={handleDragLeave}
                                     handleDrop={handleDrop}
                                     handleFileChange={handleFileChange}
-                                    removeThumbnail={removeThumbnail}
+                                    removeThumbnail={() => {
+                                        setThumbnailPreview(null);
+                                        setFormData(prev => ({ ...prev, thumbnail_url: "" }));
+                                    }}
                                     errors={errors}
                                 />
                             )}
@@ -277,8 +324,16 @@ export default function CreateCoursePage() {
                                 />
                             )}
                         </AnimatePresence>
+
+                        <FormFooter
+                            currentStep={currentStep}
+                            totalSteps={totalSteps}
+                            prevStep={prevStep}
+                            nextStep={nextStep}
+                            isSubmitting={isSubmitting}
+                        />
                     </div>
-                    {}
+                    
                     <div className="xl:col-span-4 h-full">
                         <CoursePreview
                             formData={formData}
@@ -286,13 +341,6 @@ export default function CreateCoursePage() {
                         />
                     </div>
                 </div>
-                <FormFooter
-                    currentStep={currentStep}
-                    totalSteps={totalSteps}
-                    prevStep={prevStep}
-                    nextStep={nextStep}
-                    isSubmitting={isSubmitting}
-                />
             </form>
         </div>
     );

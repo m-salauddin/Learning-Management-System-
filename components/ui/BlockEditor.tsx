@@ -100,10 +100,10 @@ export const BlockEditor = ({
     const scopeClass = `be-${editorId}`;
     // Theme mapping
     const themeMap = {
-        blue: { primary: '#3b82f6', ring: 'rgba(59, 130, 246, 0.1)' },
-        amber: { primary: '#f59e0b', ring: 'rgba(245, 158, 11, 0.1)' },
-        emerald: { primary: '#10b981', ring: 'rgba(16, 185, 129, 0.1)' },
-        violet: { primary: '#8b5cf6', ring: 'rgba(139, 92, 246, 0.1)' }
+        blue: { primary: '#3b82f6', ring: 'rgba(59, 130, 246, 0.2)' },
+        amber: { primary: '#f59e0b', ring: 'rgba(245, 158, 11, 0.2)' },
+        emerald: { primary: '#10b981', ring: 'rgba(16, 185, 129, 0.2)' },
+        violet: { primary: '#8b5cf6', ring: 'rgba(139, 92, 246, 0.2)' }
     };
     const currentTheme = themeMap[color] || themeMap.blue;
 
@@ -196,12 +196,11 @@ export const BlockEditor = ({
     return (
         <div 
             className={cn(
-                "group relative rounded-xl border transition-all duration-300 bg-slate-50 dark:bg-black/40 backdrop-blur-md overflow-hidden",
-                error ? "border-red-500/50 ring-2 ring-red-500/10" : "border-slate-200 dark:border-white/10 focus-within:border-primary/50 focus-within:ring-4 focus-within:ring-primary/10",
+                "group relative rounded-xl border transition-all duration-300 bg-input-dark backdrop-blur-md overflow-hidden",
+                error ? "border-red-500/50 ring-2 ring-red-500/20" : "border-input-dark-border focus-within:border-(--primary)/50 focus-within:ring-2 focus-within:ring-(--primary)/20",
                 className
             )}
             style={{ 
-                // @ts-ignore
                 '--primary': currentTheme.primary,
                 '--color-primary': currentTheme.primary,
                 '--ring': currentTheme.ring,

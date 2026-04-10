@@ -79,6 +79,8 @@ export interface Course {
     requirements: string[];
     tags: string[];
     batch_no: number | null;
+    community_facebook_url: string | null;
+    community_whatsapp_url: string | null;
     serial_number: number;
     created_at: string;
     updated_at: string;
@@ -399,7 +401,16 @@ export interface CreateCourseInput {
     projects?: { title: string; description: string; image_url?: string; tech_stack?: string }[];
     resources?: { title: string; type: string; url: string }[];
     modules?: { title: string; lessons: { title: string; video_url: string }[] }[];
-    coupon_code?: string;
+    coupons?: { code: string; discount_percentage: number; expires_at?: string }[];
+    community_facebook_url?: string;
+    community_whatsapp_url?: string;
+    bkash_automatic_enabled?: boolean;
+    manual_payment_methods?: {
+        bkash?: string;
+        nagad?: string;
+        upay?: string;
+        rocket?: string;
+    };
 }
 export interface UpdateCourseInput extends Partial<CreateCourseInput> {
     id: string;

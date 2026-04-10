@@ -45,8 +45,18 @@ export const ToastProvider = ({ children }: { children: ReactNode }) => {
         return addToast({ title, description, variant: "loading" });
     }, [addToast]);
     const [isHovered, setIsHovered] = useState(false);
+    const contextValue = React.useMemo(() => ({ 
+        toast: addToast, 
+        dismiss, 
+        success, 
+        error, 
+        warning, 
+        info, 
+        loading 
+    }), [addToast, dismiss, success, error, warning, info, loading]);
+
     return (
-        <ToastContext.Provider value={{ toast: addToast, dismiss, success, error, warning, info, loading }}>
+        <ToastContext.Provider value={contextValue}>
             {children}
             <div
                 className="fixed bottom-4 left-4 right-4 sm:bottom-6 sm:left-auto sm:right-6 z-9999 flex flex-col items-end pointer-events-auto sm:w-[420px] w-auto"
