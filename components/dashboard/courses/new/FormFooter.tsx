@@ -1,20 +1,24 @@
 "use client";
 import Link from "next/link";
-import { ChevronLeft, ChevronRight, Sparkles, Loader2 } from "lucide-react";
+import { ChevronLeft, ChevronRight, Rocket, CheckCircle2, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 interface FormFooterProps {
     currentStep: number;
     totalSteps: number;
     prevStep: () => void;
     nextStep: () => void;
+    onCreateCourse: () => void;
     isSubmitting: boolean;
+    submitLabel?: string;
 }
 export const FormFooter = ({
     currentStep,
     totalSteps,
     prevStep,
     nextStep,
-    isSubmitting
+    onCreateCourse,
+    isSubmitting,
+    submitLabel = "Create Course"
 }: FormFooterProps) => {
     return (
         <div className="mt-12 sticky bottom-6 z-50">
@@ -48,7 +52,8 @@ export const FormFooter = ({
                         </button>
                     ) : (
                         <button
-                            type="submit"
+                            type="button"
+                            onClick={onCreateCourse}
                             disabled={isSubmitting}
                             className={cn(
                                 "px-8 py-2.5 rounded-xl font-bold text-xs flex items-center gap-2 transition-all active:scale-95",
@@ -61,8 +66,12 @@ export const FormFooter = ({
                                 <Loader2 className="w-4 h-4 animate-spin" />
                             ) : (
                                 <>
-                                    <Sparkles className="w-4 h-4" />
-                                    Create Course
+                                    {submitLabel.includes("Update") ? (
+                                        <CheckCircle2 className="w-4 h-4" />
+                                    ) : (
+                                        <Rocket className="w-4 h-4" />
+                                    )}
+                                    {submitLabel}
                                 </>
                             )}
                         </button>

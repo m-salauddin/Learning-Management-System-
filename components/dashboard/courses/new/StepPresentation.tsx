@@ -203,7 +203,13 @@ export const StepPresentation = ({
                                         >
                                             {(formData.thumbnail_url || thumbnailPreview) ? (
                                                 <>
-                                                    <Image src={thumbnailPreview || formData.thumbnail_url || ""} alt="Thumbnail" fill className="object-cover transition-transform duration-500 group-hover/upload:scale-105" />
+                                                    <Image 
+                                                        src={thumbnailPreview || formData.thumbnail_url || ""} 
+                                                        alt="Thumbnail" 
+                                                        fill 
+                                                        unoptimized
+                                                        className="object-cover transition-transform duration-500 group-hover/upload:scale-105" 
+                                                    />
                                                     <div className="absolute inset-0 bg-black/40 opacity-0 group-hover/upload:opacity-100 transition-opacity flex items-center justify-center gap-4 backdrop-blur-[2px]">
                                                         <div className="p-3 rounded-full bg-white/20 text-white shadow-xl transform scale-90 group-hover/upload:scale-100 transition-transform"><Upload className="w-6 h-6" /></div>
                                                         <div onClick={(e) => { e.stopPropagation(); removeThumbnail(); }} className="p-3 rounded-full bg-red-500/40 text-white shadow-xl transform scale-90 group-hover/upload:scale-100 transition-transform"><X className="w-6 h-6" /></div>

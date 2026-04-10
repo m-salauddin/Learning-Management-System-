@@ -1,6 +1,6 @@
 "use client";
-import { useState, useEffect, useRef, use } from "react";
-import { useRouter } from "next/navigation";
+import { useState, useEffect, useRef } from "react";
+import { useRouter, useParams } from "next/navigation";
 import { motion, AnimatePresence } from "motion/react";
 import { GraduationCap, Loader2, ArrowLeft } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
@@ -34,8 +34,9 @@ interface Teacher {
     email: string;
     avatar_url: string | null;
 }
-export default function EditCoursePage({ params }: { params: Promise<{ id: string }> }) {
-    const { id: courseId } = use(params);
+export default function EditCoursePage() {
+    const params = useParams();
+    const courseId = params?.id as string;
     const router = useRouter();
     const supabase = createClient();
     const toast = useToast();
@@ -81,16 +82,18 @@ export default function EditCoursePage({ params }: { params: Promise<{ id: strin
     });
 
     const DRAFT_KEY = `dokkhoit_course_edit_v1_${courseId}`;
+    const [dbFormData, setDbFormData] = useState<CreateCourseInput | null>(null);
+    const isReadyRef = useRef(false);
 
-    // Save draft on change
     useEffect(() => {
-        if (!isLoading) {
+        if (isReadyRef.current && !isLoading) {
             const timer = setTimeout(() => {
-                localStorage.setItem(DRAFT_KEY, JSON.stringify(formData));
+                const draftData = { ...formData, _savedStep: currentStep };
+                localStorage.setItem(DRAFT_KEY, JSON.stringify(draftData));
             }, 500);
             return () => clearTimeout(timer);
         }
-    }, [formData, isLoading, DRAFT_KEY]);
+    }, [formData, currentStep, isLoading, DRAFT_KEY]);
 
     useEffect(() => {
         if (submittedSteps.has(currentStep)) {
@@ -131,6 +134,16 @@ export default function EditCoursePage({ params }: { params: Promise<{ id: strin
                 getCategories(),
                 getTeachers()
             ]);
+
+            const safeDate = (dateStr: string | null | undefined) => {
+                if (!dateStr) return undefined;
+                try {
+                    const d = new Date(dateStr);
+                    return isNaN(d.getTime()) ? undefined : d.toISOString().slice(0, 16);
+                } catch {
+                    return undefined;
+                }
+            };
             if (catsRes.success && catsRes.data) {
                 setCategories(catsRes.data);
             }
@@ -150,13 +163,13 @@ export default function EditCoursePage({ params }: { params: Promise<{ id: strin
                 const supportInstructorIds = instructors
                     .filter((i: any) => i.role === 'support')
                     .map((i: any) => i.instructor_id);
-                setFormData({
+                const fetchedFormData: CreateCourseInput = {
                     title: course.title || "",
                     short_description: course.short_description || "",
                     description: course.description || details?.description_long || "",
                     price: course.price || 0,
                     discount_price: course.discount_price || null,
-                    discount_expires_at: course.discount_expires_at ? new Date(course.discount_expires_at).toISOString().slice(0, 16) : undefined,
+                    discount_expires_at: safeDate(course.discount_expires_at),
                     category_id: course.category_id || "",
                     instructor_ids: mainInstructorIds.length > 0 ? mainInstructorIds : (course.instructor_id ? [course.instructor_id] : []),
                     support_instructor_ids: supportInstructorIds,
@@ -199,31 +212,69 @@ export default function EditCoursePage({ params }: { params: Promise<{ id: strin
                         upay: "",
                         rocket: ""
                     }
-                });
+                };
 
-                // Check for local draft after loading from DB
+                setFormData(fetchedFormData);
+                setDbFormData(fetchedFormData);
+                
+                if (fetchedFormData.thumbnail_url) {
+                    setThumbnailPreview(fetchedFormData.thumbnail_url);
+                }
+
+                let draftApplied = false;
                 const savedDraft = localStorage.getItem(DRAFT_KEY);
                 if (savedDraft) {
                     try {
                         const parsed = JSON.parse(savedDraft);
-                        setFormData(prev => ({ ...prev, ...parsed }));
-                        if (parsed.thumbnail_url) setThumbnailPreview(parsed.thumbnail_url);
-                        toast.success("Unsaved Changes Restored", "We've restored your last session's edits for this course.");
+                        const { _savedStep, ...draftFields } = parsed;
+                        
+                        const dbComp = {
+                            title: fetchedFormData.title,
+                            thumbnail_url: fetchedFormData.thumbnail_url,
+                            price: Number(fetchedFormData.price),
+                            description: fetchedFormData.description,
+                            modules: fetchedFormData.modules,
+                        };
+                        const draftComp = {
+                            title: draftFields.title || "",
+                            thumbnail_url: draftFields.thumbnail_url || "",
+                            price: Number(draftFields.price || 0),
+                            description: draftFields.description || "",
+                            modules: draftFields.modules || [],
+                        };
+
+                        if (JSON.stringify(dbComp) !== JSON.stringify(draftComp)) {
+                            setFormData(prev => ({ ...prev, ...draftFields }));
+                            
+                            // Always sync thumbnail preview if we have one in draft
+                            if (draftFields.thumbnail_url) {
+                                setThumbnailPreview(draftFields.thumbnail_url);
+                            }
+                            
+                            if (_savedStep) setCurrentStep(Number(_savedStep));
+                            toast.success("Unsaved Changes Restored", "We've restored your last session's edits for this course.");
+                            draftApplied = true;
+                        } else {
+                            localStorage.removeItem(DRAFT_KEY);
+                        }
                     } catch (e) {
                         console.error("Failed to parse edit draft", e);
+                        localStorage.removeItem(DRAFT_KEY);
                     }
                 }
 
-                if (course.thumbnail_url) {
-                    setThumbnailPreview(course.thumbnail_url);
+                if (!draftApplied && fetchedFormData.thumbnail_url) {
+                    setThumbnailPreview(fetchedFormData.thumbnail_url);
                 }
+                
+                isReadyRef.current = true;
             } else {
                 toast.error("Course not found");
                 router.push("/dashboard/courses");
             }
         } catch (error) {
-            console.error("Failed to fetch course data:", error);
-            toast.error("Failed to load course data");
+            console.error("Error fetching data:", error);
+            toast.error("Error", "Failed to load course data. Please refresh the page.");
         } finally {
             setIsLoading(false);
         }
@@ -236,19 +287,28 @@ export default function EditCoursePage({ params }: { params: Promise<{ id: strin
         setIsUploadingThumbnail(true);
         try {
             const fileExt = file.name.split('.').pop();
-            const fileName = `${Math.random()}.${fileExt}`;
+            const fileName = `${Math.random().toString(36).substring(2)}-${Date.now()}.${fileExt}`;
             const filePath = `course-thumbnails/${fileName}`;
+
             const { error: uploadError } = await supabase.storage
                 .from('courses')
-                .upload(filePath, file);
+                .upload(filePath, file, {
+                    cacheControl: '3600',
+                    upsert: true
+                });
+
             if (uploadError) throw uploadError;
+
             const { data: { publicUrl } } = supabase.storage
                 .from('courses')
                 .getPublicUrl(filePath);
+
             setFormData(prev => ({ ...prev, thumbnail_url: publicUrl }));
+            
             const reader = new FileReader();
             reader.onloadend = () => setThumbnailPreview(reader.result as string);
             reader.readAsDataURL(file);
+            
             toast.success("Thumbnail uploaded successfully");
         } catch (error: any) {
             console.error("Thumbnail upload error:", error);
@@ -283,11 +343,8 @@ export default function EditCoursePage({ params }: { params: Promise<{ id: strin
         setFormData(prev => ({ ...prev, thumbnail_url: "" }));
         setThumbnailPreview(null);
     };
-    const handleSubmit = async (e: React.FormEvent) => {
-        e.preventDefault();
-        
+    const handleUpdateCourse = async () => {
         if (currentStep < totalSteps) {
-            nextStep();
             return;
         }
 
@@ -357,7 +414,7 @@ export default function EditCoursePage({ params }: { params: Promise<{ id: strin
     }
     return (
         <div className="max-w-6xl mx-auto py-8 px-4 sm:px-6">
-            <form onSubmit={handleSubmit} className="space-y-8">
+            <div className="space-y-8">
                 {}
                 <div className="mb-8">
                     <div className="flex items-center gap-3 mb-4">
@@ -433,9 +490,11 @@ export default function EditCoursePage({ params }: { params: Promise<{ id: strin
                     totalSteps={totalSteps}
                     prevStep={prevStep}
                     nextStep={nextStep}
+                    onCreateCourse={handleUpdateCourse}
                     isSubmitting={isSubmitting}
+                    submitLabel="Update Course"
                 />
-            </form>
+            </div>
         </div>
     );
 }

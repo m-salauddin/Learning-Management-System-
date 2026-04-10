@@ -124,7 +124,7 @@ const CourseRow = memo(({
             <div className="px-4 flex items-center gap-4 min-w-0">
                 <div className="w-16 h-11 rounded-xl bg-muted overflow-hidden shrink-0 border border-border/20 shadow-sm relative group-hover:scale-105 transition-transform duration-500">
                     {course.thumbnail_url ? (
-                        <Image src={course.thumbnail_url} alt="" fill className="object-cover" />
+                        <Image src={course.thumbnail_url} alt="" fill unoptimized className="object-cover" />
                     ) : (
                         <div className="w-full h-full flex items-center justify-center bg-muted text-[10px] font-black text-muted-foreground uppercase tracking-widest">N/A</div>
                     )}

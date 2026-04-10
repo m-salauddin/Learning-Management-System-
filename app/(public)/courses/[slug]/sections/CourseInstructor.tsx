@@ -46,6 +46,7 @@ export default function CourseInstructor({ course }: CourseInstructorProps) {
                                     src={inst.avatar}
                                     alt={inst.name}
                                     fill
+                                    sizes="(max-width: 640px) 100vw, 33vw"
                                     className="object-cover object-top group-hover:scale-110 transition-transform duration-700"
                                 />
                             ) : (
@@ -90,7 +91,7 @@ export default function CourseInstructor({ course }: CourseInstructorProps) {
                             <div className="flex items-center gap-6">
                                 <div className="w-20 h-20 rounded-3xl overflow-hidden relative shrink-0 ring-4 ring-accent/5">
                                     {selectedInstructor.avatar ? (
-                                        <Image src={selectedInstructor.avatar} alt={selectedInstructor.name} fill className="object-cover" />
+                                        <Image src={selectedInstructor.avatar} alt={selectedInstructor.name} fill sizes="80px" className="object-cover" />
                                     ) : (
                                         <div className="w-full h-full flex items-center justify-center font-black text-2xl text-white bg-slate-800 uppercase">{selectedInstructor.name.charAt(0)}</div>
                                     )}

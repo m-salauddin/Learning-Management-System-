@@ -248,7 +248,7 @@ export default function CourseDetailClient({ course, pageData }: CourseDetailCli
                 error(err.message);
             }
         } else {
-            info("Payment integration coming soon. This is a demo.");
+            router.push(`/checkout/${course.slug}`);
         }
         setLoading(false);
     };

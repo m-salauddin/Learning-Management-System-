@@ -71,6 +71,8 @@ export interface Course {
     language: string;
     duration_hours: number;
     total_lessons: number;
+    total_assignments?: number;
+    total_projects?: number;
     total_students: number;
     rating: number;
     rating_count: number;
@@ -81,6 +83,14 @@ export interface Course {
     batch_no: number | null;
     community_facebook_url: string | null;
     community_whatsapp_url: string | null;
+    bkash_automatic_enabled: boolean;
+    manual_payment_methods: {
+        bkash?: string;
+        nagad?: string;
+        upay?: string;
+        rocket?: string;
+    };
+    stripe_enabled?: boolean;
     serial_number: number;
     created_at: string;
     updated_at: string;
@@ -443,6 +453,8 @@ export interface CreateTransactionInput {
     course_id: string;
     coupon_code?: string;
     payment_provider: string;
+    payment_intent_id?: string;
+    payment_method?: string;
 }
 export interface CreateReviewInput {
     course_id: string;

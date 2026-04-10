@@ -108,6 +108,8 @@ export async function createTransaction(
             coupon_id: couponId,
             coupon_code: input.coupon_code || '',
             payment_provider: input.payment_provider,
+            payment_intent_id: input.payment_intent_id || '',
+            payment_method: input.payment_method || '',
             status: 'pending'
         })
         .select('id')

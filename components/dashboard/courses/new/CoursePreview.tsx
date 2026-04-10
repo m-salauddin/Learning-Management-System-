@@ -24,6 +24,7 @@ export const CoursePreview = ({ formData, thumbnailPreview }: CoursePreviewProps
                                     src={thumbnailPreview || formData.thumbnail_url || ""}
                                     alt="Preview"
                                     fill
+                                    unoptimized
                                     className="object-cover"
                                 />
                             ) : (

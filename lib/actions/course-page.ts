@@ -31,7 +31,7 @@ export async function getCoursePageData(slug: string): Promise<{
             .from('courses')
             .select(`
                 *,
-                categories:category_id (
+                category:categories (
                     id,
                     name,
                     slug,
@@ -45,7 +45,7 @@ export async function getCoursePageData(slug: string): Promise<{
         if (courseError || !course) {
             return { success: false, error: 'Course not found' };
         }
-        const courseData = course as Course & { categories: Category | null };
+        const courseData = course as Course & { category: Category | null };
         const { data: details } = await supabase
             .from('course_details')
             .select('*')
@@ -286,12 +286,21 @@ export async function getCoursePageData(slug: string): Promise<{
                 userProgress = enrollment.progress_percentage || 0;
             }
         }
-        const { data: batches } = await supabase
-            .from('course_batches')
-            .select('*')
-            .eq('course_id', course.id)
-            .eq('is_active', true)
-            .order('start_date', { ascending: true });
+        let batches: CourseBatch[] = [];
+        try {
+            const { data: batchesData, error: batchesError } = await supabase
+                .from('course_batches')
+                .select('*')
+                .eq('course_id', course.id)
+                .eq('is_active', true)
+                .order('start_date', { ascending: true });
+            
+            if (!batchesError && batchesData) {
+                batches = batchesData as CourseBatch[];
+            }
+        } catch (e) {
+            console.warn("Could not fetch batches:", e);
+        }
         return {
             success: true,
             data: {
@@ -309,7 +318,7 @@ export async function getCoursePageData(slug: string): Promise<{
                 reviews,
                 ratingBreakdown,
                 relatedCourses: (relatedCourses as Course[]) || [],
-                category: courseData.categories,
+                category: courseData.category,
                 isEnrolled,
                 enrollmentId,
                 userProgress,

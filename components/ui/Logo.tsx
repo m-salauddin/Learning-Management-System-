@@ -25,7 +25,9 @@ export const Logo = ({ className = "", showText = true, size = "md", textClassNa
                             alt="DokkhotaIT Logo"
                             width={config.fullWidth}
                             height={config.height}
-                            className="dark:hidden w-auto h-auto object-contain"
+                            className="dark:hidden object-contain"
+                            style={{ width: config.fullWidth, height: config.height }}
+                            unoptimized
                             priority
                         />
                         <Image
@@ -33,7 +35,9 @@ export const Logo = ({ className = "", showText = true, size = "md", textClassNa
                             alt="DokkhotaIT Logo"
                             width={config.fullWidth}
                             height={config.height}
-                            className="hidden dark:block w-auto h-auto object-contain"
+                            className="hidden dark:block object-contain"
+                            style={{ width: config.fullWidth, height: config.height }}
+                            unoptimized
                             priority
                         />
                         <div className="absolute inset-0 bg-primary/5 blur-xl -z-10 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
@@ -45,7 +49,9 @@ export const Logo = ({ className = "", showText = true, size = "md", textClassNa
                                 alt="DokkhotaIT Logo"
                                 width={config.smallWidth}
                                 height={config.height}
-                                className="dark:hidden w-auto h-auto object-contain"
+                                className="dark:hidden object-contain"
+                                style={{ width: config.smallWidth, height: config.height }}
+                                unoptimized
                                 priority
                             />
                             <Image
@@ -53,7 +59,9 @@ export const Logo = ({ className = "", showText = true, size = "md", textClassNa
                                 alt="DokkhotaIT Logo"
                                 width={config.smallWidth}
                                 height={config.height}
-                                className="hidden dark:block w-auto h-auto object-contain"
+                                className="hidden dark:block object-contain"
+                                style={{ width: config.smallWidth, height: config.height }}
+                                unoptimized
                                 priority
                             />
                             <div className="absolute inset-0 bg-primary/5 blur-lg -z-10 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
@@ -67,7 +75,9 @@ export const Logo = ({ className = "", showText = true, size = "md", textClassNa
                         alt="DokkhotaIT Logo"
                         width={config.smallWidth}
                         height={config.height}
-                        className="dark:hidden w-auto h-auto object-contain"
+                        className="dark:hidden object-contain"
+                        style={{ width: config.smallWidth, height: config.height }}
+                        unoptimized
                         priority
                     />
                     <Image
@@ -75,7 +85,9 @@ export const Logo = ({ className = "", showText = true, size = "md", textClassNa
                         alt="DokkhotaIT Logo"
                         width={config.smallWidth}
                         height={config.height}
-                        className="hidden dark:block w-auto h-auto object-contain"
+                        className="hidden dark:block object-contain"
+                        style={{ width: config.smallWidth, height: config.height }}
+                        unoptimized
                         priority
                     />
                      <div className="absolute inset-0 bg-primary/5 blur-lg -z-10 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
@@ -92,14 +104,18 @@ export const LogoIcon = ({ size = 32, className = "" }: { size?: number; classNa
                 alt="DokkhotaIT"
                 width={size}
                 height={size}
-                className="dark:hidden h-auto w-auto object-contain"
+                className="dark:hidden object-contain"
+                style={{ width: size, height: size }}
+                unoptimized
             />
             <Image
                 src="/logo/logo-small-dark.png"
                 alt="DokkhotaIT"
                 width={size}
                 height={size}
-                className="hidden dark:block h-auto w-auto object-contain"
+                className="hidden dark:block object-contain"
+                style={{ width: size, height: size }}
+                unoptimized
             />
             <div className="absolute inset-0 bg-primary/20 blur-lg -z-10 rounded-full opacity-0 group-hover:opacity-50 transition-opacity duration-300" />
         </div>

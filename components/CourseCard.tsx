@@ -43,6 +43,7 @@ export function CourseCard({ course }: { course: MappedCourse }) {
                             src={course.image || '/placeholder-course.jpg'}
                             alt={course.title}
                             fill
+                            unoptimized
                             className="object-cover transition-transform duration-700 group-hover:scale-105"
                         />
                         <div className="absolute inset-0 bg-linear-to-t from-black/90 via-black/40 to-black/20" />

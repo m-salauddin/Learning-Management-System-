@@ -44,7 +44,8 @@ export default function CreateCoursePage() {
     const [submittedSteps, setSubmittedSteps] = useState<Set<number>>(new Set());
     const [currentStep, setCurrentStep] = useState(1);
     const totalSteps = 4;
-    const [formData, setFormData] = useState<CreateCourseInput>({
+    const draftRestoredRef = useRef(false);
+    const INITIAL_FORM_DATA: CreateCourseInput = {
         title: "",
         short_description: "",
         description: "",
@@ -76,31 +77,63 @@ export default function CreateCoursePage() {
             upay: "",
             rocket: ""
         }
-    });
+    };
+
+    const [formData, setFormData] = useState<CreateCourseInput>(INITIAL_FORM_DATA);
     const DRAFT_KEY = "dokkhoit_course_draft_v1";
+
+    const isMeaningfulChange = (data: any): boolean => {
+        if (!data) return false;
+        
+        const hasTitle = data.title && data.title.trim() !== "";
+        const hasDescription = data.description && data.description.trim() !== "";
+        const hasThumbnail = data.thumbnail_url && data.thumbnail_url !== "";
+        const hasPrice = data.price && Number(data.price) > 0;
+        const hasModules = data.modules && data.modules.length > 0;
+        
+        return !!(hasTitle || hasDescription || hasThumbnail || hasPrice || hasModules);
+    };
 
     useEffect(() => {
         const savedDraft = localStorage.getItem(DRAFT_KEY);
         if (savedDraft) {
             try {
                 const parsed = JSON.parse(savedDraft);
-                setFormData(prev => ({ ...prev, ...parsed }));
-                if (parsed.thumbnail_url) {
-                    setThumbnailPreview(parsed.thumbnail_url);
+                const { _savedStep, ...draftFields } = parsed;
+                
+                if (isMeaningfulChange(draftFields)) {
+                    setFormData(prev => ({ ...prev, ...draftFields }));
+                    
+                    if (draftFields.thumbnail_url) {
+                        setThumbnailPreview(draftFields.thumbnail_url);
+                    }
+                    if (_savedStep) {
+                        setCurrentStep(Number(_savedStep));
+                    }
+                    toast.success("Draft Restored", "Your previous progress has been automatically loaded.");
+                } else {
+                    localStorage.removeItem(DRAFT_KEY);
                 }
-                toast.success("Draft Restored", "Your previous progress has been automatically loaded.");
             } catch (err) {
                 console.error("Failed to parse draft", err);
+                localStorage.removeItem(DRAFT_KEY);
             }
         }
-    }, []);
-
+        draftRestoredRef.current = true;
+    }, [toast]);
     useEffect(() => {
+        if (!draftRestoredRef.current) return;
+        
         const timer = setTimeout(() => {
-            localStorage.setItem(DRAFT_KEY, JSON.stringify(formData));
-        }, 500);
+            if (isMeaningfulChange(formData)) {
+                const draftData = { ...formData, _savedStep: currentStep };
+                localStorage.setItem(DRAFT_KEY, JSON.stringify(draftData));
+            } else {
+                localStorage.removeItem(DRAFT_KEY);
+            }
+        }, 800);
         return () => clearTimeout(timer);
-    }, [formData]);
+    }, [formData, currentStep]);
 
     useEffect(() => {
         if (submittedSteps.has(currentStep)) {
@@ -120,7 +153,6 @@ export default function CreateCoursePage() {
                         });
                     }
 
-                    // Only update if errors actually changed to prevent infinite loops
                     setErrors(prev => {
                         const hasChanged = JSON.stringify(prev) !== JSON.stringify(newErrors);
                         return hasChanged ? newErrors : prev;
@@ -161,11 +193,14 @@ export default function CreateCoursePage() {
         setIsUploadingThumbnail(true);
         try {
             const fileExt = file.name.split('.').pop();
-            const fileName = `${Math.random()}.${fileExt}`;
+            const fileName = `${Math.random().toString(36).substring(2)}-${Date.now()}.${fileExt}`;
             const filePath = `course-thumbnails/${fileName}`;
             const { error: uploadError } = await supabase.storage
                 .from('courses')
-                .upload(filePath, file);
+                .upload(filePath, file, {
+                    cacheControl: '3600',
+                    upsert: true
+                });
             if (uploadError) throw uploadError;
             const { data: { publicUrl } } = supabase.storage
                 .from('courses')
@@ -208,10 +243,8 @@ export default function CreateCoursePage() {
         setFormData(prev => ({ ...prev, thumbnail_url: "" }));
         setThumbnailPreview(null);
     };
-    const handleSubmit = async (e: React.FormEvent) => {
-        e.preventDefault();
+    const handleCreateCourse = async () => {
         if (currentStep < totalSteps) {
-            nextStep();
             return;
         }
         setSubmittedSteps(prev => new Set(prev).add(4));
@@ -271,7 +304,7 @@ export default function CreateCoursePage() {
     };
     return (
         <div className="max-w-6xl mx-auto py-8 px-4 sm:px-6">
-            <form onSubmit={handleSubmit} className="space-y-8">
+            <div className="space-y-8">
                 {}
                 <div className="mb-8">
                     <h1 className="text-3xl font-bold tracking-tight text-slate-900 dark:text-white">Initialize New Course</h1>
@@ -330,6 +363,7 @@ export default function CreateCoursePage() {
                             totalSteps={totalSteps}
                             prevStep={prevStep}
                             nextStep={nextStep}
+                            onCreateCourse={handleCreateCourse}
                             isSubmitting={isSubmitting}
                         />
                     </div>
@@ -341,7 +375,7 @@ export default function CreateCoursePage() {
                         />
                     </div>
                 </div>
-            </form>
+            </div>
         </div>
     );
 }

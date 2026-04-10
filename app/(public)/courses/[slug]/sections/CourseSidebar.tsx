@@ -62,8 +62,10 @@ export default function CourseSidebar({
                             src={course.image || '/placeholder-course.jpg'}
                             alt={course.title}
                             fill
+                            sizes="(max-width: 1024px) 100vw, 40vw"
                             className="object-cover opacity-90 group-hover/preview:scale-110 transition-all duration-700"
                             unoptimized
+                            priority
                         />
                         <div className="absolute inset-0 bg-linear-to-t from-slate-950/60 via-transparent to-transparent opacity-60" />
                         <div className="absolute inset-0 flex items-center justify-center">

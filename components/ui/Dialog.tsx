@@ -37,11 +37,11 @@ export function Dialog({ open, onClose, children, className, size = 'md' }: Dial
                         animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}
                         onClick={onClose}
-                        className="fixed inset-0 bg-black/80 backdrop-blur-md z-60"
+                        className="fixed inset-0 bg-black/80 backdrop-blur-xl z-100"
                         style={{ height: '100dvh' }}
                     />
                     <div
-                        className="fixed inset-0 z-70 flex items-center justify-center p-4 sm:p-6 overflow-y-auto w-full h-dvh"
+                        className="fixed inset-0 z-110 flex items-center justify-center p-4 sm:p-6 overflow-y-auto w-full h-dvh"
                         onClick={onClose}
                     >
                         <motion.div
@@ -50,7 +50,7 @@ export function Dialog({ open, onClose, children, className, size = 'md' }: Dial
                             exit={{ opacity: 0, scale: 0.95, y: 20 }}
                             transition={{ type: "spring", damping: 25, stiffness: 300 }}
                             className={cn(
-                                "relative w-full bg-card/95 backdrop-blur-2xl border border-white/10 dark:border-white/5 rounded-2xl shadow-2xl overflow-hidden",
+                                "relative w-full bg-slate-950/95 backdrop-blur-3xl border border-white/10 rounded-2xl shadow-2xl overflow-hidden text-white",
                                 sizeClasses[size],
                                 className
                             )}
@@ -80,7 +80,7 @@ export function DialogTitle({ children, className }: { children: ReactNode; clas
 }
 export function DialogDescription({ children, className }: { children: ReactNode; className?: string }) {
     return (
-        <p className={cn("text-sm text-muted-foreground leading-relaxed", className)}>
+        <p className={cn("text-sm text-slate-400 leading-relaxed", className)}>
             {children}
         </p>
     );
