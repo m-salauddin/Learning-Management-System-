@@ -86,7 +86,8 @@ export default function CourseDetailClient({ course, pageData }: CourseDetailCli
             whatYouLearn: [],
             curriculum: [],
             type: "Recorded",
-            priceType: c.price > 0 ? "Paid" : "Free"
+            priceType: c.price > 0 ? "Paid" : "Free",
+            batchNo: c.batch_no ?? undefined,
         })) as MappedCourse[];
     }, [relatedCourses]);
     const isLive = !!(course.type?.toLowerCase().includes('live') || pageData?.batches?.some(b => b.is_active));

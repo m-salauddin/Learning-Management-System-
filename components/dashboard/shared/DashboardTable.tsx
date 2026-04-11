@@ -52,7 +52,7 @@ export function DashboardTable<T extends { id?: string | number }>({
         return Array.from({ length: 5 }).map((_, i) => (
             <div
                 key={`skeleton-${i}`}
-                className="grid px-6 py-4 items-center bg-card/10 hover:bg-muted/5 transition-colors"
+                className="grid px-8 py-5 items-center bg-card/10 hover:bg-muted/5 transition-colors"
                 style={{ gridTemplateColumns: gridTemplate }}
             >
                 {columns.map((col, j) => (
@@ -67,7 +67,7 @@ export function DashboardTable<T extends { id?: string | number }>({
         return rows.map((row, i) => (
             <div
                 key={row.id || i}
-                className="grid px-6 py-4 items-center transition-colors hover:bg-muted/10 group bg-card/5"
+                className="grid px-8 py-5 items-center transition-all duration-300 hover:bg-primary/5 group"
                 style={{ gridTemplateColumns: gridTemplate }}
             >
                 {columns.map((col, j) => (
@@ -90,7 +90,7 @@ export function DashboardTable<T extends { id?: string | number }>({
             {filterBar && <div>{filterBar}</div>}
             {}
             {showEmptyData && (
-                <div className="bg-card/30 backdrop-blur-xl border border-border/40 rounded-3xl overflow-hidden shadow-sm">
+                <div className="bg-card/30 backdrop-blur-xl border border-border/40 rounded-[2.5rem] overflow-hidden">
                     <div className="flex flex-col items-center justify-center py-20 px-6 text-center">
                         <div className="bg-muted/50 p-6 rounded-full ring-8 ring-muted/5">
                             <Inbox className="w-12 h-12 text-muted-foreground/60" strokeWidth={1.5} />
@@ -111,7 +111,7 @@ export function DashboardTable<T extends { id?: string | number }>({
             )}
             {}
             {showEmptyFilter && (
-                <div className="bg-card/30 backdrop-blur-xl border border-border/40 rounded-3xl overflow-hidden shadow-sm">
+                <div className="bg-card/30 backdrop-blur-xl border border-border/40 rounded-[2.5rem] overflow-hidden">
                     <div className="flex flex-col items-center justify-center py-16 px-6 text-center">
                         <div className="bg-muted/50 p-5 rounded-full ring-8 ring-muted/5">
                             <FileX className="w-10 h-10 text-muted-foreground/60" strokeWidth={1.5} />
@@ -140,11 +140,11 @@ export function DashboardTable<T extends { id?: string | number }>({
             )}
             {/* Grid Container */}
             {showTable && (
-                <div className="bg-card/30 backdrop-blur-xl border border-border/40 rounded-3xl overflow-hidden shadow-xl overflow-x-auto min-w-0">
-                    <div className="min-w-[800px] divide-y divide-border/20">
+                <div className="bg-card/30 backdrop-blur-xl border border-border/40 rounded-[2.5rem] overflow-hidden overflow-x-auto min-w-0">
+                    <div className="min-w-[800px] divide-y divide-border/10">
                         {/* Header */}
                         <div
-                            className="grid px-6 py-4 bg-muted/10 border-b border-border/10"
+                            className="grid px-8 py-5 bg-muted/5 border-b border-border/20 items-center whitespace-nowrap"
                             style={{ gridTemplateColumns: gridTemplate }}
                         >
                             {columns.map((col, i) => (
@@ -160,7 +160,7 @@ export function DashboardTable<T extends { id?: string | number }>({
                             ))}
                         </div>
                         {/* Body */}
-                        <div className="divide-y divide-border/20">
+                        <div className="divide-y divide-border/10">
                             {isLoading ? renderSkeletonRows() : renderDataRows()}
                         </div>
                     </div>

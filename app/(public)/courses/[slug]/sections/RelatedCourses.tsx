@@ -2,6 +2,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import { Star, Users, ArrowRight, Library } from "lucide-react";
+import { CourseLevelBadge } from "@/components/ui/CourseLevelBadge";
 import { MappedCourse } from "@/types/mapped-course";
 interface RelatedCoursesProps {
     relatedCourses: MappedCourse[];
@@ -32,7 +33,7 @@ export default function RelatedCourses({ relatedCourses }: RelatedCoursesProps) 
                         <Link
                             key={rCourse.id}
                             href={`/courses/${rCourse.slug}`}
-                            className="group flex flex-col rounded-[2.5rem] bg-slate-100/50 dark:bg-slate-900/40 border border-slate-200 dark:border-white/5 hover:border-slate-300 dark:hover:border-white/10 transition-all duration-500 overflow-hidden shadow-sm hover:shadow-md"
+                            className="group flex flex-col rounded-[2.5rem] bg-white dark:bg-slate-900/40 border border-slate-300 dark:border-white/10 hover:border-primary/20 transition-all duration-500 overflow-hidden shadow-none"
                         >
                         <div className="aspect-video relative overflow-hidden p-2">
                             <div className="w-full h-full rounded-[1.75rem] overflow-hidden relative">
@@ -43,9 +44,7 @@ export default function RelatedCourses({ relatedCourses }: RelatedCoursesProps) 
                                     className="object-cover group-hover:scale-110 transition-transform duration-700"
                                     unoptimized
                                 />
-                                <div className="absolute top-3 right-3 px-3 py-1 rounded-full bg-black/60 backdrop-blur-md border border-white/10 text-[10px] font-black text-white uppercase tracking-widest">
-                                    {rCourse.level}
-                                </div>
+                                <CourseLevelBadge level={rCourse.level} className="absolute top-3 right-3 shadow-lg" />
                             </div>
                         </div>
                         <div className="p-6 space-y-4">

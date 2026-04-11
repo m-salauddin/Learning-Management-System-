@@ -23,6 +23,8 @@ import {
     Receipt,
     GraduationCap,
     Play,
+    Users,
+    Radio,
 } from "lucide-react";
 import { useToast } from "@/components/ui/toast";
 import {
@@ -228,7 +230,7 @@ export default function CheckoutClient({ course, user, bkashEnabled, manualMetho
 
             success("Submission received! Verifying your payment.");
             setShowManualModal(false);
-            router.push(`/payment/summary?transaction_id=${txRes.data?.transaction_id}`);
+            router.push(`/checkout/summary?transaction_id=${txRes.data?.transaction_id}`);
         } catch (err: any) {
             error(err.message || "An unexpected error occurred");
         } finally {
@@ -238,8 +240,7 @@ export default function CheckoutClient({ course, user, bkashEnabled, manualMetho
 
     const metrics = useMemo(() => [
         { label: 'Lessons', value: course.total_lessons || 0, icon: BookOpen, visible: true },
-        { label: 'Quizzes', value: course.total_assignments || 0, icon: CheckCircle2, visible: (course.total_assignments || 0) > 0 },
-        { label: 'Projects', value: course.total_projects || 0, icon: Zap, visible: (course.total_projects || 0) > 0 },
+        { label: 'Students', value: course.total_students || 0, icon: Users, visible: true },
     ].filter(m => m.visible), [course]);
 
     return (
@@ -353,6 +354,17 @@ export default function CheckoutClient({ course, user, bkashEnabled, manualMetho
                                     )}>
                                         {course.level || 'All Levels'}
                                     </span>
+
+                                    <span className="px-3 py-0.5 rounded-full text-[10px] font-bold uppercase border bg-secondary/10 border-secondary/30 text-secondary flex items-center gap-1.5">
+                                        {course.course_type === 'live' ? <Radio className="size-2.5" /> : <Play className="size-2.5" />}
+                                        {course.course_type === 'live' ? 'Live Class' : 'Recorded'}
+                                    </span>
+
+                                    {course.batch_no && (
+                                        <span className="px-3 py-0.5 rounded-full text-[10px] font-bold uppercase border bg-accent/10 border-accent/20 text-accent">
+                                            Batch {course.batch_no}
+                                        </span>
+                                    )}
                                 </div>
 
                                 <h2 className="text-xl font-bold text-foreground leading-tight group-hover:text-primary transition-colors duration-300">

@@ -21,7 +21,7 @@ export default function CourseInstructor({ course }: CourseInstructorProps) {
     });
     if (sortedInstructors.length === 0) return null;
     return (
-        <section id="instructors" className="mt-12 sm:mt-16 space-y-12">
+        <section id="instructors" className="mt-12 sm:mt-16 space-y-6">
              <div className="space-y-4">
                 <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-accent/10 border border-accent/20 text-accent text-[10px] font-black uppercase tracking-widest">
                     <Award className="w-3.5 h-3.5" />
@@ -37,7 +37,7 @@ export default function CourseInstructor({ course }: CourseInstructorProps) {
                     <button
                         key={inst.id || index}
                         onClick={() => setSelectedInstructor(inst)}
-                        className="group relative h-[280px] rounded-[2rem] overflow-hidden bg-slate-950 border border-white/5 transition-all duration-500 hover:scale-[1.02] hover:border-accent/30 shadow-2xl cursor-pointer"
+                        className="group relative h-[280px] rounded-[2rem] overflow-hidden bg-white dark:bg-slate-950 border border-slate-300 dark:border-white/10 transition-all duration-500 hover:scale-[1.02] hover:border-accent/30 cursor-pointer shadow-none"
                     >
                         {}
                         <div className="absolute inset-0 z-10 overflow-hidden h-full w-full">
@@ -50,12 +50,12 @@ export default function CourseInstructor({ course }: CourseInstructorProps) {
                                     className="object-cover object-top group-hover:scale-110 transition-transform duration-700"
                                 />
                             ) : (
-                                <div className="w-full h-full flex items-center justify-center font-black text-6xl text-white/5 bg-slate-900 uppercase transition-colors duration-500">
+                                <div className="w-full h-full flex items-center justify-center font-black text-6xl text-slate-200 dark:text-white/5 bg-slate-50 dark:bg-slate-900 uppercase transition-colors duration-500">
                                     {inst.name.charAt(0)}
                                 </div>
                             )}
                             {}
-                            <div className="absolute inset-0 bg-linear-to-t from-slate-950 via-slate-950/40 to-transparent z-20" />
+                            <div className="absolute inset-0 bg-linear-to-t from-white via-white/20 to-transparent dark:from-slate-950 dark:via-slate-950/40 z-20" />
                         </div>
                         {}
                         <div className="absolute inset-0 z-40 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center pointer-events-none">
@@ -71,10 +71,10 @@ export default function CourseInstructor({ course }: CourseInstructorProps) {
                                 {inst.role === 'main' ? "Lead Instructor" : "Support Mentor"}
                             </div>
                             <div className="space-y-0.5">
-                                <h3 className="text-xl font-black text-white leading-tight group-hover:text-accent transition-colors duration-300 drop-shadow-md">
+                                <h3 className="text-xl font-black text-slate-900 dark:text-white leading-tight group-hover:text-accent transition-colors duration-300 drop-shadow-sm dark:drop-shadow-md">
                                     {inst.name}
                                 </h3>
-                                <p className="text-[10px] font-bold text-white/60 uppercase tracking-widest truncate max-w-full drop-shadow-sm">
+                                <p className="text-[10px] font-bold text-slate-500 dark:text-white/60 uppercase tracking-widest truncate max-w-full drop-shadow-sm">
                                     {inst.title || "Industry Specialist"}
                                 </p>
                             </div>

@@ -1,135 +1,135 @@
-import { getUserAndRole } from '@/lib/auth/server';
-import { BookOpen, CheckCircle, Clock, Trophy } from 'lucide-react';
+"use client";
+import { BookOpen, CheckCircle, Clock, Trophy, ChevronRight, GraduationCap } from 'lucide-react';
 import Link from 'next/link';
-import { createClient } from '@/lib/supabase/server';
-export default async function StudentPanel() {
-    const { user, profile } = await getUserAndRole();
-    const supabase = await createClient();
-    const { data: stats } = await supabase.rpc('get_student_dashboard_stats');
-    const { data: enrollments } = await supabase
-        .from('enrollments')
-        .select(`
-            *,
-            course:courses(*)
-        `)
-        .eq('user_id', user?.id)
-        .eq('status', 'active')
-        .order('last_accessed_at', { ascending: false })
-        .limit(3);
+import { PageHeader } from "@/components/dashboard/ui/PageHeader";
+import { DashboardCard } from "@/components/dashboard/ui/DashboardCard";
+import { DashboardGrid } from "@/components/dashboard/ui/DashboardGrid";
+import { StatsCard } from "@/components/dashboard/StatsCard";
+
+interface StudentPanelProps {
+    user: any;
+    profile: any;
+    stats: any;
+    enrollments: any[];
+}
+
+export default function StudentPanel({ user, profile, stats, enrollments }: StudentPanelProps) {
     const fullName = profile?.fullName || user?.email || 'Student';
     const firstName = fullName.split(' ')[0];
     const inProgressCount = stats?.in_progress_courses || 0;
     const completedCount = stats?.completed_courses || 0;
     const hoursSpent = Math.round((stats?.total_learning_time || 0) / 3600);
     const avgScore = Math.round(stats?.avg_progress || 0);
+
     return (
         <div className="space-y-8 pb-10">
-            {}
-            <div className="flex flex-col gap-1">
-                <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">
-                    Welcome back, {firstName}! 👋
-                </h1>
-                <p className="text-muted-foreground">
-                    You have {inProgressCount} courses in progress. Keep pushing forward!
-                </p>
-            </div>
-            {}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                <div className="p-6 bg-card border border-border rounded-2xl">
-                    <div className="flex items-center gap-4">
-                        <div className="p-3 rounded-xl bg-primary/10 text-primary">
-                            <BookOpen className="w-6 h-6" />
-                        </div>
-                        <div>
-                            <p className="text-sm text-muted-foreground">In Progress</p>
-                            <p className="text-2xl font-bold">{inProgressCount}</p>
-                        </div>
-                    </div>
-                </div>
-                <div className="p-6 bg-card border border-border rounded-2xl">
-                    <div className="flex items-center gap-4">
-                        <div className="p-3 rounded-xl bg-emerald-500/10 text-emerald-500">
-                            <CheckCircle className="w-6 h-6" />
-                        </div>
-                        <div>
-                            <p className="text-sm text-muted-foreground">Completed</p>
-                            <p className="text-2xl font-bold">{completedCount}</p>
-                        </div>
-                    </div>
-                </div>
-                <div className="p-6 bg-card border border-border rounded-2xl">
-                    <div className="flex items-center gap-4">
-                        <div className="p-3 rounded-xl bg-amber-500/10 text-amber-500">
-                            <Clock className="w-6 h-6" />
-                        </div>
-                        <div>
-                            <p className="text-sm text-muted-foreground">Hours Spent</p>
-                            <p className="text-2xl font-bold">{hoursSpent}h</p>
-                        </div>
-                    </div>
-                </div>
-                <div className="p-6 bg-card border border-border rounded-2xl">
-                    <div className="flex items-center gap-4">
-                        <div className="p-3 rounded-xl bg-blue-500/10 text-blue-500">
-                            <Trophy className="w-6 h-6" />
-                        </div>
-                        <div>
-                            <p className="text-sm text-muted-foreground">Avg. Score</p>
-                            <p className="text-2xl font-bold">{avgScore}%</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            {}
-            <div className="space-y-5">
-                <div className="flex items-center justify-between">
-                    <h3 className="text-xl font-bold">Continue Learning</h3>
-                    <Link href="/dashboard/courses" className="text-sm text-primary hover:underline hover:text-primary/80 transition-colors">
-                        View All Courses
+            <PageHeader
+                title={`Welcome back, ${firstName}! 👋`}
+                description={`You have ${inProgressCount} courses in progress. Keep pushing forward!`}
+                icon={GraduationCap}
+                actions={
+                    <Link 
+                        href="/courses" 
+                        className="px-4 py-2 bg-primary text-primary-foreground text-sm font-bold rounded-xl hover:bg-primary/90 transition-all shadow-lg shadow-primary/20 uppercase tracking-widest"
+                    >
+                        Explore More
+                    </Link>
+                }
+            />
+
+            <DashboardGrid cols={4}>
+                <StatsCard
+                    title="In Progress"
+                    value={inProgressCount}
+                    icon={BookOpen}
+                    description="Courses active"
+                />
+                <StatsCard
+                    title="Completed"
+                    value={completedCount}
+                    icon={CheckCircle}
+                    description="Successfully finished"
+                />
+                <StatsCard
+                    title="Hours Spent"
+                    value={`${hoursSpent}h`}
+                    icon={Clock}
+                    description="Learning time"
+                />
+                <StatsCard
+                    title="Avg. Progress"
+                    value={`${avgScore}%`}
+                    icon={Trophy}
+                    description="Course completion"
+                />
+            </DashboardGrid>
+
+            <div>
+                <div className="flex items-center justify-between mb-6">
+                    <h3 className="text-xl font-black text-slate-900 dark:text-white flex items-center gap-2">
+                        <BookOpen className="w-5 h-5 text-primary" />
+                        Continue Learning
+                    </h3>
+                    <Link href="/dashboard/my-courses" className="text-xs font-bold text-primary hover:underline flex items-center gap-1 uppercase tracking-widest">
+                        View All <ChevronRight className="w-3 h-3" />
                     </Link>
                 </div>
+
                 {enrollments && enrollments.length > 0 ? (
-                    <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+                    <DashboardGrid cols={3}>
                         {enrollments.map((enrollment: any) => (
-                            <div key={enrollment.course.slug} className="bg-card border border-border rounded-2xl overflow-hidden hover:border-primary/50 transition-colors">
-                                <div className="aspect-video bg-muted relative">
+                            <DashboardCard 
+                                key={enrollment.course.slug}
+                                className="group"
+                                contentClassName="p-0"
+                            >
+                                <div className="aspect-video bg-muted relative overflow-hidden">
                                     <img
                                         src={enrollment.course.thumbnail_url || 'https://images.unsplash.com/photo-1516321497487-e288fb19713f?q=80&w=2070&auto=format&fit=crop'}
                                         alt={enrollment.course.title}
-                                        className="w-full h-full object-cover"
+                                        className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
                                     />
-                                </div>
-                                <div className="p-4">
-                                    <h4 className="font-semibold line-clamp-1">{enrollment.course.title}</h4>
-                                    <p className="text-sm text-muted-foreground mt-1">
-                                        {enrollment.completed_lessons || 0} of {enrollment.total_lessons || 0} lessons
-                                    </p>
-                                    <div className="mt-3 h-2 bg-muted rounded-full overflow-hidden">
-                                        <div
-                                            className="h-full bg-primary rounded-full"
-                                            style={{ width: `${enrollment.progress_percentage || 0}%` }}
-                                        />
-                                    </div>
-                                    <div className="mt-4 flex justify-between items-center">
-                                        <Link href={`/courses/${enrollment.course.slug}/learn`} className="text-xs font-medium text-primary hover:underline">
-                                            Continue Learning
+                                    <div className="absolute inset-0 bg-linear-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-end p-4">
+                                        <Link 
+                                            href={`/courses/${enrollment.course.slug}/learn`}
+                                            className="w-full py-2 bg-primary text-primary-foreground text-center text-xs font-bold rounded-lg uppercase tracking-widest"
+                                        >
+                                            Resume Course
                                         </Link>
                                     </div>
                                 </div>
-                            </div>
+                                <div className="p-5">
+                                    <h4 className="font-bold text-slate-800 dark:text-slate-100 line-clamp-1">{enrollment.course.title}</h4>
+                                    <div className="mt-3 space-y-2">
+                                        <div className="flex justify-between text-xs font-bold">
+                                            <span className="text-slate-500 uppercase tracking-widest">Progress</span>
+                                            <span className="text-primary">{enrollment.progress_percentage || 0}%</span>
+                                        </div>
+                                        <div className="h-1.5 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
+                                            <div
+                                                className="h-full bg-primary rounded-full"
+                                                style={{ width: `${enrollment.progress_percentage || 0}%` }}
+                                            />
+                                        </div>
+                                    </div>
+                                    <p className="text-[10px] text-slate-500 font-bold uppercase tracking-widest mt-4">
+                                        {enrollment.completed_lessons || 0} / {enrollment.total_lessons || 0} lessons
+                                    </p>
+                                </div>
+                            </DashboardCard>
                         ))}
-                    </div>
+                    </DashboardGrid>
                 ) : (
-                    <div className="p-10 border border-dashed border-border rounded-2xl flex flex-col items-center justify-center text-center bg-card/30">
-                        <div className="p-4 bg-muted rounded-full mb-4">
-                            <BookOpen className="w-8 h-8 text-muted-foreground opacity-50" />
+                    <div className="p-12 border-2 border-dashed border-slate-200 dark:border-white/10 rounded-[2rem] flex flex-col items-center justify-center text-center bg-slate-50/50 dark:bg-slate-900/10">
+                        <div className="p-4 bg-white dark:bg-white/5 rounded-2xl shadow-sm border border-slate-200 dark:border-white/10 mb-6">
+                            <BookOpen className="w-8 h-8 text-slate-300" />
                         </div>
-                        <h4 className="text-lg font-semibold">No active courses</h4>
-                        <p className="text-muted-foreground mb-6 max-w-sm text-sm">
-                            You haven't enrolled in any courses yet. Browse our catalog to find your next skill.
+                        <h4 className="text-xl font-bold text-slate-900 dark:text-white">Start your journey today!</h4>
+                        <p className="text-slate-500 dark:text-slate-400 mb-8 max-w-sm font-medium">
+                            Explore our world-class courses and start learning new skills from top instructors.
                         </p>
-                        <Link href="/courses" className="px-6 py-2.5 bg-primary text-primary-foreground font-medium rounded-xl hover:bg-primary/90 transition-all shadow-lg shadow-primary/20 hover:shadow-primary/30">
-                            Explore Catalog
+                        <Link href="/courses" className="px-8 py-3 bg-primary text-primary-foreground font-black rounded-xl hover:bg-primary/90 transition-all shadow-xl shadow-primary/20 uppercase tracking-widest text-sm">
+                            Browse Catalog
                         </Link>
                     </div>
                 )}

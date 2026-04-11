@@ -3,9 +3,9 @@ import React, { useEffect } from "react";
 import { useAppDispatch, useAppSelector } from "@/lib/store/hooks";
 import { fetchCoupons, setFilters, resetFilters, setSort, setPage, setPageSize } from "@/lib/store/features/admin/couponsSlice";
 import { couponsSelectors } from "@/lib/store/features/admin/adminSelectors";
-import { DashboardTable, ColumnDef } from "@/components/dashboard/shared/DashboardTable";
+import { ColumnDef, DashboardTable } from "@/components/dashboard/shared/DashboardTable";
 import { Coupon } from "@/types/lms";
-import { Input } from "@/components/ui/input";
+import { SearchInput } from "@/components/dashboard/shared";
 import { Button } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/Badge";
 import { Plus, Trash2 } from "lucide-react";
@@ -24,9 +24,6 @@ export function AdminCouponsTable({ onCreate }: AdminCouponsTableProps) {
     useEffect(() => {
         dispatch(fetchCoupons());
     }, [dispatch]);
-    const handleSearchCheck = (e: React.ChangeEvent<HTMLInputElement>) => {
-        dispatch(setFilters({ search: e.target.value }));
-    };
     const handleReset = () => {
         dispatch(resetFilters());
     };
@@ -99,16 +96,13 @@ export function AdminCouponsTable({ onCreate }: AdminCouponsTableProps) {
     ];
     const FilterBar = (
         <div className="flex flex-col sm:flex-row gap-3 items-center justify-between pb-4">
-            <div className="flex items-center gap-2 w-full sm:w-auto">
-                <Input
-                    placeholder="Search coupons..."
-                    value={filters.search || ""}
-                    onChange={handleSearchCheck}
-                    className="w-full sm:w-[250px]"
-                    disabled={emptyStateType === 'EMPTY_DATA'}
-                />
-                {}
-            </div>
+            <SearchInput
+                value={filters.search || ""}
+                onChange={(value) => dispatch(setFilters({ search: value }))}
+                placeholder="Search coupons..."
+                className="w-full sm:w-[280px]"
+                disabled={emptyStateType === 'EMPTY_DATA'}
+            />
             <Button onClick={handleCreate} className="w-full sm:w-auto gap-2">
                 <Plus className="w-4 h-4" />
                 Create Coupon

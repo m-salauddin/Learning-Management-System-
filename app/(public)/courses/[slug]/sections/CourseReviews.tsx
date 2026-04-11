@@ -166,7 +166,7 @@ export default function CourseReviews({
                             <div className="flex justify-center pt-8">
                                 <button
                                     onClick={() => setShowAllReviews(!showAllReviews)}
-                                    className="px-8 py-3 rounded-2xl bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/5 text-sm text-slate-900 dark:text-white hover:bg-slate-200 dark:hover:bg-white/10 transition-all font-black uppercase tracking-widest"
+                                    className="px-8 py-3 rounded-2xl bg-slate-100 dark:bg-white/5 border border-slate-300 dark:border-white/10 text-sm text-slate-900 dark:text-white hover:bg-slate-200 dark:hover:bg-white/10 transition-all font-black uppercase tracking-widest"
                                 >
                                     {showAllReviews ? 'Show Less' : `Explore All ${reviews.length} Stories`}
                                 </button>

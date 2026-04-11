@@ -75,7 +75,7 @@ export function Header({ onMobileMenuOpen, isSidebarCollapsed, onSidebarToggle }
         };
     });
     return (
-        <header className="h-20 px-6 flex items-center justify-between border-b border-border/50 bg-background/50 backdrop-blur-xl sticky top-0 z-30">
+        <header className="h-20 px-6 flex items-center justify-between border-b border-border/80 bg-background/50 backdrop-blur-xl sticky top-0 z-30">
             <div className="flex items-center gap-4">
                 <button
                     onClick={onMobileMenuOpen}
@@ -83,14 +83,28 @@ export function Header({ onMobileMenuOpen, isSidebarCollapsed, onSidebarToggle }
                 >
                     <AlignLeft className="w-5 h-5 group-hover:scale-110 transition-transform" />
                 </button>
-                <Breadcrumbs
-                    items={breadcrumbItems}
-                    showHomeIcon={true}
-                    rootLabel="Dashboard"
-                    rootHref="/dashboard"
-                    className="text-lg font-semibold"
-                    rootIcon={LayoutDashboard}
-                />
+                <motion.button
+                    whileTap={{ scale: 0.95 }}
+                    onClick={onSidebarToggle}
+                    className="hidden lg:flex w-10 h-10 items-center justify-center rounded-xl bg-muted/40 border border-white/5 text-muted-foreground hover:text-primary transition-all cursor-pointer shadow-sm group hover:bg-muted/60"
+                >
+                    <motion.div
+                        animate={{ rotate: isSidebarCollapsed ? 180 : 0 }}
+                        transition={{ type: "spring", stiffness: 300, damping: 20 }}
+                    >
+                        <PanelLeftClose className="w-5 h-5 group-hover:scale-110 transition-transform" />
+                    </motion.div>
+                </motion.button>
+                <div className="bg-muted/30 backdrop-blur-md border border-white/5 px-4 py-1.5 rounded-xl flex items-center shadow-sm">
+                    <Breadcrumbs
+                        items={breadcrumbItems}
+                        showHomeIcon={true}
+                        rootLabel="Dashboard"
+                        rootHref="/dashboard"
+                        className="text-lg font-semibold"
+                        rootIcon={LayoutDashboard}
+                    />
+                </div>
             </div>
             <div className="flex items-center gap-2 sm:gap-4">
                 {isLoading ? (
@@ -103,18 +117,7 @@ export function Header({ onMobileMenuOpen, isSidebarCollapsed, onSidebarToggle }
                 ) : (
                     <>
                         {}
-                        <motion.button
-                            whileTap={{ scale: 0.95 }}
-                            onClick={onSidebarToggle}
-                            className="hidden lg:flex w-10 h-10 items-center justify-center rounded-xl bg-muted/40 border border-white/5 text-muted-foreground hover:text-primary transition-all cursor-pointer shadow-sm group hover:bg-muted/60"
-                        >
-                            <motion.div
-                                animate={{ rotate: isSidebarCollapsed ? 180 : 0 }}
-                                transition={{ type: "spring", stiffness: 300, damping: 20 }}
-                            >
-                                <PanelLeftClose className="w-5 h-5 group-hover:scale-110 transition-transform" />
-                            </motion.div>
-                        </motion.button>
+
                         <ThemeToggleCompact />
                         <NotificationPanel />
                         {user && <UserDropdown user={user} />}

@@ -377,3 +377,37 @@ export async function getCoupons(params: {
         totalPages: Math.ceil((count || 0) / pageSize)
     };
 }
+export async function getTransactionById(id: string): Promise<ApiResponse<TransactionWithDetails>> {
+    const supabase = await createClient();
+    const { data: { user }, error: authError } = await supabase.auth.getUser();
+    if (authError || !user) {
+        return { success: false, error: 'Unauthorized' };
+    }
+
+    const { data, error } = await supabase
+        .from('transactions')
+        .select(`
+            *,
+            user:users(id, name, email, avatar_url),
+            course:courses(id, title, slug, thumbnail_url, total_lessons, total_students),
+            coupon:coupons(id, code, discount_type, discount_value)
+        `)
+        .eq('id', id)
+        .single();
+
+    if (error || !data) {
+        return { success: false, error: 'Transaction not found' };
+    }
+
+    const { data: profile } = await supabase
+        .from('users')
+        .select('role')
+        .eq('id', user.id)
+        .single();
+
+    if (data.user_id !== user.id && profile?.role !== 'admin') {
+        return { success: false, error: 'Unauthorized' };
+    }
+
+    return { success: true, data: data as any };
+}

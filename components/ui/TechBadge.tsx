@@ -2,23 +2,41 @@ import React from 'react';
 import { cn } from '@/lib/utils';
 import {
     Globe, Rocket, Layers, Layout, Server, Database, Code,
-    FileCode, Terminal, Cpu, Zap, Shield, Cloud, Infinity,
-    Search, Share2, Award, BookOpen, GraduationCap
+    FileCode, Terminal, Zap, Shield, Cloud, Infinity,
+    Search, Share2, Award, BookOpen, GraduationCap,
+    Brain, Bot, Cpu as CpuIcon, Wand2, Network, ScanEye, MessageSquare,
+    Smartphone, HardDrive, GitBranch, Coffee, Activity, UploadCloud, Tablet
 } from "lucide-react";
 import {
     SiHtml5, SiCss3, SiBootstrap, SiTailwindcss, SiGit, SiGithub, SiNetlify, SiJavascript,
     SiReact, SiNextdotjs, SiNodedotjs, SiTypescript, SiPostgresql, SiSupabase,
     SiPython, SiFigma, SiAdobephotoshop, SiAdobeillustrator, SiMongodb, SiExpress, SiPrisma, SiDrizzle, SiVercel, SiDocker, SiRedis,
     SiAmazon, SiCloudflare, SiKubernetes, SiLinux, SiPhp, SiLaravel, SiMysql, SiSpring, SiRust, SiGo, SiCplusplus, SiRuby,
-    SiRubyonrails, SiVuedotjs, SiSvelte, SiFlutter, SiKotlin, SiSwift, SiFirebase, SiGraphql, SiRedux, SiWordpress, SiShopify, SiPostman, SiSharp
+    SiRubyonrails, SiVuedotjs, SiSvelte, SiFlutter, SiKotlin, SiSwift, SiFirebase, SiGraphql, SiRedux, SiWordpress, SiShopify, SiPostman, SiSharp,
+    SiOpenai, SiTensorflow, SiPytorch, SiAnaconda, SiPandas, SiNumpy, SiScikitlearn, SiJupyter, SiKeras
 } from "react-icons/si";
-import { FaDatabase, FaCode, FaCloud, FaInfinity, FaAws, FaJava, FaAppStoreIos, FaAndroid } from "react-icons/fa";
 interface TechBadgeProps {
     tag: string;
     className?: string;
     showIcon?: boolean;
 }
 const TECH_DATA = [
+    { keys: ['artificialintelligence', 'ai'], icon: <SiOpenai className="w-4 h-4" />, color: "#10A37F" },
+    { keys: ['machinelearning', 'ml'], icon: <Brain className="w-4 h-4" />, color: "#6366F1" },
+    { keys: ['deeplearning', 'dl'], icon: <Bot className="w-4 h-4" />, color: "#8B5CF6" },
+    { keys: ['tensorflow'], icon: <SiTensorflow className="w-4 h-4" />, color: "#FF6F00" },
+    { keys: ['pytorch'], icon: <SiPytorch className="w-4 h-4" />, color: "#EE4C2C" },
+    { keys: ['keras'], icon: <SiKeras className="w-4 h-4" />, color: "#D00000" },
+    { keys: ['scikitlearn'], icon: <SiScikitlearn className="w-4 h-4" />, color: "#F7931E" },
+    { keys: ['nlp', 'naturalprocessing'], icon: <MessageSquare className="w-4 h-4" />, color: "#3B82F6" },
+    { keys: ['computervision', 'cv'], icon: <ScanEye className="w-4 h-4" />, color: "#F43F5E" },
+    { keys: ['neuralnetwork'], icon: <Network className="w-4 h-4" />, color: "#6366F1" },
+    { keys: ['datascience', 'anaconda'], icon: <SiAnaconda className="w-4 h-4" />, color: "#44A833" },
+    { keys: ['pandas'], icon: <SiPandas className="w-4 h-4" />, color: "#150458" },
+    { keys: ['numpy'], icon: <SiNumpy className="w-4 h-4" />, color: "#013243" },
+    { keys: ['jupyter'], icon: <SiJupyter className="w-4 h-4" />, color: "#F37626" },
+
+    // Languages & Frameworks
     { keys: ['html'], icon: <SiHtml5 className="w-4 h-4" />, color: "#E34F26" },
     { keys: ['css'], icon: <SiCss3 className="w-4 h-4" />, color: "#1572B6" },
     { keys: ['javascript', 'js'], icon: <SiJavascript className="w-4 h-4" />, color: "#F7DF1E" },
@@ -42,12 +60,12 @@ const TECH_DATA = [
     { keys: ['redis'], icon: <SiRedis className="w-4 h-4" />, color: "#DC382D" },
     { keys: ['python'], icon: <SiPython className="w-4 h-4" />, color: "#3776AB" },
     { keys: ['figma'], icon: <SiFigma className="w-4 h-4" />, color: "#F24E1E" },
-    { keys: ['aws'], icon: <FaAws className="w-4 h-4" />, color: "#FF9900" },
-    { keys: ['cloud'], icon: <FaCloud className="w-4 h-4" />, color: "#00AEEF" },
-    { keys: ['devops'], icon: <FaInfinity className="w-4 h-4" />, color: "#007ACC" },
+    { keys: ['aws'], icon: <Cloud className="w-4 h-4" />, color: "#FF9900" },
+    { keys: ['cloud'], icon: <UploadCloud className="w-4 h-4" />, color: "#00AEEF" },
+    { keys: ['devops'], icon: <Infinity className="w-4 h-4" />, color: "#007ACC" },
     { keys: ['kubernetes', 'k8s'], icon: <SiKubernetes className="w-4 h-4" />, color: "#326CE5" },
     { keys: ['linux'], icon: <SiLinux className="w-4 h-4" />, color: "#FCC624" },
-    { keys: ['githubactions', 'actions'], icon: <SiGithub className="w-4 h-4" />, color: "#2088FF" },
+    { keys: ['githubactions', 'actions'], icon: <Activity className="w-4 h-4" />, color: "#2088FF" },
     { keys: ['web'], icon: <Globe className="w-4 h-4" />, color: "#00AEEF" },
     { keys: ['bootcamp'], icon: <Rocket className="w-4 h-4" />, color: "#FF4B2B" },
     { keys: ['fullstack'], icon: <Layers className="w-4 h-4" />, color: "#9C27B0" },
@@ -56,7 +74,7 @@ const TECH_DATA = [
     { keys: ['php'], icon: <SiPhp className="w-4 h-4" />, color: "#777BB4" },
     { keys: ['laravel'], icon: <SiLaravel className="w-4 h-4" />, color: "#FF2D20" },
     { keys: ['mysql'], icon: <SiMysql className="w-4 h-4" />, color: "#4479A1" },
-    { keys: ['java'], icon: <FaJava className="w-4 h-4" />, color: "#007396" },
+    { keys: ['java'], icon: <Coffee className="w-4 h-4" />, color: "#007396" },
     { keys: ['spring'], icon: <SiSpring className="w-4 h-4" />, color: "#6DB33F" },
     { keys: ['rust'], icon: <SiRust className="w-4 h-4" />, color: "#000000" },
     { keys: ['go', 'golang'], icon: <SiGo className="w-4 h-4" />, color: "#00ADD8" },
@@ -75,11 +93,11 @@ const TECH_DATA = [
     { keys: ['wordpress'], icon: <SiWordpress className="w-4 h-4" />, color: "#21759B" },
     { keys: ['shopify'], icon: <SiShopify className="w-4 h-4" />, color: "#7AB55C" },
     { keys: ['postman'], icon: <SiPostman className="w-4 h-4" />, color: "#FF6C37" },
-    { keys: ['ios', 'iphone', 'apple'], icon: <FaAppStoreIos className="w-4 h-4" />, color: "#A2AAAD" },
-    { keys: ['android'], icon: <FaAndroid className="w-4 h-4" />, color: "#3DDC84" },
-    { keys: ['database', 'sql'], icon: <FaDatabase className="w-4 h-4" />, color: "#4479A1" },
+    { keys: ['ios', 'iphone', 'apple'], icon: <Tablet className="w-4 h-4" />, color: "#A2AAAD" },
+    { keys: ['android'], icon: <Smartphone className="w-4 h-4" />, color: "#3DDC84" },
+    { keys: ['database', 'sql'], icon: <Database className="w-4 h-4" />, color: "#4479A1" },
     { keys: ['photoshop', 'ps'], icon: <SiAdobephotoshop className="w-4 h-4" />, color: "#31A8FF" },
-    { keys: ['illustrator', 'ai'], icon: <SiAdobeillustrator className="w-4 h-4" />, color: "#FF9A00" },
+    { keys: ['illustrator', 'adobeillustrator'], icon: <SiAdobeillustrator className="w-4 h-4" />, color: "#FF9A00" },
     { keys: ['cloudflare'], icon: <SiCloudflare className="w-4 h-4" />, color: "#F38020" },
     { keys: ['amazon'], icon: <SiAmazon className="w-4 h-4" />, color: "#FF9900" },
     { keys: ['security', 'cyber'], icon: <Shield className="w-4 h-4" />, color: "#10B981" },
@@ -87,15 +105,16 @@ const TECH_DATA = [
     { keys: ['search', 'seo'], icon: <Search className="w-4 h-4" />, color: "#6366F1" },
     { keys: ['marketing', 'social'], icon: <Share2 className="w-4 h-4" />, color: "#EC4899" },
     { keys: ['performance', 'speed', 'optimization'], icon: <Zap className="w-4 h-4" />, color: "#F59E0B" },
-    { keys: ['hardware', 'iot', 'cpu'], icon: <Cpu className="w-4 h-4" />, color: "#EF4444" },
+    { keys: ['hardware', 'iot', 'cpu'], icon: <CpuIcon className="w-4 h-4" />, color: "#EF4444" },
     { keys: ['docs', 'documentation', 'book'], icon: <BookOpen className="w-4 h-4" />, color: "#3B82F6" },
     { keys: ['education', 'learning', 'academic'], icon: <GraduationCap className="w-4 h-4" />, color: "#8B5CF6" },
     { keys: ['design', 'uiux', 'award'], icon: <Award className="w-4 h-4" />, color: "#F43F5E" },
-    { keys: ['storage', 'data', 'warehouse'], icon: <Database className="w-4 h-4" />, color: "#F59E0B" },
-    { keys: ['hosting', 'serverless', 'deployment'], icon: <Cloud className="w-4 h-4" />, color: "#0EA5E9" },
-    { keys: ['cicd', 'automation', 'pipeline'], icon: <Infinity className="w-4 h-4" />, color: "#6366F1" },
-    { keys: ['programming', 'software', 'coding'], icon: <FaCode className="w-4 h-4" />, color: "#10B981" },
+    { keys: ['storage', 'data', 'warehouse'], icon: <HardDrive className="w-4 h-4" />, color: "#F59E0B" },
+    { keys: ['hosting', 'serverless', 'deployment'], icon: <Server className="w-4 h-4" />, color: "#0EA5E9" },
+    { keys: ['cicd', 'automation', 'pipeline'], icon: <GitBranch className="w-4 h-4" />, color: "#6366F1" },
+    { keys: ['programming', 'software', 'coding'], icon: <Code className="w-4 h-4" />, color: "#10B981" },
     { keys: ['snippets', 'template', 'source'], icon: <FileCode className="w-4 h-4" />, color: "#64748B" },
+    { keys: ['magic', 'ai', 'generate'], icon: <Wand2 className="w-4 h-4" />, color: "#8B5CF6" },
 ];
 export const getTechBadgeData = (tag: string) => {
     const t = tag.toLowerCase().replace(/\s+/g, '');
@@ -111,7 +130,9 @@ export const TechBadge: React.FC<TechBadgeProps> = ({ tag, className, showIcon =
     const { icon, brandColor } = getTechBadgeData(tag);
     return (
         <div className={cn(
-            "inline-flex items-center gap-2.5 px-3 py-1.5 rounded-xl bg-[#0F1115]/80 backdrop-blur-md border border-white/5 hover:border-white/10 transition-all group cursor-default",
+            "inline-flex items-center gap-2.5 px-3 py-1.5 rounded-xl transition-all group cursor-default",
+            "bg-slate-100/80 dark:bg-[#0F1115]/80 backdrop-blur-md border border-slate-300 dark:border-white/5",
+            "hover:border-slate-300 dark:hover:border-white/10",
             className
         )}>
             {showIcon && (
@@ -129,7 +150,7 @@ export const TechBadge: React.FC<TechBadgeProps> = ({ tag, className, showIcon =
                     </div>
                 </div>
             )}
-            <span className="text-[13px] font-medium text-slate-300 group-hover:text-white transition-colors">
+            <span className="text-[13px] font-medium text-slate-600 dark:text-slate-300 group-hover:text-slate-900 dark:group-hover:text-white transition-colors">
                 {tag}
             </span>
         </div>

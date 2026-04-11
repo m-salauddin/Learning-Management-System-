@@ -31,7 +31,7 @@ export default async function EditCategoryPage({ params }: EditCategoryPageProps
                         <Layers className="w-6 h-6" />
                     </div>
                     <div>
-                        <h1 className="text-3xl font-black tracking-tight text-white uppercase italic">
+                        <h1 className="text-3xl font-black tracking-tight text-white uppercase">
                             Edit <span className="text-primary">Category</span>
                         </h1>
                         <p className="text-muted-foreground mt-1 text-sm font-medium">

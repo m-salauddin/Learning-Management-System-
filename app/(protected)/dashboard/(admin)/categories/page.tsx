@@ -27,6 +27,20 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { AnimatedCheckbox } from "@/components/ui/AnimatedCheckbox";
 import { Pagination } from "@/components/ui/Pagination";
+import { PageHeader } from "@/components/dashboard/ui/PageHeader";
+import { SearchInput, StatsSkeleton, LoadingState, EmptyFilterState } from "@/components/dashboard/shared";
+import { DashboardGrid } from "@/components/dashboard/ui/DashboardGrid";
+import { StatsCard } from "@/components/dashboard/StatsCard";
+import {
+    DashboardTableContainer,
+    DashboardTableToolbar,
+    DashboardTableWrapper,
+    DashboardTableHeader,
+    DashboardTableHead,
+    DashboardTableBody,
+    DashboardTableRow,
+    DashboardTableCell
+} from "@/components/dashboard/ui/DashboardTable";
 import {
     closestCenter,
     DndContext,
@@ -144,97 +158,68 @@ export default function CategoryManagementPage() {
     const totalCourses = categories.reduce((sum, c) => sum + (c.course_count || 0), 0);
     const avgCourses = categories.length > 0 ? (totalCourses / categories.length).toFixed(1) : 0;
     return (
-        <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            className="space-y-6 pb-10 font-sans"
-        >
-            <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-6">
-                <div>
-                    <motion.h1
-                        initial={{ opacity: 0, x: -20 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        className="text-2xl md:text-3xl font-bold tracking-tight"
-                    >
-                        Category Management
-                    </motion.h1>
-                    <motion.p
-                        initial={{ opacity: 0, x: -20 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        transition={{ delay: 0.1 }}
-                        className="text-muted-foreground mt-1 text-sm font-medium"
-                    >
-                        Organize course taxonomies, icons, and structure
-                    </motion.p>
-                </div>
-                <div className="flex flex-wrap items-center gap-3">
-                    <button
-                        onClick={() => setExportModal(true)}
-                        className="px-4 py-2.5 rounded-xl border border-border/50 bg-muted/40 hover:bg-muted/60 text-sm font-semibold transition-all flex items-center gap-2"
-                    >
-                        <Download className="w-4 h-4" />
-                        <span>Export</span>
-                    </button>
-                    <Link href="/dashboard/categories/new">
+        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-8 pb-10 font-sans">
+            <PageHeader
+                title="Category Management"
+                description="Organize course taxonomies, icons, and structure"
+                icon={Layers}
+                actions={
+                    <div className="flex items-center gap-3">
                         <button
-                            className="bg-primary text-primary-foreground px-5 py-2.5 rounded-xl text-sm font-semibold hover:bg-primary/90 transition-all shadow-lg shadow-primary/20 hover:shadow-primary/30 flex items-center gap-2"
+                            onClick={() => setExportModal(true)}
+                            className="px-5 py-2.5 rounded-xl border border-border/50 bg-card hover:bg-muted/50 text-xs font-black uppercase tracking-widest transition-all inline-flex items-center gap-2"
                         >
-                            <Plus className="w-4 h-4" />
-                            <span>Add Category</span>
+                            <Download className="w-4 h-4" /> Export
                         </button>
-                    </Link>
-                </div>
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                {isLoading ? (
-                    [...Array(4)].map((_, i) => (
-                        <div key={i} className="p-6 rounded-2xl border border-border/40 bg-card/30 backdrop-blur-xl animate-pulse h-28" />
-                    ))
-                ) : (
-                    [
-                        { label: 'Total Categories', value: categories.length, icon: Layers, color: 'blue' },
-                        { label: 'Total Courses', value: totalCourses, icon: Code, color: 'emerald' },
-                        { label: 'Avg. per Category', value: avgCourses, icon: TrendingUp, color: 'violet' },
-                        { label: 'Active Icons', value: new Set(categories.map(c => c.icon)).size, icon: Palette, color: 'amber' }
-                    ].map((stat, idx) => (
-                        <motion.div
-                            key={stat.label}
-                            initial={{ opacity: 0, y: 20 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            transition={{ delay: idx * 0.1 }}
-                            className="p-6 rounded-2xl border border-border/40 bg-card/30 backdrop-blur-xl shadow-sm"
-                        >
-                            <div className="flex items-center justify-between">
-                                <div>
-                                    <p className="text-[10px] text-muted-foreground font-black uppercase tracking-widest">{stat.label}</p>
-                                    <p className="text-2xl font-bold mt-1 tracking-tight">{stat.value}</p>
-                                </div>
-                                <div className={cn(
-                                    "p-3 rounded-xl",
-                                    stat.color === 'blue' && "bg-blue-500/10 text-blue-500",
-                                    stat.color === 'emerald' && "bg-emerald-500/10 text-emerald-500",
-                                    stat.color === 'violet' && "bg-violet-500/10 text-violet-500",
-                                    stat.color === 'amber' && "bg-amber-500/10 text-amber-500"
-                                )}>
-                                    <stat.icon className="w-5 h-5" />
-                                </div>
-                            </div>
-                        </motion.div>
-                    ))
-                )}
-            </div>
-            <div className="bg-card/30 backdrop-blur-xl border border-border/40 rounded-3xl overflow-hidden shadow-xl">
-                <div className="p-6 border-b border-border/20 flex flex-col md:flex-row md:items-center justify-between gap-4">
-                    <div className="relative flex-1 max-w-md">
-                        <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                        <input
-                            type="text"
-                            placeholder="Filter categories..."
-                            value={searchTerm}
-                            onChange={(e) => setSearchTerm(e.target.value)}
-                            className="w-full bg-muted/20 border border-border/30 rounded-xl pl-10 pr-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 hover:bg-muted/30 transition-all font-medium"
-                        />
+                        <Link href="/dashboard/categories/new">
+                            <button className="bg-primary text-white px-6 py-2.5 rounded-xl text-xs font-black uppercase tracking-widest hover:bg-primary/90 transition-all shadow-xl shadow-primary/20 inline-flex items-center gap-2">
+                                <Plus className="w-4 h-4" /> Add Category
+                            </button>
+                        </Link>
                     </div>
+                }
+            />
+
+            <DashboardGrid cols={4}>
+                {isLoading ? (
+                    <StatsSkeleton count={4} />
+                ) : (
+                    <>
+                        <StatsCard
+                            title="Total Categories"
+                            value={categories.length}
+                            icon={Layers}
+                            className="border-blue-500/20"
+                        />
+                        <StatsCard
+                            title="Total Courses"
+                            value={totalCourses}
+                            icon={Code}
+                            className="border-emerald-500/20"
+                        />
+                        <StatsCard
+                            title="Avg. per Category"
+                            value={avgCourses}
+                            icon={TrendingUp}
+                            className="border-violet-500/20"
+                        />
+                        <StatsCard
+                            title="Active Icons"
+                            value={new Set(categories.map(c => c.icon)).size}
+                            icon={Palette}
+                            className="border-amber-500/20"
+                        />
+                    </>
+                )}
+            </DashboardGrid>
+            <DashboardTableContainer>
+                <DashboardTableToolbar>
+                    <SearchInput
+                        value={searchTerm}
+                        onChange={setSearchTerm}
+                        placeholder="Filter categories..."
+                        className="flex-1 max-w-md"
+                    />
                     <div className="flex items-center gap-3">
                         {selectedCategories.size > 0 && (
                             <button
@@ -252,9 +237,9 @@ export default function CategoryManagementPage() {
                             <RefreshCw className={cn("w-4 h-4", isLoading && "animate-spin")} />
                         </button>
                     </div>
-                </div>
-                <div className="min-w-[800px] overflow-x-auto">
-                    <div className="grid grid-cols-[48px_48px_2fr_1fr_100px_120px_80px] px-6 py-4 bg-muted/5 border-b border-border/20">
+                </DashboardTableToolbar>
+                <DashboardTableWrapper className="min-w-[800px]">
+                    <DashboardTableHeader className="grid-cols-[48px_48px_2fr_1fr_100px_120px_80px]">
                         <div className="flex items-center justify-center"></div>
                         <div className="flex items-center justify-center">
                             <AnimatedCheckbox
@@ -263,32 +248,26 @@ export default function CategoryManagementPage() {
                                 onChange={toggleSelectAll}
                             />
                         </div>
-                        <div className="px-4 text-[10px] uppercase tracking-widest font-black text-muted-foreground/60">Category</div>
-                        <div className="px-4 text-[10px] uppercase tracking-widest font-black text-muted-foreground/60">Slug Handle</div>
-                        <div className="px-4 text-[10px] uppercase tracking-widest font-black text-muted-foreground/60">Serial</div>
-                        <div className="px-4 text-[10px] uppercase tracking-widest font-black text-muted-foreground/60">Courses</div>
-                        <div className="px-4 text-[10px] uppercase tracking-widest font-black text-muted-foreground/60 text-right">Action</div>
-                    </div>
-                    {isLoading && localCategories.length === 0 ? (
-                        <div className="p-24 flex flex-col items-center justify-center space-y-4 text-center">
-                            <div className="w-12 h-12 border-4 border-primary/20 border-t-primary rounded-full animate-spin" />
-                            <p className="text-xs font-black uppercase tracking-widest text-muted-foreground opacity-60">Initializing registry...</p>
-                        </div>
-                    ) : localCategories.length === 0 ? (
-                        <div className="p-24 text-center">
-                            <div className="flex flex-col items-center justify-center space-y-4 opacity-40">
-                                <Search className="w-12 h-12" />
-                                <h3 className="font-bold text-xl uppercase italic tracking-tighter">No clusters found</h3>
-                                {searchTerm && <button onClick={() => setSearchTerm("")} className="px-5 py-2 rounded-xl bg-primary/10 text-primary text-xs font-black uppercase">Clear Filters</button>}
-                            </div>
-                        </div>
-                    ) : (
+                        <DashboardTableHead>Category</DashboardTableHead>
+                        <DashboardTableHead>Slug Handle</DashboardTableHead>
+                        <DashboardTableHead>Serial</DashboardTableHead>
+                        <DashboardTableHead>Courses</DashboardTableHead>
+                        <DashboardTableHead className="text-right">Action</DashboardTableHead>
+                    </DashboardTableHeader>
+                    
+                    <DashboardTableBody>
                         <DndContext
-                            collisionDetection={closestCenter}
-                            modifiers={[restrictToVerticalAxis]}
-                            onDragEnd={handleDragEnd}
                             sensors={sensors}
-                        >
+                            collisionDetection={closestCenter}
+                            onDragEnd={handleDragEnd}
+                        >{isLoading && localCategories.length === 0 ? (
+                            <LoadingState message="Initializing registry..." />
+                        ) : localCategories.length === 0 ? (
+                            <EmptyFilterState 
+                                searchTerm={searchTerm}
+                                onReset={() => setSearchTerm("")}
+                            />
+                    ) : (
                             <div className="divide-y divide-border/20">
                                 <SortableContext items={localCategories.map(c => c.id)} strategy={verticalListSortingStrategy}>
                                     {localCategories.map((category) => (
@@ -302,10 +281,12 @@ export default function CategoryManagementPage() {
                                     ))}
                                 </SortableContext>
                             </div>
+                        )}
                         </DndContext>
-                    )}
-                </div>
-                {!isLoading && filteredCategories.length > 0 && (
+                    </DashboardTableBody>
+                </DashboardTableWrapper>
+            </DashboardTableContainer>
+            {!isLoading && filteredCategories.length > 0 && (
                     <div className="p-6 border-t border-border/20 bg-muted/5">
                         <Pagination
                             currentPage={currentPage}
@@ -317,12 +298,11 @@ export default function CategoryManagementPage() {
                         />
                     </div>
                 )}
-            </div>
             <Dialog open={!!deleteConfirmId} onClose={() => setDeleteConfirmId(null)} size="sm">
                 <div className="p-8 text-center space-y-6">
                     <div className="w-24 h-24 rounded-full bg-rose-500/10 text-rose-500 flex items-center justify-center mx-auto ring-8 ring-rose-500/5"><X className="w-10 h-10" /></div>
                     <div className="space-y-3">
-                        <h2 className="text-3xl font-black tracking-tighter italic uppercase">Confirm Purge</h2>
+                        <h2 className="text-3xl font-black tracking-tighter uppercase">Confirm Purge</h2>
                         <p className="text-sm font-bold text-muted-foreground opacity-60">Are you sure you want to delete this category? This action cannot be undone and will destabilize associated taxonomies.</p>
                     </div>
                 </div>
@@ -333,7 +313,7 @@ export default function CategoryManagementPage() {
             </Dialog>
             <Dialog open={exportModal} onClose={() => setExportModal(false)} size="sm">
                 <DialogHeader>
-                    <DialogTitle className="italic">Matrix Extraction</DialogTitle>
+                    <DialogTitle>Matrix Extraction</DialogTitle>
                     <DialogDescription>De-serialize categorical topology into portable formats.</DialogDescription>
                 </DialogHeader>
                 <DialogBody className="space-y-3">
@@ -347,7 +327,7 @@ export default function CategoryManagementPage() {
                                 <Download className="w-5 h-5" />
                             </div>
                             <div>
-                                <div className="font-black text-sm italic uppercase tracking-tight">Export as {ext}</div>
+                                <div className="font-black text-sm uppercase tracking-tight">Export as {ext}</div>
                                 <div className="text-[10px] text-muted-foreground uppercase tracking-widest font-bold opacity-40">Standard Format</div>
                             </div>
                         </button>
@@ -372,19 +352,19 @@ function CategoryRowItem({ category, selected, onToggleSelect, onDelete }: {
         transition,
     };
     return (
-        <div
+        <DashboardTableRow
             ref={setNodeRef}
             style={style}
             className={cn(
-                "grid grid-cols-[48px_48px_2fr_1fr_100px_120px_80px] items-center px-6 py-5 transition-colors group bg-card/10 select-none",
-                isDragging ? "z-50 bg-muted/90 backdrop-blur-xl shadow-2xl ring-2 ring-primary/40" : "hover:bg-muted/10"
+                "grid-cols-[48px_48px_2fr_1fr_100px_120px_80px]",
+                isDragging ? "z-50 bg-muted/90 backdrop-blur-xl shadow-2xl ring-2 ring-primary/40" : ""
             )}
         >
             <div className="flex items-center justify-center">
                 <div
                     {...attributes}
                     {...listeners}
-                    className="cursor-grab active:cursor-grabbing text-muted-foreground/20 group-hover:text-primary transition-colors p-2"
+                    className="cursor-grab active:cursor-grabbing text-muted-foreground opacity-20 group-hover:text-primary group-hover:opacity-100 transition-all p-2"
                 >
                     <GripVertical className="w-4 h-4" />
                 </div>
@@ -410,7 +390,7 @@ function CategoryRowItem({ category, selected, onToggleSelect, onDelete }: {
                 <div className="flex flex-col min-w-0">
                     <Link
                         href={`/dashboard/categories/${category.id}/edit`}
-                        className="font-black text-sm italic uppercase tracking-tight text-foreground group-hover:text-primary transition-colors truncate"
+                        className="font-black text-sm uppercase tracking-tight text-foreground group-hover:text-primary transition-colors truncate"
                     >
                         {category.name}
                     </Link>
@@ -434,7 +414,7 @@ function CategoryRowItem({ category, selected, onToggleSelect, onDelete }: {
                     {category.course_count || 0} Entities
                 </span>
             </div>
-            <div className="px-4 text-right">
+            <DashboardTableCell className="text-right">
                 <DropdownMenu>
                     <DropdownMenuTrigger asChild>
                         <button className="p-2.5 rounded-xl hover:bg-muted font-medium transition-all text-muted-foreground hover:text-foreground">
@@ -445,7 +425,7 @@ function CategoryRowItem({ category, selected, onToggleSelect, onDelete }: {
                         <DropdownMenuItem asChild className="rounded-xl focus:bg-primary/10 focus:text-primary cursor-pointer p-3">
                             <Link href={`/dashboard/categories/${category.id}/edit`} className="flex items-center gap-3">
                                 <Edit2 className="w-4 h-4" />
-                                <span className="font-black text-xs uppercase tracking-widest italic">Modify</span>
+                                <span className="font-black text-xs uppercase tracking-widest">Modify</span>
                             </Link>
                         </DropdownMenuItem>
                         <DropdownMenuSeparator className="bg-border/20 mx-1 my-1.5" />
@@ -460,7 +440,7 @@ function CategoryRowItem({ category, selected, onToggleSelect, onDelete }: {
                         </DropdownMenuItem>
                     </DropdownMenuContent>
                 </DropdownMenu>
-            </div>
-        </div>
+            </DashboardTableCell>
+        </DashboardTableRow>
     );
 }

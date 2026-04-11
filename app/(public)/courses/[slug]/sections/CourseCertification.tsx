@@ -51,7 +51,7 @@ export default function CourseCertification({ course }: CourseCertificationProps
                     }}
                 >
                     {}
-                    <div className="relative w-full h-full bg-white rounded-3xl shadow-2xl shadow-primary/10 border border-slate-100 flex flex-col overflow-hidden">
+                    <div className="relative w-full h-full bg-white rounded-3xl shadow-none border border-slate-300 flex flex-col overflow-hidden">
                         {}
                         <div className="absolute inset-0 pointer-events-none">
                             {}

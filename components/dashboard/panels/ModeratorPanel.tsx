@@ -1,95 +1,91 @@
-import { createSupabaseServerClient } from '@/lib/supabase/server';
-import { Flag, MessageSquare, AlertTriangle, CheckCircle } from 'lucide-react';
-export default async function ModeratorPanel() {
-    const supabase = await createSupabaseServerClient();
-    const { data: stats } = await supabase.rpc('get_moderator_dashboard_stats');
+"use client";
+import { Flag, MessageSquare, AlertTriangle, CheckCircle, ShieldAlert } from 'lucide-react';
+import { PageHeader } from "@/components/dashboard/ui/PageHeader";
+import { DashboardCard } from "@/components/dashboard/ui/DashboardCard";
+import { DashboardGrid } from "@/components/dashboard/ui/DashboardGrid";
+import { StatsCard } from "@/components/dashboard/StatsCard";
+
+interface ModeratorPanelProps {
+    stats: any;
+}
+
+export default function ModeratorPanel({ stats }: ModeratorPanelProps) {
     const pendingReports = stats?.pending_reports || 0;
     const reviewsToCheck = stats?.reviews_to_check || 0;
     const flaggedContent = stats?.flagged_content || 0;
     const resolvedToday = stats?.resolved_today || 0;
+
     return (
         <div className="space-y-8 pb-10">
-            {}
-            <div className="flex flex-col gap-1">
-                <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">
-                    Moderator Dashboard 🛡️
-                </h1>
-                <p className="text-muted-foreground">
-                    Review reports, manage content, and keep the community safe.
-                </p>
-            </div>
-            {}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                <div className="p-6 bg-card border border-border rounded-2xl">
-                    <div className="flex items-center gap-4">
-                        <div className="p-3 rounded-xl bg-red-500/10 text-red-500">
-                            <Flag className="w-6 h-6" />
-                        </div>
-                        <div>
-                            <p className="text-sm text-muted-foreground">Pending Reports</p>
-                            <p className="text-2xl font-bold">{pendingReports}</p>
-                        </div>
-                    </div>
-                </div>
-                <div className="p-6 bg-card border border-border rounded-2xl">
-                    <div className="flex items-center gap-4">
-                        <div className="p-3 rounded-xl bg-amber-500/10 text-amber-500">
-                            <MessageSquare className="w-6 h-6" />
-                        </div>
-                        <div>
-                            <p className="text-sm text-muted-foreground">Reviews to Check</p>
-                            <p className="text-2xl font-bold">{reviewsToCheck}</p>
-                        </div>
-                    </div>
-                </div>
-                <div className="p-6 bg-card border border-border rounded-2xl">
-                    <div className="flex items-center gap-4">
-                        <div className="p-3 rounded-xl bg-orange-500/10 text-orange-500">
-                            <AlertTriangle className="w-6 h-6" />
-                        </div>
-                        <div>
-                            <p className="text-sm text-muted-foreground">Flagged Content</p>
-                            <p className="text-2xl font-bold">{flaggedContent}</p>
-                        </div>
-                    </div>
-                </div>
-                <div className="p-6 bg-card border border-border rounded-2xl">
-                    <div className="flex items-center gap-4">
-                        <div className="p-3 rounded-xl bg-emerald-500/10 text-emerald-500">
-                            <CheckCircle className="w-6 h-6" />
-                        </div>
-                        <div>
-                            <p className="text-sm text-muted-foreground">Resolved Today</p>
-                            <p className="text-2xl font-bold">{resolvedToday}</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            {}
-            <div className="space-y-4">
-                <h3 className="text-xl font-bold">Moderation Queue</h3>
+            <PageHeader
+                title="Moderator Dashboard"
+                description="Review reports, manage content, and keep the community safe."
+                icon={ShieldAlert}
+            />
+
+            <DashboardGrid cols={4}>
+                <StatsCard
+                    title="Pending Reports"
+                    value={pendingReports}
+                    icon={Flag}
+                    description="Awaiting review"
+                    className="border-red-500/20"
+                />
+                <StatsCard
+                    title="Reviews to Check"
+                    value={reviewsToCheck}
+                    icon={MessageSquare}
+                    description="User feedback"
+                    className="border-amber-500/20"
+                />
+                <StatsCard
+                    title="Flagged Content"
+                    value={flaggedContent}
+                    icon={AlertTriangle}
+                    description="Automated flags"
+                    className="border-orange-500/20"
+                />
+                <StatsCard
+                    title="Resolved Today"
+                    value={resolvedToday}
+                    icon={CheckCircle}
+                    description="Actions taken"
+                    className="border-emerald-500/20"
+                />
+            </DashboardGrid>
+
+            <div>
+                <h3 className="text-xl font-black text-slate-900 dark:text-white mb-6 flex items-center gap-2">
+                    <ShieldAlert className="w-5 h-5 text-primary" />
+                    Moderation Queue
+                </h3>
+                
                 {pendingReports === 0 && reviewsToCheck === 0 ? (
-                    <div className="p-10 border border-dashed border-border rounded-2xl flex flex-col items-center justify-center text-center bg-card/30">
-                        <div className="p-4 bg-muted rounded-full mb-4">
-                            <CheckCircle className="w-8 h-8 text-emerald-500 opacity-70" />
+                    <div className="p-12 border-2 border-dashed border-slate-200 dark:border-white/10 rounded-[2rem] flex flex-col items-center justify-center text-center bg-slate-50/50 dark:bg-slate-900/10">
+                        <div className="p-4 bg-white dark:bg-white/5 rounded-2xl shadow-sm border border-slate-200 dark:border-white/10 mb-6">
+                            <CheckCircle className="w-8 h-8 text-emerald-500" />
                         </div>
-                        <h4 className="text-lg font-semibold">All Clear!</h4>
-                        <p className="text-muted-foreground max-w-sm text-sm">
+                        <h4 className="text-xl font-bold text-slate-900 dark:text-white">All Clear!</h4>
+                        <p className="text-slate-500 dark:text-slate-400 max-w-sm font-medium">
                             No pending reports or reviews at this time. Great job keeping the community safe!
                         </p>
                     </div>
                 ) : (
-                    <div className="p-6 bg-card border border-border rounded-2xl">
-                        <p className="text-muted-foreground">Queue visualization not implemented yet.</p>
-                    </div>
+                    <DashboardCard title="Active Items" description="Items requiring immediate attention">
+                        <p className="text-slate-500 text-sm font-medium py-10 text-center italic">
+                            Queue visualization system is being optimized for high-density review.
+                        </p>
+                    </DashboardCard>
                 )}
             </div>
-            {}
-            <div className="space-y-4">
-                <h3 className="text-xl font-bold">Recent Activity</h3>
-                <div className="p-6 bg-card border border-border rounded-2xl">
-                    <p className="text-muted-foreground text-center text-sm">No recent moderation activity to display.</p>
-                </div>
+
+            <div>
+                <h3 className="text-xl font-black text-slate-900 dark:text-white mb-6">Recent Activity</h3>
+                <DashboardCard>
+                    <p className="text-slate-500 text-center text-sm font-medium py-4 uppercase tracking-widest opacity-60">
+                        No recent moderation activity logged.
+                    </p>
+                </DashboardCard>
             </div>
         </div>
     );

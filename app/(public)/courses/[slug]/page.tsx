@@ -149,5 +149,6 @@ function transformToMappedCourse(pageData: CoursePageData): MappedCourse {
         targetAudience: details?.target_audience || [],
         curriculumOverview: details?.curriculum_overview || "",
         previewVideoUrl: course.preview_video_url || undefined,
+        batchNo: course.batch_no ?? undefined,
     };
 }
