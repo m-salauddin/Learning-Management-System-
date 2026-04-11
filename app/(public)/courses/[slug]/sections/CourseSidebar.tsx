@@ -52,7 +52,7 @@ export default function CourseSidebar({
                     ]}
                 />
             </div>
-            <div className="relative overflow-hidden rounded-[2.5rem]! bg-white dark:bg-slate-900/60 border border-slate-300 dark:border-white/10 backdrop-blur-2xl lg:sticky lg:top-[110px]">
+            <div className="relative overflow-hidden rounded-[2.5rem]! bg-white dark:bg-slate-900/60 border border-slate-300 dark:border-white/20 backdrop-blur-2xl lg:sticky lg:top-[110px] shadow-none">
                 <div className="p-3 pb-0">
                     <div
                         onClick={() => setShowVideoModal(true)}
@@ -62,15 +62,17 @@ export default function CourseSidebar({
                             src={course.image || '/placeholder-course.jpg'}
                             alt={course.title}
                             fill
+                            sizes="(max-width: 1024px) 100vw, 40vw"
                             className="object-cover opacity-90 group-hover/preview:scale-110 transition-all duration-700"
                             unoptimized
+                            priority
                         />
                         <div className="absolute inset-0 bg-linear-to-t from-slate-950/60 via-transparent to-transparent opacity-60" />
                         <div className="absolute inset-0 flex items-center justify-center">
                             <div className="relative">
                                 <div className="absolute inset-0 rounded-full bg-primary/20 animate-ping group-hover/preview:bg-primary/40" />
                                 <div className="w-16 h-16 rounded-full bg-white/10 backdrop-blur-md flex items-center justify-center group-hover/preview:scale-110 transition-transform duration-500 ring-1 ring-white/20 relative z-10">
-                                    <div className="w-12 h-12 rounded-full bg-[#0036F9] dark:bg-primary flex items-center justify-center shadow-xl shadow-primary/40">
+                                    <div className="w-12 h-12 rounded-full bg-[#0036F9] dark:bg-primary flex items-center justify-center border border-white/20">
                                         <Play className="w-5 h-5 text-card fill-card ml-1" />
                                     </div>
                                 </div>
@@ -127,7 +129,7 @@ export default function CourseSidebar({
                                     exit={{ opacity: 0, scale: 0.96, y: 5 }}
                                     transition={{ type: "spring", stiffness: 400, damping: 30 }}
                                     onClick={() => setShowCouponInput(true)}
-                                    className="group relative flex items-center gap-3 w-full p-3.5 rounded-2xl bg-slate-50 dark:bg-white/3 border border-slate-300 dark:border-white/5 hover:bg-slate-100 dark:hover:bg-white/8 hover:border-primary/30 transition-all duration-300"
+                                    className="group relative flex items-center gap-3 w-full p-3.5 rounded-2xl bg-slate-50 dark:bg-white/3 border border-slate-300 dark:border-white/10 hover:bg-slate-100 dark:hover:bg-white/8 hover:border-primary/30 transition-all duration-300 shadow-none"
                                 >
                                     <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center group-hover:scale-110 transition-transform duration-500">
                                         <Tag className="w-4 h-4 text-primary" />
@@ -183,7 +185,7 @@ export default function CourseSidebar({
                                                         <button
                                                             type="submit"
                                                             disabled={isApplyingCoupon}
-                                                            className="h-full px-6 bg-[#0036F9] dark:bg-primary text-card text-[10px] font-black uppercase tracking-[0.2em] rounded-xl shadow-lg shadow-primary/20 hover:shadow-primary/40 hover:scale-105 active:scale-95 transition-all disabled:opacity-50"
+                                                            className="h-full px-6 bg-[#0036F9] dark:bg-primary text-card text-[10px] font-black uppercase tracking-[0.2em] rounded-xl border border-white/10 hover:scale-105 active:scale-95 transition-all disabled:opacity-50"
                                                         >
                                                             {isApplyingCoupon ? '...' : 'Apply'}
                                                         </button>

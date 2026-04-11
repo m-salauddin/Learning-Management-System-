@@ -10,14 +10,18 @@ interface StatsCardProps {
     trendUp?: boolean;
     description?: string;
     delay?: number;
+    className?: string;
 }
-export function StatsCard({ title, value, icon: Icon, trend, trendUp, description, delay = 0 }: StatsCardProps) {
+export function StatsCard({ title, value, icon: Icon, trend, trendUp, description, delay = 0, className }: StatsCardProps) {
     return (
         <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.4, delay }}
-            className="p-6 rounded-2xl bg-card/50 backdrop-blur-xl border border-white/5 shadow-sm hover:shadow-md hover:bg-card/80 transition-all border-border/50 group"
+            className={cn(
+                "p-6 rounded-2xl bg-card/50 backdrop-blur-xl border border-white/5 shadow-sm hover:shadow-md hover:bg-card/80 transition-all group",
+                className
+            )}
         >
             <div className="flex items-start justify-between mb-4">
                 <div className="p-3 rounded-xl bg-primary/10 text-primary group-hover:scale-110 transition-transform duration-300">
@@ -36,7 +40,7 @@ export function StatsCard({ title, value, icon: Icon, trend, trendUp, descriptio
             </div>
             <h3 className="text-sm font-medium text-muted-foreground mb-1">{title}</h3>
             <div className="flex items-baseline gap-2">
-                <h2 className="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-foreground to-foreground/70">
+                <h2 className="text-3xl font-bold bg-clip-text text-transparent bg-linear-to-r from-foreground to-foreground/70">
                     {value}
                 </h2>
                 {description && <span className="text-xs text-muted-foreground">{description}</span>}

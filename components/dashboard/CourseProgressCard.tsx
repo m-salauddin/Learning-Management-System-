@@ -1,7 +1,8 @@
-"use client";
-import { motion } from "motion/react";
-import { PlayCircle } from "lucide-react";
+import { Play, BookOpen, ChevronRight } from "lucide-react";
 import Link from "next/link";
+import Image from "next/image";
+import { motion } from "motion/react";
+
 interface CourseProgressCardProps {
     slug: string;
     title: string;
@@ -10,40 +11,78 @@ interface CourseProgressCardProps {
     totalLessons: number;
     completedLessons: number;
 }
+
 export function CourseProgressCard({ slug, title, image, progress, totalLessons, completedLessons }: CourseProgressCardProps) {
     return (
         <motion.div
-            whileHover={{ y: -5 }}
-            className="group relative rounded-2xl overflow-hidden border border-border/50 bg-card/50 backdrop-blur-sm shadow-sm hover:shadow-md transition-all"
+            whileHover={{ y: -8, scale: 1.02 }}
+            className="group relative rounded-[2rem] overflow-hidden border border-white/10 bg-slate-900/40 backdrop-blur-xl shadow-2xl transition-all duration-500 hover:border-primary/30"
         >
-            <div className="relative h-32 sm:h-40 overflow-hidden">
-                <img src={image} alt={title} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" />
-                <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center backdrop-blur-[2px]">
-                    <Link href={`/courses/${slug}`} className="p-3 rounded-full bg-primary text-white hover:scale-110 transition-transform shadow-xl cursor-pointer">
-                        <PlayCircle className="w-8 h-8 fill-current" />
+            {/* Image Section */}
+            <div className="relative h-44 overflow-hidden">
+                <Image 
+                    src={image} 
+                    alt={title} 
+                    fill 
+                    className="object-cover transition-transform duration-700 group-hover:scale-110"
+                    unoptimized
+                />
+                
+                {/* Gradient Overlays */}
+                <div className="absolute inset-0 bg-linear-to-t from-slate-950 via-slate-950/20 to-transparent opacity-80" />
+                <div className="absolute inset-0 bg-black/20 group-hover:bg-black/40 transition-colors duration-300" />
+
+                {/* Play Button Overlay */}
+                <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-500 translate-y-4 group-hover:translate-y-0">
+                    <Link href={`/courses/${slug}`} className="w-12 h-12 rounded-full bg-primary text-white flex items-center justify-center shadow-2xl shadow-primary/40 hover:scale-110 active:scale-95 transition-all">
+                        <Play className="w-5 h-5 fill-current ml-0.5" />
                     </Link>
                 </div>
-                <div className="absolute top-2 right-2 px-2 py-1 text-[10px] font-bold bg-background/80 backdrop-blur-md rounded-md border border-white/10">
-                    {progress}%
+
+                {/* Progress Badge */}
+                <div className="absolute top-4 right-4 px-3 py-1.5 rounded-xl bg-slate-950/60 backdrop-blur-md border border-white/10 text-[10px] font-black italic uppercase tracking-widest text-primary shadow-xl">
+                    {Math.round(progress)}% Complete
                 </div>
             </div>
-            <div className="p-4 sm:p-5">
-                <h4 className="font-bold text-base sm:text-lg mb-2 line-clamp-1 group-hover:text-primary transition-colors">{title}</h4>
-                <div className="flex justify-between text-xs text-muted-foreground mb-2">
-                    <span>Progress</span>
-                    <span>{completedLessons}/{totalLessons} Lessons</span>
+
+            {/* Content Section */}
+            <div className="p-6 pt-4 space-y-4">
+                <div className="space-y-1">
+                    <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-primary opacity-80 italic">
+                        <BookOpen className="w-3 h-3" />
+                        Active Protocol
+                    </div>
+                    <h4 className="font-black text-lg tracking-tight line-clamp-1 group-hover:text-primary transition-colors duration-300">
+                        {title}
+                    </h4>
                 </div>
-                <div className="h-2 w-full bg-muted rounded-full overflow-hidden">
-                    <motion.div
-                        initial={{ width: 0 }}
-                        animate={{ width: `${progress}%` }}
-                        transition={{ duration: 1, ease: "easeOut", delay: 0.2 }}
-                        className="h-full bg-primary rounded-full relative overflow-hidden"
-                    >
-                        <div className="absolute inset-0 bg-white/20" />
-                    </motion.div>
+
+                <div className="space-y-2">
+                    <div className="flex justify-between items-end text-[10px] font-bold uppercase tracking-widest text-muted-foreground/60 italic">
+                        <span>Progress Vector</span>
+                        <span>{completedLessons}/{totalLessons} Units</span>
+                    </div>
+                    <div className="h-2 w-full bg-white/5 rounded-full overflow-hidden border border-white/5">
+                        <motion.div
+                            initial={{ width: 0 }}
+                            animate={{ width: `${progress}%` }}
+                            transition={{ duration: 1.2, ease: "easeOut", delay: 0.3 }}
+                            className="h-full bg-linear-to-r from-primary to-primary/60 rounded-full relative shadow-[0_0_12px_rgba(var(--primary),0.4)]"
+                        >
+                            <div className="absolute inset-0 bg-linear-to-r from-transparent via-white/10 to-transparent animate-shimmer" />
+                        </motion.div>
+                    </div>
                 </div>
+
+                <Link 
+                    href={`/courses/${slug}`}
+                    className="w-full h-11 flex items-center justify-center gap-2 rounded-xl bg-white/5 border border-white/5 hover:bg-primary/10 hover:border-primary/20 hover:text-primary transition-all duration-300 font-black text-[10px] uppercase tracking-widest group/btn"
+                >
+                    Continue Learning
+                    <ChevronRight className="w-4 h-4 transition-transform group-hover/btn:translate-x-1" />
+                </Link>
             </div>
         </motion.div>
     );
 }
+

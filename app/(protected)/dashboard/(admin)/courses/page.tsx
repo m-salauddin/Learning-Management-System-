@@ -62,8 +62,20 @@ import { useToast } from "@/components/ui/toast";
 import { AnimatedCheckbox } from "@/components/ui/AnimatedCheckbox";
 import { useAppDispatch } from "@/lib/store/hooks";
 import { reorderCourses } from "@/lib/store/features/courses/coursesSlice";
-import { SearchInput } from "@/components/dashboard/shared/SearchInput";
-import { StatusBadge, LevelBadge } from "@/components/dashboard/shared/Badges";
+import { SearchInput, StatusBadge, LevelBadge, StatsSkeleton, LoadingState, EmptyFilterState } from "@/components/dashboard/shared";
+import { PageHeader } from "@/components/dashboard/ui/PageHeader";
+import { DashboardGrid } from "@/components/dashboard/ui/DashboardGrid";
+import { StatsCard } from "@/components/dashboard/StatsCard";
+import {
+    DashboardTableContainer,
+    DashboardTableToolbar,
+    DashboardTableWrapper,
+    DashboardTableHeader,
+    DashboardTableHead,
+    DashboardTableBody,
+    DashboardTableRow,
+    DashboardTableCell
+} from "@/components/dashboard/ui/DashboardTable";
 const CourseRow = memo(({
     course,
     isSelected,
@@ -92,19 +104,19 @@ const CourseRow = memo(({
         transition: transition || undefined,
     };
     return (
-        <div
+        <DashboardTableRow
             ref={setNodeRef}
             style={style}
             className={cn(
-                "grid grid-cols-[48px_48px_60px_2.5fr_1fr_120px_100px_100px_80px] items-center px-6 py-5 group bg-card/10 select-none",
-                isDragging ? "z-100 relative bg-muted shadow-2xl ring-2 ring-primary/40 scale-[1.01] transition-transform" : "hover:bg-muted/10 border-b border-border/5 transition-colors duration-200"
+                "grid-cols-[48px_48px_60px_2.5fr_1fr_120px_100px_100px_80px]",
+                isDragging ? "z-100 relative bg-muted shadow-2xl ring-2 ring-primary/40 scale-[1.01] transition-transform" : ""
             )}
         >
             <div className="flex items-center justify-center">
                 <div
                     {...attributes}
                     {...listeners}
-                    className="cursor-grab active:cursor-grabbing text-muted-foreground/20 group-hover:text-primary transition-colors p-2"
+                    className="cursor-grab active:cursor-grabbing text-muted-foreground opacity-20 group-hover:text-primary group-hover:opacity-100 transition-all p-2"
                 >
                     <GripVertical className="w-4 h-4" />
                 </div>
@@ -124,7 +136,7 @@ const CourseRow = memo(({
             <div className="px-4 flex items-center gap-4 min-w-0">
                 <div className="w-16 h-11 rounded-xl bg-muted overflow-hidden shrink-0 border border-border/20 shadow-sm relative group-hover:scale-105 transition-transform duration-500">
                     {course.thumbnail_url ? (
-                        <Image src={course.thumbnail_url} alt="" fill className="object-cover" />
+                        <Image src={course.thumbnail_url} alt="" fill unoptimized className="object-cover" />
                     ) : (
                         <div className="w-full h-full flex items-center justify-center bg-muted text-[10px] font-black text-muted-foreground uppercase tracking-widest">N/A</div>
                     )}
@@ -132,7 +144,7 @@ const CourseRow = memo(({
                 <div className="flex flex-col min-w-0">
                     <Link
                         href={`/dashboard/courses/${course.id}/edit`}
-                        className="font-black text-sm italic uppercase tracking-tight text-foreground group-hover:text-primary transition-colors truncate"
+                        className="font-black text-sm uppercase tracking-tight text-foreground group-hover:text-primary transition-colors truncate"
                     >
                         {course.title}
                     </Link>
@@ -177,7 +189,7 @@ const CourseRow = memo(({
                     <span className="text-[9px] text-muted-foreground font-black uppercase tracking-widest opacity-40">Engaged</span>
                 </div>
             </div>
-            <div className="px-4 text-right">
+            <DashboardTableCell className="text-right">
                 <DropdownMenu>
                     <DropdownMenuTrigger asChild>
                         <button className="p-2.5 rounded-xl hover:bg-muted font-medium transition-all text-muted-foreground hover:text-foreground">
@@ -187,16 +199,16 @@ const CourseRow = memo(({
                     <DropdownMenuContent align="end" className="w-48 p-2 rounded-2xl border-border/40 bg-card/85 backdrop-blur-2xl shadow-2xl">
                         <DropdownMenuItem className="rounded-xl gap-3 cursor-pointer p-3 focus:bg-primary/10 focus:text-primary" onClick={() => router.push(`/courses/${course.slug}`)}>
                             <Eye className="w-4 h-4" />
-                            <span className="font-black text-xs uppercase tracking-widest italic">Deep View</span>
+                            <span className="font-black text-xs uppercase tracking-widest">Deep View</span>
                         </DropdownMenuItem>
                         <DropdownMenuItem className="rounded-xl gap-3 cursor-pointer p-3 focus:bg-primary/10 focus:text-primary" onClick={() => router.push(`/dashboard/courses/${course.id}/edit`)}>
                             <Edit2 className="w-4 h-4" />
-                            <span className="font-black text-xs uppercase tracking-widest italic">Modify</span>
+                            <span className="font-black text-xs uppercase tracking-widest">Modify</span>
                         </DropdownMenuItem>
                         <DropdownMenuSeparator className="bg-border/20 mx-1 my-1.5" />
                         <DropdownMenuItem className="rounded-xl gap-3 cursor-pointer p-3 focus:bg-primary/10 focus:text-primary" onClick={() => onTogglePublish(course)}>
                             {course.status === 'published' ? <Archive className="w-4 h-4" /> : <Plus className="w-4 h-4" />}
-                            <span className="font-black text-xs uppercase tracking-widest italic">{course.status === 'published' ? 'Archive catalog' : 'Deploy catalog'}</span>
+                            <span className="font-black text-xs uppercase tracking-widest">{course.status === 'published' ? 'Archive catalog' : 'Deploy catalog'}</span>
                         </DropdownMenuItem>
                         <DropdownMenuSeparator className="bg-border/20 mx-1 my-1.5" />
                         <DropdownMenuItem onClick={() => onDelete(course.id)} className="rounded-xl gap-3 cursor-pointer p-3 focus:bg-destructive/10 focus:text-destructive text-destructive">
@@ -205,8 +217,8 @@ const CourseRow = memo(({
                         </DropdownMenuItem>
                     </DropdownMenuContent>
                 </DropdownMenu>
-            </div>
-        </div>
+            </DashboardTableCell>
+        </DashboardTableRow>
     );
 });
 CourseRow.displayName = "CourseRow";
@@ -454,91 +466,64 @@ export default function CourseManagementPage() {
         }
     };
     return (
-        <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            className="space-y-6 pb-10 font-sans"
-        >
-            <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-6">
-                <div>
-                    <motion.h1
-                        initial={{ opacity: 0, x: -20 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        className="text-3xl font-bold tracking-tight"
-                    >
-                        Course Management
-                    </motion.h1>
-                    <motion.p
-                        initial={{ opacity: 0, x: -20 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        transition={{ delay: 0.1 }}
-                        className="text-muted-foreground mt-1"
-                    >
-                        Create, edit, and track performance of all courses
-                    </motion.p>
-                </div>
-                <div className="flex flex-wrap items-center gap-3">
-                    <motion.button
-                        whileHover={{ scale: 1.02 }}
-                        whileTap={{ scale: 0.98 }}
-                        onClick={() => setExportModal(true)}
-                        className="px-4 py-2.5 rounded-xl border border-border/50 bg-muted/40 hover:bg-muted/60 text-sm font-semibold transition-all flex items-center gap-2"
-                    >
-                        <Download className="w-4 h-4" />
-                        <span>Export</span>
-                    </motion.button>
-                    <Link href="/dashboard/courses/new">
-                        <motion.button
-                            whileHover={{ scale: 1.02 }}
-                            whileTap={{ scale: 0.98 }}
-                            className="bg-primary text-primary-foreground px-5 py-2.5 rounded-xl text-sm font-semibold hover:bg-primary/90 transition-all shadow-lg shadow-primary/20 hover:shadow-primary/30 flex items-center gap-2"
+        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-8 pb-10 font-sans">
+            <PageHeader
+                title="Course Management"
+                description="Create, edit, and track performance of all courses"
+                icon={BookOpen}
+                actions={
+                    <div className="flex items-center gap-3">
+                        <button
+                            onClick={() => setExportModal(true)}
+                            className="px-5 py-2.5 rounded-xl border border-border/50 bg-card hover:bg-muted/50 text-xs font-black uppercase tracking-widest transition-all inline-flex items-center gap-2"
                         >
-                            <Plus className="w-4 h-4" />
-                            <span>Create Course</span>
-                        </motion.button>
-                    </Link>
-                </div>
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                            <Download className="w-4 h-4" /> Export
+                        </button>
+                        <Link href="/dashboard/courses/new">
+                            <button className="bg-primary text-white px-6 py-2.5 rounded-xl text-xs font-black uppercase tracking-widest hover:bg-primary/90 transition-all shadow-xl shadow-primary/20 inline-flex items-center gap-2">
+                                <Plus className="w-4 h-4" /> Create Course
+                            </button>
+                        </Link>
+                    </div>
+                }
+            />
+
+            <DashboardGrid cols={4}>
                 {!stats ? (
-                    [...Array(4)].map((_, i) => (
-                        <div key={`skel-${i}`} className="p-6 rounded-2xl border border-border/40 bg-card/30 backdrop-blur-xl animate-pulse h-28" />
-                    ))
+                    <StatsSkeleton count={4} />
                 ) : (
-                    [
-                        { label: 'Total Courses', value: stats.total, icon: BookOpen, color: 'blue' },
-                        { label: 'Published', value: stats.published, icon: CheckCircle2, color: 'emerald' },
-                        { label: 'Total Students', value: stats.totalStudents, icon: TrendingUp, color: 'violet' },
-                        { label: 'Revenue (Est.)', value: `৳${(stats.totalRevenue || 0).toLocaleString()}`, icon: DollarSign, color: 'emerald' }
-                    ].map((stat, idx) => (
-                        <motion.div
-                            key={stat.label}
-                            initial={{ opacity: 0, y: 20 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            transition={{ delay: idx * 0.1 }}
-                            className="p-6 rounded-2xl border border-border/40 bg-card/30 backdrop-blur-xl"
-                        >
-                            <div className="flex items-center justify-between">
-                                <div>
-                                    <p className="text-[10px] text-muted-foreground font-black uppercase tracking-widest">{stat.label}</p>
-                                    <p className="text-2xl font-bold mt-1 tracking-tight">{stat.value}</p>
-                                </div>
-                                <div className={cn(
-                                    "p-3 rounded-xl",
-                                    stat.color === 'blue' && "bg-blue-500/10 text-blue-500",
-                                    stat.color === 'emerald' && "bg-emerald-500/10 text-emerald-500",
-                                    stat.color === 'violet' && "bg-violet-500/10 text-violet-500"
-                                )}>
-                                    <stat.icon className="w-6 h-6" />
-                                </div>
-                            </div>
-                        </motion.div>
-                    ))
+                    <>
+                        <StatsCard
+                            title="Total Courses"
+                            value={stats.total}
+                            icon={BookOpen}
+                            className="border-blue-500/20"
+                        />
+                        <StatsCard
+                            title="Published"
+                            value={stats.published}
+                            icon={CheckCircle2}
+                            className="border-emerald-500/20"
+                        />
+                        <StatsCard
+                            title="Total Students"
+                            value={stats.totalStudents}
+                            icon={TrendingUp}
+                            className="border-violet-500/20"
+                        />
+                        <StatsCard
+                            title="Revenue (Est.)"
+                            value={`৳${(stats.totalRevenue || 0).toLocaleString()}`}
+                            icon={DollarSign}
+                            className="border-emerald-500/20"
+                        />
+                    </>
                 )}
-            </div>
-            <div className="rounded-3xl border border-border/40 bg-card/30 backdrop-blur-xl overflow-hidden shadow-xl">
-                <div className="p-6 border-b border-border/20 flex flex-col lg:flex-row gap-4 justify-between">
-                    <div className="flex items-center gap-2 w-full lg:max-w-md">
+            </DashboardGrid>
+            {/* Main Table Interface */}
+            <DashboardTableContainer>
+                <DashboardTableToolbar className="flex-col 2xl:flex-row items-start 2xl:items-center p-6 gap-6">
+                    <div className="flex w-full 2xl:w-auto items-center gap-3 bg-card/50 p-2 rounded-2xl border border-border/50">
                         <SearchInput
                             value={searchTerm}
                             onChange={(value) => { setSearchTerm(value); setCurrentPage(1); }}
@@ -616,37 +601,26 @@ export default function CourseManagementPage() {
                             </button>
                         )}
                     </div>
-                </div>
+                </DashboardTableToolbar>
                 {isLoading ? (
-                    <div className="py-24 text-center flex flex-col items-center justify-center space-y-4">
-                        <RefreshCw className="w-10 h-10 animate-spin text-primary/40" />
-                        <p className="text-sm font-black text-muted-foreground uppercase tracking-wider">Synchronizing Catalog...</p>
-                    </div>
+                    <LoadingState message="Synchronizing Catalog..." />
                 ) : courses.length === 0 ? (
-                    <div className="py-24 text-center flex flex-col items-center justify-center space-y-4">
-                        <div className="p-6 rounded-full bg-muted/20 ring-8 ring-muted/5">
-                            <BookOpen className="w-10 h-10 text-muted-foreground/40" />
-                        </div>
-                        <div>
-                            <h3 className="text-xl font-bold tracking-tight">Empty Course Database</h3>
-                            <p className="text-sm text-muted-foreground mt-1 max-w-xs mx-auto font-medium">No results match your current filter topology.</p>
-                        </div>
-                    </div>
+                    <EmptyFilterState searchTerm={searchTerm || categoryFilter !== 'all' ? "your filters" : ""} />
                 ) : (
-                    <div className="min-w-[1100px]">
-                        <div className="grid grid-cols-[48px_48px_60px_2.5fr_1fr_120px_100px_100px_80px] px-6 py-4 bg-muted/5 border-b border-border/20 items-center">
+                    <DashboardTableWrapper className="min-w-[1100px]">
+                        <DashboardTableHeader className="grid-cols-[48px_48px_60px_2.5fr_1fr_120px_100px_100px_80px]">
                             <div className="flex items-center justify-center"></div>
                             <div className="flex justify-center">
                                 <AnimatedCheckbox id="select-all" checked={selectedCourses.size === courses.length && courses.length > 0} onChange={toggleSelectAll} />
                             </div>
-                            <div className="px-4 text-[10px] uppercase tracking-widest font-black text-muted-foreground/60 text-center">Serial</div>
-                            <div className="px-4 text-[10px] uppercase tracking-widest font-black text-muted-foreground/60">Course / Identity</div>
-                            <div className="px-4 text-[10px] uppercase tracking-widest font-black text-muted-foreground/60">Monetization</div>
-                            <div className="px-4 text-[10px] uppercase tracking-widest font-black text-muted-foreground/60">Lifecycle</div>
-                            <div className="px-4 text-[10px] uppercase tracking-widest font-black text-muted-foreground/60 text-center">Proficiency</div>
-                            <div className="px-4 text-[10px] uppercase tracking-widest font-black text-muted-foreground/60 text-center">Impact</div>
-                            <div className="px-4 text-[10px] uppercase tracking-widest font-black text-muted-foreground/60 text-right">Action</div>
-                        </div>
+                            <DashboardTableHead className="text-center">Serial</DashboardTableHead>
+                            <DashboardTableHead>Course / Identity</DashboardTableHead>
+                            <DashboardTableHead>Monetization</DashboardTableHead>
+                            <DashboardTableHead>Lifecycle</DashboardTableHead>
+                            <DashboardTableHead className="text-center">Proficiency</DashboardTableHead>
+                            <DashboardTableHead className="text-center">Impact</DashboardTableHead>
+                            <DashboardTableHead className="text-right">Action</DashboardTableHead>
+                        </DashboardTableHeader>
                         <DndContext
                             sensors={sensors}
                             collisionDetection={closestCenter}
@@ -657,7 +631,7 @@ export default function CourseManagementPage() {
                                 items={courses.map((c) => c.id)}
                                 strategy={verticalListSortingStrategy}
                             >
-                                <div className="divide-y divide-border/10">
+                                <DashboardTableBody>
                                     {courses.map((course) => (
                                         <CourseRow
                                             key={course.id}
@@ -669,10 +643,10 @@ export default function CourseManagementPage() {
                                             router={router}
                                         />
                                     ))}
-                                </div>
+                                </DashboardTableBody>
                             </SortableContext>
                         </DndContext>
-                    </div>
+                    </DashboardTableWrapper>
                 )}
                 {!isLoading && totalCourses > pageSize && (
                     <div className="p-6 border-t border-border/20 bg-muted/5">
@@ -689,7 +663,7 @@ export default function CourseManagementPage() {
                         />
                     </div>
                 )}
-            </div>
+            </DashboardTableContainer>
             <AnimatePresence>
                 {selectedCourses.size > 0 && (
                     <motion.div
@@ -746,7 +720,7 @@ export default function CourseManagementPage() {
                                 <Download className="w-5 h-5" />
                             </div>
                             <div>
-                                <div className="font-bold text-foreground text-sm tracking-tight italic">Export as {type.name}</div>
+                                <div className="font-bold text-foreground text-sm tracking-tight">Export as {type.name}</div>
                                 <div className="text-[10px] text-muted-foreground font-black uppercase tracking-widest opacity-60">{type.desc}</div>
                             </div>
                         </button>

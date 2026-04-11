@@ -16,10 +16,10 @@ export default function CourseFeatures({ totalLectures, projectCount }: CourseFe
     return (
         <div className="grid grid-cols-2 lg:grid-cols-5 gap-4">
             {features.map((item, i) => (
-                <div key={i} className="group relative p-6 rounded-[2rem] bg-slate-100 dark:bg-slate-900/40 border border-slate-200 dark:border-white/5 hover:border-primary/20 dark:hover:border-white/10 transition-all duration-500 overflow-hidden shadow-sm dark:shadow-none">
+                <div key={i} className="group relative p-6 rounded-[2rem] bg-slate-100 dark:bg-slate-900/40 border border-slate-300 dark:border-white/10 hover:border-primary/20 dark:hover:border-white/20 transition-all duration-500 overflow-hidden shadow-none">
                     <div className={cn("absolute top-0 right-0 w-16 h-16 opacity-10 blur-xl rounded-full translate-x-1/2 -translate-y-1/2", `bg-${item.color}-500`)} />
                     <div className="relative z-10 flex flex-col gap-4">
-                        <div className={cn("w-10 h-10 rounded-xl flex items-center justify-center bg-white dark:bg-white/5 shadow-sm dark:shadow-none group-hover:scale-110 transition-transform duration-500",
+                        <div className={cn("w-10 h-10 rounded-xl flex items-center justify-center bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 group-hover:scale-110 transition-transform duration-500",
                             item.color === 'emerald' ? 'text-emerald-600 dark:text-emerald-400' :
                                 item.color === 'blue' ? 'text-blue-600 dark:text-blue-400' :
                                     item.color === 'purple' ? 'text-purple-600 dark:text-purple-400' :

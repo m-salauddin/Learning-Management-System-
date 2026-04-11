@@ -2,7 +2,6 @@
 import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "motion/react";
-import { GraduationCap } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { useToast } from "@/components/ui/toast";
 import { createCourse, getCategories, getTeachers } from "@/lib/actions/courses";
@@ -45,7 +44,8 @@ export default function CreateCoursePage() {
     const [submittedSteps, setSubmittedSteps] = useState<Set<number>>(new Set());
     const [currentStep, setCurrentStep] = useState(1);
     const totalSteps = 4;
-    const [formData, setFormData] = useState<CreateCourseInput>({
+    const draftRestoredRef = useRef(false);
+    const INITIAL_FORM_DATA: CreateCourseInput = {
         title: "",
         short_description: "",
         description: "",
@@ -55,8 +55,9 @@ export default function CreateCoursePage() {
         category_id: "",
         instructor_ids: [] as string[],
         support_instructor_ids: [] as string[],
-        level: "beginner" as CourseLevel,
-        language: "Bengali",
+        level: "" as any,
+        course_type: "" as any,
+        language: "",
         thumbnail_url: "",
         preview_video_url: "",
         requirements: [] as string[],
@@ -67,8 +68,73 @@ export default function CreateCoursePage() {
         faqs: [] as { question: string; answer: string }[],
         resources: [] as { title: string; type: string; url: string }[],
         modules: [] as { title: string; lessons: { title: string; video_url: string }[] }[],
-        coupon_code: ""
-    });
+        community_facebook_url: "",
+        community_whatsapp_url: "",
+        bkash_automatic_enabled: false,
+        manual_payment_methods: {
+            bkash: "",
+            nagad: "",
+            upay: "",
+            rocket: ""
+        }
+    };
+
+    const [formData, setFormData] = useState<CreateCourseInput>(INITIAL_FORM_DATA);
+    const DRAFT_KEY = "dokkhoit_course_draft_v1";
+
+    const isMeaningfulChange = (data: any): boolean => {
+        if (!data) return false;
+        
+        const hasTitle = data.title && data.title.trim() !== "";
+        const hasDescription = data.description && data.description.trim() !== "";
+        const hasThumbnail = data.thumbnail_url && data.thumbnail_url !== "";
+        const hasPrice = data.price && Number(data.price) > 0;
+        const hasModules = data.modules && data.modules.length > 0;
+        
+        return !!(hasTitle || hasDescription || hasThumbnail || hasPrice || hasModules);
+    };
+
+    useEffect(() => {
+        const savedDraft = localStorage.getItem(DRAFT_KEY);
+        if (savedDraft) {
+            try {
+                const parsed = JSON.parse(savedDraft);
+                const { _savedStep, ...draftFields } = parsed;
+                
+                if (isMeaningfulChange(draftFields)) {
+                    setFormData(prev => ({ ...prev, ...draftFields }));
+                    
+                    if (draftFields.thumbnail_url) {
+                        setThumbnailPreview(draftFields.thumbnail_url);
+                    }
+                    if (_savedStep) {
+                        setCurrentStep(Number(_savedStep));
+                    }
+                    toast.success("Draft Restored", "Your previous progress has been automatically loaded.");
+                } else {
+                    localStorage.removeItem(DRAFT_KEY);
+                }
+            } catch (err) {
+                console.error("Failed to parse draft", err);
+                localStorage.removeItem(DRAFT_KEY);
+            }
+        }
+        draftRestoredRef.current = true;
+    }, [toast]);
+    useEffect(() => {
+        if (!draftRestoredRef.current) return;
+        
+        const timer = setTimeout(() => {
+            if (isMeaningfulChange(formData)) {
+                const draftData = { ...formData, _savedStep: currentStep };
+                localStorage.setItem(DRAFT_KEY, JSON.stringify(draftData));
+            } else {
+                localStorage.removeItem(DRAFT_KEY);
+            }
+        }, 800);
+        return () => clearTimeout(timer);
+    }, [formData, currentStep]);
+
     useEffect(() => {
         if (submittedSteps.has(currentStep)) {
             const timer = setTimeout(() => {
@@ -77,17 +143,20 @@ export default function CreateCoursePage() {
                 else if (currentStep === 2) schema = courseStep2Schema;
                 else if (currentStep === 3) schema = courseStep3Schema;
                 else if (currentStep === 4) schema = courseStep4Schema;
+
                 if (schema) {
                     const result = schema.safeParse(formData);
+                    const newErrors: Record<string, string> = {};
                     if (!result.success) {
-                        const newErrors: Record<string, string> = {};
                         result.error.issues.forEach((issue) => {
                             if (issue.path[0]) newErrors[issue.path[0] as string] = issue.message;
                         });
-                        setErrors(newErrors);
-                    } else {
-                        setErrors({});
                     }
+
+                    setErrors(prev => {
+                        const hasChanged = JSON.stringify(prev) !== JSON.stringify(newErrors);
+                        return hasChanged ? newErrors : prev;
+                    });
                 }
             }, 300);
             return () => clearTimeout(timer);
@@ -117,14 +186,21 @@ export default function CreateCoursePage() {
         }
     };
     const handleThumbnailUpload = async (file: File) => {
+        if (file.size > 1 * 1024 * 1024) {
+            toast.error("File excessively large", "Maximum allowed thumbnail size is 1MB. Please compress your image.");
+            return;
+        }
         setIsUploadingThumbnail(true);
         try {
             const fileExt = file.name.split('.').pop();
-            const fileName = `${Math.random()}.${fileExt}`;
+            const fileName = `${Math.random().toString(36).substring(2)}-${Date.now()}.${fileExt}`;
             const filePath = `course-thumbnails/${fileName}`;
             const { error: uploadError } = await supabase.storage
                 .from('courses')
-                .upload(filePath, file);
+                .upload(filePath, file, {
+                    cacheControl: '3600',
+                    upsert: true
+                });
             if (uploadError) throw uploadError;
             const { data: { publicUrl } } = supabase.storage
                 .from('courses')
@@ -167,10 +243,8 @@ export default function CreateCoursePage() {
         setFormData(prev => ({ ...prev, thumbnail_url: "" }));
         setThumbnailPreview(null);
     };
-    const handleSubmit = async (e: React.FormEvent) => {
-        e.preventDefault();
+    const handleCreateCourse = async () => {
         if (currentStep < totalSteps) {
-            nextStep();
             return;
         }
         setSubmittedSteps(prev => new Set(prev).add(4));
@@ -180,6 +254,7 @@ export default function CreateCoursePage() {
             setIsSubmitting(true);
             const result = await createCourse(formData);
             if (result.success) {
+                localStorage.removeItem(DRAFT_KEY);
                 toast.success("Course created successfully!");
                 router.push("/dashboard/courses");
             } else {
@@ -217,6 +292,8 @@ export default function CreateCoursePage() {
                     if (issue.path[0]) newErrors[issue.path[0] as string] = issue.message;
                 });
                 setErrors(newErrors);
+                toast.error("Validation Error", "Please check the form for missing or invalid fields.");
+                window.scrollTo({ top: 0, behavior: 'smooth' });
             }
         }
     };
@@ -227,7 +304,7 @@ export default function CreateCoursePage() {
     };
     return (
         <div className="max-w-6xl mx-auto py-8 px-4 sm:px-6">
-            <form onSubmit={handleSubmit} className="space-y-8">
+            <div className="space-y-8">
                 {}
                 <div className="mb-8">
                     <h1 className="text-3xl font-bold tracking-tight text-slate-900 dark:text-white">Initialize New Course</h1>
@@ -265,7 +342,10 @@ export default function CreateCoursePage() {
                                     handleDragLeave={handleDragLeave}
                                     handleDrop={handleDrop}
                                     handleFileChange={handleFileChange}
-                                    removeThumbnail={removeThumbnail}
+                                    removeThumbnail={() => {
+                                        setThumbnailPreview(null);
+                                        setFormData(prev => ({ ...prev, thumbnail_url: "" }));
+                                    }}
                                     errors={errors}
                                 />
                             )}
@@ -277,8 +357,17 @@ export default function CreateCoursePage() {
                                 />
                             )}
                         </AnimatePresence>
+
+                        <FormFooter
+                            currentStep={currentStep}
+                            totalSteps={totalSteps}
+                            prevStep={prevStep}
+                            nextStep={nextStep}
+                            onCreateCourse={handleCreateCourse}
+                            isSubmitting={isSubmitting}
+                        />
                     </div>
-                    {}
+                    
                     <div className="xl:col-span-4 h-full">
                         <CoursePreview
                             formData={formData}
@@ -286,14 +375,7 @@ export default function CreateCoursePage() {
                         />
                     </div>
                 </div>
-                <FormFooter
-                    currentStep={currentStep}
-                    totalSteps={totalSteps}
-                    prevStep={prevStep}
-                    nextStep={nextStep}
-                    isSubmitting={isSubmitting}
-                />
-            </form>
+            </div>
         </div>
     );
 }

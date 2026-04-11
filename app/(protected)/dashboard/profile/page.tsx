@@ -6,7 +6,7 @@ import {
     Save, User, Camera, Loader2, Globe, MapPin, Phone as PhoneIcon,
     BookOpen, Trophy, Zap, CheckCircle2, Github, Lock, Eye, EyeOff,
     Shield, UserCircle, Key, Mail, AlertCircle, ShieldCheck, Facebook,
-    Instagram, Twitter, Linkedin, MessageCircle, Link as LinkIcon, X, Plus, Trash2, Pencil
+    Instagram, Twitter, Linkedin, MessageCircle, Link as LinkIcon, X, Plus, Trash2, Pencil, Settings
 } from "lucide-react";
 import { useToast } from "@/components/ui/toast";
 import { createClient } from "@/lib/supabase/client";
@@ -19,6 +19,8 @@ import { cn } from "@/lib/utils";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { ConfirmModal } from "@/components/ui";
+import { PageHeader } from "@/components/dashboard/ui/PageHeader";
+import { CustomLoading } from "@/components/ui/custom-loading";
 
 const GoogleIcon = ({ className }: { className?: string }) => (
     <svg className={className} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -527,8 +529,8 @@ export default function ProfilePage() {
 
     if (!userProfile) {
         return (
-            <div className="flex items-center justify-center min-h-[60vh]">
-                <Loader2 className="w-10 h-10 animate-spin text-primary" />
+            <div className="flex-1 flex items-center justify-center min-h-[70vh] w-full bg-background/50 backdrop-blur-sm rounded-3xl border border-border/40 my-4 shadow-inner">
+                <CustomLoading size="xl" />
             </div>
         );
     }
@@ -536,61 +538,44 @@ export default function ProfilePage() {
     return (
         <div className="relative min-h-screen pb-20">
             <div className="space-y-8">
-                {/* Header */}
-                <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-6">
-                    <div>
-                        <motion.h1
-                            initial={{ opacity: 0, y: 10 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            className="text-3xl md:text-4xl font-bold tracking-tight text-foreground"
+                <PageHeader
+                    title="Account Settings"
+                    description="Manage your profile, security, and preferences"
+                    icon={Settings}
+                    actions={
+                        <motion.div
+                            initial={{ opacity: 0, x: 20 }}
+                            animate={{ opacity: 1, x: 0 }}
+                            transition={{ delay: 0.2 }}
+                            className="flex items-center gap-4 p-3 rounded-2xl bg-white/50 dark:bg-muted/30 border border-slate-200 dark:border-white/10"
                         >
-                            Account Settings
-                        </motion.h1>
-                        <motion.p
-                            initial={{ opacity: 0, y: 10 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            transition={{ delay: 0.1 }}
-                            className="text-muted-foreground mt-1"
-                        >
-                            Manage your profile, security, and preferences
-                        </motion.p>
-                    </div>
-
-                    {/* Profile Quick View */}
-                    <motion.div
-                        initial={{ opacity: 0, x: 20 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        transition={{ delay: 0.2 }}
-                        className="flex items-center gap-4 p-4 rounded-2xl bg-muted/30 border border-border/50"
-                    >
-                        <div className="relative">
-                            <div className="w-14 h-14 rounded-xl overflow-hidden border-2 border-primary/20 bg-muted">
-                                {(previewUrl || userProfile.avatar_url) ? (
-                                    <img
-                                        src={previewUrl || userProfile.avatar_url || ""}
-                                        alt={userProfile.name || ""}
-                                        className="w-full h-full object-cover"
-                                    />
-                                ) : (
-                                    <div className="w-full h-full flex items-center justify-center text-primary text-xl font-bold">
-                                        {(userProfile.name?.[0] || 'U').toUpperCase()}
-                                    </div>
-                                )}
+                            <div className="relative">
+                                <div className="w-12 h-12 rounded-xl overflow-hidden border-2 border-primary/20 bg-muted">
+                                    {(previewUrl || userProfile.avatar_url) ? (
+                                        <img
+                                            src={previewUrl || userProfile.avatar_url || ""}
+                                            alt={userProfile.name || ""}
+                                            className="w-full h-full object-cover"
+                                        />
+                                    ) : (
+                                        <div className="w-full h-full flex items-center justify-center text-primary text-lg font-bold">
+                                            {(userProfile.name?.[0] || 'U').toUpperCase()}
+                                        </div>
+                                    )}
+                                </div>
+                                <div className="absolute -bottom-1 -right-1 w-4 h-4 rounded-full bg-emerald-500 border-2 border-background flex items-center justify-center">
+                                    <CheckCircle2 className="w-2.5 h-2.5 text-white" />
+                                </div>
                             </div>
-                            <div className="absolute -bottom-1 -right-1 w-5 h-5 rounded-full bg-emerald-500 border-2 border-background flex items-center justify-center">
-                                <CheckCircle2 className="w-3 h-3 text-white" />
-                            </div>
-                        </div>
 
-                        <div>
-                            <p className="font-semibold text-foreground">{userProfile.name}</p>
-                            <p className="text-sm text-muted-foreground">{userProfile.email}</p>
-                        </div>
-                        <Badge variant="outline" className="ml-2 bg-primary/5 text-primary border-primary/20 capitalize">
-                            {userProfile.role}
-                        </Badge>
-                    </motion.div>
-                </div>
+                            <div className="hidden sm:block">
+                                <p className="text-xs font-black uppercase tracking-tight text-foreground">{userProfile.name}</p>
+                                <p className="text-[10px] font-bold text-muted-foreground uppercase">{userProfile.role}</p>
+                            </div>
+                        </motion.div>
+                    }
+                />
+
 
                 {/* Tab Navigation */}
                 <motion.div
@@ -956,7 +941,7 @@ export default function ProfilePage() {
                                                                 className="flex items-center gap-4 p-4 rounded-2xl bg-muted/30 border border-border hover:border-primary/40 hover:bg-muted/40 transition-all group relative overflow-hidden"
                                                             >
                                                                 <div className="w-12 h-12 rounded-xl bg-muted/30 border border-border flex items-center justify-center shrink-0 shadow-sm">
-                                                                    <Icon className="w-6 h-6 text-primary/70" />
+                                                                    <Icon className="w-6 h-6 text-primary opacity-70" />
                                                                 </div>
                                                                 <div className="flex-1 min-w-0 pr-16">
                                                                     <p className="text-sm font-bold text-foreground">{platform?.name || link.platform}</p>
@@ -987,7 +972,7 @@ export default function ProfilePage() {
                                             ) : (
                                                 <div className="p-12 rounded-2xl bg-muted/30 border border-dashed border-border text-center">
                                                     <div className="w-16 h-16 rounded-full bg-muted/30 border border-border flex items-center justify-center mx-auto mb-4 shadow-inner">
-                                                        <LinkIcon className="w-8 h-8 text-muted-foreground/30" />
+                                                        <LinkIcon className="w-8 h-8 text-muted-foreground opacity-30" />
                                                     </div>
                                                     <h4 className="text-sm font-bold text-foreground">No links yet</h4>
                                                     <p className="text-xs text-muted-foreground mt-1 max-w-[220px] mx-auto">Add your social media profiles to help others connect with you</p>

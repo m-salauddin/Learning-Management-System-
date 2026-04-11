@@ -27,7 +27,7 @@ export default function CourseProjects({ projects }: CourseProjectsProps) {
                     <div
                         key={i}
                         onClick={() => setSelectedProject(project)}
-                        className="group cursor-pointer flex flex-col rounded-3xl bg-slate-100/50 dark:bg-slate-900/40 border border-slate-200 dark:border-white/5 hover:border-primary/30 transition-all duration-300 overflow-hidden shadow-sm hover:shadow-md"
+                        className="group cursor-pointer flex flex-col rounded-3xl bg-white dark:bg-slate-900/40 border border-slate-300 dark:border-white/10 hover:border-primary/30 transition-all duration-300 overflow-hidden shadow-none"
                     >
                         <div className="aspect-4/3 relative overflow-hidden p-1.5">
                             <div className="w-full h-full rounded-2xl overflow-hidden relative">

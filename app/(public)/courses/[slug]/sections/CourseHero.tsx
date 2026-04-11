@@ -1,12 +1,13 @@
 "use client";
 import { motion } from "motion/react";
-import { Star, Users, Clock, Zap, Download, Activity, Video, Hash, Rocket, Layers, Award, Target, BookOpen, Play } from "lucide-react";
+import { Star, Users, Clock, Zap, Download, Activity, Video, Hash, Rocket, Layers, Award, Target, BookOpen, Play, Radio } from "lucide-react";
 import { Badge } from "@/components/ui/Badge";
 import { PrimaryCTAButton, SecondaryCTAButton } from "@/components/ui/CTAButton";
 import { MappedCourse } from "@/types/mapped-course";
 import { CoursePageData } from "@/types/course-page";
 import { cn } from "@/lib/utils";
 import { useMemo } from "react";
+import { CourseLevelBadge } from "@/components/ui/CourseLevelBadge";
 interface CourseHeroProps {
     course: MappedCourse;
     pageData?: CoursePageData;
@@ -25,56 +26,44 @@ export default function CourseHero({
     loading,
     setShowVideoModal
 }: CourseHeroProps) {
-    const levelConfig = useMemo(() => {
-        const level = course.level?.toLowerCase() || '';
-        if (level.includes('beginner')) {
-            return { icon: Rocket, label: 'Beginner', color: "border-emerald-500/40 bg-emerald-500/10 text-emerald-400" };
-        }
-        if (level.includes('intermediate')) {
-            return { icon: Layers, label: 'Intermediate', color: "border-amber-500/40 bg-amber-500/10 text-amber-400" };
-        }
-        if (level.includes('advanced')) {
-            return { icon: Award, label: 'Advanced', color: "border-rose-500/40 bg-rose-500/10 text-rose-400" };
-        }
-        return { icon: Target, label: course.level || 'All Levels', color: "border-primary/40 bg-primary/10 text-primary" };
-    }, [course.level]);
+
     return (
         <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5 }}
         >
-            <div className="flex flex-wrap items-center gap-3">
+            <div className="flex flex-wrap items-center gap-2">
                 <Badge
+                    icon={isLive ? Radio : Video}
                     className={cn(
-                        "px-4 py-1.5 text-[11px] font-bold uppercase tracking-widest border rounded-full",
+                        "px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-widest border rounded-full",
                         isLive
                             ? "border-red-500/40 bg-red-500/10 text-red-500"
                             : "border-blue-500/40 bg-blue-500/10 text-blue-400"
                     )}
                 >
-                    <span className="flex items-center gap-2">
+                    <span className="flex items-center gap-1.5">
                         {isLive && (
                             <span className="relative flex h-1.5 w-1.5">
                                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
                                 <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-red-500"></span>
                             </span>
                         )}
-                        {isLive ? 'Live Course' : 'Recorded'}
+                        {isLive ? 'Live Class' : 'Recorded'}
                     </span>
                 </Badge>
-                <Badge
-                    icon={levelConfig.icon}
-                    className={cn("px-4 py-1.5 text-[11px] font-bold uppercase tracking-widest border rounded-full", levelConfig.color)}
-                >
-                    {levelConfig.label}
-                </Badge>
-                <Badge
-                    icon={Hash}
-                    className="px-4 py-1.5 text-[11px] font-bold uppercase tracking-widest border border-cyan-500/40 bg-cyan-500/10 text-cyan-400 rounded-full"
-                >
-                    Batch {course.batchNo ? (course.batchNo < 10 ? `0${course.batchNo}` : course.batchNo) : '01'}
-                </Badge>
+                
+                <CourseLevelBadge level={course.level} />
+
+                {course.batchNo && (
+                    <Badge
+                        icon={Hash}
+                        className="px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-widest border border-cyan-500/40 bg-cyan-500/10 text-cyan-400 rounded-full"
+                    >
+                        Batch {course.batchNo < 10 ? `0${course.batchNo}` : course.batchNo}
+                    </Badge>
+                )}
             </div>
             <h1 className="text-3xl sm:text-4xl lg:text-[2.75rem] font-extrabold tracking-tight leading-[1.15] mt-4 sm:mt-5">
                 <span className="gradient-text">{course.title}</span>

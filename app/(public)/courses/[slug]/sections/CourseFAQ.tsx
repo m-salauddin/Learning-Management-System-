@@ -37,8 +37,8 @@ export default function CourseFAQSection({
                         className={cn(
                             "group overflow-hidden rounded-[2rem] border transition-all duration-300",
                             expandedFaq === i
-                                ? "bg-slate-50 dark:bg-slate-900/40 border-primary/20 shadow-xl shadow-primary/5"
-                                : "bg-slate-100/50 dark:bg-slate-900/10 border-slate-200 dark:border-white/5 hover:border-slate-300 dark:hover:border-white/10"
+                                ? "bg-slate-50 dark:bg-slate-900/40 border-primary/20 shadow-none"
+                                : "bg-white dark:bg-slate-900/10 border-slate-300 dark:border-white/10 hover:border-primary/20"
                         )}
                     >
                         <button

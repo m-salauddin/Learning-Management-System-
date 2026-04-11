@@ -271,7 +271,11 @@ export async function createCourse(input: CreateCourseInput): Promise<ApiRespons
         target_audience,
         instructor_ids,
         support_instructor_ids,
-        coupon_code,
+        coupons,
+        community_facebook_url,
+        community_whatsapp_url,
+        bkash_automatic_enabled,
+        manual_payment_methods,
         ...mainCourseData
     } = input;
     const fallbackInstructorId = mainCourseData.instructor_id === "_default" || !mainCourseData.instructor_id ? user.id : mainCourseData.instructor_id;
@@ -346,7 +350,12 @@ export async function createCourse(input: CreateCourseInput): Promise<ApiRespons
         slug: finalSlug,
         instructor_id: finalInstructorId,
         status: 'published',
-        published: true
+        published: true,
+        coupons: coupons || [],
+        community_facebook_url,
+        community_whatsapp_url,
+        bkash_automatic_enabled: bkash_automatic_enabled || false,
+        manual_payment_methods: manual_payment_methods || {}
     };
     const { data: rpcResult, error: rpcError } = await supabase
         .rpc('create_course_at_top', { input_data: coursePayload });
@@ -463,17 +472,6 @@ export async function createCourse(input: CreateCourseInput): Promise<ApiRespons
             }
         }
     }
-    if (coupon_code) {
-        const { error: couponError } = await supabase.from('coupons').insert({
-            code: coupon_code.toUpperCase(),
-            discount_type: 'percentage',
-            discount_value: 100,
-            course_ids: [course.id],
-            is_active: true,
-            description: `Auto-generated coupon for ${course.title}`
-        });
-        if (couponError) console.error('Error creating coupon:', couponError);
-    }
     revalidatePath('/dashboard/courses');
     return { success: true, data: course };
 }
@@ -505,6 +503,11 @@ export async function updateCourse(input: UpdateCourseInput): Promise<ApiRespons
         target_audience,
         instructor_ids,
         support_instructor_ids,
+        coupons,
+        community_facebook_url,
+        community_whatsapp_url,
+        bkash_automatic_enabled,
+        manual_payment_methods,
         ...updateData
     } = input;
     const { instructor_id: _instId, ...safeUpdateData } = updateData as any;
@@ -527,6 +530,11 @@ export async function updateCourse(input: UpdateCourseInput): Promise<ApiRespons
         .update({
             ...safeUpdateData,
             instructor_id: finalInstructorId,
+            coupons: coupons || [],
+            community_facebook_url,
+            community_whatsapp_url,
+            bkash_automatic_enabled,
+            manual_payment_methods
         })
         .eq('id', id)
         .select()

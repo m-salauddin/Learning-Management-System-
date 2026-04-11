@@ -47,10 +47,12 @@ export function CustomLoading({ className, size = "lg" }: LoadingProps) {
             width={pixelSize}
             height={pixelSize}
             className="drop-shadow-xl"
+            style={{ width: pixelSize, height: pixelSize }}
+            unoptimized
             priority
           />
         </motion.div>
-        <div className="absolute inset-[-15%] animate-spin [animation-duration:8s]">
+        <div className="absolute inset-[-15%] animate-spin animation-duration-[8s]">
           <svg className="w-full h-full -rotate-90">
             <motion.circle
               cx="50%"

@@ -8,6 +8,7 @@ import { AdminCouponsTable } from "@/components/dashboard/tables/AdminCouponsTab
 import { useAppDispatch } from "@/lib/store/hooks";
 import { fetchCoupons } from "@/lib/store/features/admin/couponsSlice";
 import { Dialog, DialogHeader, DialogTitle, DialogDescription, DialogBody, DialogFooter } from "@/components/ui/Dialog";
+import { PageHeader } from "@/components/dashboard/ui/PageHeader";
 import { cn } from "@/lib/utils";
 interface Course {
     id: string;
@@ -106,26 +107,25 @@ export default function CouponsPage() {
     return (
         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-6 pb-10 font-sans text-foreground">
             {}
-            <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-6">
-                <div>
-                    <h1 className="text-3xl font-black tracking-tight uppercase italic text-foreground">Token Repository</h1>
-                    <p className="text-muted-foreground mt-1 text-sm font-bold uppercase tracking-widest opacity-60">Architect and deploy promotional access vectors</p>
-                </div>
-                <button
-                    onClick={() => setIsCreating(true)}
-                    className="bg-primary text-primary-foreground px-6 py-2.5 rounded-xl text-xs font-black uppercase tracking-widest hover:bg-primary/90 transition-all shadow-xl shadow-primary/20 inline-flex items-center gap-2"
-                >
-                    <Plus className="w-4 h-4" /> Forge Token
-                </button>
-            </div>
-            {}
-            <div className="rounded-[2.5rem] border border-border/40 bg-card/30 backdrop-blur-xl overflow-hidden shadow-2xl">
-                <AdminCouponsTable onCreate={() => setIsCreating(true)} />
-            </div>
+            <PageHeader
+                title="Token Repository"
+                description="Architect and deploy promotional access vectors"
+                icon={Ticket}
+                actions={
+                    <button
+                        onClick={() => setIsCreating(true)}
+                        className="bg-primary text-white px-6 py-2.5 rounded-xl text-xs font-black uppercase tracking-widest hover:bg-primary/90 transition-all shadow-xl shadow-primary/20 inline-flex items-center gap-2"
+                    >
+                        <Plus className="w-4 h-4" /> Forge Token
+                    </button>
+                }
+            />
+            {/* Table */}
+            <AdminCouponsTable onCreate={() => setIsCreating(true)} />
             {}
             <Dialog open={isCreating} onClose={() => setIsCreating(false)} size="lg">
                 <DialogHeader>
-                    <DialogTitle className="italic">Forge New Token</DialogTitle>
+                    <DialogTitle>Forge New Token</DialogTitle>
                     <DialogDescription>Define usage parameters and value extraction mechanics.</DialogDescription>
                 </DialogHeader>
                 <form onSubmit={handleSubmit}>

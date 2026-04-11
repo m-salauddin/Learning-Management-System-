@@ -1,27 +1,35 @@
 import { z } from "zod";
 export const courseStep1Schema = z.object({
-    title: z.string().min(5, "Title must be at least 5 characters"),
-    short_description: z.string().min(10, "Short description must realize the value (min 10 chars)"),
-    description: z.string().min(20, "Please provide a more detailed description (min 20 chars)"),
-    category_id: z.string().min(1, "Please select a category"),
-    instructor_ids: z.array(z.string()).min(1, "Please select at least one main instructor"),
+    title: z.string().min(5, "Title too short"),
+    short_description: z.string().min(10, "Description too short"),
+    description: z.string().min(20, "Content too short"),
+    category_id: z.string().min(1, "Select category"),
+    instructor_ids: z.array(z.string()).min(1, "Select instructor"),
     support_instructor_ids: z.array(z.string()).optional(),
-    batch_no: z.number().min(1, "Batch number is required"),
-    discount_expires_at: z.string().nullable().optional(),
-    level: z.enum(["beginner", "intermediate", "advanced"]),
-    course_type: z.enum(["recorded", "live", "hybrid"]),
-    language: z.string().min(1, "Language is required"),
-});
-export const courseStep2Schema = z.object({
+    batch_no: z.number().min(1, "Batch required"),
+    discount_expires_at: z.string({ error: "Select deadline" }).min(1, "Select deadline"),
+    level: z.enum(["beginner", "intermediate", "advanced"], { error: "Select level" }),
+    course_type: z.enum(["recorded", "live", "hybrid"], { error: "Select type" }),
+    language: z.string().min(1, "Select language"),
+});export const courseStep2Schema = z.object({
     requirements: z.array(z.string()).min(1, "Add at least one requirement"),
     target_audience: z.array(z.string()).min(1, "Define your target audience"),
 });
+
 export const courseStep3Schema = z.object({
     price: z.number().min(0, "Price cannot be negative"),
     discount_price: z.number().nullable().optional().refine((val) => val === null || val === undefined || val >= 0, "Discount price cannot be negative"),
     thumbnail_url: z.string().min(1, "Course thumbnail is required"),
     preview_video_url: z.string().optional(),
-    coupon_code: z.string().optional(),
+    community_facebook_url: z.union([z.string().url("Must be a valid URL"), z.literal(""), z.null()]).optional(),
+    community_whatsapp_url: z.union([z.string().url("Must be a valid URL"), z.literal(""), z.null()]).optional(),
+    bkash_automatic_enabled: z.boolean().optional(),
+    manual_payment_methods: z.object({
+        bkash: z.string().optional(),
+        nagad: z.string().optional(),
+        upay: z.string().optional(),
+        rocket: z.string().optional(),
+    }).optional(),
 }).refine((data) => {
     if (data.discount_price && data.discount_price >= data.price) {
         return false;

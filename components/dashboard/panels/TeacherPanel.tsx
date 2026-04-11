@@ -1,140 +1,151 @@
-import { createSupabaseServerClient } from '@/lib/supabase/server';
-import { BookOpen, Users, DollarSign, TrendingUp } from 'lucide-react';
+"use client";
+import { BookOpen, Users, DollarSign, TrendingUp, ChevronRight, PlusCircle, BarChart3, GraduationCap } from 'lucide-react';
 import Link from 'next/link';
-export default async function TeacherPanel() {
-    const supabase = await createSupabaseServerClient();
-    const { data: stats } = await supabase.rpc('get_instructor_dashboard_stats');
-    const { data: courses } = await supabase
-        .from('courses')
-        .select(`
-            *,
-            enrollments:enrollments(count)
-        `)
-        .order('created_at', { ascending: false });
-    const { data: { user } } = await supabase.auth.getUser();
-    const { data: myCourses } = await supabase
-        .from('courses')
-        .select(`
-            *,
-            enrollments:enrollments(count)
-        `)
-        .eq('instructor_id', user?.id)
-        .order('created_at', { ascending: false });
+import { PageHeader } from "@/components/dashboard/ui/PageHeader";
+import { DashboardCard } from "@/components/dashboard/ui/DashboardCard";
+import { DashboardGrid } from "@/components/dashboard/ui/DashboardGrid";
+import { StatsCard } from "@/components/dashboard/StatsCard";
+
+interface TeacherPanelProps {
+    stats: any;
+    myCourses: any[];
+}
+
+export default function TeacherPanel({ stats, myCourses }: TeacherPanelProps) {
     const totalCourses = stats?.total_courses || 0;
     const totalStudents = stats?.total_students || 0;
     const totalEarnings = stats?.total_revenue || 0;
     const avgRating = stats?.avg_rating ? Number(stats.avg_rating).toFixed(1) : '—';
+
     return (
         <div className="space-y-8 pb-10">
-            {}
-            <div className="flex flex-col gap-1">
-                <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">
-                    Instructor Dashboard 🎓
-                </h1>
-                <p className="text-muted-foreground">
-                    Manage your courses, track performance, and grow your audience.
-                </p>
-            </div>
-            {}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                <div className="p-6 bg-card border border-border rounded-2xl">
-                    <div className="flex items-center gap-4">
-                        <div className="p-3 rounded-xl bg-primary/10 text-primary">
-                            <BookOpen className="w-6 h-6" />
-                        </div>
-                        <div>
-                            <p className="text-sm text-muted-foreground">Total Courses</p>
-                            <p className="text-2xl font-bold">{totalCourses}</p>
-                        </div>
-                    </div>
-                </div>
-                <div className="p-6 bg-card border border-border rounded-2xl">
-                    <div className="flex items-center gap-4">
-                        <div className="p-3 rounded-xl bg-emerald-500/10 text-emerald-500">
-                            <Users className="w-6 h-6" />
-                        </div>
-                        <div>
-                            <p className="text-sm text-muted-foreground">Total Students</p>
-                            <p className="text-2xl font-bold">{totalStudents}</p>
-                        </div>
-                    </div>
-                </div>
-                <div className="p-6 bg-card border border-border rounded-2xl">
-                    <div className="flex items-center gap-4">
-                        <div className="p-3 rounded-xl bg-amber-500/10 text-amber-500">
-                            <DollarSign className="w-6 h-6" />
-                        </div>
-                        <div>
-                            <p className="text-sm text-muted-foreground">Total Earnings</p>
-                            <p className="text-2xl font-bold">৳{totalEarnings.toLocaleString()}</p>
-                        </div>
-                    </div>
-                </div>
-                <div className="p-6 bg-card border border-border rounded-2xl">
-                    <div className="flex items-center gap-4">
-                        <div className="p-3 rounded-xl bg-blue-500/10 text-blue-500">
-                            <TrendingUp className="w-6 h-6" />
-                        </div>
-                        <div>
-                            <p className="text-sm text-muted-foreground">Avg. Rating</p>
-                            <p className="text-2xl font-bold">{avgRating}</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            {}
-            <div className="space-y-4">
-                <h3 className="text-xl font-bold">Quick Actions</h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <Link href="/dashboard/courses/new" className="p-6 bg-card border border-border rounded-2xl hover:border-primary/50 transition-colors cursor-pointer group">
-                        <h4 className="font-semibold mb-2 group-hover:text-primary transition-colors">Create New Course</h4>
-                        <p className="text-sm text-muted-foreground">Start building your next course and share your knowledge.</p>
+            <PageHeader
+                title="Instructor Dashboard"
+                description="Manage your courses, track performance, and grow your audience."
+                icon={GraduationCap}
+                actions={
+                    <Link 
+                        href="/dashboard/courses/new" 
+                        className="flex items-center gap-2 px-4 py-2 bg-primary text-primary-foreground text-sm font-bold rounded-xl hover:bg-primary/90 transition-all shadow-lg shadow-primary/20 uppercase tracking-widest"
+                    >
+                        <PlusCircle className="w-4 h-4" />
+                        Create Course
                     </Link>
-                    <div className="p-6 bg-card border border-border rounded-2xl hover:border-primary/50 transition-colors cursor-pointer group">
-                        <h4 className="font-semibold mb-2 group-hover:text-primary transition-colors">View Analytics</h4>
-                        <p className="text-sm text-muted-foreground">Track your course performance and student engagement.</p>
-                    </div>
+                }
+            />
+
+            <DashboardGrid cols={4}>
+                <StatsCard
+                    title="Total Courses"
+                    value={totalCourses}
+                    icon={BookOpen}
+                    description="Live and draft"
+                />
+                <StatsCard
+                    title="Total Students"
+                    value={totalStudents}
+                    icon={Users}
+                    description="Enrolled learners"
+                />
+                <StatsCard
+                    title="Total Earnings"
+                    value={`৳${totalEarnings.toLocaleString()}`}
+                    icon={DollarSign}
+                    description="Life-time revenue"
+                />
+                <StatsCard
+                    title="Avg. Rating"
+                    value={avgRating}
+                    icon={TrendingUp}
+                    description="Student feedback"
+                />
+            </DashboardGrid>
+
+            {/* Quick Actions */}
+            <DashboardGrid cols={2}>
+                <DashboardCard 
+                    title="Course Builder" 
+                    description="Start building your next masterpiece"
+                    className="hover:border-primary/30 transition-all group"
+                >
+                    <Link href="/dashboard/courses/new" className="flex items-center justify-between">
+                        <span className="font-bold text-slate-700 dark:text-slate-300 group-hover:text-primary transition-colors">Launch New Course</span>
+                        <ChevronRight className="w-5 h-5 text-slate-400 group-hover:text-primary transition-colors" />
+                    </Link>
+                </DashboardCard>
+                <DashboardCard 
+                    title="Analytics Center" 
+                    description="Deep dive into your performance"
+                    className="hover:border-primary/30 transition-all group"
+                >
+                    <Link href="/dashboard/analytics" className="flex items-center justify-between">
+                        <span className="font-bold text-slate-700 dark:text-slate-300 group-hover:text-primary transition-colors">View Detailed Reports</span>
+                        <ChevronRight className="w-5 h-5 text-slate-400 group-hover:text-primary transition-colors" />
+                    </Link>
+                </DashboardCard>
+            </DashboardGrid>
+
+            <div>
+                <div className="flex items-center justify-between mb-6">
+                    <h3 className="text-xl font-black text-slate-900 dark:text-white flex items-center gap-2">
+                        <BookOpen className="w-5 h-5 text-primary" />
+                        My Courses
+                    </h3>
+                    <Link href="/dashboard/instructor-courses" className="text-xs font-bold text-primary hover:underline flex items-center gap-1 uppercase tracking-widest">
+                        View All <ChevronRight className="w-3 h-3" />
+                    </Link>
                 </div>
-            </div>
-            {}
-            <div className="space-y-4">
-                <h3 className="text-xl font-bold">My Courses</h3>
+
                 {!myCourses || myCourses.length === 0 ? (
-                    <div className="p-10 border border-dashed border-border rounded-2xl flex flex-col items-center justify-center text-center bg-card/30">
-                        <div className="p-4 bg-muted rounded-full mb-4">
-                            <BookOpen className="w-8 h-8 text-muted-foreground opacity-50" />
+                    <div className="p-12 border-2 border-dashed border-slate-200 dark:border-white/10 rounded-[2rem] flex flex-col items-center justify-center text-center bg-slate-50/50 dark:bg-slate-900/10">
+                        <div className="p-4 bg-white dark:bg-white/5 rounded-2xl shadow-sm border border-slate-200 dark:border-white/10 mb-6">
+                            <BookOpen className="w-8 h-8 text-slate-300" />
                         </div>
-                        <h4 className="text-lg font-semibold">No courses yet</h4>
-                        <p className="text-muted-foreground mb-6 max-w-sm text-sm">
+                        <h4 className="text-xl font-bold text-slate-900 dark:text-white">No courses yet</h4>
+                        <p className="text-slate-500 dark:text-slate-400 mb-8 max-w-sm font-medium">
                             Create your first course and start sharing your expertise with learners.
                         </p>
-                        <Link href="/dashboard/courses/new" className="px-6 py-2.5 bg-primary text-primary-foreground font-medium rounded-xl hover:bg-primary/90 transition-all shadow-lg shadow-primary/20">
+                        <Link href="/dashboard/courses/new" className="px-8 py-3 bg-primary text-primary-foreground font-black rounded-xl hover:bg-primary/90 transition-all shadow-xl shadow-primary/20 uppercase tracking-widest text-sm text-center">
                             Create Course
                         </Link>
                     </div>
                 ) : (
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <DashboardGrid cols={3}>
                         {myCourses.map((course) => (
-                            <Link href={`/dashboard/courses/${course.id}`} key={course.id} className="p-4 bg-card border border-border rounded-2xl hover:border-primary/50 transition-all group block">
-                                <div className="aspect-video bg-muted rounded-lg mb-3 overflow-hidden">
+                            <DashboardCard 
+                                key={course.id}
+                                className="group"
+                                contentClassName="p-0"
+                            >
+                                <div className="aspect-video bg-muted relative overflow-hidden">
                                     {course.thumbnail_url ? (
-                                        <img src={course.thumbnail_url} alt={course.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
+                                        <img src={course.thumbnail_url} alt={course.title} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
                                     ) : (
                                         <div className="w-full h-full flex items-center justify-center bg-muted">
                                             <BookOpen className="w-8 h-8 text-muted-foreground/50" />
                                         </div>
                                     )}
+                                    <div className="absolute top-3 right-3">
+                                        <span className={`text-[10px] font-black uppercase tracking-widest px-2 py-1 rounded-lg border backdrop-blur-md ${course.status === 'published' ? 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20' : 'bg-amber-500/10 text-amber-500 border-amber-500/20'}`}>
+                                            {course.status}
+                                        </span>
+                                    </div>
                                 </div>
-                                <h4 className="font-semibold line-clamp-1 group-hover:text-primary transition-colors">{course.title || 'Untitled Course'}</h4>
-                                <div className="flex items-center justify-between mt-2">
-                                    <span className={`text-xs px-2 py-0.5 rounded-full ${course.status === 'published' ? 'bg-emerald-500/10 text-emerald-500' : 'bg-amber-500/10 text-amber-500'}`}>
-                                        {course.status}
-                                    </span>
-                                    <p className="text-sm text-muted-foreground">{course.enrollments?.[0]?.count || 0} students</p>
+                                <div className="p-5">
+                                    <h4 className="font-bold text-slate-800 dark:text-slate-100 line-clamp-1 group-hover:text-primary transition-colors">{course.title || 'Untitled Course'}</h4>
+                                    <div className="flex items-center justify-between mt-4">
+                                        <div className="flex items-center gap-2">
+                                            <Users className="w-3.5 h-3.5 text-slate-400" />
+                                            <span className="text-xs font-bold text-slate-500 uppercase tracking-widest">{course.enrollments?.[0]?.count || 0} students</span>
+                                        </div>
+                                        <Link href={`/dashboard/courses/${course.id}`} className="text-xs font-bold text-primary hover:underline uppercase tracking-widest">
+                                            Manage
+                                        </Link>
+                                    </div>
                                 </div>
-                            </Link>
+                            </DashboardCard>
                         ))}
-                    </div>
+                    </DashboardGrid>
                 )}
             </div>
         </div>

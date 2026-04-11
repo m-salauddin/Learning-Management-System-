@@ -1,5 +1,5 @@
-import { Globe, ChevronRight } from "lucide-react";
-import { SiGit } from "react-icons/si";
+import { ChevronRight } from "lucide-react";
+import { SiFacebook, SiLinkedin, SiGithub, SiYoutube } from "react-icons/si";
 import { Logo } from "@/components/ui/Logo";
 const FOOTER_SECTIONS = [
     {
@@ -30,7 +30,7 @@ const FOOTER_SECTIONS = [
         ]
     },
 ] as const;
-const SOCIAL_ICONS = [Globe, SiGit] as const;
+const SOCIAL_ICONS = [SiFacebook, SiLinkedin, SiGithub, SiYoutube] as const;
 const LEGAL_LINKS = [
     { text: "Privacy", href: "/privacy" },
     { text: "Terms", href: "/terms" },
@@ -38,7 +38,10 @@ const LEGAL_LINKS = [
 ] as const;
 export function Footer() {
     return (
-        <footer className="border-t border-slate-200 dark:border-white/5 bg-slate-50 dark:bg-[#020817] pt-24 pb-12 transition-colors duration-300">
+        <footer className="relative z-10 border-t border-slate-200 dark:border-white/5 bg-slate-50 dark:bg-[#020817] pt-24 pb-12 transition-colors duration-300 overflow-hidden">
+            <div className="absolute top-0 left-0 right-0 h-px bg-linear-to-r from-transparent via-primary/30 to-transparent dark:via-primary/50" />
+            <div className="absolute top-0 left-1/2 -translate-x-1/2 w-1/3 h-32 bg-primary/5 dark:bg-primary/10 blur-[80px] pointer-events-none" />
+
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-5 gap-12 lg:gap-8 mb-20">
                     {}

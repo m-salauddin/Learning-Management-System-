@@ -229,6 +229,7 @@ export default function CourseModals({
                                             src={course.image || '/placeholder-course.jpg'}
                                             alt={course.title}
                                             fill
+                                            sizes="64px"
                                             className="object-cover"
                                             unoptimized
                                         />

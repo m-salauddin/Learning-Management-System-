@@ -6,6 +6,18 @@ import { motion, AnimatePresence } from "motion/react";
 import { useToast } from "@/components/ui/toast";
 import { cn } from "@/lib/utils";
 import { Dialog, DialogHeader, DialogTitle, DialogDescription, DialogBody, DialogFooter } from "@/components/ui/Dialog";
+import { PageHeader } from "@/components/dashboard/ui/PageHeader";
+import { StatusBadge, LoadingState, EmptyDataState } from "@/components/dashboard/shared";
+import {
+    DashboardTableContainer,
+    DashboardTableToolbar,
+    DashboardTableWrapper,
+    DashboardTableHeader,
+    DashboardTableHead,
+    DashboardTableBody,
+    DashboardTableRow,
+    DashboardTableCell
+} from "@/components/dashboard/ui/DashboardTable";
 interface Course {
     id: string;
     title: string;
@@ -109,52 +121,46 @@ export default function DiscountsPage() {
     return (
         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-6 pb-10 font-sans text-foreground">
             {}
-            <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-6">
-                <div>
-                    <h1 className="text-3xl font-black tracking-tight uppercase italic">Monetization Adjustments</h1>
-                    <p className="text-muted-foreground mt-1 text-sm font-bold uppercase tracking-widest opacity-60">Manage dynamic price overrides and seasonal campaigns</p>
-                </div>
-                <button
-                    onClick={() => setIsCreating(true)}
-                    className="bg-primary text-primary-foreground px-6 py-2.5 rounded-xl text-xs font-black uppercase tracking-widest hover:bg-primary/90 transition-all shadow-xl shadow-primary/20 inline-flex items-center gap-2"
-                >
-                    <Plus className="w-4 h-4" /> New Adjustment
-                </button>
-            </div>
+            <PageHeader
+                title="Monetization Adjustments"
+                description="Manage dynamic price overrides and seasonal campaigns"
+                icon={Tag}
+                actions={
+                    <button
+                        onClick={() => setIsCreating(true)}
+                        className="bg-primary text-white px-6 py-2.5 rounded-xl text-xs font-black uppercase tracking-widest hover:bg-primary/90 transition-all shadow-xl shadow-primary/20 inline-flex items-center gap-2"
+                    >
+                        <Plus className="w-4 h-4" /> New Adjustment
+                    </button>
+                }
+            />
             {}
-            <div className="rounded-[2.5rem] border border-border/40 bg-card/30 backdrop-blur-xl overflow-hidden shadow-2xl">
-                <div className="p-6 bg-muted/5 border-b border-border/20 flex justify-between items-center">
+            <DashboardTableContainer>
+                <DashboardTableToolbar className="flex justify-between items-center bg-muted/5 border-b border-border/20">
                     <h2 className="text-xs font-black uppercase tracking-[0.2em] text-muted-foreground opacity-60 px-2">Operational Overrides / {discounts.length} Active</h2>
                     <button onClick={fetchData} className="p-2.5 rounded-xl hover:bg-muted text-muted-foreground transition-all">
                         <RefreshCw className={cn("w-4 h-4", isLoading && "animate-spin")} />
                     </button>
-                </div>
+                </DashboardTableToolbar>
                 {isLoading ? (
-                    <div className="py-24 text-center">
-                        <RefreshCw className="w-10 h-10 animate-spin text-primary/30 mx-auto" />
-                        <p className="mt-4 text-[10px] font-black uppercase tracking-widest text-muted-foreground opacity-60">Syncing price map...</p>
-                    </div>
+                    <LoadingState message="Syncing price map..." />
                 ) : discounts.length === 0 ? (
-                    <div className="py-24 text-center space-y-4">
-                        <div className="p-6 rounded-full bg-muted/20 w-fit mx-auto"><Tag className="w-10 h-10 text-muted-foreground/30" /></div>
-                        <h3 className="text-lg font-black uppercase tracking-tighter italic opacity-70">No Overrides Found</h3>
-                    </div>
+                    <EmptyDataState icon={Tag} title="No Overrides Found" description="There are currently no active price overrides." />
                 ) : (
-                    <div className="min-w-[900px]">
-                        {}
-                        <div className="grid grid-cols-[1.5fr_1fr_120px_1fr_80px] px-8 py-5 bg-muted/5 border-b border-border/20 items-center">
-                            <div className="px-4 text-[10px] font-black uppercase tracking-widest text-muted-foreground/60">Target Course Identity</div>
-                            <div className="px-4 text-[10px] font-black uppercase tracking-widest text-muted-foreground/60">Value Delta</div>
-                            <div className="px-4 text-[10px] font-black uppercase tracking-widest text-muted-foreground/60 text-center">Lifecycle State</div>
-                            <div className="px-4 text-[10px] font-black uppercase tracking-widest text-muted-foreground/60 text-center">Temporal Bounds</div>
-                            <div className="px-4 text-[10px] font-black uppercase tracking-widest text-muted-foreground/60 text-right">Action</div>
-                        </div>
-                        {}
-                        <div className="divide-y divide-border/10">
+                    <DashboardTableWrapper className="min-w-[900px]">
+                        <DashboardTableHeader className="grid-cols-[1.5fr_1fr_120px_1fr_80px]">
+                            <DashboardTableHead>Target Course Identity</DashboardTableHead>
+                            <DashboardTableHead>Value Delta</DashboardTableHead>
+                            <DashboardTableHead className="text-center">Lifecycle State</DashboardTableHead>
+                            <DashboardTableHead className="text-center">Temporal Bounds</DashboardTableHead>
+                            <DashboardTableHead className="text-right">Action</DashboardTableHead>
+                        </DashboardTableHeader>
+                        
+                        <DashboardTableBody>
                             {discounts.map((discount) => (
-                                <div key={discount.id} className="grid grid-cols-[1.5fr_1fr_120px_1fr_80px] px-8 py-5 items-center hover:bg-primary/5 transition-all duration-300 group">
+                                <DashboardTableRow key={discount.id} className="grid-cols-[1.5fr_1fr_120px_1fr_80px]">
                                     <div className="px-4 flex items-center gap-4">
-                                        <div className="w-12 h-12 rounded-2xl bg-muted border border-border/20 flex items-center justify-center text-primary/40 group-hover:text-primary transition-all group-hover:scale-105 duration-500">
+                                        <div className="w-12 h-12 rounded-2xl bg-muted border border-border/20 flex items-center justify-center text-primary opacity-40 group-hover:opacity-100 transition-all group-hover:scale-105 duration-500">
                                             <Tag className="w-5 h-5" />
                                         </div>
                                         <div className="min-w-0">
@@ -164,13 +170,13 @@ export default function DiscountsPage() {
                                                     <p className="text-[10px] font-bold text-muted-foreground/60 tracking-tight font-mono">BASE PRICE: ৳{discount.course.price}</p>
                                                 </>
                                             ) : (
-                                                <p className="text-destructive text-xs font-black italic">ORPHANED_DATA</p>
+                                                <p className="text-destructive text-xs font-black">ORPHANED_DATA</p>
                                             )}
                                         </div>
                                     </div>
                                     <div className="px-4">
                                         <div className={cn(
-                                            "inline-flex items-center gap-2 px-3 py-1.5 rounded-xl border font-black text-xs italic tracking-tighter shadow-xs",
+                                            "inline-flex items-center gap-2 px-3 py-1.5 rounded-xl border font-black text-xs tracking-tighter shadow-xs",
                                             discount.type === 'percentage' ? "bg-indigo-500/10 text-indigo-500 border-indigo-500/20" : "bg-emerald-500/10 text-emerald-500 border-emerald-500/20"
                                         )}>
                                             {discount.type === 'percentage' ? <Percent className="w-3.5 h-3.5" /> : <DollarSign className="w-3.5 h-3.5" />}
@@ -178,15 +184,7 @@ export default function DiscountsPage() {
                                         </div>
                                     </div>
                                     <div className="px-4 text-center">
-                                        <button
-                                            onClick={() => toggleActive(discount.id, discount.is_active)}
-                                            className={cn(
-                                                "px-4 py-1 rounded-full text-[10px] font-black uppercase tracking-widest border transition-all",
-                                                discount.is_active ? "bg-emerald-500/10 text-emerald-500 border-emerald-500/20 hover:bg-emerald-500/20" : "bg-muted text-muted-foreground border-border/50 opacity-40 hover:opacity-100"
-                                            )}
-                                        >
-                                            {discount.is_active ? "Live" : "Halted"}
-                                        </button>
+                                        <StatusBadge status={discount.is_active ? 'active' : 'inactive'} />
                                     </div>
                                     <div className="px-4 text-center">
                                         <div className="flex items-center justify-center gap-2 text-[10px] font-bold text-muted-foreground/60 font-mono">
@@ -195,24 +193,24 @@ export default function DiscountsPage() {
                                             <span>{discount.ends_at ? new Date(discount.ends_at).toLocaleDateString() : "INF"}</span>
                                         </div>
                                     </div>
-                                    <div className="px-4 text-right">
+                                    <DashboardTableCell className="text-right">
                                         <button
                                             onClick={() => handleDelete(discount.id)}
                                             className="p-3 rounded-xl hover:bg-destructive/10 text-muted-foreground hover:text-destructive transition-all"
                                         >
                                             <Trash2 className="w-4 h-4" />
                                         </button>
-                                    </div>
-                                </div>
+                                    </DashboardTableCell>
+                                </DashboardTableRow>
                             ))}
-                        </div>
-                    </div>
+                        </DashboardTableBody>
+                    </DashboardTableWrapper>
                 )}
-            </div>
+            </DashboardTableContainer>
             {}
             <Dialog open={isCreating} onClose={() => setIsCreating(false)} size="md">
                 <DialogHeader>
-                    <DialogTitle className="italic">Forge Adjustment</DialogTitle>
+                    <DialogTitle>Forge Adjustment</DialogTitle>
                     <DialogDescription>Define new high-impact price overrides for the academic catalog.</DialogDescription>
                 </DialogHeader>
                 <form onSubmit={handleSubmit}>

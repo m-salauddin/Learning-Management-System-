@@ -1,6 +1,6 @@
 "use client";
 import Image from "next/image";
-import { Eye, Image as ImageIcon, Users, BookOpen } from "lucide-react";
+import { Eye, Image as ImageIcon, Users, BookOpen, FolderKanban } from "lucide-react";
 import { CreateCourseInput } from "@/types/lms";
 interface CoursePreviewProps {
     formData: CreateCourseInput;
@@ -24,6 +24,7 @@ export const CoursePreview = ({ formData, thumbnailPreview }: CoursePreviewProps
                                     src={thumbnailPreview || formData.thumbnail_url || ""}
                                     alt="Preview"
                                     fill
+                                    unoptimized
                                     className="object-cover"
                                 />
                             ) : (
@@ -41,29 +42,44 @@ export const CoursePreview = ({ formData, thumbnailPreview }: CoursePreviewProps
                     </div>
                     {}
                     <div className="px-4 pb-5 flex flex-col">
-                        <div className="flex items-center gap-2 mb-3">
-                            <span className="inline-flex items-center gap-1 text-[9px] font-bold uppercase tracking-wider text-primary bg-primary/10 border border-primary/20 px-2 py-0.5 rounded-full">
-                                {formData.level}
-                            </span>
-                            <span className="text-[9px] font-bold uppercase tracking-wider text-muted-foreground bg-muted/50 border border-border/50 px-2 py-0.5 rounded-full">
-                                {formData.language}
-                            </span>
-                        </div>
+                        {(formData.level || formData.language) && (
+                            <div className="flex items-center gap-2 mb-3">
+                                {formData.level && (
+                                    <span className="inline-flex items-center gap-1 text-[9px] font-bold uppercase tracking-wider text-primary bg-primary/10 border border-primary/20 px-2 py-0.5 rounded-full">
+                                        {formData.level}
+                                    </span>
+                                )}
+                                {formData.language && (
+                                    <span className="text-[9px] font-bold uppercase tracking-wider text-muted-foreground bg-muted/50 border border-border/50 px-2 py-0.5 rounded-full">
+                                        {formData.language}
+                                    </span>
+                                )}
+                            </div>
+                        )}
                         <h3 className="text-base font-bold leading-tight mb-2 text-foreground line-clamp-2 min-h-10">
                             {formData.title || "Untiled Amazing Course"}
                         </h3>
                         <p className="text-muted-foreground text-[11px] leading-relaxed mb-4 line-clamp-2">
                             {formData.short_description || "A captivating course description that sells the dream of mastery and excellence."}
                         </p>
-                        <div className="flex items-center gap-3 py-2 px-3 mb-4 rounded-lg bg-muted/30 border border-border/50">
+                        <div className="flex items-center justify-center gap-3 py-2 px-3 mb-4 rounded-lg bg-muted/30 border border-border/50">
                             <div className="flex items-center gap-1.5">
-                                <Users className="w-3 h-3 text-secondary" />
+                                <Users className="w-3 h-3 text-emerald-400" />
                                 <span className="text-[10px] font-medium text-foreground">0</span>
                             </div>
                             <div className="w-px h-3 bg-border/50" />
                             <div className="flex items-center gap-1.5">
-                                <BookOpen className="w-3 h-3 text-primary" />
-                                <span className="text-[10px] font-medium text-foreground">0 lessons</span>
+                                <BookOpen className="w-3 h-3 text-violet-400" />
+                                <span className="text-[10px] font-medium text-foreground">
+                                    {(formData.modules?.reduce((acc, m) => acc + (m.lessons?.length || 0), 0) || 0)} lessons
+                                </span>
+                            </div>
+                            <div className="w-px h-3 bg-border/50" />
+                            <div className="flex items-center gap-1.5">
+                                <FolderKanban className="w-3 h-3 text-orange-400" />
+                                <span className="text-[10px] font-medium text-foreground">
+                                    {(formData.projects?.length || 0)} projects
+                                </span>
                             </div>
                         </div>
                         <div className="flex items-end justify-between pt-4 border-t border-border/50">

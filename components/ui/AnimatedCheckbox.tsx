@@ -2,12 +2,15 @@
 import * as React from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { Check } from "lucide-react";
+import { cn } from "@/lib/utils";
 interface AnimatedCheckboxProps {
     id: string;
     checked?: boolean;
     onChange?: (checked: boolean) => void;
     label?: React.ReactNode;
     className?: string;
+    variant?: "square" | "circle";
+    activeColor?: string;
 }
 export function AnimatedCheckbox({
     id,
@@ -15,6 +18,8 @@ export function AnimatedCheckbox({
     onChange,
     label,
     className = "",
+    variant = "square",
+    activeColor,
 }: AnimatedCheckboxProps) {
     const [isChecked, setIsChecked] = React.useState(checked);
     React.useEffect(() => {
@@ -40,13 +45,24 @@ export function AnimatedCheckbox({
                 aria-checked={isChecked}
                 id={id}
                 onClick={handleToggle}
-                className="relative shrink-0 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background rounded-md cursor-pointer"
+                className={cn(
+                    "relative shrink-0 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background cursor-pointer",
+                    variant === "circle" ? "rounded-full" : "rounded-md"
+                )}
             >
                 <motion.div
-                    className={`w-5 h-5 rounded-md border-2 flex items-center justify-center transition-colors duration-200 pointer-events-none ${isChecked
-                        ? "bg-primary border-primary"
-                        : "bg-transparent border-muted-foreground/40 hover:border-primary/60"
-                        }`}
+                    className={cn(
+                        "w-5 h-5 border-2 flex items-center justify-center transition-colors duration-200 pointer-events-none",
+                        variant === "circle" ? "rounded-full" : "rounded-md",
+                        isChecked
+                            ? (!activeColor && "bg-primary border-primary")
+                            : "bg-transparent border-muted-foreground/40 hover:border-primary/60"
+                    )}
+                    style={isChecked && activeColor ? { 
+                        backgroundColor: activeColor, 
+                        borderColor: activeColor,
+                        boxShadow: `0 4px 12px ${activeColor}40`
+                    } : {}}
                     whileTap={{ scale: 0.9 }}
                     transition={{ type: "spring", stiffness: 400, damping: 17 }}
                 >
