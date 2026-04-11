@@ -19,6 +19,7 @@ import {
     User,
     PanelLeftClose,
     PanelLeftOpen,
+    GraduationCap,
 } from "lucide-react";
 import { Logo } from "@/components/ui/Logo";
 import { cn } from "@/lib/utils";
@@ -52,6 +53,7 @@ const NAV_ITEMS: Record<UserRole, SidebarItem[]> = {
         { icon: LayoutDashboard, label: "Overview", href: "/dashboard" },
         { icon: Users, label: "Users", href: "/dashboard/users" },
         { icon: BookOpen, label: "Courses", href: "/dashboard/courses" },
+        { icon: GraduationCap, label: "Enrollments", href: "/dashboard/enrollments" },
         { icon: Layers, label: "Categories", href: "/dashboard/categories" },
         { icon: Tags, label: "Discounts", href: "/dashboard/discounts" },
         { icon: Ticket, label: "Coupons", href: "/dashboard/coupons" },

@@ -3,7 +3,7 @@ import { useState } from "react";
 import { Sidebar } from "@/components/dashboard/Sidebar";
 import { Header } from "@/components/dashboard/Header";
 import { motion, AnimatePresence } from "motion/react";
-import { X, LayoutDashboard, BookOpen, Award, Settings, ShieldCheck, Users, DollarSign, FileText, Flag, Ticket, Tags, BarChart3 } from "lucide-react";
+import { X, LayoutDashboard, BookOpen, Award, Settings, ShieldCheck, Users, DollarSign, FileText, Flag, Ticket, Tags, BarChart3, GraduationCap, Layers, User } from "lucide-react";
 import { Logo } from "@/components/ui/Logo";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -38,10 +38,11 @@ const NAV_ITEMS: Record<UserRole, SidebarItem[]> = {
         { icon: LayoutDashboard, label: "Overview", href: "/dashboard" },
         { icon: Users, label: "Users", href: "/dashboard/users" },
         { icon: BookOpen, label: "Courses", href: "/dashboard/courses" },
+        { icon: GraduationCap, label: "Enrollments", href: "/dashboard/enrollments" },
+        { icon: Layers, label: "Categories", href: "/dashboard/categories" },
         { icon: Tags, label: "Discounts", href: "/dashboard/discounts" },
         { icon: Ticket, label: "Coupons", href: "/dashboard/coupons" },
-        { icon: BarChart3, label: "Analytics", href: "/dashboard/analytics" },
-        { icon: Settings, label: "Settings", href: "/dashboard/settings" },
+        { icon: User, label: "Profile", href: "/dashboard/profile" },
     ],
 };
 interface DashboardLayoutClientProps {
