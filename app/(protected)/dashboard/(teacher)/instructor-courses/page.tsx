@@ -1,3 +1,5 @@
+"use client";
+
 import { GraduationCap, PlusCircle } from "lucide-react";
 import { PageHeader } from "@/components/dashboard/ui/PageHeader";
 import Link from "next/link";

@@ -13,7 +13,7 @@ export default async function DashboardPage() {
         return <AdminPanel />;
     }
 
-    if (role === 'instructor') {
+    if (role === 'teacher') {
         const { data: stats } = await supabase.rpc('get_instructor_dashboard_stats');
         const { data: myCourses } = await supabase
             .from('courses')
