@@ -238,140 +238,7 @@ export const StepPresentation = ({
                                                 {errors.thumbnail_url}
                                             </p>
                                         )}
-                                        <input type="file" ref={fileInputRef} className="hidden" accept="image/*" onChange={handleFileChange} />
-                                    </div>
-                                    <div className="md:col-span-5 space-y-6">
-                                        <div className="space-y-4 group/video">
-                                            <label className={cn(labelClasses, "mb-1.5 scale-95 origin-left text-slate-600 dark:text-slate-300")}>
-                                                <Video className="w-4 h-4 text-muted-foreground group-focus-within/video:text-emerald-400 transition-colors" />
-                                                Promo Video URL
-                                            </label>
-                                            <input
-                                                type="url"
-                                                value={formData.preview_video_url}
-                                                onChange={(e) => setFormData(prev => ({ ...prev, preview_video_url: e.target.value }))}
-                                                placeholder="YouTube or Vimeo URL"
-                                                className={cn(inputClasses, "h-11 focus:border-emerald-500/50 focus:ring-2 focus:ring-emerald-500/20 bg-white dark:bg-slate-950")}
-                                            />
-                                            <div className="p-4 rounded-xl bg-slate-50 dark:bg-white/2 border border-slate-200 dark:border-white/5 space-y-2">
-                                                <div className="flex items-center gap-2 mb-1">
-                                                    <AlertCircle className="w-3.5 h-3.5 text-emerald-500/50" />
-                                                    <span className="text-[10px] font-black uppercase tracking-wider text-emerald-500/70">Optimization Tip</span>
-                                                </div>
-                                                <p className="text-[10px] text-slate-500 dark:text-white/30 leading-relaxed font-medium">A strong thumbnail and intro video can increase enrollment by up to 40%. Ensure high clarity.</p>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <div className="space-y-3">
-                    <div className="flex items-center gap-2.5 px-1.5">
-                        <div className="w-9 h-9 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center shadow-[0_0_15px_-5px_rgba(16,185,129,0.3)]">
-                            <Tag className="w-4.5 h-4.5 text-emerald-400" />
-                        </div>
-                        <div>
-                            <h3 className="text-[12px] font-black uppercase tracking-[0.15em] text-emerald-400">Strategic Promotion</h3>
-                            <p className="text-[9px] font-medium text-slate-500 dark:text-white/30 tracking-tight">Set up multiple discount codes to drive course momentum.</p>
-                        </div>
-                    </div>
-                    <div className="p-5 md:p-6 rounded-xl border border-slate-200 dark:border-white/5 bg-slate-50/50 dark:bg-slate-900/40 backdrop-blur-xl shadow-lg dark:shadow-2xl space-y-6 transition-all hover:bg-slate-100/50 dark:hover:bg-slate-900/50 hover:border-slate-300 dark:hover:border-white/10 group/section">
-                        <div className="space-y-6">
-                            {}
-                            <div className="flex items-center justify-between pb-2 border-b border-slate-200/60 dark:border-white/5">
-                                <div className="flex items-center gap-2">
-                                    <Tag className="w-3.5 h-3.5 text-emerald-500" />
-                                    <h4 className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">Coupon Management</h4>
-                                </div>
-                                <button
-                                    type="button"
-                                    onClick={() => setShowCouponForm(!showCouponForm)}
-                                    className={cn(
-                                        "h-8 px-3 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all flex items-center gap-2",
-                                        showCouponForm 
-                                            ? "bg-slate-100 dark:bg-white/5 text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-white/10" 
-                                            : "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-500/20 shadow-[0_0_15px_-5px_rgba(16,185,129,0.3)]"
-                                    )}
-                                >
-                                    {showCouponForm ? <><X className="w-3.5 h-3.5" /> Close</> : <><Plus className="w-3.5 h-3.5" /> Add New</>}
-                                </button>
-                            </div>
-
-                            {}
-                            <AnimatePresence>
-                                {showCouponForm && (
-                                    <motion.div
-                                        initial={{ height: 0, opacity: 0 }}
-                                        animate={{ height: "auto", opacity: 1 }}
-                                        exit={{ height: 0, opacity: 0 }}
-                                        className="overflow-hidden bg-white dark:bg-slate-950/50 rounded-xl border border-slate-200 dark:border-white/5"
-                                    >
-                                        <div className="p-5 grid grid-cols-1 md:grid-cols-12 gap-5">
-                                            <div className="md:col-span-5 space-y-2 group/code">
-                                                <label className={cn(labelClasses, "mb-1.5 scale-95 origin-left text-slate-600 dark:text-slate-300")}>
-                                                    <Tag className="w-3.5 h-3.5 text-muted-foreground group-focus-within/code:text-emerald-400 transition-colors" />
-                                                    Coupon Code
-                                                </label>
-                                                <div className="relative">
-                                                    <input
-                                                        type="text"
-                                                        value={couponInput.code}
-                                                        onChange={(e) => setCouponInput(prev => ({ ...prev, code: e.target.value.toUpperCase().replace(/\s/g, '') }))}
-                                                        placeholder="E.G. LAUNCH50"
-                                                        className={cn(inputClasses, "h-10 text-sm uppercase tracking-[0.15em] font-black bg-white dark:bg-slate-950 focus:border-emerald-500/50 focus:ring-2 focus:ring-emerald-500/20")}
-                                                    />
-                                                </div>
-                                            </div>
-
-                                            <div className="md:col-span-3 space-y-2 group/percent">
-                                                <label className={cn(labelClasses, "mb-1.5 scale-95 origin-left text-slate-600 dark:text-slate-300")}>
-                                                    <Percent className="w-3.5 h-3.5 text-muted-foreground group-focus-within/percent:text-emerald-400 transition-colors" />
-                                                    Discount %
-                                                </label>
-                                                <div className="relative">
-                                                    <input
-                                                        type="number"
-                                                        value={couponInput.discount_percentage}
-                                                        onChange={(e) => setCouponInput(prev => ({ ...prev, discount_percentage: e.target.value }))}
-                                                        min="1"
-                                                        max="100"
-                                                        className={cn(inputClasses, "h-10 pl-4 pr-10 text-sm font-bold bg-white dark:bg-slate-950 focus:border-emerald-500/50 focus:ring-2 focus:ring-emerald-500/20")}
-                                                    />
-                                                </div>
-                                            </div>
-
-                                            <div className="md:col-span-4 space-y-2 group/expire">
-                                                <label className={cn(labelClasses, "mb-1.5 scale-95 origin-left text-slate-600 dark:text-slate-300")}>
-                                                    <Calendar className="w-3.5 h-3.5 text-muted-foreground focus:border-emerald-500/50 focus:ring-2 focus:ring-emerald-500/20 transition-colors" />
-                                                    Expiry Date
-                                                </label>
-                                                <DateTimePicker
-                                                    date={couponInput.expires_at ? new Date(couponInput.expires_at) : undefined}
-                                                    setDate={(date) => setCouponInput(prev => ({ ...prev, expires_at: date?.toISOString() }))}
-                                                    placeholder="Pick Date"
-                                                    className="h-10 rounded-xl bg-white dark:bg-slate-950 border-slate-200 dark:border-white/10"
-                                                />
-                                            </div>
-
-                                            <div className="md:col-span-12 flex justify-end items-center gap-2 pt-4 bg-slate-50/50 dark:bg-white/2 rounded-b-xl -mx-5 -mb-5 px-5 h-14">
-                                                <button
-                                                    type="button"
-                                                    onClick={addCoupon}
-                                                    disabled={!couponInput.code}
-                                                    className="h-9 mb-4 px-6 bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50 disabled:cursor-not-allowed text-white rounded-lg text-[10px] font-black uppercase tracking-widest transition-all shadow-sm active:scale-95 flex items-center justify-center gap-2"
-                                                >
-                                                    {editIndex !== null ? <><Pencil className="w-3.5 h-3.5" /> Update Coupon</> : <><Plus className="w-3.5 h-3.5" /> Register Coupon</>}
-                                                </button>
-                                            </div>
-                                        </div>
-                                    </motion.div>
-                                )}
-                            </AnimatePresence>
-
-                            {}
+                                        <input type="file" ref={fileInputRef} className="hidden" accept="image}
                             <div className="space-y-4">
                                 {!formData.coupons?.length ? (
                                     <div className="py-14 sm:py-20 flex flex-col items-center justify-center gap-4 border-2 border-dashed border-slate-200 dark:border-white/5 rounded-2xl bg-white/5 text-slate-400/50 transition-colors hover:border-emerald-500/20 group/empty">
@@ -381,49 +248,55 @@ export const StepPresentation = ({
                                         <p className="text-[10px] font-black uppercase tracking-[0.25em] text-center px-6">No Promotional Hooks Found</p>
                                     </div>
                                 ) : (
-                                    <div className="space-y-4">
-                                        <div className="flex items-center gap-2">
-                                            <div className="px-2 py-0.5 rounded-lg bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 text-[10px] font-black tracking-tight">
-                                                {String(formData.coupons?.length || 0).padStart(2, '0')} ACTIVE
-                                            </div>
-                                            <span className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Live Discounts</span>
+                                    <div className="rounded-2xl border border-border/60 bg-card overflow-hidden shadow-sm">
+                                        <div className="grid grid-cols-[1fr_80px_1fr_80px] bg-muted/30 border-b border-border/80 px-5 py-3 items-center gap-4">
+                                            <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/60">Coupon Code</span>
+                                            <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/60 text-center">Benefit</span>
+                                            <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/60">Expiration</span>
+                                            <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/60 text-right">Actions</span>
                                         </div>
-                                        <div className="grid grid-cols-1 gap-2.5">
+                                        <div className="divide-y divide-border/40">
                                             <AnimatePresence mode="popLayout">
                                                 {formData.coupons.map((coupon, i) => (
                                                     <motion.div
                                                         key={coupon.code}
                                                         layout
-                                                        initial={{ opacity: 0, x: -10 }}
-                                                        animate={{ opacity: 1, x: 0 }}
-                                                        exit={{ opacity: 0, scale: 0.95 }}
-                                                        className="px-4 h-14 rounded-xl border border-slate-200 dark:border-white/5 bg-white dark:bg-slate-950/50 flex items-center justify-between group/cp transition-all hover:border-emerald-500/30"
+                                                        initial={{ opacity: 0, y: 5 }}
+                                                        animate={{ opacity: 1, y: 0 }}
+                                                        exit={{ opacity: 0, scale: 0.98 }}
+                                                        className="grid grid-cols-[1fr_80px_1fr_80px] px-5 py-3 hover:bg-muted/30 transition-all items-center gap-4 group/cp"
                                                     >
-                                                        <div className="flex items-center gap-4 flex-1 min-w-0">
-                                                            <div className="w-10 h-10 rounded-lg bg-emerald-500/5 border border-emerald-500/10 flex flex-col items-center justify-center shrink-0">
-                                                                <span className="text-[11px] font-black text-emerald-500">{coupon.discount_percentage}%</span>
+                                                        <div className="flex items-center gap-3 min-w-0">
+                                                            <div className="w-8 h-8 rounded-lg bg-emerald-500/10 flex items-center justify-center shrink-0 border border-emerald-500/20 group-hover/cp:scale-110 transition-transform">
+                                                                <Tag className="w-4 h-4 text-emerald-500" />
                                                             </div>
-                                                            <div className="flex items-center gap-6 min-w-0 overflow-hidden">
-                                                                <p className="text-[12px] font-black uppercase tracking-[0.15em] text-slate-900 dark:text-white truncate">{coupon.code}</p>
-                                                                <div className="hidden sm:flex items-center gap-2 text-[9px] font-medium text-slate-400 uppercase tracking-widest shrink-0">
-                                                                    <div className="w-1 h-1 rounded-full bg-slate-300 dark:bg-white/20" />
-                                                                    <Calendar className="w-3 h-3 text-emerald-500/40" />
-                                                                    <span>EXP: {coupon.expires_at ? new Date(coupon.expires_at).toLocaleDateString() : 'NEVER'}</span>
-                                                                </div>
-                                                            </div>
+                                                            <span className="text-[12px] font-black uppercase tracking-[0.1em] text-foreground truncate">
+                                                                {coupon.code}
+                                                            </span>
                                                         </div>
-                                                        <div className="flex items-center gap-1 shrink-0">
+                                                        <div className="text-center">
+                                                            <span className="text-[11px] font-bold text-emerald-600 bg-emerald-500/10 px-2 py-0.5 rounded-md border border-emerald-500/20">
+                                                                {coupon.discount_percentage}%
+                                                            </span>
+                                                        </div>
+                                                        <div className="flex items-center gap-2 min-w-0">
+                                                            <Calendar className="w-3.5 h-3.5 text-muted-foreground/40" />
+                                                            <span className="text-[11px] font-medium text-muted-foreground truncate">
+                                                                {coupon.expires_at ? new Date(coupon.expires_at).toLocaleDateString() : 'Lifetime'}
+                                                            </span>
+                                                        </div>
+                                                        <div className="flex items-center justify-end gap-1.5 opacity-0 group-hover/cp:opacity-100 transition-opacity">
                                                             <button
                                                                 type="button" 
                                                                 onClick={() => startEditingCoupon(i)} 
-                                                                className="w-8 h-8 rounded-lg text-slate-400 hover:text-emerald-500 hover:bg-emerald-500/10 transition-all flex items-center justify-center"
+                                                                className="w-7 h-7 rounded-lg text-muted-foreground hover:text-emerald-500 hover:bg-emerald-500/10 transition-all flex items-center justify-center active:scale-90"
                                                             >
                                                                 <Pencil className="w-3.5 h-3.5" />
                                                             </button>
                                                             <button
                                                                 type="button" 
                                                                 onClick={() => removeCoupon(i)} 
-                                                                className="w-8 h-8 rounded-lg text-slate-400 hover:text-red-500 hover:bg-red-500/10 transition-all flex items-center justify-center"
+                                                                className="w-7 h-7 rounded-lg text-muted-foreground hover:text-rose-500 hover:bg-rose-500/10 transition-all flex items-center justify-center active:scale-90"
                                                             >
                                                                 <Trash2 className="w-3.5 h-3.5" />
                                                             </button>

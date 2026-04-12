@@ -11,6 +11,7 @@ import autoTable from "jspdf-autotable";
 import { motion, AnimatePresence } from "motion/react";
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
 import {
     ExtendedUser, UserRole, UserStats, UserStatus
@@ -37,7 +38,7 @@ import {
 import { AnimatedCheckbox } from "@/components/ui/AnimatedCheckbox";
 import { Pagination } from "@/components/ui/Pagination";
 import { useToast } from "@/components/ui/toast";
-import { SearchInput, StatusBadge, RoleBadge, StatsSkeleton, LoadingState, EmptyFilterState } from "@/components/dashboard/shared";
+import { SearchInput, StatusBadge, RoleBadge, StatsSkeleton, LoadingState, EmptyFilterState, ActionDropdown } from "@/components/dashboard/shared";
 import { PageHeader } from "@/components/dashboard/ui/PageHeader";
 import { DashboardGrid } from "@/components/dashboard/ui/DashboardGrid";
 import { StatsCard } from "@/components/dashboard/StatsCard";
@@ -54,6 +55,7 @@ import {
 
 export default function UserManagementPage() {
     const toast = useToast();
+    const router = useRouter();
     const [users, setUsers] = useState<ExtendedUser[]>([]);
     const [stats, setStats] = useState<UserStats | null>(null);
     const [isLoading, setIsLoading] = useState(true);
@@ -70,6 +72,7 @@ export default function UserManagementPage() {
     const [bulkActionModal, setBulkActionModal] = useState<'delete' | 'role' | null>(null);
     const [selectedRole, setSelectedRole] = useState<UserRole>('student');
     const [exportModal, setExportModal] = useState(false);
+    const [activeMenu, setActiveMenu] = useState<string | null>(null);
     const fetchUsers = async () => {
         setIsLoading(true);
         const result = await getUsers({
@@ -303,7 +306,7 @@ export default function UserManagementPage() {
                     </>
                 )}
             </DashboardGrid>
-            {/* Table Container */}
+            {}
             <DashboardTableContainer>
                 <DashboardTableToolbar>
                     <div className="flex items-center gap-3 w-full lg:max-w-md">
@@ -380,23 +383,32 @@ export default function UserManagementPage() {
                                         <p className="text-[10px] font-black text-muted-foreground/70 uppercase tracking-widest">{new Date(user.created_at).toLocaleDateString()}</p>
                                     </div>
                                     <DashboardTableCell className="text-right">
-                                        <DropdownMenu>
-                                            <DropdownMenuTrigger asChild>
-                                                <button className="p-2.5 rounded-xl hover:bg-muted text-muted-foreground hover:text-foreground transition-all"><MoreHorizontal className="w-4 h-4" /></button>
-                                            </DropdownMenuTrigger>
-                                            <DropdownMenuContent align="end" className="w-52 p-2 rounded-2xl bg-card/85 backdrop-blur-2xl border-border/40 shadow-2xl">
-                                                <DropdownMenuItem className="rounded-xl gap-3 cursor-pointer p-3 focus:bg-primary/10 focus:text-primary" onClick={() => setViewUserModal(user)}>
-                                                    <Eye className="w-4 h-4" /> <span className="font-black text-xs uppercase tracking-widest">Biometrics</span>
-                                                </DropdownMenuItem>
-                                                <DropdownMenuItem className="rounded-xl gap-3 cursor-pointer p-3 focus:bg-primary/10 focus:text-primary" asChild>
-                                                    <Link href={`/dashboard/users/${user.id}/edit`} className="flex w-full items-center"><Edit className="w-4 h-4" /> <span className="ml-3 font-black text-xs uppercase tracking-widest">Adjust Profile</span></Link>
-                                                </DropdownMenuItem>
-                                                <DropdownMenuSeparator className="bg-border/20 my-1.5" />
-                                                <DropdownMenuItem onClick={() => setDeleteConfirmModal(user.id)} className="rounded-xl gap-3 cursor-pointer p-3 focus:bg-destructive/10 focus:text-destructive text-destructive">
-                                                    <Trash2 className="w-4 h-4" /> <span className="font-black text-xs uppercase tracking-widest">Purge Entity</span>
-                                                </DropdownMenuItem>
-                                            </DropdownMenuContent>
-                                        </DropdownMenu>
+                                        <ActionDropdown 
+                                            id={user.id}
+                                            title="Intervention"
+                                            activeId={activeMenu}
+                                            setActiveId={setActiveMenu}
+                                            actions={[
+                                                {
+                                                    label: "Biometrics",
+                                                    icon: Eye,
+                                                    onClick: () => setViewUserModal(user),
+                                                    variant: 'info'
+                                                },
+                                                {
+                                                    label: "Adjust Profile",
+                                                    icon: Edit,
+                                                    onClick: () => router.push(`/dashboard/users/${user.id}/edit`),
+                                                    variant: 'warning'
+                                                },
+                                                {
+                                                    label: "Purge Entity",
+                                                    icon: Trash2,
+                                                    onClick: () => setDeleteConfirmModal(user.id),
+                                                    variant: 'danger'
+                                                }
+                                            ]}
+                                        />
                                     </DashboardTableCell>
                                 </DashboardTableRow>
                             ))}

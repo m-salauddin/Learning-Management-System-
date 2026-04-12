@@ -4,6 +4,7 @@ import { BookOpen, Layers, PlayCircle, Clock, ChevronDown, Lock as LockIcon } fr
 import { cn } from "@/lib/utils";
 import { MappedCourse } from "@/types/mapped-course";
 import { CoursePageData } from "@/types/course-page";
+
 interface CourseCurriculumProps {
     course: MappedCourse;
     pageData?: CoursePageData;
@@ -16,6 +17,7 @@ interface CourseCurriculumProps {
     totalSections: number;
     totalLectures: number;
 }
+
 export default function CourseCurriculum({
     course,
     pageData,

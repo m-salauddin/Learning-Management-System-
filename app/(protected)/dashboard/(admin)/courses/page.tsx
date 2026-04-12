@@ -3,9 +3,10 @@ import {
     Plus, Search, Edit2, Trash2, MoreHorizontal, Layers,
     Globe, Smartphone, Palette, TrendingUp, Briefcase,
     Database, Code, Shield, Cloud, Info, X,
-    RefreshCw, Download, ChevronDown, GripVertical, CheckCircle2, Eye, RefreshCw as RefreshIcon, Archive, BarChart, DollarSign, BookOpen
+    RefreshCw, Download, ChevronDown, GripVertical, CheckCircle2, Eye, Archive, BarChart, DollarSign, BookOpen
 } from "lucide-react";
 import { useRouter } from "next/navigation";
+import type { AppRouterInstance } from "next/dist/shared/lib/app-router-context.shared-runtime";
 import { jsPDF } from "jspdf";
 import autoTable from "jspdf-autotable";
 import { motion, AnimatePresence } from "motion/react";
@@ -47,34 +48,26 @@ import {
     SelectValue,
 } from "@/components/ui/select";
 import {
-    DropdownMenu,
-    DropdownMenuContent,
-    DropdownMenuItem,
-    DropdownMenuSeparator,
-    DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import {
     Dialog, DialogHeader, DialogTitle, DialogDescription,
     DialogFooter, DialogBody
 } from "@/components/ui/Dialog";
 import { Pagination } from "@/components/ui/Pagination";
 import { useToast } from "@/components/ui/toast";
 import { AnimatedCheckbox } from "@/components/ui/AnimatedCheckbox";
+import { ConfirmModal } from "@/components/ui/ConfirmModal";
 import { useAppDispatch } from "@/lib/store/hooks";
 import { reorderCourses } from "@/lib/store/features/courses/coursesSlice";
-import { SearchInput, StatusBadge, LevelBadge, StatsSkeleton, LoadingState, EmptyFilterState } from "@/components/dashboard/shared";
+import { SearchInput, StatusBadge, LevelBadge, StatsSkeleton, LoadingState, EmptyFilterState, ActionDropdown, DropdownAction } from "@/components/dashboard/shared";
 import { PageHeader } from "@/components/dashboard/ui/PageHeader";
 import { DashboardGrid } from "@/components/dashboard/ui/DashboardGrid";
 import { StatsCard } from "@/components/dashboard/StatsCard";
 import {
-    DashboardTableContainer,
     DashboardTableToolbar,
     DashboardTableWrapper,
     DashboardTableHeader,
     DashboardTableHead,
     DashboardTableBody,
     DashboardTableRow,
-    DashboardTableCell
 } from "@/components/dashboard/ui/DashboardTable";
 const CourseRow = memo(({
     course,
@@ -82,14 +75,18 @@ const CourseRow = memo(({
     onSelect,
     onDelete,
     onTogglePublish,
-    router
+    router,
+    activeMenu,
+    setActiveMenu
 }: {
     course: CourseWithInstructor,
     isSelected: boolean,
     onSelect: () => void,
     onDelete: (id: string) => void,
     onTogglePublish: (course: CourseWithInstructor) => void,
-    router: any
+    router: AppRouterInstance,
+    activeMenu: string | null,
+    setActiveMenu: (id: string | null) => void
 }) => {
     const {
         attributes,
@@ -99,26 +96,29 @@ const CourseRow = memo(({
         transition,
         isDragging,
     } = useSortable({ id: course.id });
+
     const style = {
         transform: CSS.Transform.toString(transform),
         transition: transition || undefined,
     };
+
     return (
         <DashboardTableRow
             ref={setNodeRef}
             style={style}
             className={cn(
-                "grid-cols-[48px_48px_60px_2.5fr_1fr_120px_100px_100px_80px]",
-                isDragging ? "z-100 relative bg-muted shadow-2xl ring-2 ring-primary/40 scale-[1.01] transition-transform" : ""
+                "min-w-[1100px] py-3.5 px-6 hover:bg-muted/40 group/row border-b border-border/80 transition-colors last:border-0 items-center gap-4",
+                "grid-cols-[48px_48px_60px_2.5fr_1fr_120px_100px_100px_60px]",
+                isDragging ? "z-100 relative bg-card shadow-2xl ring-2 ring-primary/40 scale-[1.01] transition-transform" : "bg-card"
             )}
         >
             <div className="flex items-center justify-center">
                 <div
                     {...attributes}
                     {...listeners}
-                    className="cursor-grab active:cursor-grabbing text-muted-foreground opacity-20 group-hover:text-primary group-hover:opacity-100 transition-all p-2"
+                    className="cursor-grab active:cursor-grabbing text-muted-foreground opacity-20 group-hover/row:opacity-100 transition-all p-1"
                 >
-                    <GripVertical className="w-4 h-4" />
+                    <GripVertical className="w-3.5 h-3.5" />
                 </div>
             </div>
             <div className="flex items-center justify-center">
@@ -128,96 +128,97 @@ const CourseRow = memo(({
                     onChange={onSelect}
                 />
             </div>
-            <div className="px-4 text-center">
-                <span className="px-3 py-1 rounded-lg bg-amber-500/10 border border-amber-500/20 text-[10px] font-black text-amber-500 tracking-widest">
+            <div className="flex items-center justify-center">
+                <span className="px-2 py-0.5 rounded-lg bg-primary/10 border border-primary/20 text-[10px] font-bold text-primary tracking-widest">
                     {String(course.serial_number || 0).padStart(2, '0')}
                 </span>
             </div>
-            <div className="px-4 flex items-center gap-4 min-w-0">
-                <div className="w-16 h-11 rounded-xl bg-muted overflow-hidden shrink-0 border border-border/20 shadow-sm relative group-hover:scale-105 transition-transform duration-500">
+            <div className="flex items-center gap-3.5 min-w-0 pr-4">
+                <div className="w-14 h-9 rounded-lg bg-muted overflow-hidden shrink-0 border border-border/40 shadow-sm relative group-hover/row:scale-105 transition-transform duration-500">
                     {course.thumbnail_url ? (
                         <Image src={course.thumbnail_url} alt="" fill unoptimized className="object-cover" />
                     ) : (
-                        <div className="w-full h-full flex items-center justify-center bg-muted text-[10px] font-black text-muted-foreground uppercase tracking-widest">N/A</div>
+                        <div className="w-full h-full flex items-center justify-center bg-muted text-[8px] font-black text-muted-foreground uppercase tracking-widest">N/A</div>
                     )}
                 </div>
                 <div className="flex flex-col min-w-0">
                     <Link
                         href={`/dashboard/courses/${course.id}/edit`}
-                        className="font-black text-sm uppercase tracking-tight text-foreground group-hover:text-primary transition-colors truncate"
+                        className="font-bold text-[13px] text-foreground group-hover/row:text-primary transition-colors truncate leading-tight"
                     >
                         {course.title}
                     </Link>
                     <div className="flex items-center gap-2 mt-1">
                         <span
-                            className="text-[9px] font-black uppercase tracking-tighter px-1.5 py-0.5 rounded border"
+                            className="text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded bg-muted/50 border border-border/40"
                             style={{
-                                backgroundColor: `${course.category?.color || '#6366f1'}15`,
-                                color: course.category?.color || '#6366f1',
-                                borderColor: `${course.category?.color || '#6366f1'}30`
+                                color: course.category?.color || 'currentColor',
                             }}
                         >
                             {course.category?.name || 'GENERIC'}
                         </span>
                         {course.batch_no && (
-                            <span className="text-[9px] font-black uppercase tracking-tighter px-1.5 py-0.5 rounded border border-amber-500/20 bg-amber-500/10 text-amber-500">
-                                Batch {course.batch_no}
+                            <span className="text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded border border-amber-500/20 bg-amber-500/10 text-amber-600">
+                                BATCH {course.batch_no}
                             </span>
                         )}
-                        <span className="text-[9px] text-muted-foreground/40 font-mono uppercase tracking-widest hidden md:block">
+                        <span className="text-[9px] text-muted-foreground/30 font-mono uppercase tracking-widest hidden lg:block">
                             ID: {course.id.slice(0, 8)}
                         </span>
                     </div>
                 </div>
             </div>
-            <div className="px-4">
+            <div className="flex items-center justify-start text-[13px] font-bold text-foreground">
                 {course.price > 0 ? (
-                    <span className="text-sm font-black tracking-tighter">৳{course.price.toLocaleString()}</span>
+                    `৳${course.price.toLocaleString()}`
                 ) : (
-                    <span className="text-[10px] font-black uppercase tracking-widest text-emerald-500 bg-emerald-500/10 px-2 py-1 rounded-lg border border-emerald-500/20">Scholarship</span>
+                    <span className="text-[9px] font-bold uppercase tracking-widest text-emerald-600 bg-emerald-500/10 px-2 py-0.5 rounded-md border border-emerald-500/20">Scholarship</span>
                 )}
             </div>
-            <div className="px-4">
+            <div className="flex items-center justify-start">
                 <StatusBadge status={course.status} />
             </div>
-            <div className="px-4 text-center">
+            <div className="flex items-center justify-center">
                 <LevelBadge level={course.level || 'beginner'} />
             </div>
-            <div className="px-4 text-center">
-                <div className="inline-flex flex-col items-center">
-                    <span className="text-sm font-black tracking-tight">{course.total_students || 0}</span>
-                    <span className="text-[9px] text-muted-foreground font-black uppercase tracking-widest opacity-40">Engaged</span>
-                </div>
+            <div className="flex flex-col items-center justify-center">
+                <span className="text-[13px] font-bold text-foreground">{course.total_students || 0}</span>
+                <span className="text-[8px] text-muted-foreground font-bold uppercase tracking-[0.2em] opacity-40">Engaged</span>
             </div>
-            <DashboardTableCell className="text-right">
-                <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                        <button className="p-2.5 rounded-xl hover:bg-muted font-medium transition-all text-muted-foreground hover:text-foreground">
-                            <MoreHorizontal className="w-4 h-4" />
-                        </button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end" className="w-48 p-2 rounded-2xl border-border/40 bg-card/85 backdrop-blur-2xl shadow-2xl">
-                        <DropdownMenuItem className="rounded-xl gap-3 cursor-pointer p-3 focus:bg-primary/10 focus:text-primary" onClick={() => router.push(`/courses/${course.slug}`)}>
-                            <Eye className="w-4 h-4" />
-                            <span className="font-black text-xs uppercase tracking-widest">Deep View</span>
-                        </DropdownMenuItem>
-                        <DropdownMenuItem className="rounded-xl gap-3 cursor-pointer p-3 focus:bg-primary/10 focus:text-primary" onClick={() => router.push(`/dashboard/courses/${course.id}/edit`)}>
-                            <Edit2 className="w-4 h-4" />
-                            <span className="font-black text-xs uppercase tracking-widest">Modify</span>
-                        </DropdownMenuItem>
-                        <DropdownMenuSeparator className="bg-border/20 mx-1 my-1.5" />
-                        <DropdownMenuItem className="rounded-xl gap-3 cursor-pointer p-3 focus:bg-primary/10 focus:text-primary" onClick={() => onTogglePublish(course)}>
-                            {course.status === 'published' ? <Archive className="w-4 h-4" /> : <Plus className="w-4 h-4" />}
-                            <span className="font-black text-xs uppercase tracking-widest">{course.status === 'published' ? 'Archive catalog' : 'Deploy catalog'}</span>
-                        </DropdownMenuItem>
-                        <DropdownMenuSeparator className="bg-border/20 mx-1 my-1.5" />
-                        <DropdownMenuItem onClick={() => onDelete(course.id)} className="rounded-xl gap-3 cursor-pointer p-3 focus:bg-destructive/10 focus:text-destructive text-destructive">
-                            <Trash2 className="w-4 h-4" />
-                            <span className="font-black text-xs uppercase tracking-widest">Purge</span>
-                        </DropdownMenuItem>
-                    </DropdownMenuContent>
-                </DropdownMenu>
-            </DashboardTableCell>
+            <div className="flex justify-center items-center">
+                <ActionDropdown 
+                    id={course.id}
+                    title="Course Controls"
+                    activeId={activeMenu}
+                    setActiveId={setActiveMenu}
+                    actions={[
+                        {
+                            label: "Deep view",
+                            icon: Eye,
+                            onClick: () => router.push(`/courses/${course.slug}`),
+                            variant: 'warning'
+                        },
+                        {
+                            label: "Modify course",
+                            icon: Edit2,
+                            onClick: () => router.push(`/dashboard/courses/${course.id}/edit`),
+                            variant: 'warning'
+                        },
+                        {
+                            label: course.status === 'published' ? 'Archive catalog' : 'Deploy catalog',
+                            icon: course.status === 'published' ? Archive : Plus,
+                            onClick: () => onTogglePublish(course),
+                            variant: 'success'
+                        },
+                        {
+                            label: "Purge record",
+                            icon: Trash2,
+                            onClick: () => onDelete(course.id),
+                            variant: 'danger'
+                        }
+                    ]}
+                />
+            </div>
         </DashboardTableRow>
     );
 });
@@ -252,8 +253,10 @@ export default function CourseManagementPage() {
     const [currentPage, setCurrentPage] = useState(1);
     const [pageSize, setPageSize] = useState(10);
     const [totalCourses, setTotalCourses] = useState(0);
-    const [onlyLatestBatch, setOnlyLatestBatch] = useState(true);
     const [exportModal, setExportModal] = useState(false);
+    const [deleteModal, setDeleteModal] = useState<{ isOpen: boolean, id: string | null }>({ isOpen: false, id: null });
+    const [bulkDeleteModalOpen, setBulkDeleteModalOpen] = useState(false);
+    const [activeMenu, setActiveMenu] = useState<string | null>(null);
     const fetchCoursesData = async () => {
         setIsLoading(true);
         try {
@@ -264,8 +267,7 @@ export default function CourseManagementPage() {
                 level: levelFilter,
                 page: currentPage,
                 pageSize,
-                sort: 'serial',
-                onlyLatestBatch: onlyLatestBatch
+                sort: 'serial'
             });
             if (result.data) {
                 setCourses(result.data);
@@ -293,7 +295,7 @@ export default function CourseManagementPage() {
     };
     useEffect(() => {
         fetchCoursesData();
-    }, [searchTerm, categoryFilter, statusFilter, levelFilter, currentPage, pageSize, onlyLatestBatch]);
+    }, [searchTerm, categoryFilter, statusFilter, levelFilter, currentPage, pageSize]);
     useEffect(() => {
         fetchStatsData();
         fetchCategoriesData();
@@ -317,9 +319,15 @@ export default function CourseManagementPage() {
     const clearSelection = () => {
         setSelectedCourses(new Set());
     };
-    const handleDeleteCourse = async (courseId: string) => {
-        if (!confirm("Are you sure you want to delete this course?")) return;
-        const result = await deleteCourse(courseId);
+    const handleDeleteCourse = (courseId: string) => {
+        setDeleteModal({ isOpen: true, id: courseId });
+    };
+
+    const confirmDelete = async () => {
+        if (!deleteModal.id) return;
+        
+        setIsLoading(true);
+        const result = await deleteCourse(deleteModal.id);
         if (result.success) {
             toast.success('Course deleted successfully');
             fetchCoursesData();
@@ -327,16 +335,14 @@ export default function CourseManagementPage() {
         } else {
             toast.error('Failed to delete course');
         }
+        setIsLoading(false);
+        setDeleteModal({ isOpen: false, id: null });
     };
+
     const handleBulkAction = async (action: 'delete' | 'publish' | 'unpublish') => {
         if (action === 'delete') {
-            if (!confirm(`Are you sure you want to delete ${selectedCourses.size} courses?`)) return;
-            const result = await bulkDeleteCourses(Array.from(selectedCourses));
-            if (result.success) {
-                toast.success(`${result.deletedCount} courses deleted`);
-            } else {
-                toast.error('Failed to delete courses');
-            }
+            setBulkDeleteModalOpen(true);
+            return;
         } else if (action === 'publish') {
             const result = await bulkUpdateCourseStatus(Array.from(selectedCourses), 'published');
             if (result.success) {
@@ -352,9 +358,25 @@ export default function CourseManagementPage() {
                 toast.error('Failed to unpublish courses');
             }
         }
+        
         setSelectedCourses(new Set());
         fetchCoursesData();
         fetchStatsData();
+    };
+
+    const confirmBulkDelete = async () => {
+        setIsLoading(true);
+        const result = await bulkDeleteCourses(Array.from(selectedCourses));
+        if (result.success) {
+            toast.success(`${result.deletedCount} courses deleted`);
+            setSelectedCourses(new Set());
+            fetchCoursesData();
+            fetchStatsData();
+        } else {
+            toast.error('Failed to delete courses');
+        }
+        setIsLoading(false);
+        setBulkDeleteModalOpen(false);
     };
     const handleDragEnd = async (event: DragEndEvent) => {
         const { active, over } = event;
@@ -475,12 +497,12 @@ export default function CourseManagementPage() {
                     <div className="flex items-center gap-3">
                         <button
                             onClick={() => setExportModal(true)}
-                            className="px-5 py-2.5 rounded-xl border border-border/50 bg-card hover:bg-muted/50 text-xs font-black uppercase tracking-widest transition-all inline-flex items-center gap-2"
+                            className="px-5 py-2.5 rounded-xl border border-border bg-card hover:bg-muted/50 text-[11px] font-bold uppercase tracking-wider transition-all inline-flex items-center gap-2 shadow-sm"
                         >
-                            <Download className="w-4 h-4" /> Export
+                            <Download className="w-4 h-4 text-primary" /> Export
                         </button>
                         <Link href="/dashboard/courses/new">
-                            <button className="bg-primary text-white px-6 py-2.5 rounded-xl text-xs font-black uppercase tracking-widest hover:bg-primary/90 transition-all shadow-xl shadow-primary/20 inline-flex items-center gap-2">
+                            <button className="bg-primary text-white px-6 py-2.5 rounded-xl text-[11px] font-bold uppercase tracking-wider hover:bg-primary/90 transition-all shadow-sm inline-flex items-center gap-2">
                                 <Plus className="w-4 h-4" /> Create Course
                             </button>
                         </Link>
@@ -497,109 +519,80 @@ export default function CourseManagementPage() {
                             title="Total Courses"
                             value={stats.total}
                             icon={BookOpen}
-                            className="border-blue-500/20"
                         />
                         <StatsCard
                             title="Published"
                             value={stats.published}
                             icon={CheckCircle2}
-                            className="border-emerald-500/20"
                         />
                         <StatsCard
                             title="Total Students"
                             value={stats.totalStudents}
                             icon={TrendingUp}
-                            className="border-violet-500/20"
                         />
                         <StatsCard
                             title="Revenue (Est.)"
                             value={`৳${(stats.totalRevenue || 0).toLocaleString()}`}
                             icon={DollarSign}
-                            className="border-emerald-500/20"
                         />
                     </>
                 )}
             </DashboardGrid>
-            {/* Main Table Interface */}
-            <DashboardTableContainer>
-                <DashboardTableToolbar className="flex-col 2xl:flex-row items-start 2xl:items-center p-6 gap-6">
-                    <div className="flex w-full 2xl:w-auto items-center gap-3 bg-card/50 p-2 rounded-2xl border border-border/50">
+            <div className="rounded-[1.5rem] bg-card border border-border shadow-md overflow-hidden">
+                <DashboardTableToolbar className="flex-col xl:flex-row items-stretch xl:items-center px-6 py-4 gap-4 border-b border-border bg-muted/10 rounded-none">
+                    <div className="flex flex-1 items-center gap-3">
                         <SearchInput
                             value={searchTerm}
                             onChange={(value) => { setSearchTerm(value); setCurrentPage(1); }}
                             placeholder="Search courses..."
-                            debounceMs={300}
                             isSearching={isLoading}
                             disabled={!stats || stats.total === 0}
-                            className="flex-1"
                         />
                         <button
                             onClick={fetchCoursesData}
-                            className="h-11 w-11 flex items-center justify-center shrink-0 rounded-xl border border-border/30 hover:bg-muted/50 transition-all text-muted-foreground group"
-                            title="Refresh"
+                            className="h-10 w-10 flex items-center justify-center shrink-0 rounded-xl bg-card border border-border hover:bg-muted transition-all text-muted-foreground hover:text-primary active:scale-95 shadow-sm"
+                            title="Refresh catalog data"
                         >
-                            <RefreshCw className={cn("w-4 h-4", isLoading && "animate-spin")} />
+                            <RefreshCw className={cn("w-4 h-4 text-primary", isLoading && "animate-spin")} />
                         </button>
                     </div>
+
                     <div className="flex flex-wrap items-center gap-3">
-                        <Select value={categoryFilter} onValueChange={setCategoryFilter}>
-                            <SelectTrigger className="w-full sm:w-fit min-w-[140px] rounded-xl">
-                                <SelectValue placeholder="Category" />
-                            </SelectTrigger>
-                            <SelectContent className="rounded-xl">
-                                <SelectItem value="all">All Categories</SelectItem>
-                                {categories.map(c => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)}
-                            </SelectContent>
-                        </Select>
-                        <Select value={statusFilter} onValueChange={setStatusFilter}>
-                            <SelectTrigger className="w-full sm:w-fit min-w-[140px] rounded-xl">
-                                <SelectValue placeholder="Status" />
-                            </SelectTrigger>
-                            <SelectContent className="rounded-xl">
-                                <SelectItem value="all">All Status</SelectItem>
-                                <SelectItem value="published">Published</SelectItem>
-                                <SelectItem value="draft">Draft</SelectItem>
-                                <SelectItem value="archived">Archived</SelectItem>
-                            </SelectContent>
-                        </Select>
-                        <Select value={levelFilter} onValueChange={setLevelFilter}>
-                            <SelectTrigger className="w-full sm:w-fit min-w-[140px] rounded-xl">
-                                <SelectValue placeholder="Level" />
-                            </SelectTrigger>
-                            <SelectContent className="rounded-xl">
-                                <SelectItem value="all">All Levels</SelectItem>
-                                <SelectItem value="beginner">Beginner</SelectItem>
-                                <SelectItem value="intermediate">Intermediate</SelectItem>
-                                <SelectItem value="advanced">Advanced</SelectItem>
-                            </SelectContent>
-                        </Select>
-                        <button
-                            onClick={() => setOnlyLatestBatch(!onlyLatestBatch)}
-                            className={cn(
-                                "flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all border border-border/30",
-                                onlyLatestBatch
-                                    ? "bg-primary/10 text-primary border-primary/20"
-                                    : "bg-muted/10 text-muted-foreground hover:bg-muted/20"
-                            )}
-                        >
-                            <Layers className="w-3.5 h-3.5" />
-                            <span>Latest Batch {onlyLatestBatch ? 'Active' : 'Disabled'}</span>
-                        </button>
-                        {(searchTerm || categoryFilter !== 'all' || statusFilter !== 'all' || levelFilter !== 'all') && (
-                            <button
-                                onClick={() => {
-                                    setSearchTerm('');
-                                    setCategoryFilter('all');
-                                    setStatusFilter('all');
-                                    setLevelFilter('all');
-                                    setCurrentPage(1);
-                                }}
-                                className="flex items-center gap-2 px-4 py-2 rounded-xl bg-destructive/10 text-destructive text-xs font-bold hover:bg-destructive/20 transition-all"
-                            >
-                                <X className="w-3.5 h-3.5" />
-                                Clear
-                            </button>
-                        )}
+                        <div className="flex items-center gap-3 bg-background p-1 rounded-xl border border-border shadow-sm">
+                            <Select value={categoryFilter} onValueChange={setCategoryFilter}>
+                                <SelectTrigger className="w-fit min-w-[140px] rounded-lg font-bold text-[11px] uppercase tracking-wider h-8 bg-transparent border-none hover:bg-muted transition-all">
+                                    <SelectValue placeholder="Category" />
+                                </SelectTrigger>
+                                <SelectContent className="rounded-xl border-border bg-card text-foreground">
+                                    <SelectItem value="all" className="text-[11px] font-bold">ALL CATEGORIES</SelectItem>
+                                    {categories.map(c => <SelectItem key={c.id} value={c.id} className="text-[11px] font-bold">{c.name.toUpperCase()}</SelectItem>)}
+                                </SelectContent>
+                            </Select>
+                            <div className="w-px h-4 bg-border" />
+                            <Select value={statusFilter} onValueChange={setStatusFilter}>
+                                <SelectTrigger className="w-fit min-w-[120px] rounded-lg font-bold text-[11px] uppercase tracking-wider h-8 bg-transparent border-none hover:bg-muted transition-all">
+                                    <SelectValue placeholder="Status" />
+                                </SelectTrigger>
+                                <SelectContent className="rounded-xl border-border bg-card text-foreground">
+                                    <SelectItem value="all" className="text-[11px] font-bold">ALL STATUS</SelectItem>
+                                    <SelectItem value="published" className="text-[11px] font-bold">PUBLISHED</SelectItem>
+                                    <SelectItem value="draft" className="text-[11px] font-bold">DRAFT</SelectItem>
+                                    <SelectItem value="archived" className="text-[11px] font-bold">ARCHIVED</SelectItem>
+                                </SelectContent>
+                            </Select>
+                            <div className="w-px h-4 bg-border" />
+                            <Select value={levelFilter} onValueChange={setLevelFilter}>
+                                <SelectTrigger className="w-fit min-w-[120px] rounded-lg font-bold text-[11px] uppercase tracking-wider h-8 bg-transparent border-none hover:bg-muted transition-all">
+                                    <SelectValue placeholder="Level" />
+                                </SelectTrigger>
+                                <SelectContent className="rounded-xl border-border bg-card text-foreground">
+                                    <SelectItem value="all" className="text-[11px] font-bold">ALL LEVELS</SelectItem>
+                                    <SelectItem value="beginner" className="text-[11px] font-bold">BEGINNER</SelectItem>
+                                    <SelectItem value="intermediate" className="text-[11px] font-bold">INTERMEDIATE</SelectItem>
+                                    <SelectItem value="advanced" className="text-[11px] font-bold">ADVANCED</SelectItem>
+                                </SelectContent>
+                            </Select>
+                        </div>
                     </div>
                 </DashboardTableToolbar>
                 {isLoading ? (
@@ -607,19 +600,19 @@ export default function CourseManagementPage() {
                 ) : courses.length === 0 ? (
                     <EmptyFilterState searchTerm={searchTerm || categoryFilter !== 'all' ? "your filters" : ""} />
                 ) : (
-                    <DashboardTableWrapper className="min-w-[1100px]">
-                        <DashboardTableHeader className="grid-cols-[48px_48px_60px_2.5fr_1fr_120px_100px_100px_80px]">
+                    <DashboardTableWrapper className="min-w-[1100px] dashboard-scrollbar">
+                        <DashboardTableHeader className="grid-cols-[48px_48px_60px_2.5fr_1fr_120px_100px_100px_60px] bg-muted/30 border-b border-border/80 px-6 py-3.5 items-center gap-4">
                             <div className="flex items-center justify-center"></div>
                             <div className="flex justify-center">
                                 <AnimatedCheckbox id="select-all" checked={selectedCourses.size === courses.length && courses.length > 0} onChange={toggleSelectAll} />
                             </div>
-                            <DashboardTableHead className="text-center">Serial</DashboardTableHead>
-                            <DashboardTableHead>Course / Identity</DashboardTableHead>
-                            <DashboardTableHead>Monetization</DashboardTableHead>
-                            <DashboardTableHead>Lifecycle</DashboardTableHead>
-                            <DashboardTableHead className="text-center">Proficiency</DashboardTableHead>
-                            <DashboardTableHead className="text-center">Impact</DashboardTableHead>
-                            <DashboardTableHead className="text-right">Action</DashboardTableHead>
+                            <DashboardTableHead className="px-0 text-center">Serial</DashboardTableHead>
+                            <DashboardTableHead className="px-0">Course / Identity</DashboardTableHead>
+                            <DashboardTableHead className="px-0">Monetization</DashboardTableHead>
+                            <DashboardTableHead className="px-0">Lifecycle</DashboardTableHead>
+                            <DashboardTableHead className="px-0 text-center">Proficiency</DashboardTableHead>
+                            <DashboardTableHead className="px-0 text-center">Impact</DashboardTableHead>
+                            <DashboardTableHead className="px-0 text-center">Action</DashboardTableHead>
                         </DashboardTableHeader>
                         <DndContext
                             sensors={sensors}
@@ -641,6 +634,8 @@ export default function CourseManagementPage() {
                                             onDelete={handleDeleteCourse}
                                             onTogglePublish={togglePublishStatus}
                                             router={router}
+                                            activeMenu={activeMenu}
+                                            setActiveMenu={setActiveMenu}
                                         />
                                     ))}
                                 </DashboardTableBody>
@@ -649,7 +644,7 @@ export default function CourseManagementPage() {
                     </DashboardTableWrapper>
                 )}
                 {!isLoading && totalCourses > pageSize && (
-                    <div className="p-6 border-t border-border/20 bg-muted/5">
+                    <div className="px-6 py-4 border-t border-border bg-muted/10">
                         <Pagination
                             currentPage={currentPage}
                             totalItems={totalCourses}
@@ -663,7 +658,7 @@ export default function CourseManagementPage() {
                         />
                     </div>
                 )}
-            </DashboardTableContainer>
+            </div>
             <AnimatePresence>
                 {selectedCourses.size > 0 && (
                     <motion.div
@@ -730,6 +725,28 @@ export default function CourseManagementPage() {
                     <button onClick={() => setExportModal(false)} className="w-full py-3 rounded-xl border border-border/50 hover:bg-muted font-black text-xs uppercase tracking-widest transition-all">Dismiss Interface</button>
                 </DialogFooter>
             </Dialog>
+
+            <ConfirmModal
+                isOpen={deleteModal.isOpen}
+                onClose={() => setDeleteModal({ isOpen: false, id: null })}
+                onConfirm={confirmDelete}
+                title="Purge Record"
+                description="This action is irreversible. The course and all its associated data (modules, lessons, enrollments) will be permanently deleted from the registry."
+                confirmText="Yes, Purge"
+                isLoading={isLoading}
+                variant="danger"
+            />
+
+            <ConfirmModal
+                isOpen={bulkDeleteModalOpen}
+                onClose={() => setBulkDeleteModalOpen(false)}
+                onConfirm={confirmBulkDelete}
+                title="Bulk Purge"
+                description={`You are about to delete ${selectedCourses.size} course records. This action cannot be undone and will affect all enrolled students.`}
+                confirmText={`Purge ${selectedCourses.size} Records`}
+                isLoading={isLoading}
+                variant="danger"
+            />
         </motion.div>
     );
 }

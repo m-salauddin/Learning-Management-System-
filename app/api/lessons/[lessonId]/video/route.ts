@@ -13,15 +13,48 @@ export async function GET(
     if (authError || !user) {
         return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
+    // Verify access
+    const { data: lesson, error: lessonError } = await supabase
+        .from('lessons')
+        .select(`
+            id,
+            is_free_preview,
+            module:modules (course_id)
+        `)
+        .eq('id', lessonId)
+        .single();
+
+    if (lessonError || !lesson) {
+        return NextResponse.json({ error: 'Lesson not found' }, { status: 404 });
+    }
+
+    const lessonData = lesson as any;
+    const courseId = lessonData.module?.course_id;
+
+    if (!lesson.is_free_preview) {
+        const { data: enrollment } = await supabase
+            .from('enrollments')
+            .select('id')
+            .eq('user_id', user.id)
+            .eq('course_id', courseId)
+            .in('status', ['active', 'success'])
+            .maybeSingle();
+
+        if (!enrollment) {
+            return NextResponse.json({ error: 'Access denied. Valid enrollment required.' }, { status: 403 });
+        }
+    }
+
     const { data: asset, error: dbError } = await supabase
         .from('lesson_assets')
         .select('video_path')
         .eq('lesson_id', lessonId)
         .single();
+
     if (dbError || !asset || !asset.video_path) {
         return NextResponse.json(
-            { error: 'Access denied or video not found' },
-            { status: 403 }
+            { error: 'Video content not found' },
+            { status: 404 }
         );
     }
     const expirySeconds = 300;

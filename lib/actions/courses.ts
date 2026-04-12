@@ -14,7 +14,6 @@ export interface GetCoursesParams {
     search?: string;
     level?: string;
     sort?: 'newest' | 'popular' | 'rating' | 'price_low' | 'price_high' | 'serial';
-    onlyLatestBatch?: boolean;
 }
 export async function getCourses(params: GetCoursesParams = {}): Promise<PaginatedResponse<CourseWithInstructor>> {
     const supabase = await createClient();
@@ -26,8 +25,7 @@ export async function getCourses(params: GetCoursesParams = {}): Promise<Paginat
         instructor,
         search,
         level,
-        sort = 'newest',
-        onlyLatestBatch = false
+        sort = 'newest'
     } = params;
     const offset = (page - 1) * pageSize;
     let query = supabase
@@ -74,36 +72,6 @@ export async function getCourses(params: GetCoursesParams = {}): Promise<Paginat
             query = query.order('serial_number', { ascending: true })
                 .order('created_at', { ascending: false });
     }
-    if (onlyLatestBatch) {
-        const { data, count } = await query.range(0, 999);
-        if (!data) return { data: [], total: 0, page, pageSize, totalPages: 0 };
-        const latestBatchesMap = new Map<string, any>();
-        data.forEach(course => {
-            const existing = latestBatchesMap.get(course.title);
-            if (!existing || (course.batch_no || 0) > (existing.batch_no || 0)) {
-                latestBatchesMap.set(course.title, course);
-            }
-        });
-        const filteredData = Array.from(latestBatchesMap.values());
-        const total = filteredData.length;
-        const pagedData = filteredData.slice(offset, offset + pageSize);
-        const transformedData = pagedData.map(course => ({
-            ...course,
-            instructor: course.instructor?.user || {
-                id: course.instructor_id,
-                name: 'Unknown Instructor',
-                email: '',
-                avatar_url: null
-            }
-        }));
-        return {
-            data: transformedData as CourseWithInstructor[],
-            total,
-            page,
-            pageSize,
-            totalPages: Math.ceil(total / pageSize)
-        };
-    }
     query = query.range(offset, offset + pageSize - 1);
     const { data, error, count } = await query;
     const transformedData = (data as any[])?.map(course => ({
@@ -133,11 +101,14 @@ export async function getCourseBySlug(slug: string): Promise<ApiResponse<CourseW
                 user:users(id, name, email, avatar_url)
             ),
             category:categories(id, name, slug, color),
-            modules(
+            milestones(
                 *,
-                lessons(
+                modules(
                     *,
-                    lesson_assets(*)
+                    lessons(
+                        *,
+                        lesson_assets(*)
+                    )
                 )
             ),
             course_instructors(
@@ -196,6 +167,16 @@ export async function getCourseById(id: string): Promise<ApiResponse<CourseWithM
                     lesson_assets(*)
                 )
             ),
+            milestones(
+                *,
+                modules(
+                    *,
+                    lessons(
+                        *,
+                        lesson_assets(*)
+                    )
+                )
+            ),
             course_instructors(
                 instructor_id,
                 role,
@@ -207,8 +188,9 @@ export async function getCourseById(id: string): Promise<ApiResponse<CourseWithM
             course_details(*)
         `)
         .eq('id', id)
-        .order('position', { foreignTable: 'modules', ascending: true })
-        .order('position', { foreignTable: 'modules.lessons', ascending: true })
+        .order('position', { foreignTable: 'milestones', ascending: true })
+        .order('position', { foreignTable: 'milestones.modules', ascending: true })
+        .order('position', { foreignTable: 'milestones.modules.lessons', ascending: true })
         .order('order_index', { foreignTable: 'course_projects', ascending: true })
         .order('order_index', { foreignTable: 'course_faq', ascending: true })
         .order('order_index', { foreignTable: 'course_resources', ascending: true })
@@ -267,6 +249,7 @@ export async function createCourse(input: CreateCourseInput): Promise<ApiRespons
         faqs,
         projects,
         resources,
+        milestones,
         modules,
         target_audience,
         instructor_ids,
@@ -417,6 +400,7 @@ export async function createCourse(input: CreateCourseInput): Promise<ApiRespons
             title: p.title,
             description: p.description,
             thumbnail_url: p.image_url || "",
+            technologies: p.tech_stack ? p.tech_stack.split(',').map(s => s.trim()).filter(Boolean) : [],
             order_index: index,
             is_public: true
         }));
@@ -434,7 +418,65 @@ export async function createCourse(input: CreateCourseInput): Promise<ApiRespons
         }));
         await supabase.from('course_resources').insert(resourceData);
     }
-    if (modules?.length) {
+    if (milestones?.length) {
+        for (const [msIndex, msInput] of milestones.entries()) {
+            const { data: milestone, error: msError } = await supabase
+                .from('milestones')
+                .insert({
+                    course_id: course.id,
+                    title: msInput.title,
+                    description: msInput.description || "",
+                    position: msIndex
+                })
+                .select()
+                .single();
+
+            if (milestone && !msError && msInput.modules?.length) {
+                for (const [mIndex, mInput] of msInput.modules.entries()) {
+                    const { data: module, error: mError } = await supabase
+                        .from('modules')
+                        .insert({
+                            course_id: course.id,
+                            milestone_id: milestone.id,
+                            title: mInput.title,
+                            position: mIndex,
+                            is_published: true
+                        })
+                        .select()
+                        .single();
+
+                    if (module && !mError && mInput.items?.length) {
+                        for (const [iIndex, iInput] of mInput.items.entries()) {
+                            const { data: lesson, error: lError } = await supabase
+                                .from('lessons')
+                                .insert({
+                                    module_id: module.id,
+                                    title: iInput.title,
+                                    description: iInput.description || "",
+                                    lesson_type: iInput.type,
+                                    position: iIndex,
+                                    is_published: true
+                                })
+                                .select()
+                                .single();
+
+                            if (lesson && !lError && (iInput.video_url || iInput.content || iInput.options)) {
+                                await supabase
+                                    .from('lesson_assets')
+                                    .insert({
+                                        lesson_id: lesson.id,
+                                        video_path: iInput.video_url || "",
+                                        markdown_content: iInput.content || "",
+                                        resources: iInput.options ? { quiz_data: { options: iInput.options, correct_answer: iInput.correct_answer } } : []
+                                    });
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    } else if (modules?.length) {
+        
         for (const [mIndex, moduleInput] of modules.entries()) {
             const { data: module, error: moduleError } = await supabase
                 .from('modules')
@@ -472,6 +514,28 @@ export async function createCourse(input: CreateCourseInput): Promise<ApiRespons
             }
         }
     }
+
+    
+    let totalLessonsCount = 0;
+    if (milestones?.length) {
+        milestones.forEach(ms => {
+            ms.modules?.forEach(mod => {
+                totalLessonsCount += mod.items?.length || 0;
+            });
+        });
+    } else if (modules?.length) {
+        modules.forEach(mod => {
+            totalLessonsCount += (mod as any).lessons?.length || 0;
+        });
+    }
+
+    if (totalLessonsCount > 0) {
+        await supabase
+            .from('courses')
+            .update({ total_lessons: totalLessonsCount })
+            .eq('id', course.id);
+    }
+
     revalidatePath('/dashboard/courses');
     return { success: true, data: course };
 }
@@ -499,6 +563,7 @@ export async function updateCourse(input: UpdateCourseInput): Promise<ApiRespons
         faqs,
         projects,
         resources,
+        milestones,
         modules,
         target_audience,
         instructor_ids,
@@ -606,13 +671,78 @@ export async function updateCourse(input: UpdateCourseInput): Promise<ApiRespons
                 title: p.title,
                 description: p.description,
                 thumbnail_url: p.image_url || "",
+                technologies: p.tech_stack ? p.tech_stack.split(',').map(s => s.trim()).filter(Boolean) : [],
                 order_index: index,
                 is_public: true
             }));
             await supabase.from('course_projects').insert(projectData);
         }
     }
-    if (modules !== undefined) {
+    if (milestones !== undefined) {
+        
+        await supabase.from('milestones').delete().eq('course_id', id);
+        
+        await supabase.from('modules').delete().eq('course_id', id);
+
+        if (milestones && milestones.length > 0) {
+            for (const [msIndex, msInput] of milestones.entries()) {
+                const { data: milestone } = await supabase
+                    .from('milestones')
+                    .insert({
+                        course_id: id,
+                        title: msInput.title,
+                        description: msInput.description || "",
+                        position: msIndex
+                    })
+                    .select()
+                    .single();
+
+                if (milestone && msInput.modules) {
+                    for (const [mIndex, mInput] of msInput.modules.entries()) {
+                        const { data: moduleRow } = await supabase
+                            .from('modules')
+                            .insert({
+                                course_id: id,
+                                milestone_id: milestone.id,
+                                title: mInput.title,
+                                position: mIndex,
+                                is_published: true
+                            })
+                            .select()
+                            .single();
+
+                        if (moduleRow && mInput.items) {
+                            for (const [iIndex, iInput] of mInput.items.entries()) {
+                                const { data: lessonRow } = await supabase
+                                    .from('lessons')
+                                    .insert({
+                                        module_id: moduleRow.id,
+                                        title: iInput.title,
+                                        description: iInput.description || "",
+                                        lesson_type: iInput.type,
+                                        position: iIndex,
+                                        is_published: true
+                                    })
+                                    .select()
+                                    .single();
+
+                                if (lessonRow && (iInput.video_url || iInput.content || iInput.options)) {
+                                    await supabase
+                                        .from('lesson_assets')
+                                        .insert({
+                                            lesson_id: lessonRow.id,
+                                            video_path: iInput.video_url || "",
+                                            markdown_content: iInput.content || "",
+                                            resources: iInput.options ? { quiz_data: { options: iInput.options, correct_answer: iInput.correct_answer } } : []
+                                        });
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    } else if (modules !== undefined) {
         const { data: existingModules } = await supabase.from('modules').select('id').eq('course_id', id);
         if (existingModules?.length) {
             const mIds = existingModules.map(m => m.id);
@@ -672,6 +802,34 @@ export async function updateCourse(input: UpdateCourseInput): Promise<ApiRespons
             await supabase.from('course_resources').insert(resourceData);
         }
     }
+
+    
+    const { data: moduleList } = await supabase
+        .from('modules')
+        .select('id')
+        .eq('course_id', id);
+
+    if (moduleList && moduleList.length > 0) {
+        const modIds = moduleList.map(m => m.id);
+        const { count } = await supabase
+            .from('lessons')
+            .select('*', { count: 'exact', head: true })
+            .in('module_id', modIds);
+
+        if (count !== null) {
+            await supabase
+                .from('courses')
+                .update({ total_lessons: count || 0 })
+                .eq('id', id);
+        }
+    } else {
+        
+        await supabase
+            .from('courses')
+            .update({ total_lessons: 0 })
+            .eq('id', id);
+    }
+
     revalidatePath(`/courses/${updated.slug}`);
     revalidatePath('/dashboard/courses');
     return { success: true, data: updated };
@@ -956,4 +1114,18 @@ export async function updateCourseOrder(updates: { id: string; serial_number: nu
     }
     revalidatePath('/dashboard/courses');
     return { success: true };
+}
+
+export async function getAllCoursesList(): Promise<ApiResponse<{ id: string; title: string }[]>> {
+    const supabase = await createClient();
+    const { data, error } = await supabase
+        .from('courses')
+        .select('id, title')
+        .order('title');
+    
+    if (error) {
+        return { success: false, error: error.message };
+    }
+    
+    return { success: true, data };
 }

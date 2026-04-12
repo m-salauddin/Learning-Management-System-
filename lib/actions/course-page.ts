@@ -26,51 +26,81 @@ export async function getCoursePageData(slug: string): Promise<{
 }> {
     try {
         const supabase = await createClient();
-        const { data: { user } } = await supabase.auth.getUser();
-        const { data: course, error: courseError } = await supabase
-            .from('courses')
-            .select(`
-                *,
-                category:categories (
-                    id,
-                    name,
-                    slug,
-                    description,
-                    icon,
-                    course_count
-                )
-            `)
-            .eq('slug', slug)
-            .single();
-        if (courseError || !course) {
-            return { success: false, error: 'Course not found' };
-        }
-        const courseData = course as Course & { category: Category | null };
-        const { data: details } = await supabase
-            .from('course_details')
-            .select('*')
-            .eq('course_id', course.id)
-            .single();
         const adminClient = createAdminClient(
             process.env.NEXT_PUBLIC_SUPABASE_URL!,
             process.env.SUPABASE_SERVICE_ROLE_KEY || ''
         );
-        const { data: instructorData } = await adminClient
-            .from('users')
-            .select(`
-                id,
-                name,
-                email,
-                avatar_url,
-                bio
-            `)
-            .eq('id', course.instructor_id)
-            .single();
-        const { data: instructorProfile } = await adminClient
-            .from('instructor_profiles')
-            .select('*')
-            .eq('id', course.instructor_id)
-            .single();
+
+        
+        const [{ data: { user } }, { data: course, error: courseError }] = await Promise.all([
+            supabase.auth.getUser(),
+            supabase
+                .from('courses')
+                .select(`
+                    *,
+                    category:categories (
+                        id, name, slug, description, icon, course_count
+                    )
+                `)
+                .eq('slug', slug)
+                .single()
+        ]);
+
+        if (courseError || !course) {
+            return { success: false, error: 'Course not found' };
+        }
+
+        const courseData = course as Course & { category: Category | null };
+
+        
+        
+        const [
+            { data: details },
+            { data: instructorData },
+            { data: instructorProfile },
+            { data: ciRows },
+            { data: modulesData },
+            { data: projects },
+            { data: resources },
+            { data: faq },
+            { data: outlineModulesData },
+            { data: allTopicsRaw },
+            { data: reviewsData },
+            { data: relatedCourses },
+            enrollmentResult,
+            { data: batchesData }
+        ] = await Promise.all([
+            supabase.from('course_details').select('*').eq('course_id', course.id).maybeSingle(),
+            adminClient.from('users').select('id, name, email, avatar_url, bio').eq('id', course.instructor_id).maybeSingle(),
+            adminClient.from('instructor_profiles').select('*').eq('id', course.instructor_id).maybeSingle(),
+            adminClient.from('course_instructors').select(`
+                instructor_id,
+                role,
+                users:instructor_id (
+                    id, name, email, avatar_url, bio,
+                    profile:instructor_profiles(*)
+                )
+            `).eq('course_id', course.id),
+            supabase.from('modules').select(`
+                id, course_id, title, description, position, is_published,
+                lessons (
+                    id, title, description, lesson_type, position, duration_minutes, is_free_preview, is_published
+                )
+            `).eq('course_id', course.id).eq('is_published', true).order('position', { ascending: true }),
+            supabase.from('course_projects').select('*').eq('course_id', course.id).order('order_index', { ascending: true }),
+            supabase.from('course_resources').select('*').eq('course_id', course.id).order('order_index', { ascending: true }),
+            supabase.from('course_faq').select('*').eq('course_id', course.id).eq('is_published', true).order('order_index', { ascending: true }),
+            adminClient.from('course_outline_modules').select('*').eq('course_id', course.id).eq('is_published', true).order('position', { ascending: true }),
+            adminClient.from('course_outline_topics').select('*').eq('course_id', course.id).eq('is_published', true).order('position', { ascending: true }),
+            supabase.from('course_reviews').select('*, user:user_id (id, name, avatar_url)').eq('course_id', course.id).order('created_at', { ascending: false }).limit(20),
+            supabase.from('courses').select('id, title, slug, thumbnail_url, price, discount_price, rating, rating_count, total_students, level, course_type, tags, batch_no, updated_at, duration_hours, short_description, description').eq('published', true).neq('id', course.id).eq('category_id', course.category_id).limit(4),
+            user ? supabase.from('enrollments').select('id, progress_percentage').eq('user_id', user.id).eq('course_id', course.id).maybeSingle() : Promise.resolve({ data: null }),
+            supabase.from('course_batches').select('*').eq('course_id', course.id).eq('is_active', true).order('start_date', { ascending: true })
+        ]);
+
+        const allTopics = (allTopicsRaw as unknown as CourseOutlineTopic[]) || [];
+
+        
         const instructor: InstructorInfo = {
             id: instructorData?.id || course.instructor_id,
             name: instructorData?.name || 'Unknown',
@@ -83,17 +113,7 @@ export async function getCoursePageData(slug: string): Promise<{
             total_students: instructorProfile?.total_students || 0,
             rating: instructorProfile?.rating || 0,
         };
-        const { data: ciRows } = await adminClient
-            .from('course_instructors')
-            .select(`
-                instructor_id,
-                role,
-                users:instructor_id (
-                    id,                    name,                    email,                    avatar_url,                    bio,
-                    profile:instructor_profiles(*)
-                )
-            `)
-            .eq('course_id', course.id);
+
         const instructors: InstructorInfo[] = [];
         if (ciRows && ciRows.length > 0) {
             ciRows.forEach((row: any) => {
@@ -116,48 +136,16 @@ export async function getCoursePageData(slug: string): Promise<{
                 }
             });
         }
-        if (instructors.length === 0) {
-            instructors.push(instructor);
-        }
-        const { data: modulesData } = await supabase
-            .from('modules')
-            .select(`
-                id,
-                course_id,
-                title,
-                description,
-                position,
-                is_published,
-                lessons (
-                    id,
-                    title,
-                    description,
-                    lesson_type,
-                    position,
-                    duration_minutes,
-                    is_free_preview,
-                    is_published
-                )
-            `)
-            .eq('course_id', course.id)
-            .eq('is_published', true)
-            .order('position', { ascending: true });
+        if (instructors.length === 0) instructors.push(instructor);
+
+        
         let totalLessons = 0;
         let totalDuration = 0;
         const modules: ModuleWithLessonsPreview[] = (modulesData || []).map((mod) => {
-            const lessons = ((mod.lessons as unknown[] || []) as {
-                id: string;
-                title: string;
-                description: string;
-                lesson_type: string;
-                position: number;
-                duration_minutes: number;
-                is_free_preview: boolean;
-                is_published: boolean;
-            }[])
-                .filter(l => l.is_published)
-                .sort((a, b) => a.position - b.position);
-            const moduleDuration = lessons.reduce((sum, l) => sum + (l.duration_minutes || 0), 0);
+            const lessons = (mod.lessons || [])
+                .filter((l: any) => l.is_published)
+                .sort((a: any, b: any) => a.position - b.position);
+            const moduleDuration = lessons.reduce((sum: number, l: any) => sum + (l.duration_minutes || 0), 0);
             totalLessons += lessons.length;
             totalDuration += moduleDuration;
             return {
@@ -172,52 +160,8 @@ export async function getCoursePageData(slug: string): Promise<{
                 lesson_count: lessons.length,
             };
         });
-        const { data: projects, error: projectsError } = await supabase
-            .from('course_projects')
-            .select('*')
-            .eq('course_id', course.id)
-            .order('order_index', { ascending: true });
-        const { data: resources, error: resourcesError } = await supabase
-            .from('course_resources')
-            .select('*')
-            .eq('course_id', course.id)
-            .order('order_index', { ascending: true });
-        const { data: faq, error: faqError } = await supabase
-            .from('course_faq')
-            .select('*')
-            .eq('course_id', course.id)
-            .eq('is_published', true)
-            .order('order_index', { ascending: true });
-        const { data: outlineModulesData } = await adminClient
-            .from('course_outline_modules')
-            .select('*')
-            .eq('course_id', course.id)
-            .eq('is_published', true)
-            .order('position', { ascending: true });
-        const moduleIds = outlineModulesData?.map(m => m.id) || [];
-        let allTopics: CourseOutlineTopic[] = [];
-        if (moduleIds.length > 0) {
-            const { data } = await adminClient
-                .from('course_outline_topics')
-                .select(`
-                    id,
-                    module_id,
-                    course_id,
-                    title,
-                    description,
-                    position,
-                    topic_type,
-                    duration_minutes,
-                    is_free_preview,
-                    is_published,
-                    created_at,
-                    updated_at
-                `)
-                .in('module_id', moduleIds)
-                .eq('is_published', true)
-                .order('position', { ascending: true });
-            allTopics = (data as unknown as CourseOutlineTopic[]) || [];
-        }
+
+        
         const courseOutline: CourseOutlineModule[] = (outlineModulesData || []).map((mod) => {
             const topics = allTopics
                 .filter(t => t.module_id === mod.id)
@@ -235,26 +179,14 @@ export async function getCoursePageData(slug: string): Promise<{
                 topics,
             };
         });
+
         if (totalDuration === 0 && outlineModulesData) {
             totalDuration = outlineModulesData.reduce((acc, mod) => acc + (mod.estimated_duration_minutes || 0), 0);
         }
-        if (totalLessons === 0 && allTopics.length > 0) {
-            totalLessons = allTopics.length;
-        }
-        const { data: reviewsData } = await supabase
-            .from('course_reviews')
-            .select(`
-                *,
-                user:user_id (
-                    id,
-                    name,
-                    avatar_url
-                )
-            `)
-            .eq('course_id', course.id)
-            .order('created_at', { ascending: false })
-            .limit(20);
-        const reviews: ReviewWithUser[] = (reviewsData || []).map((r) => ({
+        if (totalLessons === 0 && allTopics.length > 0) totalLessons = allTopics.length;
+
+        
+        const reviews: ReviewWithUser[] = (reviewsData || []).map((r: any) => ({
             ...r,
             user: (r.user as { id: string; name: string; avatar_url: string }) || {
                 id: r.user_id,
@@ -262,45 +194,11 @@ export async function getCoursePageData(slug: string): Promise<{
                 avatar_url: ''
             },
         }));
-        const ratingBreakdown = calculateRatingBreakdown(reviews);
-        const { data: relatedCourses } = await supabase
-            .from('courses')
-            .select('*')
-            .eq('published', true)
-            .neq('id', course.id)
-            .eq('category_id', course.category_id)
-            .limit(4);
-        let isEnrolled = false;
-        let enrollmentId: string | null = null;
-        let userProgress = 0;
-        if (user) {
-            const { data: enrollment } = await supabase
-                .from('enrollments')
-                .select('id, progress_percentage')
-                .eq('user_id', user.id)
-                .eq('course_id', course.id)
-                .maybeSingle();
-            if (enrollment) {
-                isEnrolled = true;
-                enrollmentId = enrollment.id;
-                userProgress = enrollment.progress_percentage || 0;
-            }
-        }
-        let batches: CourseBatch[] = [];
-        try {
-            const { data: batchesData, error: batchesError } = await supabase
-                .from('course_batches')
-                .select('*')
-                .eq('course_id', course.id)
-                .eq('is_active', true)
-                .order('start_date', { ascending: true });
-            
-            if (!batchesError && batchesData) {
-                batches = batchesData as CourseBatch[];
-            }
-        } catch (e) {
-            console.warn("Could not fetch batches:", e);
-        }
+
+        const isEnrolled = !!enrollmentResult?.data;
+        const enrollmentId = enrollmentResult?.data?.id || null;
+        const userProgress = enrollmentResult?.data?.progress_percentage || 0;
+
         return {
             success: true,
             data: {
@@ -316,13 +214,13 @@ export async function getCoursePageData(slug: string): Promise<{
                 resources: (resources as CourseResource[]) || [],
                 faq: (faq as CourseFAQ[]) || [],
                 reviews,
-                ratingBreakdown,
+                ratingBreakdown: calculateRatingBreakdown(reviews),
                 relatedCourses: (relatedCourses as Course[]) || [],
                 category: courseData.category,
                 isEnrolled,
                 enrollmentId,
                 userProgress,
-                batches: (batches as CourseBatch[]) || [],
+                batches: (batchesData as CourseBatch[]) || [],
             },
         };
     } catch (error) {

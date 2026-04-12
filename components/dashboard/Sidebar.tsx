@@ -1,4 +1,5 @@
 "use client";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { motion, AnimatePresence } from "motion/react";
@@ -16,6 +17,7 @@ import {
     Layers,
     User,
     GraduationCap,
+    ChevronDown,
 } from "lucide-react";
 import { Logo } from "@/components/ui/Logo";
 import { cn } from "@/lib/utils";
@@ -140,11 +142,37 @@ interface SidebarProps {
 export function Sidebar({ role, isCollapsed = false, onToggle }: SidebarProps) {
     const pathname = usePathname();
     const groups = NAV_GROUPS[role] || NAV_GROUPS.student;
+
+    
+    const [expandedGroup, setExpandedGroup] = useState<string | null>(() => {
+        const activeGroup = groups.find(group => 
+            group.items.some(item => 
+                pathname === item.href || (item.href !== "/dashboard" && pathname.startsWith(item.href))
+            )
+        );
+        return activeGroup ? activeGroup.title : groups[0]?.title || null;
+    });
+
+    const toggleGroup = (title: string) => {
+        setExpandedGroup(prev => prev === title ? null : title);
+    };
+
+    
+    useEffect(() => {
+        const activeGroup = groups.find(group => 
+            group.items.some(item => 
+                pathname === item.href || (item.href !== "/dashboard" && pathname.startsWith(item.href))
+            )
+        );
+        if (activeGroup) {
+            setExpandedGroup(activeGroup.title);
+        }
+    }, [pathname, groups]);
     return (
         <motion.aside
             initial={false}
             animate={{ width: isCollapsed ? 70 : 230 }}
-            transition={{ duration: 0.4, ease: [0.23, 1, 0.32, 1] }} // Professional quintic ease
+            transition={{ duration: 0.4, ease: [0.23, 1, 0.32, 1] }} 
             className="hidden lg:flex flex-col h-screen sticky top-0 border-r border-border/80 bg-background/30 backdrop-blur-2xl z-40 overflow-visible"
         >
             <div className={cn(
@@ -156,90 +184,123 @@ export function Sidebar({ role, isCollapsed = false, onToggle }: SidebarProps) {
                 </Link>
             </div>
             <nav className={cn(
-                "flex-1 space-y-0.5 mt-2 custom-scrollbar pb-4 overflow-x-hidden overflow-y-auto", // Reduced top margin and padding
+                "flex-1 space-y-0.5 mt-2 custom-scrollbar pb-4 overflow-x-hidden overflow-y-auto", 
                 isCollapsed ? "px-2" : "px-3"
             )}>
-                {groups.map((group, groupIndex) => (
-                    <div key={group.title} className="space-y-0.5">
-                        <div className={cn(
-                            "space-y-2 mt-3 mb-1",
-                            groupIndex === 0 && "mt-0"
-                        )}>
-                            {groupIndex > 0 && (
-                                <div className={cn(
-                                    "h-px bg-white/8 mb-3",
-                                    isCollapsed ? "mx-1" : "mx-2"
-                                )} />
-                            )}
-                            {!isCollapsed && (
-                                <div className="flex items-center gap-2 px-3">
-                                    <group.icon className="w-2.5 h-2.5 text-muted-foreground opacity-30" strokeWidth={3} />
-                                    <span className="text-[9px] font-black uppercase text-muted-foreground/40 block">
-                                        {group.title}
-                                    </span>
+                {groups.map((group, groupIndex) => {
+                    const isExpanded = expandedGroup === group.title;
+                    const hasActiveItem = group.items.some(item => 
+                        pathname === item.href || (item.href !== "/dashboard" && pathname.startsWith(item.href))
+                    );
+
+                    return (
+                        <div key={group.title} className="space-y-0.5">
+                            {!isCollapsed ? (
+                                <button
+                                    onClick={() => toggleGroup(group.title)}
+                                    className={cn(
+                                        "w-full flex items-center justify-between px-3 py-1.5 rounded-lg transition-all duration-200 group/header mt-0.5",
+                                        isExpanded || hasActiveItem ? "text-foreground" : "text-muted-foreground/60 hover:text-foreground hover:bg-muted/10"
+                                    )}
+                                >
+                                    <div className="flex items-center gap-3">
+                                        <div className={cn(
+                                            "w-9 h-9 rounded-xl flex items-center justify-center border transition-all duration-300",
+                                            hasActiveItem || isExpanded
+                                                ? "bg-primary/15 border-primary/30 text-primary shadow-[0_0_20px_rgba(var(--primary),0.15)]" 
+                                                : "bg-muted/20 border-border/60 group-hover/header:border-border text-muted-foreground/80 group-hover/header:text-foreground"
+                                        )}>
+                                            <group.icon className="w-4 h-4" />
+                                        </div>
+                                        <span className={cn(
+                                            "text-[14.5px] font-bold tracking-tight transition-colors",
+                                            hasActiveItem || isExpanded ? "text-foreground" : "text-muted-foreground"
+                                        )}>
+                                            {group.title}
+                                        </span>
+                                    </div>
+                                    <ChevronDown className={cn(
+                                        "w-3.5 h-3.5 transition-transform duration-300 text-muted-foreground/60 group-hover/header:text-foreground",
+                                        isExpanded && "rotate-180"
+                                    )} />
+                                </button>
+                            ) : (
+                                <div className="flex justify-center py-3 mt-1">
+                                    <div className={cn(
+                                        "w-9 h-9 rounded-xl flex items-center justify-center border transition-all duration-300",
+                                        hasActiveItem 
+                                            ? "bg-primary/10 border-primary/20 text-primary shadow-lg" 
+                                            : "bg-muted/10 border-border/50 text-muted-foreground"
+                                    )}>
+                                        <group.icon className="w-4 h-4" />
+                                    </div>
                                 </div>
                             )}
-                        </div>
-                        {group.items.map((item) => {
-                            const isActive = pathname === item.href || (item.href !== "/dashboard" && pathname.startsWith(item.href));
-                            return (
-                                <Link
-                                    key={item.href}
-                                    href={item.href}
-                                    className={cn(
-                                        "flex items-center rounded-md text-[12.5px] font-medium group relative transition-all duration-200",
-                                        isCollapsed ? "p-2" : "px-3 py-1.5",
-                                        isActive
-                                            ? "text-primary"
-                                            : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
-                                    )}
-                                    title={isCollapsed ? item.label : ""}
-                                >
-                                    {isActive && (
-                                        <motion.div
-                                            layoutId="active-sidebar-pill"
-                                            className="absolute inset-0 bg-primary/10 rounded-md border border-primary/10 shadow-[inner_0_0_12px_rgba(var(--primary),0.05)]"
-                                            initial={false}
-                                            transition={{ type: "spring", stiffness: 300, damping: 30 }}
-                                        />
-                                    )}
+
+                            <AnimatePresence initial={false}>
+                                {(isExpanded || isCollapsed) && (
                                     <motion.div
-                                        layout
-                                        className={cn(
-                                            "relative z-10 flex items-center",
-                                            isCollapsed ? "justify-center w-full" : "gap-2.5"
-                                        )}
+                                        initial={isCollapsed ? { opacity: 1, height: "auto" } : { opacity: 0, height: 0 }}
+                                        animate={{ opacity: 1, height: "auto" }}
+                                        exit={{ opacity: 0, height: 0 }}
+                                        transition={{ duration: 0.3, ease: [0.23, 1, 0.32, 1] }}
+                                        className="overflow-hidden relative"
                                     >
-                                        <item.icon className={cn(
-                                            "w-[15px] h-[15px] shrink-0 transition-colors duration-200",
-                                            isActive && "text-primary shadow-[0_0_10px_rgba(var(--primary),0.3)]"
-                                        )} />
-                                        <AnimatePresence>
-                                            {!isCollapsed && (
-                                                <motion.span
-                                                    initial={{ opacity: 0 }}
-                                                    animate={{ opacity: 1 }}
-                                                    exit={{ opacity: 0 }}
-                                                    transition={{ duration: 0.2 }}
-                                                    className="whitespace-nowrap font-bold tracking-tight"
-                                                >
-                                                    {item.label}
-                                                </motion.span>
-                                            )}
-                                        </AnimatePresence>
-                                    </motion.div>
-                                    {isCollapsed && (
-                                        <div className="absolute left-full ml-4 px-3 py-2 bg-slate-900/90 backdrop-blur-md border border-white/10 rounded-xl text-[10px] font-black uppercase tracking-widest text-primary opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all whitespace-nowrap z-50 pointer-events-none translate-x-[-10px] group-hover:translate-x-0 shadow-2xl shadow-black/50">
-                                            {item.label}
+                                        {!isCollapsed && (
+                                            <div className="absolute left-[30px] -top-1 bottom-3 w-[1.5px] bg-border/80" />
+                                        )}
+                                        
+                                        <div className={cn(
+                                            "space-y-0.5 mt-0",
+                                            !isCollapsed && "pl-10"
+                                        )}>
+                                            {group.items.map((item) => {
+                                                const isActive = pathname === item.href || (item.href !== "/dashboard" && pathname.startsWith(item.href));
+                                                return (
+                                                    <Link
+                                                        key={item.href}
+                                                        href={item.href}
+                                                        className={cn(
+                                                            "flex items-center rounded-lg text-[14px] font-medium group relative transition-all duration-200",
+                                                            isCollapsed ? "p-2 justify-center" : "px-3 py-1.5",
+                                                            isActive
+                                                                ? "text-primary font-bold"
+                                                                : "text-muted-foreground/80 hover:text-foreground hover:bg-muted/20"
+                                                        )}
+                                                        title={isCollapsed ? item.label : ""}
+                                                    >
+                                                        {isActive && !isCollapsed && (
+                                                            <div className="absolute -left-[12.25px] w-[6px] h-[6px] rounded-full bg-primary shadow-[0_0_12px_rgba(var(--primary),0.9)] z-20" />
+                                                        )}
+                                                        
+                                                        {isCollapsed ? (
+                                                            <item.icon className={cn(
+                                                                "w-[15px] h-[15px] transition-colors",
+                                                                isActive ? "text-primary" : "text-muted-foreground"
+                                                            )} />
+                                                        ) : (
+                                                            <span className="whitespace-nowrap tracking-tight">
+                                                                {item.label}
+                                                            </span>
+                                                        )}
+
+                                                        {isCollapsed && (
+                                                            <div className="absolute left-full ml-4 px-3 py-2 bg-slate-900/90 backdrop-blur-md border border-white/10 rounded-xl text-[10px] font-black uppercase tracking-widest text-primary opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all whitespace-nowrap z-50 pointer-events-none translate-x-[-10px] group-hover:translate-x-0 shadow-2xl shadow-black/50">
+                                                                {item.label}
+                                                            </div>
+                                                        )}
+                                                    </Link>
+                                                );
+                                            })}
                                         </div>
-                                    )}
-                                </Link>
-                            );
-                        })}
-                    </div>
-                ))}
+                                    </motion.div>
+                                )}
+                            </AnimatePresence>
+                        </div>
+                    );
+                })}
             </nav>
-            <div className="p-3 border-t border-border/80 shrink-0 overflow-hidden">
+            <div className="p-2 border-t border-border/80 shrink-0 overflow-hidden">
                 <AnimatePresence mode="wait" initial={false}>
                     {!isCollapsed ? (
                         <motion.div

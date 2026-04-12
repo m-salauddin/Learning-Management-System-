@@ -8,6 +8,7 @@ import { CoursePageData } from "@/types/course-page";
 import { cn } from "@/lib/utils";
 import { useMemo } from "react";
 import { CourseLevelBadge } from "@/components/ui/CourseLevelBadge";
+
 interface CourseHeroProps {
     course: MappedCourse;
     pageData?: CoursePageData;
@@ -17,6 +18,7 @@ interface CourseHeroProps {
     loading: boolean;
     setShowVideoModal: (show: boolean) => void;
 }
+
 export default function CourseHero({
     course,
     pageData,
@@ -153,15 +155,7 @@ export default function CourseHero({
                         <span>Download Outline</span>
                     </div>
                 </SecondaryCTAButton>
-                <SecondaryCTAButton
-                    onClick={() => setShowVideoModal(true)}
-                    className="h-10! sm:h-12!"
-                >
-                    <div className="flex items-center gap-2">
-                        <Play className="w-4 h-4 fill-current" />
-                        <span>Watch Preview</span>
-                    </div>
-                </SecondaryCTAButton>
+
                 <PrimaryCTAButton
                     onClick={handleEnroll}
                     loading={loading}

@@ -138,10 +138,7 @@ export async function executeBkashPaymentAPI(paymentID: string) {
     };
 }
 
-/**
- * Step 4: Query Payment Status
- * Docs: https://developer.bka.sh/docs/query-payment-1
- */
+
 export async function queryBkashPayment(paymentID: string) {
     const token = await getToken();
     const url = `${BKASH_BASE_URL}/tokenized/checkout/payment/status`;

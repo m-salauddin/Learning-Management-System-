@@ -20,7 +20,7 @@ import { cn } from '@/lib/utils';
 import { useCallback, useMemo, useEffect, useRef, useState, useId } from 'react';
 import debounce from 'lodash.debounce';
 
-// Custom TaskItem that renders NO checkbox input — icon bullet is handled via CSS
+
 const NoCheckboxTaskItem = TaskItem.extend({
     addNodeView() {
         return ({ node, HTMLAttributes, getPos, editor }) => {
@@ -98,7 +98,7 @@ export const BlockEditor = ({
 }: BlockEditorProps) => {
     const editorId = useId().replace(/:/g, '-');
     const scopeClass = `be-${editorId}`;
-    // Theme mapping
+    
     const themeMap = {
         blue: { primary: '#3b82f6', ring: 'rgba(59, 130, 246, 0.2)' },
         amber: { primary: '#f59e0b', ring: 'rgba(245, 158, 11, 0.2)' },
@@ -207,7 +207,7 @@ export const BlockEditor = ({
                 '--color-ring': currentTheme.ring
             } as React.CSSProperties}
         >
-            {/* Scoped bullet-icon styles — bypasses Tailwind escaping issues with mask-image SVG URLs */}
+            {}
             <style dangerouslySetInnerHTML={{ __html: `
                 .${scopeClass} ul { list-style: none !important; padding-left: 0 !important; margin: 1rem 0 !important; }
                 .${scopeClass} ul > li { position: relative !important; padding-left: 2rem !important; margin: 0.5rem 0 !important; list-style: none !important; }

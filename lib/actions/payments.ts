@@ -117,6 +117,14 @@ export async function createTransaction(
     if (error) {
         return { success: false, error: error.message };
     }
+
+    
+    if (input.payment_provider === 'manual') {
+        await supabase.rpc('create_pending_enrollment', {
+            p_transaction_id: transaction.id
+        });
+    }
+
     return {
         success: true,
         data: {

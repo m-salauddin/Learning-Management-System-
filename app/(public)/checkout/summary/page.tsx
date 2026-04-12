@@ -112,7 +112,7 @@ function SummaryContent() {
         data?: any;
     } | null>(null);
 
-    // Helper to resolve course data from either bKash or manual payment data shape
+    
     const getCourse = () => result?.data?.transaction?.course || result?.data?.course || null;
     const getUser = () => result?.data?.transaction?.user || result?.data?.user || null;
     const getTransaction = () => result?.data?.transaction || null;

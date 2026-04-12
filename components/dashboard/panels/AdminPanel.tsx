@@ -133,7 +133,7 @@ export default function AdminPanel() {
                 />
             </DashboardGrid>
 
-            {/* Secondary Stats */}
+            {}
             <DashboardGrid cols={4}>
                 <div className="p-5 rounded-2xl bg-linear-to-br from-violet-500/10 to-purple-500/5 border border-violet-500/20">
                     <div className="flex items-center gap-2 mb-2">

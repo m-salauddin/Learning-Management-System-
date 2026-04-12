@@ -84,6 +84,7 @@ export default function EditCoursePage() {
     const DRAFT_KEY = `dokkhoit_course_edit_v1_${courseId}`;
     const [dbFormData, setDbFormData] = useState<CreateCourseInput | null>(null);
     const isReadyRef = useRef(false);
+    const hasRestoredRef = useRef(false);
 
     useEffect(() => {
         if (isReadyRef.current && !isLoading) {
@@ -196,7 +197,20 @@ export default function EditCoursePage() {
                         type: r.resource_type || "",
                         url: r.external_url || ""
                     })),
-                    modules: course.modules?.map((m: any) => ({
+                    milestones: course.milestones?.map((ms: any) => ({
+                        title: ms.title || "",
+                        description: ms.description || "",
+                        modules: (ms.modules || []).map((m: any) => ({
+                            title: m.title || "",
+                            items: (m.lessons || []).map((l: any) => ({
+                                title: l.title || "",
+                                description: l.description || "",
+                                type: l.lesson_type || "lesson",
+                                video_url: l.lesson_assets?.[0]?.video_path || ""
+                            }))
+                        }))
+                    })) || [],
+                    modules: course.modules?.filter((m: any) => !m.milestone_id).map((m: any) => ({
                         title: m.title || "",
                         lessons: (m.lessons || []).map((l: any) => ({
                             title: l.title || "",
@@ -233,6 +247,7 @@ export default function EditCoursePage() {
                             thumbnail_url: fetchedFormData.thumbnail_url,
                             price: Number(fetchedFormData.price),
                             description: fetchedFormData.description,
+                            milestones: fetchedFormData.milestones,
                             modules: fetchedFormData.modules,
                         };
                         const draftComp = {
@@ -240,6 +255,7 @@ export default function EditCoursePage() {
                             thumbnail_url: draftFields.thumbnail_url || "",
                             price: Number(draftFields.price || 0),
                             description: draftFields.description || "",
+                            milestones: draftFields.milestones || [],
                             modules: draftFields.modules || [],
                         };
 
@@ -252,7 +268,12 @@ export default function EditCoursePage() {
                             }
                             
                             if (_savedStep) setCurrentStep(Number(_savedStep));
-                            toast.success("Unsaved Changes Restored", "We've restored your last session's edits for this course.");
+                            
+                            // Prevent double toast in StrictMode
+                            if (!hasRestoredRef.current) {
+                                toast.success("Unsaved Changes Restored", "We've restored your last session's edits for this course.");
+                                hasRestoredRef.current = true;
+                            }
                             draftApplied = true;
                         } else {
                             localStorage.removeItem(DRAFT_KEY);

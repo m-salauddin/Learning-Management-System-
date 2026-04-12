@@ -74,7 +74,7 @@ export function NotificationDropdown() {
     };
     const markAsRead = async (id: string) => {
         setNotifications(prev => prev.map(n => n.id === id ? { ...n, is_read: true } : n));
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        
         await (supabase as any)
             .from('notifications')
             .update({ is_read: true })
@@ -84,7 +84,7 @@ export function NotificationDropdown() {
         const unreadIds = notifications.filter(n => !n.is_read).map(n => n.id);
         if (unreadIds.length === 0) return;
         setNotifications(prev => prev.map(n => ({ ...n, is_read: true })));
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        
         await (supabase as any)
             .from('notifications')
             .update({ is_read: true })

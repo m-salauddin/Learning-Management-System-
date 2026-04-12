@@ -120,7 +120,7 @@ export default function CouponsPage() {
                     </button>
                 }
             />
-            {/* Table */}
+            {}
             <AdminCouponsTable onCreate={() => setIsCreating(true)} />
             {}
             <Dialog open={isCreating} onClose={() => setIsCreating(false)} size="lg">

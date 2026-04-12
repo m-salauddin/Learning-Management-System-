@@ -36,7 +36,7 @@ const TECH_DATA = [
     { keys: ['numpy'], icon: <SiNumpy className="w-4 h-4" />, color: "#013243" },
     { keys: ['jupyter'], icon: <SiJupyter className="w-4 h-4" />, color: "#F37626" },
 
-    // Languages & Frameworks
+    
     { keys: ['html'], icon: <SiHtml5 className="w-4 h-4" />, color: "#E34F26" },
     { keys: ['css'], icon: <SiCss3 className="w-4 h-4" />, color: "#1572B6" },
     { keys: ['javascript', 'js'], icon: <SiJavascript className="w-4 h-4" />, color: "#F7DF1E" },

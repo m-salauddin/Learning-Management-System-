@@ -72,8 +72,8 @@ export default function CourseSidebar({
                             <div className="relative">
                                 <div className="absolute inset-0 rounded-full bg-primary/20 animate-ping group-hover/preview:bg-primary/40" />
                                 <div className="w-16 h-16 rounded-full bg-white/10 backdrop-blur-md flex items-center justify-center group-hover/preview:scale-110 transition-transform duration-500 ring-1 ring-white/20 relative z-10">
-                                    <div className="w-12 h-12 rounded-full bg-[#0036F9] dark:bg-primary flex items-center justify-center border border-white/20">
-                                        <Play className="w-5 h-5 text-card fill-card ml-1" />
+                                    <div className="w-12 h-12 rounded-full bg-primary flex items-center justify-center border border-white/20">
+                                        <Play className="w-5 h-5 text-white dark:text-[#020615] fill-white dark:fill-[#020615] ml-1" />
                                     </div>
                                 </div>
                             </div>
@@ -211,7 +211,7 @@ export default function CourseSidebar({
                             >
                                 <div className="flex items-center justify-center gap-2 sm:gap-3">
                                     <span className="text-xs font-black uppercase tracking-widest">Enroll</span>
-                                    <div className="w-7 h-7 rounded-full bg-card flex items-center justify-center group-hover/enroll:scale-105 transition-transform shadow-lg shadow-black/10">
+                                    <div className="w-7 h-7 rounded-full bg-white dark:bg-[#020615] flex items-center justify-center group-hover/enroll:scale-105 transition-transform shadow-lg shadow-black/10">
                                         <ArrowRight className="w-4 h-4 text-primary -rotate-45 group-hover/enroll:rotate-0 transition-transform" />
                                     </div>
                                 </div>

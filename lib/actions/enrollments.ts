@@ -23,8 +23,11 @@ export async function getMyEnrollments(params: {
             *,
             course:courses(
                 *,
-                instructor:users!courses_instructor_id_fkey(id, name, email, avatar_url)
-            )
+                instructor:instructor_profiles(
+                    user:users(id, name, email, avatar_url)
+                )
+            ),
+            transaction:transactions(*)
         `, { count: 'exact' })
         .eq('user_id', user.id);
     if (status === 'active') {
@@ -40,8 +43,21 @@ export async function getMyEnrollments(params: {
         console.error('Error fetching enrollments:', error);
         return { data: [], total: 0, page, pageSize, totalPages: 0 };
     }
+    const transformedData = (data as any[])?.map(enrollment => ({
+        ...enrollment,
+        course: enrollment.course ? {
+            ...enrollment.course,
+            instructor: enrollment.course.instructor?.user || {
+                id: enrollment.course.instructor_id,
+                name: 'Unknown Instructor',
+                email: '',
+                avatar_url: null
+            }
+        } : null
+    }));
+
     return {
-        data: data as EnrollmentWithCourse[],
+        data: transformedData as EnrollmentWithCourse[],
         total: count || 0,
         page,
         pageSize,
@@ -60,7 +76,9 @@ export async function getEnrollment(courseId: string): Promise<ApiResponse<Enrol
             *,
             course:courses(
                 *,
-                instructor:users!courses_instructor_id_fkey(id, name, email, avatar_url)
+                instructor:instructor_profiles(
+                    user:users(id, name, email, avatar_url)
+                )
             )
         `)
         .eq('user_id', user.id)
@@ -73,12 +91,24 @@ export async function getEnrollment(courseId: string): Promise<ApiResponse<Enrol
         .from('lesson_progress')
         .select('*')
         .eq('enrollment_id', enrollment.id);
+    
+    const transformedEnrollment = {
+        ...enrollment,
+        course: enrollment.course ? {
+            ...enrollment.course,
+            instructor: enrollment.course.instructor?.user || {
+                id: enrollment.course.instructor_id,
+                name: 'Unknown Instructor',
+                email: '',
+                avatar_url: null
+            }
+        } : null,
+        lesson_progress: progress || []
+    };
+
     return {
         success: true,
-        data: {
-            ...enrollment,
-            lesson_progress: progress || []
-        } as EnrollmentWithProgress
+        data: transformedEnrollment as EnrollmentWithProgress
     };
 }
 export async function checkEnrollment(courseId: string): Promise<boolean> {
@@ -234,6 +264,8 @@ export async function getAllEnrollments(params: {
     pageSize?: number;
     courseId?: string;
     userId?: string;
+    status?: string | 'all';
+    paymentMethod?: string | 'all';
 } = {}): Promise<PaginatedResponse<EnrollmentWithCourse & { user: { id: string; name: string; email: string } }>> {
     const supabase = await createClient();
     const { data: { user }, error: authError } = await supabase.auth.getUser();
@@ -248,7 +280,7 @@ export async function getAllEnrollments(params: {
     if (profile?.role !== 'admin') {
         return { data: [], total: 0, page: 1, pageSize: 10, totalPages: 0 };
     }
-    const { page = 1, pageSize = 10, courseId, userId } = params;
+    const { page = 1, pageSize = 10, courseId, userId, status = 'all', paymentMethod = 'all' } = params;
     const offset = (page - 1) * pageSize;
     let query = supabase
         .from('enrollments')
@@ -256,16 +288,50 @@ export async function getAllEnrollments(params: {
             *,
             course:courses(
                 *,
-                instructor:users!courses_instructor_id_fkey(id, name, email, avatar_url)
+                instructor:instructor_profiles(
+                    user:users(id, name, email, avatar_url)
+                )
             ),
-            user:users(id, name, email)
+            user:users(id, name, email),
+            transaction:transactions(*)
         `, { count: 'exact' });
-    if (courseId) {
+    if (courseId && courseId !== 'all') {
         query = query.eq('course_id', courseId);
     }
-    if (userId) {
+    if (userId && userId !== 'all') {
         query = query.eq('user_id', userId);
     }
+    if (status && status !== 'all') {
+        query = query.eq('status', status);
+    }
+    if (paymentMethod && paymentMethod !== 'all') {
+        if (paymentMethod === 'system') {
+            query = query.is('transaction_id', null);
+        } else {
+            
+            
+            query = supabase
+                .from('enrollments')
+                .select(`
+                    *,
+                    course:courses(
+                        *,
+                        instructor:instructor_profiles(
+                            user:users(id, name, email, avatar_url)
+                        )
+                    ),
+                    user:users(id, name, email),
+                    transaction:transactions!inner(*)
+                `, { count: 'exact' })
+                .eq('transaction.payment_provider', paymentMethod);
+
+            
+            if (courseId && courseId !== 'all') query = query.eq('course_id', courseId);
+            if (userId && userId !== 'all') query = query.eq('user_id', userId);
+            if (status && status !== 'all') query = query.eq('status', status);
+        }
+    }
+
     query = query
         .order('created_at', { ascending: false })
         .range(offset, offset + pageSize - 1);
@@ -273,11 +339,98 @@ export async function getAllEnrollments(params: {
     if (error) {
         return { data: [], total: 0, page, pageSize, totalPages: 0 };
     }
+
+    const transformedData = (data as any[])?.map(enrollment => ({
+        ...enrollment,
+        course: enrollment.course ? {
+            ...enrollment.course,
+            instructor: enrollment.course.instructor?.user || {
+                id: enrollment.course.instructor_id,
+                name: 'Unknown Instructor',
+                email: '',
+                avatar_url: null
+            }
+        } : null
+    }));
+
     return {
-        data: data as any,
+        data: transformedData as any,
         total: count || 0,
         page,
         pageSize,
         totalPages: Math.ceil((count || 0) / pageSize)
     };
 }
+
+export async function approveEnrollment(enrollmentId: string): Promise<ApiResponse<null>> {
+    const supabase = await createClient();
+    const { data: { user }, error: authError } = await supabase.auth.getUser();
+    if (authError || !user) {
+        return { success: false, error: 'Unauthorized' };
+    }
+
+    
+    const { data: profile } = await supabase
+        .from('users')
+        .select('role')
+        .eq('id', user.id)
+        .single();
+
+    if (profile?.role !== 'admin' && profile?.role !== 'moderator') {
+        return { success: false, error: 'Unauthorized: Admin or Moderator access required' };
+    }
+
+    
+    const { data: enrollment, error: enrollError } = await supabase
+        .from('enrollments')
+        .select('user_id, course_id')
+        .eq('id', enrollmentId)
+        .single();
+
+    if (enrollError || !enrollment) {
+        return { success: false, error: 'Enrollment record not found' };
+    }
+
+    
+    const { data: transaction, error: txError } = await supabase
+        .from('transactions')
+        .select('id, payment_intent_id, payment_method')
+        .eq('user_id', enrollment.user_id)
+        .eq('course_id', enrollment.course_id)
+        .eq('status', 'pending')
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .maybeSingle();
+
+    if (!transaction) {
+        
+        
+        const { error: updateError } = await supabase
+            .from('enrollments')
+            .update({ status: 'success', updated_at: new Date().toISOString() })
+            .eq('id', enrollmentId);
+
+        if (updateError) return { success: false, error: updateError.message };
+        
+        revalidatePath('/dashboard/enrollments');
+        revalidatePath('/dashboard/my-courses');
+        return { success: true };
+    }
+
+    
+    
+    const { confirmPayment } = await import('./payments');
+    const result = await confirmPayment(
+        transaction.id, 
+        transaction.payment_intent_id || 'manual-admin-approved',
+        transaction.payment_method || 'manual'
+    );
+
+    if (result.success) {
+        revalidatePath('/dashboard/enrollments');
+        return { success: true };
+    } else {
+        return { success: false, error: result.error };
+    }
+}
+

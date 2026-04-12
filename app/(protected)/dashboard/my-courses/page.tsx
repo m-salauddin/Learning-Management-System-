@@ -1,12 +1,14 @@
 "use client";
+import React, { useEffect, useState } from "react";
+import { motion, AnimatePresence } from "motion/react";
 import { CourseProgressCard } from "@/components/dashboard/CourseProgressCard";
 import { Search, BookOpen, GraduationCap } from "lucide-react";
-import { useEffect, useState } from "react";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 import { PageHeader } from "@/components/dashboard/ui/PageHeader";
 import { DashboardGrid } from "@/components/dashboard/ui/DashboardGrid";
 import { SearchInput, StatsSkeleton, EmptyDataState, EmptyFilterState } from "@/components/dashboard/shared";
+import { cn } from "@/lib/utils";
 
 interface EnrolledCourse {
     course: {
@@ -18,10 +20,12 @@ interface EnrolledCourse {
     };
     completed_lessons: number;
     progress_percentage: number;
+    last_lesson_id: string | null;
 }
 
 export default function MyCoursesPage() {
     const [searchQuery, setSearchQuery] = useState("");
+    const [filterStatus, setFilterStatus] = useState<"all" | "ongoing" | "upcoming" | "finished">("all");
     const [enrolledCourses, setEnrolledCourses] = useState<EnrolledCourse[]>([]);
     const [loading, setLoading] = useState(true);
 
@@ -38,6 +42,7 @@ export default function MyCoursesPage() {
                 .select(`
                     completed_lessons,
                     progress_percentage,
+                    last_lesson_id,
                     course:courses(
                         id,
                         slug,
@@ -47,7 +52,7 @@ export default function MyCoursesPage() {
                     )
                 `)
                 .eq('user_id', user.id)
-                .eq('status', 'active');
+                .in('status', ['active', 'success']);
             if (data) {
                 setEnrolledCourses(data as unknown as EnrolledCourse[]);
             }
@@ -56,15 +61,30 @@ export default function MyCoursesPage() {
         fetchCourses();
     }, []);
 
-    const filteredCourses = enrolledCourses.filter(enrollment =>
-        enrollment.course.title.toLowerCase().includes(searchQuery.toLowerCase())
-    );
+    const filteredCourses = enrolledCourses.filter(enrollment => {
+        const matchesSearch = enrollment.course.title.toLowerCase().includes(searchQuery.toLowerCase());
+        const progress = enrollment.progress_percentage || 0;
+        
+        let matchesStatus = true;
+        if (filterStatus === "ongoing") matchesStatus = progress > 0 && progress < 100;
+        if (filterStatus === "upcoming") matchesStatus = progress === 0;
+        if (filterStatus === "finished") matchesStatus = progress === 100;
+
+        return matchesSearch && matchesStatus;
+    });
+
+    const filterTabs = [
+        { id: "all", label: "All Courses" },
+        { id: "ongoing", label: "Ongoing" },
+        { id: "upcoming", label: "Upcoming" },
+        { id: "finished", label: "Finished" },
+    ] as const;
 
     return (
-        <div className="space-y-8 pb-10">
+        <div className="space-y-8 pb-32">
             <PageHeader
                 title="My Courses"
-                description="Manage and track your active learning protocols"
+                description="Manage and track your active learning progress"
                 icon={GraduationCap}
                 actions={
                     <SearchInput
@@ -76,12 +96,40 @@ export default function MyCoursesPage() {
                 }
             />
 
+            {}
+            <div className="flex items-center gap-1.5 p-1.5 bg-slate-100 dark:bg-slate-900/50 border border-slate-200 dark:border-white/5 rounded-2xl w-fit">
+                {filterTabs.map((tab) => {
+                    const isActive = filterStatus === tab.id;
+                    return (
+                        <button
+                            key={tab.id}
+                            onClick={() => setFilterStatus(tab.id)}
+                            className={cn(
+                                "relative px-6 py-2.5 rounded-xl text-xs font-bold transition-all duration-300 z-10",
+                                isActive 
+                                    ? "text-white dark:text-slate-950" 
+                                    : "text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white"
+                            )}
+                        >
+                            {isActive && (
+                                <motion.div
+                                    layoutId="my-courses-tab"
+                                    className="absolute inset-0 bg-slate-950 dark:bg-white rounded-xl shadow-lg shadow-black/10"
+                                    transition={{ type: 'spring', bounce: 0.2, duration: 0.6 }}
+                                />
+                            )}
+                            <span className="relative z-10">{tab.label}</span>
+                        </button>
+                    );
+                })}
+            </div>
+
             {loading ? (
-                <DashboardGrid cols={3}>
-                    <StatsSkeleton count={3} />
+                <DashboardGrid cols={2}>
+                    <StatsSkeleton count={4} />
                 </DashboardGrid>
             ) : filteredCourses.length > 0 ? (
-                <DashboardGrid cols={3}>
+                <DashboardGrid cols={2} className="gap-x-12 gap-y-12">
                     {filteredCourses.map((enrollment) => (
                         <CourseProgressCard
                             key={enrollment.course.slug}
@@ -91,14 +139,18 @@ export default function MyCoursesPage() {
                             progress={enrollment.progress_percentage || 0}
                             totalLessons={enrollment.course.total_lessons || 0}
                             completedLessons={enrollment.completed_lessons || 0}
+                            lastLessonId={enrollment.last_lesson_id}
                         />
                     ))}
                 </DashboardGrid>
             ) : (
-                searchQuery ? (
+                searchQuery || filterStatus !== "all" ? (
                     <EmptyFilterState 
-                        searchTerm={searchQuery} 
-                        onReset={() => setSearchQuery("")}
+                        searchTerm={searchQuery || filterStatus} 
+                        onReset={() => {
+                            setSearchQuery("");
+                            setFilterStatus("all");
+                        }}
                     />
                 ) : (
                     <EmptyDataState
@@ -116,3 +168,4 @@ export default function MyCoursesPage() {
         </div>
     );
 }
+

@@ -65,8 +65,8 @@ export function FloatingNav() {
                             className={cn(
                                 "flex items-center justify-center w-10 h-10 rounded-full transition-all duration-300 group relative z-10",
                                 isActive
-                                    ? "text-primary-foreground scale-110"
-                                    : "text-muted-foreground hover:text-foreground hover:bg-muted/50 hover:scale-110"
+                                    ? "text-white dark:text-[#020615] scale-110"
+                                    : "text-white/60 dark:text-white/40 hover:text-white hover:scale-110"
                             )}
                         >
                             <Icon strokeWidth={2.5} className="w-5 h-5 transition-transform" />

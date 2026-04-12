@@ -101,6 +101,7 @@ export interface CourseWithInstructor extends Course {
 }
 export interface CourseWithModules extends CourseWithInstructor {
     modules: ModuleWithLessons[];
+    milestones: CurriculumMilestone[];
 }
 export interface Module {
     id: string;
@@ -114,6 +115,31 @@ export interface Module {
 }
 export interface ModuleWithLessons extends Module {
     lessons: Lesson[];
+}
+export type CurriculumItemType = 'lesson' | 'quiz' | 'assignment';
+export interface CurriculumItem {
+    id?: string;
+    type: CurriculumItemType;
+    title: string;
+    video_url?: string;
+    description?: string;
+    duration_minutes?: number;
+    points?: number;
+    options?: string[];
+    correct_answer?: number;
+    content?: string;
+}
+export interface CurriculumModule {
+    id?: string;
+    title: string;
+    description?: string;
+    items: CurriculumItem[];
+}
+export interface CurriculumMilestone {
+    id?: string;
+    title: string;
+    description?: string;
+    modules: CurriculumModule[];
 }
 export interface Lesson {
     id: string;
@@ -151,9 +177,10 @@ export interface Enrollment {
     id: string;
     user_id: string;
     course_id: string;
+    transaction_id: string | null;
     enrolled_at: string;
     expires_at: string | null;
-    status: EnrollmentStatus;
+    status: EnrollmentStatus | 'success' | 'pending';
     progress_percentage: number;
     completed_lessons: number;
     total_lessons: number;
@@ -410,6 +437,7 @@ export interface CreateCourseInput {
     faqs?: { question: string; answer: string }[];
     projects?: { title: string; description: string; image_url?: string; tech_stack?: string }[];
     resources?: { title: string; type: string; url: string }[];
+    milestones?: CurriculumMilestone[];
     modules?: { title: string; lessons: { title: string; video_url: string }[] }[];
     coupons?: { code: string; discount_percentage: number; expires_at?: string }[];
     community_facebook_url?: string;

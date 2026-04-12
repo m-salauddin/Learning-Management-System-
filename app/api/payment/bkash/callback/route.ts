@@ -9,7 +9,7 @@ export async function GET(request: Request) {
 
     if (status === 'success' && paymentID) {
         const result = await handleBkashCallback(paymentID);
-        // Both internal success and failure go to summary (internal failure will show the error)
+        
         return Response.redirect(`${appUrl}/checkout/summary?paymentID=${paymentID}`);
     }
 
