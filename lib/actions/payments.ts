@@ -2,7 +2,7 @@
 import { createClient } from "@/lib/supabase/server";
 import { revalidatePath } from "next/cache";
 import {
-    Transaction, TransactionWithDetails, Coupon,
+    TransactionWithDetails, Coupon,
     CouponValidationResult, CreateTransactionInput,
     ApiResponse, PaginatedResponse
 } from "@/types/lms";
@@ -44,7 +44,7 @@ export async function createTransaction(
     }
     const { data: course } = await supabase
         .from('courses')
-        .select('price, status')
+        .select('price, discount_price, status')
         .eq('id', input.course_id)
         .single();
     if (!course) {
@@ -53,14 +53,21 @@ export async function createTransaction(
     if (course.status !== 'published') {
         return { success: false, error: 'Course is not available for purchase' };
     }
-    let finalAmount = course.price;
+    let finalAmount = course.discount_price || course.price;
     let discountAmount = 0;
     let couponId: string | null = null;
     if (input.coupon_code) {
         const couponResult = await validateCoupon(input.coupon_code, input.course_id);
         if (couponResult.valid && couponResult.discount_amount) {
-            finalAmount = couponResult.final_price || course.price;
-            discountAmount = couponResult.discount_amount;
+            const basePrice = course.discount_price || course.price;
+            let actualDiscountAmount = couponResult.discount_amount;
+            
+            if (couponResult.discount_type === 'percentage') {
+                actualDiscountAmount = basePrice * ((couponResult.discount_value || 0) / 100);
+            }
+            
+            finalAmount = Math.max(0, basePrice - actualDiscountAmount);
+            discountAmount = actualDiscountAmount;
             couponId = couponResult.coupon_id || null;
         }
     }

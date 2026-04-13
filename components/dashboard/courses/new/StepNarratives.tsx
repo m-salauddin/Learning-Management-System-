@@ -9,12 +9,14 @@ import { cn } from "@/lib/utils";
 import { inputClasses, labelClasses } from "./constants";
 import { CreateCourseInput } from "@/types/lms";
 import { StepHeader } from "./StepHeader";
+import { useToast } from "@/components/ui/toast";
 interface StepNarrativesProps {
     formData: CreateCourseInput;
     setFormData: React.Dispatch<React.SetStateAction<CreateCourseInput>>;
     errors: Record<string, string>;
 }
 export const StepNarratives = ({ formData, setFormData, errors }: StepNarrativesProps) => {
+    const toast = useToast();
     const [requirementInput, setRequirementInput] = useState("");
     const [audienceInput, setAudienceInput] = useState("");
     const [tagInput, setTagInput] = useState("");
@@ -39,6 +41,11 @@ export const StepNarratives = ({ formData, setFormData, errors }: StepNarratives
 
     const addFaq = () => {
         if (faqInput.question.trim() && faqInput.answer.trim()) {
+            const isDuplicate = formData.faqs?.some((f, i) => f.question.trim().toLowerCase() === faqInput.question.trim().toLowerCase() && i !== editFaqIndex);
+            if (isDuplicate) {
+                toast.error("Duplicate Query", "This exact FAQ question is already present in your Knowledge Base.");
+                return;
+            }
             setFormData(prev => {
                 const updatedFaqs = [...(prev.faqs || [])];
                 if (editFaqIndex !== null) {
@@ -75,6 +82,11 @@ export const StepNarratives = ({ formData, setFormData, errors }: StepNarratives
 
     const addProject = () => {
         if (projectInput.title.trim() && projectInput.description.trim()) {
+            const isDuplicate = formData.projects?.some((p, i) => p.title.trim().toLowerCase() === projectInput.title.trim().toLowerCase() && i !== editProjectIndex);
+            if (isDuplicate) {
+                toast.error("Duplicate Project", "A project with this identical title has already been forged.");
+                return;
+            }
             setFormData(prev => {
                 const updatedProjects = [...(prev.projects || [])];
                 if (editProjectIndex !== null) {
@@ -372,7 +384,7 @@ export const StepNarratives = ({ formData, setFormData, errors }: StepNarratives
                                             <AnimatePresence mode="popLayout">
                                                 {formData.faqs.map((f, i) => (
                                                     <motion.div
-                                                        key={f.question}
+                                                        key={`${f.question}-${i}`}
                                                         layout
                                                         initial={{ opacity: 0, x: -10 }}
                                                         animate={{ opacity: 1, x: 0 }}
@@ -534,7 +546,7 @@ export const StepNarratives = ({ formData, setFormData, errors }: StepNarratives
                                             <AnimatePresence mode="popLayout">
                                                 {formData.projects.map((p, i) => (
                                                     <motion.div
-                                                        key={p.title}
+                                                        key={`${p.title}-${i}`}
                                                         layout
                                                         initial={{ opacity: 0, x: -10 }}
                                                         animate={{ opacity: 1, x: 0 }}

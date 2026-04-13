@@ -21,6 +21,24 @@ export default async function MyCourseLessonPage({ params }: PageProps) {
             id,
             title,
             slug,
+            milestones (
+                id,
+                title,
+                position,
+                modules (
+                    id,
+                    title,
+                    position,
+                    lessons (
+                        id,
+                        title,
+                        lesson_type,
+                        is_free_preview,
+                        duration_minutes,
+                        position
+                    )
+                )
+            ),
             modules (
                 id,
                 title,
@@ -28,6 +46,7 @@ export default async function MyCourseLessonPage({ params }: PageProps) {
                 lessons (
                     id,
                     title,
+                    lesson_type,
                     is_free_preview,
                     duration_minutes,
                     position
@@ -43,7 +62,7 @@ export default async function MyCourseLessonPage({ params }: PageProps) {
 
     const { data: currentLesson, error: lessonError } = await supabase
         .from('lessons')
-        .select('id, title, is_free_preview, module_id')
+        .select('id, title, is_free_preview, module_id, lesson_type')
         .eq('id', lessonId)
         .single();
 
@@ -66,10 +85,30 @@ export default async function MyCourseLessonPage({ params }: PageProps) {
         .maybeSingle();
 
     const hasAccess = !!enrollment || currentLesson.is_free_preview;
-    const modules = (course.modules || []).sort((a: any, b: any) => a.position - b.position);
-    modules.forEach((m: any) => {
-        m.lessons.sort((a: any, b: any) => a.position - b.position);
+    const rawMilestones = course.milestones || [];
+    const milestones = rawMilestones.sort((a: any, b: any) => (a.position || 0) - (b.position || 0));
+    
+    milestones.forEach((ms: any) => {
+        if (ms.modules) {
+            ms.modules.sort((a: any, b: any) => (a.position || 0) - (b.position || 0));
+            ms.modules.forEach((m: any) => {
+                if (m.lessons) {
+                    m.lessons.sort((a: any, b: any) => (a.position || 0) - (b.position || 0));
+                }
+            });
+        }
     });
+
+    const modules = (course.modules || []).sort((a: any, b: any) => (a.position || 0) - (b.position || 0));
+    modules.forEach((m: any) => {
+        if (m.lessons) {
+            m.lessons.sort((a: any, b: any) => (a.position || 0) - (b.position || 0));
+        }
+    });
+
+    // Update course object with sorted data
+    course.milestones = milestones;
+    course.modules = modules;
 
     return (
         <CoursePlayerClient

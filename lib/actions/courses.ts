@@ -334,7 +334,6 @@ export async function createCourse(input: CreateCourseInput): Promise<ApiRespons
         instructor_id: finalInstructorId,
         status: 'published',
         published: true,
-        coupons: coupons || [],
         community_facebook_url,
         community_whatsapp_url,
         bkash_automatic_enabled: bkash_automatic_enabled || false,
@@ -355,6 +354,7 @@ export async function createCourse(input: CreateCourseInput): Promise<ApiRespons
         console.error('Error creating course:', error);
         return { success: false, error: error.message };
     }
+
     const instructorAssignments = [
         ...(input.instructor_ids || []).map(id => ({
             course_id: course.id,
@@ -595,7 +595,6 @@ export async function updateCourse(input: UpdateCourseInput): Promise<ApiRespons
         .update({
             ...safeUpdateData,
             instructor_id: finalInstructorId,
-            coupons: coupons || [],
             community_facebook_url,
             community_whatsapp_url,
             bkash_automatic_enabled,
@@ -640,6 +639,7 @@ export async function updateCourse(input: UpdateCourseInput): Promise<ApiRespons
             await supabase.from('course_instructors').insert(instructorAssignments);
         }
     }
+
     if (target_audience || updateData.description) {
         await supabase.from('course_details').upsert({
             course_id: id,

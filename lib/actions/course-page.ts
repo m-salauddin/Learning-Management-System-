@@ -68,7 +68,8 @@ export async function getCoursePageData(slug: string): Promise<{
             { data: reviewsData },
             { data: relatedCourses },
             enrollmentResult,
-            { data: batchesData }
+            { data: batchesData },
+            { data: milestonesData }
         ] = await Promise.all([
             supabase.from('course_details').select('*').eq('course_id', course.id).maybeSingle(),
             adminClient.from('users').select('id, name, email, avatar_url, bio').eq('id', course.instructor_id).maybeSingle(),
@@ -95,7 +96,16 @@ export async function getCoursePageData(slug: string): Promise<{
             supabase.from('course_reviews').select('*, user:user_id (id, name, avatar_url)').eq('course_id', course.id).order('created_at', { ascending: false }).limit(20),
             supabase.from('courses').select('id, title, slug, thumbnail_url, price, discount_price, rating, rating_count, total_students, level, course_type, tags, batch_no, updated_at, duration_hours, short_description, description').eq('published', true).neq('id', course.id).eq('category_id', course.category_id).limit(4),
             user ? supabase.from('enrollments').select('id, progress_percentage').eq('user_id', user.id).eq('course_id', course.id).maybeSingle() : Promise.resolve({ data: null }),
-            supabase.from('course_batches').select('*').eq('course_id', course.id).eq('is_active', true).order('start_date', { ascending: true })
+            supabase.from('course_batches').select('*').eq('course_id', course.id).eq('is_active', true).order('start_date', { ascending: true }),
+            supabase.from('milestones').select(`
+                id, course_id, title, description, position,
+                modules (
+                    id, course_id, title, description, position, is_published,
+                    lessons (
+                        id, title, description, lesson_type, position, duration_minutes, is_free_preview, is_published
+                    )
+                )
+            `).eq('course_id', course.id).order('position', { ascending: true })
         ]);
 
         const allTopics = (allTopicsRaw as unknown as CourseOutlineTopic[]) || [];
@@ -160,6 +170,31 @@ export async function getCoursePageData(slug: string): Promise<{
                 lesson_count: lessons.length,
             };
         });
+        
+        const milestones: any[] = (milestonesData || []).map((ms: any) => ({
+            id: ms.id,
+            course_id: ms.course_id,
+            title: ms.title,
+            description: ms.description || '',
+            position: ms.position,
+            modules: (ms.modules || []).map((mod: any) => {
+                 const lessons = (mod.lessons || [])
+                    .filter((l: any) => l.is_published)
+                    .sort((a: any, b: any) => a.position - b.position);
+                const moduleDuration = lessons.reduce((sum: number, l: any) => sum + (l.duration_minutes || 0), 0);
+                return {
+                    id: mod.id,
+                    course_id: mod.course_id,
+                    title: mod.title,
+                    description: mod.description || '',
+                    position: mod.position,
+                    is_published: mod.is_published,
+                    lessons,
+                    total_duration_minutes: moduleDuration,
+                    lesson_count: lessons.length,
+                };
+            }).sort((a: any, b: any) => a.position - b.position)
+        }));
 
         
         const courseOutline: CourseOutlineModule[] = (outlineModulesData || []).map((mod) => {
@@ -199,6 +234,72 @@ export async function getCoursePageData(slug: string): Promise<{
         const enrollmentId = enrollmentResult?.data?.id || null;
         const userProgress = enrollmentResult?.data?.progress_percentage || 0;
 
+        let dashboardStats = undefined;
+        let leaderboard = undefined;
+        let userLessonProgress: any[] = [];
+
+        if (isEnrolled && user && enrollmentId) {
+            const { data: progressData } = await supabase
+                .from('lesson_progress')
+                .select('lesson_id, is_completed, lesson:lessons(lesson_type)')
+                .eq('enrollment_id', enrollmentId);
+
+            userLessonProgress = (progressData as any[]) || [];
+
+            // Calculate Quiz and Assignment scores based on completion
+            const quizzes = modules.flatMap(m => m.lessons.filter(l => l.lesson_type === 'quiz'));
+            const assignments = modules.flatMap(m => m.lessons.filter(l => l.lesson_type === 'assignment'));
+
+            const completedQuizzes = userLessonProgress.filter(p => 
+                p.is_completed && p.lesson?.lesson_type === 'quiz'
+            ).length;
+            
+            const completedAssignments = userLessonProgress.filter(p => 
+                p.is_completed && p.lesson?.lesson_type === 'assignment'
+            ).length;
+
+            dashboardStats = {
+                overallScore: userProgress,
+                quizScore: quizzes.length > 0 ? (completedQuizzes / quizzes.length) * 100 : 0,
+                assignmentScore: assignments.length > 0 ? (completedAssignments / assignments.length) * 100 : 0,
+                progress: userProgress
+            };
+
+                const { data: boardData } = await adminClient
+                .from('enrollments')
+                .select('user_id, progress_percentage, user:users(id, name, avatar_url)')
+                .eq('course_id', course.id)
+                .order('progress_percentage', { ascending: false })
+                .limit(10);
+
+            leaderboard = (boardData as any[])?.map((entry, idx) => ({
+                id: entry.user.id,
+                name: entry.user.name,
+                avatar: entry.user.avatar_url || `https://ui-avatars.com/api/?name=${encodeURIComponent(entry.user.name)}&background=random`,
+                score: entry.progress_percentage || 0,
+                rank: idx + 1,
+                isCurrentUser: entry.user.id === user.id
+            })).slice(0, 5); 
+            
+            const currentUserInBoard = (boardData as any[])?.find(e => e.user.id === user.id);
+            if (currentUserInBoard && !leaderboard.find(l => l.id === user.id)) {
+                const { count: rankCount } = await adminClient
+                    .from('enrollments')
+                    .select('*', { count: 'exact', head: true })
+                    .eq('course_id', course.id)
+                    .gt('progress_percentage', currentUserInBoard.progress_percentage);
+                
+                leaderboard.push({
+                    id: user.id,
+                    name: currentUserInBoard.user.name,
+                    avatar: currentUserInBoard.user.avatar_url || `https://ui-avatars.com/api/?name=${encodeURIComponent(currentUserInBoard.user.name)}&background=random`,
+                    score: currentUserInBoard.progress_percentage || 0,
+                    rank: (rankCount || 0) + 1,
+                    isCurrentUser: true
+                });
+            }
+        }
+
         return {
             success: true,
             data: {
@@ -221,6 +322,10 @@ export async function getCoursePageData(slug: string): Promise<{
                 enrollmentId,
                 userProgress,
                 batches: (batchesData as CourseBatch[]) || [],
+                completedLessonIds: userLessonProgress.filter(p => p.is_completed).map(p => p.lesson_id),
+                dashboardStats,
+                leaderboard,
+                milestones
             },
         };
     } catch (error) {

@@ -10,14 +10,17 @@ import {
     Video, 
     HelpCircle,
     Trophy,
-    CheckCircle2,
-    Calendar,
-    ArrowRight,
-    Users,
-    Facebook,
     MessageCircle,
+    Facebook,
     Lock,
-    X
+    X,
+    User,
+    Check,
+    CheckCircle2,
+    MonitorPlay,
+    Edit3,
+    MoreVertical,
+    MessageSquare
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
@@ -30,10 +33,13 @@ interface CourseDashboardClientProps {
 }
 
 export default function CourseDashboardClient({ data }: CourseDashboardClientProps) {
-    const { course, modules, totalLessons, userProgress } = data;
+    const { course, modules, milestones = [], totalLessons, userProgress, dashboardStats, leaderboard: realLeaderboard, completedLessonIds = [] } = data;
     const [activeTab, setActiveTab] = useState("modules");
     const [isFeedbackOpen, setIsFeedbackOpen] = useState(false);
     const [selectedModuleForFeedback, setSelectedModuleForFeedback] = useState<any>(null);
+    const [rating, setRating] = useState(0);
+    const [hoverRating, setHoverRating] = useState(0);
+    const [feedbackText, setFeedbackText] = useState("");
 
     const handleFeedbackClick = (module: any) => {
         setSelectedModuleForFeedback(module);
@@ -41,48 +47,94 @@ export default function CourseDashboardClient({ data }: CourseDashboardClientPro
     };
 
     const stats = {
-        overallScore: 60.5,
-        quiz: 71.9,
-        assignment: 50,
+        overallScore: dashboardStats?.overallScore || 0,
+        quiz: dashboardStats?.quizScore || 0,
+        assignment: dashboardStats?.assignmentScore || 0,
         progress: userProgress || 0
     };
 
-    const leaderboard = [
-        { id: 1, name: "Shuvo Chandra Debnath", score: 60.5, avatar: "https://i.pravatar.cc/150?u=shuvo", isCurrentUser: true, rank: 75 },
-        { id: 2, name: "Md. Tausif Jafar", score: 100, avatar: "https://i.pravatar.cc/150?u=tausif", rank: 1 },
-        { id: 3, name: "Mohammad Rafid Amin", score: 100, avatar: "https://i.pravatar.cc/150?u=rafid", rank: 2 },
-        { id: 4, name: "Muhtasim Billah Sabit", score: 100, avatar: "https://i.pravatar.cc/150?u=sabit", rank: 3 },
-    ];
+    const leaderboard = realLeaderboard || [];
+    const currentUser = leaderboard.find(s => s.isCurrentUser);
 
-    const currentModule = modules.find(m => m.position === 14) || modules[0];
+    const getProgressStatus = (progress: number) => {
+        if (progress === 0) return {
+            title: "Ready to start?",
+            message: "Click on the first module to begin your learning journey!"
+        };
+        if (progress < 25) return {
+            title: "Off to a good start!",
+            message: "You're just beginning. Keep up the momentum!"
+        };
+        if (progress < 50) return {
+            title: "You're doing great!",
+            message: "Consistency is key. You're almost halfway there!"
+        };
+        if (progress < 75) return {
+            title: "Superb Progress!",
+            message: "Building strong habits. Keep going, you're doing amazing."
+        };
+        if (progress < 100) return {
+            title: "Almost there!",
+            message: "Just a few more modules to complete. Finish strong!"
+        };
+        return {
+            title: "Mission Accomplished!",
+            message: "Congratulations! You've completed the course. Check your certificate!"
+        };
+    };
+
+    const progressStatus = getProgressStatus(userProgress);
+
+    const currentModule = modules.find(m => {
+        const moduleLessons = m.lessons || [];
+        return moduleLessons.some(l => !completedLessonIds.includes(l.id));
+    }) || modules[0];
 
     return (
         <div className="pb-10 selection:bg-primary/30">
-            {/* Header / Top Info */}
-            <div className="max-w-7xl mx-auto px-2 mb-5">
-                <div className="bg-white dark:bg-slate-900 border border-slate-300 dark:border-white/5 rounded-xl p-5 flex items-center justify-between shadow-sm">
-                    <div className="flex items-center gap-6">
-                        <div className="w-32 aspect-video rounded-xl overflow-hidden shadow-2xl shadow-black/40 border border-white/10 shrink-0 bg-slate-100 dark:bg-slate-800">
-                            <img 
-                                src={course.thumbnail_url || "https://images.unsplash.com/photo-1677442136019-21780ecad995?auto=format&fit=crop&q=80&w=300"} 
-                                alt={course.title} 
-                                className="w-full h-full object-cover"
-                                loading="eager"
-                            />
-                        </div>
-                        <div className="space-y-1.5">
-                            <h1 className="text-lg font-black text-slate-900 dark:text-white leading-none tracking-tight">
-                                {course.title}
-                            </h1>
-                            <div className="flex items-center gap-3">
-                                <span className="text-[9px] font-black text-slate-400 bg-slate-900 px-2 py-1 rounded-md uppercase tracking-wider border border-white/5">
+            <div className="max-w-7xl mx-auto px-4 mb-5">
+                <div className="relative overflow-hidden bg-slate-100 dark:bg-slate-900 border border-slate-300 dark:border-white/5 rounded-2xl p-3 md:p-5 flex flex-col md:flex-row items-center gap-5 shadow-xl">
+                    <div className="absolute inset-0 bg-linear-to-br from-primary/10 via-transparent to-transparent opacity-60" />
+                    <div className="absolute -right-16 -top-16 w-48 h-48 bg-primary/10 rounded-full blur-3xl opacity-50" />
+                    <div className="absolute -left-16 -bottom-16 w-48 h-48 bg-emerald-500/5 rounded-full blur-3xl opacity-50" />
+                    
+                    <div className="relative z-10 w-full md:w-36 aspect-16/10 rounded-xl overflow-hidden shadow-xl ring-1 ring-white/10 group cursor-pointer shrink-0">
+                        <img 
+                            src={course.thumbnail_url || "https://images.unsplash.com/photo-1677442136019-21780ecad995?auto=format&fit=crop&q=80&w=300"} 
+                            alt={course.title} 
+                            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                            loading="eager"
+                        />
+                    </div>
+
+                    <div className="relative z-10 flex-1 space-y-2 text-center md:text-left">
+                        <div className="space-y-1">
+                            <div className="flex flex-wrap items-center justify-center md:justify-start gap-2 mb-0.5">
+                                <span className="text-[9px] font-black text-primary bg-primary/10 border border-primary/20 px-2.5 py-0.5 rounded-md uppercase tracking-[0.2em]">
                                     Batch {course.batch_no || 1}
                                 </span>
-                                <span className="flex items-center gap-1.5 px-2 py-1 bg-orange-500/10 border border-orange-500/20 rounded-md">
-                                    <div className="w-1 h-1 rounded-full bg-orange-500 animate-pulse" />
-                                    <span className="text-[9px] font-black text-orange-500 uppercase tracking-tighter">Ongoing</span>
+                                <span className="flex items-center gap-1.5 px-2.5 py-0.5 bg-emerald-500/5 border border-emerald-500/10 rounded-md">
+                                    <div className="w-1 h-1 rounded-full bg-emerald-500 animate-pulse" />
+                                    <span className="text-[9px] font-black text-emerald-500 uppercase tracking-widest">
+                                        Active
+                                    </span>
                                 </span>
                             </div>
+                            <h1 className="text-xl md:text-2xl font-black text-slate-900 dark:text-white leading-tight tracking-tight">
+                                {course.title}
+                            </h1>
+                        </div>
+                        <div className="flex flex-wrap items-center justify-center md:justify-start gap-4 pt-1.5 border-t border-slate-300 dark:border-white/5">
+                            {[
+                                { icon: BookOpenIcon, label: `${modules.length} Modules` },
+                                { icon: CheckCircle2, label: `${totalLessons} Lessons` },
+                                { icon: Trophy, label: `Support` },
+                            ].map((item, i) => (
+                                <div key={i} className="flex items-center gap-1.5">
+                                    <item.icon className="w-3 h-3 text-primary/70" />
+                                    <span className="text-[9px] font-black text-slate-500 uppercase tracking-widest">{item.label}</span>
+                                </div>
+                            ))}
                         </div>
                     </div>
                 </div>
@@ -90,72 +142,84 @@ export default function CourseDashboardClient({ data }: CourseDashboardClientPro
 
             <div className="max-w-7xl mx-auto px-2 pb-8 pt-0">
                 <div className="grid lg:grid-cols-12 gap-5">
-                    {/* Main Content Area */}
                     <div className="lg:col-span-8 space-y-5">
-                        
-                        {/* Current Active Module Card */}
-                        <div className="bg-white dark:bg-slate-900 border border-slate-300 dark:border-white/5 rounded-xl overflow-hidden shadow-sm group hover:border-emerald-500/30 transition-all">
-                            <div className="flex flex-col md:flex-row">
-                                <div className="bg-emerald-500 text-white w-full md:w-24 flex flex-col items-center justify-center py-4 md:py-0 border-r border-white/10">
-                                    <span className="text-[10px] font-black uppercase tracking-widest opacity-80">Module</span>
-                                    <span className="text-3xl font-black leading-none">{currentModule?.position === 0 ? 1 : (currentModule?.position || 1)}</span>
+                        <div className="relative overflow-hidden bg-slate-50 dark:bg-slate-900/80 backdrop-blur-md border border-slate-300 dark:border-white/5 rounded-2xl p-4 flex flex-col md:flex-row items-center gap-5 shadow-lg group">
+                            <div className="absolute inset-0 bg-linear-to-r from-primary/10 via-transparent to-transparent opacity-30 group-hover:opacity-50 transition-opacity" />
+                            <div className="relative z-10 flex flex-col items-center justify-center bg-white/5 dark:bg-white/5 backdrop-blur-xl text-slate-900 dark:text-white rounded-xl w-16 h-16 shadow-2xl border border-white/20 shrink-0 ring-1 ring-white/10 group-hover:bg-white/10 transition-all">
+                                <span className="text-[8px] font-black uppercase tracking-[0.2em] leading-none opacity-40 mb-1">MOD</span>
+                                <span className="text-2xl font-black leading-none">{currentModule?.position === 0 ? 1 : (currentModule?.position || 1)}</span>
+                            </div>
+                            <div className="relative z-10 flex-1 space-y-2 text-center md:text-left">
+                                <div className="space-y-0.5">
+                                    <h3 className="text-[8px] font-black text-primary uppercase tracking-[0.2em]">Next Objective</h3>
+                                    <h2 className="text-lg font-black text-slate-900 dark:text-white leading-tight truncate max-w-xs">{currentModule?.title}</h2>
                                 </div>
-                                <div className="flex-1 p-5 relative">
-                                    <div className="flex items-center gap-3 mb-2">
-                                        <div className="flex-1 h-1.5 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden max-w-[200px]">
-                                            <div className="h-full bg-emerald-500 w-[40%] rounded-full" />
-                                        </div>
-                                        <span className="text-[10px] font-bold text-slate-400 italic">0/{currentModule?.lessons?.length || 0} Items <HelpCircle className="w-3 h-3 inline ml-1 opacity-50" /></span>
+                                <div className="flex items-center justify-center md:justify-start gap-3">
+                                    <div className="flex-1 h-1 bg-slate-200 dark:bg-white/5 rounded-full overflow-hidden max-w-[120px]">
+                                        <div 
+                                            className="h-full bg-primary rounded-full shadow-[0_0_10px_rgba(var(--primary),0.3)]" 
+                                            style={{ 
+                                                width: `${currentModule?.lessons?.length ? (currentModule.lessons.filter(l => completedLessonIds.includes(l.id)).length / currentModule.lessons.length) * 100 : 0}%` 
+                                            }}
+                                        />
                                     </div>
-                                    <h2 className="text-xl font-black text-slate-900 dark:text-white leading-tight">{currentModule?.title}</h2>
-                                    <Link 
-                                        href={`/dashboard/my-courses/${course.slug}/${currentModule?.lessons?.[0]?.id || ''}`}
-                                        className="absolute right-6 top-1/2 -translate-y-1/2 w-10 h-10 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-white/5 group-hover:bg-emerald-500 group-hover:text-white transition-all flex items-center justify-center"
-                                    >
-                                        <ChevronRight className="w-5 h-5" />
-                                    </Link>
+                                    <span className="text-[9px] font-black text-slate-500 tabular-nums">
+                                        {currentModule?.lessons?.filter(l => completedLessonIds.includes(l.id)).length || 0}/{currentModule?.lessons?.length || 0}
+                                    </span>
                                 </div>
                             </div>
+                            <Link 
+                                href={`/dashboard/my-courses/${course.slug}/${currentModule?.lessons?.[0]?.id || ''}`}
+                                className="relative z-10 px-4 h-9 bg-slate-950 dark:bg-white text-white dark:text-slate-950 text-[9px] font-black uppercase tracking-widest rounded-lg hover:bg-slate-900 dark:hover:bg-slate-100 transition-all flex items-center gap-2 shrink-0 shadow-lg"
+                            >
+                                Resume
+                                <ChevronRight className="w-3.5 h-3.5" />
+                            </Link>
                         </div>
 
-                        {/* Social Links Row */}
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-                            <a href="#" className="bg-white dark:bg-slate-900 border border-slate-300 dark:border-white/5 rounded-xl p-4 flex items-center justify-between group hover:border-blue-500/30 transition-all shadow-sm">
-                                <div className="flex items-center gap-4">
-                                    <div className="w-10 h-10 rounded-xl bg-blue-500/10 flex items-center justify-center text-blue-500 border border-blue-500/20">
-                                        <Facebook className="w-5 h-5 fill-current" />
-                                    </div>
-                                    <div>
-                                        <h3 className="text-xs font-black text-slate-900 dark:text-white uppercase tracking-wider">Facebook Group</h3>
-                                        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-tighter">Join Community</p>
-                                    </div>
-                                </div>
-                                <div className="w-8 h-8 rounded-lg bg-slate-100 dark:bg-slate-800 flex items-center justify-center group-hover:bg-blue-500 group-hover:text-white transition-colors">
-                                    <ChevronRight className="w-4 h-4" />
-                                </div>
-                            </a>
+                        {(course.community_facebook_url || course.community_whatsapp_url) && (
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                                {course.community_facebook_url && (
+                                    <a href={course.community_facebook_url} target="_blank" rel="noopener noreferrer" className="bg-white dark:bg-slate-900 border border-slate-300 dark:border-white/5 rounded-xl p-4 flex items-center justify-between group hover:border-blue-500/30 transition-all shadow-sm">
+                                        <div className="flex items-center gap-4">
+                                            <div className="w-10 h-10 rounded-xl bg-blue-500/10 flex items-center justify-center text-blue-500 border border-blue-500/20">
+                                                <Facebook className="w-5 h-5" />
+                                            </div>
+                                            <div>
+                                                <h3 className="text-xs font-black text-slate-900 dark:text-white uppercase tracking-wider">Facebook Group</h3>
+                                                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-tighter">Join Community</p>
+                                            </div>
+                                        </div>
+                                        <div className="w-8 h-8 rounded-lg bg-slate-100 dark:bg-slate-800 flex items-center justify-center group-hover:bg-blue-500 group-hover:text-white transition-colors">
+                                            <ChevronRight className="w-4 h-4" />
+                                        </div>
+                                    </a>
+                                )}
 
-                            <a href="#" className="bg-white dark:bg-slate-900 border border-slate-300 dark:border-white/5 rounded-xl p-4 flex items-center justify-between group hover:border-emerald-500/30 transition-all shadow-sm">
-                                <div className="flex items-center gap-4">
-                                    <div className="w-10 h-10 rounded-xl bg-emerald-500/10 flex items-center justify-center text-emerald-500 border border-emerald-500/20">
-                                        <MessageCircle className="w-5 h-5" />
-                                    </div>
-                                    <div>
-                                        <h3 className="text-xs font-black text-slate-900 dark:text-white uppercase tracking-wider">WhatsApp Group</h3>
-                                        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-tighter">Live Support</p>
-                                    </div>
-                                </div>
-                                <div className="w-8 h-8 rounded-lg bg-slate-100 dark:bg-slate-800 flex items-center justify-center group-hover:bg-emerald-500 group-hover:text-white transition-colors">
-                                    <ChevronRight className="w-4 h-4" />
-                                </div>
-                            </a>
-                        </div>
+                                {course.community_whatsapp_url && (
+                                    <a href={course.community_whatsapp_url} target="_blank" rel="noopener noreferrer" className="bg-white dark:bg-slate-900 border border-slate-300 dark:border-white/5 rounded-xl p-4 flex items-center justify-between group hover:border-emerald-500/30 transition-all shadow-sm">
+                                        <div className="flex items-center gap-4">
+                                            <div className="w-10 h-10 rounded-xl bg-emerald-500/10 flex items-center justify-center text-emerald-500 border border-emerald-500/20">
+                                                <MessageCircle className="w-5 h-5" />
+                                            </div>
+                                            <div>
+                                                <h3 className="text-xs font-black text-slate-900 dark:text-white uppercase tracking-wider">WhatsApp Group</h3>
+                                                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-tighter">Live Support</p>
+                                            </div>
+                                        </div>
+                                        <div className="w-8 h-8 rounded-lg bg-slate-100 dark:bg-slate-800 flex items-center justify-center group-hover:bg-emerald-500 group-hover:text-white transition-colors">
+                                            <ChevronRight className="w-4 h-4" />
+                                        </div>
+                                    </a>
+                                )}
+                            </div>
+                        )}
 
 
                         {/* Tabs Navigation */}
-                        <div className="flex items-center gap-1.5 p-1.5 bg-slate-100 dark:bg-slate-900/50 border border-slate-200 dark:border-white/5 rounded-2xl w-fit shadow-sm">
+                        <div className="flex items-center gap-1.5 p-1 bg-slate-100 dark:bg-slate-900/40 border border-slate-300 dark:border-white/5 rounded-xl w-full md:w-fit shadow-inner">
                             {[
-                                { id: "modules", label: "Modules" },
+                                { id: "modules", label: "Curriculum" },
                                 { id: "assignments", label: "Assignments" },
                                 { id: "certificate", label: "Certificates" },
                             ].map(tab => {
@@ -165,7 +229,7 @@ export default function CourseDashboardClient({ data }: CourseDashboardClientPro
                                         key={tab.id}
                                         onClick={() => setActiveTab(tab.id)}
                                         className={cn(
-                                            "relative px-6 py-2.5 rounded-xl text-xs font-bold transition-all duration-300 z-10",
+                                            "relative flex-1 md:flex-none px-6 py-2 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all duration-300 z-10",
                                             isActive 
                                                 ? "text-white dark:text-slate-950" 
                                                 : "text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white"
@@ -174,8 +238,8 @@ export default function CourseDashboardClient({ data }: CourseDashboardClientPro
                                         {isActive && (
                                             <motion.div
                                                 layoutId="activeDashboardTab"
-                                                className="absolute inset-0 bg-slate-950 dark:bg-white rounded-xl shadow-lg shadow-black/10"
-                                                transition={{ type: 'spring', bounce: 0.2, duration: 0.6 }}
+                                                className="absolute inset-0 bg-slate-950 dark:bg-white rounded-lg shadow-lg shadow-black/10"
+                                                transition={{ type: 'spring', bounce: 0.15, duration: 0.6 }}
                                             />
                                         )}
                                         <span className="relative z-10">{tab.label}</span>
@@ -194,57 +258,104 @@ export default function CourseDashboardClient({ data }: CourseDashboardClientPro
                                 transition={{ duration: 0.2 }}
                             >
                                 {activeTab === "modules" && (
-                                    <div className="space-y-6">
-                                        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 pb-20">
-                                            {modules.map((mod, idx) => {
-                                                const isFinished = idx < 3; // Placeholder logic, should ideally use mod.isFinished
-                                                const isPreviousFinished = idx === 0 || idx <= 3; // Simplified logic
-                                                
-                                                let status: 'completed' | 'ongoing' | 'upcoming' = 'upcoming';
-                                                if (idx < 3) status = 'completed';
-                                                else if (idx === 3) status = 'ongoing';
-                                                else status = 'upcoming';
+                                    <div className="space-y-12 pb-20">
+                                        {(milestones.length > 0 ? milestones : [{ title: "Course Content", modules: modules }]).map((milestone: any, msIdx: number) => (
+                                            <div key={milestone.id || msIdx} className="space-y-6">
+                                                {milestones.length > 0 && (
+                                                    <div className="flex items-center gap-6">
+                                                        <div className="h-px flex-1 bg-slate-300 dark:bg-white/5" />
+                                                        <div className="flex flex-col items-center gap-1 group">
+                                                            <div className="flex items-center gap-3">
+                                                                <div className="w-10 h-10 rounded-2xl bg-primary/10 flex items-center justify-center border border-primary/20 group-hover:bg-primary group-hover:text-white transition-all transform group-hover:rotate-12">
+                                                                    <Trophy className="w-5 h-5" />
+                                                                </div>
+                                                                <div className="flex flex-col">
+                                                                    <h3 className="text-[10px] font-black text-primary uppercase tracking-[0.3em] leading-none mb-1">Milestone {msIdx + 1}</h3>
+                                                                    <h2 className="text-xl font-black text-slate-900 dark:text-white uppercase tracking-tight">{milestone.title}</h2>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                        <div className="h-px flex-1 bg-slate-300 dark:bg-white/5" />
+                                                    </div>
+                                                )}
 
-                                                return (
-                                                    <ModuleCard 
-                                                        key={mod.id} 
-                                                        module={mod} 
-                                                        index={idx} 
-                                                        courseSlug={course.slug} 
-                                                        status={status}
-                                                        onFeedbackClick={handleFeedbackClick} 
-                                                    />
-                                                );
-                                            })}
-                                        </div>
+                                                <div className="grid md:grid-cols-2 lg:grid-cols-2 gap-6">
+                                                    {milestone.modules.map((mod: any, idx: number) => {
+                                                        const moduleLessons = mod.lessons || [];
+                                                        const completedCount = moduleLessons.filter((l: any) => completedLessonIds.includes(l.id)).length;
+                                                        const totalCount = moduleLessons.length;
+                                                        
+                                                        let status: 'completed' | 'ongoing' | 'upcoming' = 'upcoming';
+                                                        if (totalCount > 0 && completedCount === totalCount) {
+                                                            status = 'completed';
+                                                        } else if (completedCount > 0) {
+                                                            status = 'ongoing';
+                                                        } else {
+                                                            // For milestone-based modules, logic for 'ongoing' might need to check previous modules in previous milestones too
+                                                            status = 'upcoming'; 
+                                                            // Simplified for now: if it's the first module and nothing is completed, it's ongoing
+                                                            if (msIdx === 0 && idx === 0 && completedCount === 0) status = 'ongoing';
+                                                        }
+
+                                                        return (
+                                                            <ModuleCard 
+                                                                key={mod.id} 
+                                                                module={mod} 
+                                                                index={idx + 1} 
+                                                                courseSlug={course.slug} 
+                                                                status={status}
+                                                                completedCount={completedCount}
+                                                                totalCount={totalCount}
+                                                                completedLessonIds={completedLessonIds}
+                                                                onFeedbackClick={handleFeedbackClick} 
+                                                            />
+                                                        );
+                                                    })}
+                                                </div>
+                                            </div>
+                                        ))}
                                     </div>
                                 )}
 
                                 {activeTab === "assignments" && (
                                     <div className="grid gap-4 pb-20 mt-8">
-                                        {[1, 2, 3].map(i => (
-                                            <div key={i} className="bg-white dark:bg-slate-900 border border-slate-300 dark:border-white/5 rounded-xl p-6 flex items-center justify-between group hover:border-emerald-500/30 transition-all">
-                                                <div className="flex items-center gap-4">
-                                                    <div className="w-12 h-12 rounded-xl bg-slate-50 dark:bg-slate-800 flex items-center justify-center text-slate-400 group-hover:text-emerald-500 transition-colors">
-                                                        <FileText className="w-6 h-6" />
+                                        {modules.flatMap(m => m.lessons.filter(l => l.lesson_type === 'assignment')).length > 0 ? (
+                                            modules.flatMap(m => m.lessons.filter(l => l.lesson_type === 'assignment')).map((assignment, idx) => (
+                                                <div key={assignment.id} className="bg-white dark:bg-slate-900 border border-slate-300 dark:border-white/5 rounded-xl p-6 flex items-center justify-between group hover:border-emerald-500/30 transition-all">
+                                                    <div className="flex items-center gap-4">
+                                                        <div className="w-12 h-12 rounded-xl bg-slate-50 dark:bg-slate-800 flex items-center justify-center text-slate-400 group-hover:text-emerald-500 transition-colors">
+                                                            <FileText className="w-6 h-6" />
+                                                        </div>
+                                                        <div>
+                                                            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Assignment {idx + 1}</span>
+                                                            <h4 className="text-sm font-black text-slate-900 dark:text-white uppercase">{assignment.title}</h4>
+                                                            <p className="text-[10px] font-bold text-slate-500 mt-1">Status: {completedLessonIds.includes(assignment.id) ? 'Completed' : 'Pending'}</p>
+                                                        </div>
                                                     </div>
-                                                    <div>
-                                                        <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Assignment {i}</span>
-                                                        <h4 className="text-sm font-black text-slate-900 dark:text-white uppercase">Project Implementation Phase {i}</h4>
-                                                        <p className="text-[10px] font-bold text-slate-500 mt-1">Deadline: {new Date(Date.now() + i * 86400000).toLocaleDateString()}</p>
+                                                    <div className="flex items-center gap-6">
+                                                        <div className="text-right">
+                                                            <span className="text-[10px] font-bold text-slate-400 block uppercase">Marks</span>
+                                                            <span className={cn(
+                                                                "text-xs font-black uppercase",
+                                                                completedLessonIds.includes(assignment.id) ? "text-emerald-500" : "text-amber-500"
+                                                            )}>
+                                                                {completedLessonIds.includes(assignment.id) ? "N/A" : "Pending"}
+                                                            </span>
+                                                        </div>
+                                                        <Link 
+                                                            href={`/dashboard/my-courses/${course.slug}/${assignment.id}`}
+                                                            className="px-6 py-2.5 bg-slate-900 text-white rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-slate-800 transition-all"
+                                                        >
+                                                            {completedLessonIds.includes(assignment.id) ? "Review" : "Submit"}
+                                                        </Link>
                                                     </div>
                                                 </div>
-                                                <div className="flex items-center gap-6">
-                                                    <div className="text-right">
-                                                        <span className="text-[10px] font-bold text-slate-400 block uppercase">Status</span>
-                                                        <span className="text-xs font-black text-amber-500 uppercase">Pending</span>
-                                                    </div>
-                                                    <button className="px-6 py-2.5 bg-slate-900 text-white rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-slate-800 transition-all">
-                                                        Submit
-                                                    </button>
-                                                </div>
+                                            ))
+                                        ) : (
+                                            <div className="bg-white dark:bg-slate-900 border border-slate-300 dark:border-white/5 rounded-xl p-12 text-center">
+                                                <p className="text-xs font-bold text-slate-500 uppercase tracking-widest">No assignments found for this course.</p>
                                             </div>
-                                        ))}
+                                        )}
                                     </div>
                                 )}
 
@@ -275,82 +386,94 @@ export default function CourseDashboardClient({ data }: CourseDashboardClientPro
                     </div>
 
                     {/* Right Sidebar */}
-                    <div className="lg:col-span-4 h-full">
+                    <div className="lg:col-span-4 space-y-5">
                         {/* Progress Dashboard Card */}
-                        <div className="bg-white dark:bg-slate-900 border border-slate-300 dark:border-white/5 rounded-xl p-5 shadow-sm space-y-6 h-full flex flex-col">
+                        <div className="bg-white dark:bg-slate-900 border border-slate-300 dark:border-white/5 rounded-2xl p-5 lg:p-6 shadow-xl space-y-6 sticky top-5">
                             <div className="flex items-center justify-between">
-                                <h3 className="font-black text-slate-900 dark:text-white uppercase tracking-widest text-xs">Total Progress</h3>
-                                <div className="flex items-center gap-1 text-[10px] font-bold text-slate-400 group cursor-help">
-                                    How is result calculated? <HelpCircle className="w-3 h-3" />
-                                </div>
+                                <h3 className="text-[10px] font-black text-slate-900 dark:text-white uppercase tracking-[0.2em] opacity-60">Status Dashboard</h3>
+                                <HelpCircle className="w-3.5 h-3.5 text-slate-400 cursor-help" />
                             </div>
 
-                            {/* Status Avatar Alert */}
-                            <div className="p-4 bg-orange-50 dark:bg-orange-500/5 rounded-xl border border-orange-100 dark:border-orange-500/10 flex gap-4">
-                                <div className="w-12 h-12 bg-white rounded-full flex items-center justify-center shrink-0 shadow-inner overflow-hidden border border-orange-200">
-                                    <Image src="https://img.freepik.com/free-vector/fox-face_1308-84222.jpg" alt="Status" width={40} height={40} className="scale-110" />
+                            <div className="p-4 bg-slate-100 dark:bg-slate-950/40 rounded-xl border border-slate-300 dark:border-white/10 flex gap-4 group items-center">
+                                <div className="w-12 h-12 bg-white dark:bg-slate-900 rounded-full flex items-center justify-center shrink-0 shadow-lg ring-2 ring-white/5 overflow-hidden border border-slate-300 dark:border-white/10">
+                                    {currentUser?.avatar ? (
+                                        <img src={currentUser.avatar} alt={currentUser.name} className="w-full h-full object-cover group-hover:scale-110 transition-transform" />
+                                    ) : (
+                                        <User className="w-6 h-6 text-slate-400" />
+                                    )}
                                 </div>
                                 <div className="flex-1">
-                                    <p className="text-xs font-bold text-orange-600">Great! You are performing well.</p>
-                                    <p className="text-[10px] text-slate-500 dark:text-slate-400 mt-1 leading-relaxed font-medium">
-                                        Push yourself a little harder. You have the potential to be the best in your class.
+                                    <p className="text-[10px] font-black text-emerald-500 uppercase tracking-widest leading-none mb-1">{progressStatus.title}</p>
+                                    <p className="text-[9px] font-bold text-slate-500 leading-tight italic">
+                                        "{progressStatus.message}"
                                     </p>
                                 </div>
                             </div>
 
                             {/* Main Progress Bar */}
-                            <div className="space-y-2">
+                            <div className="space-y-3">
                                 <div className="flex justify-between items-end">
-                                    <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Overall Score</span>
-                                    <span className="text-xl font-black text-slate-900 dark:text-white">60.5%</span>
+                                    <div className="space-y-0.5">
+                                        <span className="text-[9px] font-black text-slate-400 uppercase tracking-[0.2em]">Mastery</span>
+                                        <h4 className="text-[11px] font-black text-slate-900 dark:text-white uppercase tracking-tight">Combined Score</h4>
+                                    </div>
+                                    <span className="text-2xl font-black text-slate-900 dark:text-white tabular-nums">{(stats.overallScore || 0).toFixed(1)}%</span>
                                 </div>
-                                <div className="h-2 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
-                                    <div className="h-full bg-emerald-500 w-[60.5%] rounded-full shadow-[0_0_10px_rgba(16,185,129,0.3)]" />
+                                <div className="h-2.5 bg-slate-100 dark:bg-slate-950 rounded-full overflow-hidden border border-slate-300 dark:border-white/5 p-0.5">
+                                    <motion.div 
+                                        initial={{ width: 0 }}
+                                        animate={{ width: `${stats.overallScore || 0}%` }}
+                                        transition={{ duration: 2, ease: "circOut" }}
+                                        className="h-full bg-emerald-500 rounded-full relative" 
+                                    >
+                                        <div className="absolute inset-0 bg-linear-to-r from-transparent via-white/10 to-transparent animate-shine" />
+                                    </motion.div>
                                 </div>
                             </div>
 
-                            <div className="grid grid-cols-2 gap-4">
-                                <CircularStat value={71.9} label="Quiz" color="text-rose-500" />
-                                <CircularStat value={50} label="Assignment" color="text-teal-500" />
+                            <div className="grid grid-cols-2 gap-3">
+                                <CircularStat value={parseFloat(stats.quiz.toFixed(1))} label="Quizzes" color="text-primary" />
+                                <CircularStat value={parseFloat(stats.assignment.toFixed(1))} label="Tasks" color="text-emerald-500" />
                             </div>
 
                             {/* Leaderboard Section */}
-                            <div className="pt-8 border-t border-slate-100 dark:border-white/5">
-                                <div className="flex items-center justify-between mb-6">
-                                    <h4 className="text-xs font-black uppercase tracking-widest flex items-center gap-2">
-                                        <Trophy className="w-4 h-4 text-yellow-500" />
-                                        Leaderboard
-                                    </h4>
-                                    <button className="text-[10px] font-bold text-slate-400 hover:text-primary transition-colors uppercase">View All</button>
+                            <div className="pt-6 border-t border-slate-300 dark:border-white/10 space-y-4">
+                                <div className="flex items-center justify-between">
+                                    <div className="flex items-center gap-2">
+                                        <Trophy className="w-3.5 h-3.5 text-yellow-500" />
+                                        <h4 className="text-[10px] font-black text-slate-900 dark:text-white uppercase tracking-[0.2em]">Rankings</h4>
+                                    </div>
+                                    <button className="text-[8px] font-black text-slate-500 hover:text-primary transition-colors uppercase tracking-widest border border-slate-300 dark:border-white/10 px-2 py-1 rounded hover:bg-slate-100 dark:hover:bg-white/5">View all</button>
                                 </div>
-                                <div className="space-y-1">
+                                <div className="space-y-1.5">
                                     {leaderboard.map((student) => (
                                         <div 
                                             key={student.id} 
                                             className={cn(
                                                 "flex items-center p-2 rounded-xl border border-transparent transition-all",
                                                 student.isCurrentUser 
-                                                    ? "bg-emerald-50 dark:bg-emerald-500/10 border-emerald-100 dark:border-emerald-500/20 shadow-sm" 
-                                                    : "hover:bg-slate-50 dark:hover:bg-slate-800/50"
+                                                    ? "bg-primary/5 border-primary/10" 
+                                                    : "hover:bg-slate-100 dark:hover:bg-white/5"
                                             )}
                                         >
-                                            <div className="w-6 text-[10px] font-black text-slate-400 italic">
-                                                {student.rank === 75 ? (
-                                                    <div className="flex flex-col items-center">
-                                                        <span className="text-[8px] leading-tight opacity-60">YOU</span>
-                                                        <span className="text-slate-900 dark:text-white leading-none">75</span>
-                                                    </div>
-                                                ) : student.rank}
+                                            <div className="w-6 text-[10px] font-black text-slate-400 text-center">
+                                                {student.rank}
                                             </div>
-                                            <div className="w-8 h-8 rounded-full overflow-hidden border border-slate-300 dark:border-white/5 mx-2 bg-slate-100 font-bold flex items-center justify-center group shrink-0">
-                                                <Image src={student.avatar} alt={student.name} width={32} height={32} className="group-hover:scale-110 transition-transform" />
+                                            <div className="w-8 h-8 rounded-full overflow-hidden border border-slate-300 dark:border-white/10 mx-3 bg-slate-100 shrink-0 flex items-center justify-center">
+                                                {student.avatar ? (
+                                                    <Image src={student.avatar} alt={student.name} width={32} height={32} className="object-cover w-full h-full" />
+                                                ) : (
+                                                    <User className="w-4 h-4 text-slate-400" />
+                                                )}
                                             </div>
                                             <div className="flex-1 min-w-0">
-                                                <p className="text-[11px] font-bold text-slate-900 dark:text-white truncate uppercase tracking-tighter">{student.name}</p>
+                                                <p className={cn(
+                                                    "text-[10px] font-black uppercase tracking-tighter truncate",
+                                                    student.isCurrentUser ? "text-primary" : "text-slate-900 dark:text-white"
+                                                )}>{student.name || 'Student'}</p>
                                             </div>
                                             <div className="text-right">
-                                                <p className="text-xs font-black text-emerald-600 dark:text-emerald-400">{student.score}%</p>
-                                                <p className="text-[8px] font-bold text-slate-400 uppercase leading-none">Mark</p>
+                                                <p className="text-[10px] font-black text-slate-900 dark:text-white">{(student.score || 0).toFixed(1)}%</p>
                                             </div>
                                         </div>
                                     ))}
@@ -373,52 +496,70 @@ export default function CourseDashboardClient({ data }: CourseDashboardClientPro
                             className="absolute inset-0 bg-slate-950/80 backdrop-blur-sm"
                         />
                         <motion.div 
-                            initial={{ opacity: 0, scale: 0.95, y: 20 }}
+                            initial={{ opacity: 0, scale: 0.95, y: 10 }}
                             animate={{ opacity: 1, scale: 1, y: 0 }}
-                            exit={{ opacity: 0, scale: 0.95, y: 20 }}
-                            className="bg-white dark:bg-slate-900 border border-white/10 w-full max-w-lg rounded-[2.5rem] overflow-hidden shadow-2xl relative z-10"
+                            exit={{ opacity: 0, scale: 0.95, y: 10 }}
+                            className="bg-white dark:bg-slate-900 border border-white/10 w-full max-w-sm rounded-3xl overflow-hidden shadow-2xl relative z-10"
                         >
-                            <div className="p-8">
-                                <div className="flex items-center justify-between mb-8">
+                            <div className="p-6">
+                                <div className="flex items-center justify-between mb-5">
                                     <div>
-                                        <h3 className="text-xl font-black text-slate-900 dark:text-white uppercase tracking-tight">Module Feedback</h3>
-                                        <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mt-1">
+                                        <h3 className="text-lg font-black text-slate-900 dark:text-white uppercase tracking-tight">Module Feedback</h3>
+                                        <p className="text-[9px] font-bold text-slate-500 uppercase tracking-widest mt-0.5">
                                             {selectedModuleForFeedback?.title}
                                         </p>
                                     </div>
                                     <button 
                                         onClick={() => setIsFeedbackOpen(false)}
-                                        className="w-10 h-10 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-slate-500 hover:text-rose-500 transition-colors"
+                                        className="w-8 h-8 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-slate-500 hover:text-rose-500 transition-colors"
                                     >
-                                        <X className="w-5 h-5" />
+                                        <X className="w-4 h-4" />
                                     </button>
                                 </div>
 
-                                <div className="space-y-8">
+                                <div className="space-y-5">
                                     {/* Rating */}
-                                    <div className="text-center space-y-3">
-                                        <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Rate your experience</p>
-                                        <div className="flex items-center justify-center gap-2">
+                                    <div className="text-center space-y-2">
+                                        <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Rate your experience</p>
+                                        <div className="flex items-center justify-center gap-1.5">
                                             {[1, 2, 3, 4, 5].map((star) => (
-                                                <button key={star} className="text-slate-200 dark:text-slate-800 hover:text-yellow-500 transition-colors">
-                                                    <Star className="w-8 h-8 fill-current" />
+                                                <button 
+                                                    key={star} 
+                                                    onMouseEnter={() => setHoverRating(star)}
+                                                    onMouseLeave={() => setHoverRating(0)}
+                                                    onClick={() => setRating(star)}
+                                                    className="transition-all active:scale-90"
+                                                >
+                                                    <Star className={cn(
+                                                        "w-7 h-7 transition-all duration-200",
+                                                        (hoverRating || rating) >= star 
+                                                            ? "text-yellow-500 scale-110 shadow-lg shadow-yellow-500/20" 
+                                                            : "text-slate-200 dark:text-slate-800"
+                                                    )} />
                                                 </button>
                                             ))}
                                         </div>
                                     </div>
 
                                     {/* Textarea */}
-                                    <div className="space-y-3">
-                                        <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Share your thoughts</p>
+                                    <div className="space-y-2">
+                                        <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Share your thoughts</p>
                                         <textarea 
+                                            value={feedbackText}
+                                            onChange={(e) => setFeedbackText(e.target.value)}
                                             placeholder="What did you learn? Any suggestions?"
-                                            className="w-full h-32 bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-white/5 rounded-2xl p-4 text-sm font-medium focus:ring-2 focus:ring-emerald-500 outline-none transition-all placeholder:text-slate-400"
+                                            className="w-full h-24 bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-white/5 rounded-2xl p-4 text-xs font-semibold focus:ring-2 focus:ring-primary outline-none transition-all placeholder:text-slate-400 resize-none"
                                         />
                                     </div>
 
                                     <button 
-                                        onClick={() => setIsFeedbackOpen(false)}
-                                        className="w-full py-4 bg-emerald-500 text-white rounded-2xl text-xs font-black uppercase tracking-widest hover:bg-emerald-600 transition-all shadow-lg shadow-emerald-500/20 active:scale-[0.98]"
+                                        onClick={() => {
+                                            // Handle submit logic here
+                                            setIsFeedbackOpen(false);
+                                            setRating(0);
+                                            setFeedbackText("");
+                                        }}
+                                        className="w-full py-3.5 bg-primary text-white rounded-2xl text-[10px] font-black uppercase tracking-widest hover:bg-primary/90 transition-all shadow-lg shadow-primary/20 active:scale-[0.98]"
                                     >
                                         Submit Feedback
                                     </button>
@@ -437,100 +578,169 @@ function ModuleCard({
     index, 
     courseSlug, 
     status,
+    completedCount,
+    totalCount,
+    completedLessonIds,
     onFeedbackClick 
 }: { 
     module: any; 
     index: number; 
     courseSlug: string; 
     status: 'completed' | 'ongoing' | 'upcoming';
+    completedCount: number;
+    totalCount: number;
+    completedLessonIds: string[];
     onFeedbackClick: (module: any) => void 
 }) {
-    const isCompleted = index < 3;
-    const itemsCount = module.lessons?.length || 0;
-    const completedItems = isCompleted ? itemsCount : (index === 3 ? Math.floor(itemsCount / 2) : 0);
-    const progress = itemsCount > 0 ? (completedItems / itemsCount) * 100 : 0;
+    const progress = totalCount > 0 ? (completedCount / totalCount) * 100 : 0;
+    const videoCount = module.lessons?.filter((l: any) => l.lesson_type === 'video').length || 0;
+    const assignmentCount = module.lessons?.filter((l: any) => l.lesson_type === 'assignment').length || 0;
+    const quizCount = module.lessons?.filter((l: any) => l.lesson_type === 'quiz').length || 0;
 
     return (
-        <div className="bg-white dark:bg-slate-900 border border-slate-300 dark:border-white/5 rounded-3xl p-4 shadow-sm hover:shadow-xl hover:border-emerald-500/20 transition-all duration-300 group h-full flex flex-col">
-            <div className="flex items-start justify-between mb-4">
-                <div className="flex items-center gap-3">
-                    <div className={`px-2 py-0.5 rounded text-[9px] font-black uppercase tracking-widest ${
-                        status === 'completed' ? 'bg-emerald-500/10 text-emerald-500 border border-emerald-500/20' :
-                        status === 'ongoing' ? 'bg-orange-500/10 text-orange-500 border border-orange-500/20' :
-                        'bg-slate-100 dark:bg-slate-800 text-slate-400 border border-transparent'
-                    }`}>
-                        Module {index + 1}
+        <motion.div 
+            className={cn(
+                "group relative bg-white dark:bg-slate-900/60 border rounded-[2rem] p-6 transition-all duration-500",
+                status === 'ongoing' 
+                    ? "border-primary/20 shadow-xl shadow-primary/5 ring-1 ring-primary/10" 
+                    : "border-slate-200 dark:border-white/5 shadow-sm hover:shadow-2xl"
+            )}
+        >
+            <div className="relative z-10 flex flex-col h-full space-y-5">
+                {/* Header structure */}
+                <div className="flex items-start gap-4">
+                    <div className="flex flex-col items-center justify-center bg-slate-100 dark:bg-slate-800/80 rounded-2xl w-14 h-14 shrink-0 border border-slate-300 dark:border-white/10 shadow-inner overflow-hidden transition-all duration-500">
+                        <span className="text-[10px] font-black uppercase tracking-widest leading-none mb-1 opacity-60">MOD</span>
+                        <span className="text-2xl font-black leading-none">{index}</span>
+                    </div>
+
+                    <div className="flex-1 space-y-4">
+                        <div className="flex items-center justify-between gap-3">
+                            <div className={cn(
+                                "px-2 py-0.5 rounded-md text-[8px] font-black uppercase tracking-[0.15em] border inline-flex items-center gap-1.5",
+                                status === 'completed' 
+                                    ? "bg-emerald-500/5 text-emerald-500 border-emerald-500/30" 
+                                    : status === 'ongoing'
+                                        ? "bg-primary/5 text-primary border-primary/10"
+                                        : "bg-slate-100 dark:bg-slate-800 text-slate-400 border-slate-200 dark:border-white/10"
+                            )}>
+                                <div className={cn(
+                                    "w-1 h-1 rounded-full",
+                                    status === 'completed' ? "bg-emerald-500 animate-pulse" : status === 'ongoing' ? "bg-primary animate-pulse" : "bg-slate-400"
+                                )} />
+                                {status}
+                            </div>
+
+                            <div className="flex items-center gap-2 shrink-0">
+                                <span className={cn(
+                                    "text-[10px] font-black tracking-tight",
+                                    progress === 100 ? "text-emerald-500" : "text-rose-500"
+                                )}>
+                                    {completedCount}/{totalCount} Items
+                                </span>
+                                <HelpCircle className="w-3 h-3 text-slate-400 opacity-50 cursor-pointer" />
+                            </div>
+                        </div>
+
+                        {/* Segmented Progress Bar */}
+                        <div className="h-3 flex gap-0.5 rounded-full overflow-hidden bg-slate-100 dark:bg-slate-800/50 p-0.5 border border-slate-200 dark:border-white/5">
+                            <motion.div 
+                                initial={{ width: 0 }}
+                                animate={{ width: `${progress}%` }}
+                                transition={{ duration: 1.5, ease: "circOut" }}
+                                className={cn(
+                                    "h-full rounded-full relative",
+                                    progress === 100 ? "bg-emerald-500" : "bg-primary"
+                                )}
+                            />
+                            {progress < 100 && (
+                                <div className="flex-1 bg-rose-500/10 dark:bg-rose-500/5 rounded-full" />
+                            )}
+                        </div>
                     </div>
                 </div>
-                
-                <div className={`flex items-center gap-1.5 px-2 py-0.5 rounded-full border transition-all ${
-                    status === 'completed' ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-500' :
-                    status === 'ongoing' ? 'bg-orange-500/10 border-orange-500/20 text-orange-500' :
-                    'bg-slate-50 dark:bg-slate-800/50 border-transparent text-slate-400'
-                }`}>
-                    <div className={`w-1 h-1 rounded-full ${
-                        status === 'completed' ? 'bg-emerald-500' :
-                        status === 'ongoing' ? 'bg-orange-500 animate-pulse' :
-                        'bg-slate-300'
-                    }`} />
-                    <span className="text-[8px] font-black uppercase tracking-tighter">
-                        {status}
-                    </span>
+
+                {/* Title */}
+                <h4 className="text-xl font-black text-slate-900 dark:text-white leading-tight line-clamp-2 min-h-12 transition-colors">
+                    {module.title}
+                </h4>
+
+                {/* Meta Info Row */}
+                <div className="flex flex-wrap items-center gap-2">
+                    {/* Video Badge */}
+                    <div className="flex items-center gap-2 px-3 py-1 bg-blue-500/5 dark:bg-blue-400/10 border border-blue-500/30 dark:border-blue-400/20 rounded-lg">
+                        <MonitorPlay className="w-3 h-3 text-blue-500 dark:text-blue-400" />
+                        <span className="text-[8px] font-black text-blue-600/70 dark:text-blue-400/70 uppercase tracking-widest">Videos</span>
+                        <div className="w-px h-2.5 bg-blue-500/20 mx-0.5" />
+                        <span className="text-[10px] font-black text-blue-600 dark:text-blue-300 tabular-nums">{videoCount}</span>
+                    </div>
+
+                    {/* Quiz Badge */}
+                    <div className="flex items-center gap-2 px-3 py-1 bg-amber-500/5 dark:bg-amber-400/10 border border-amber-500/30 dark:border-amber-400/20 rounded-lg">
+                        <HelpCircle className="w-3 h-3 text-amber-500 dark:text-amber-400" />
+                        <span className="text-[8px] font-black text-amber-600/70 dark:text-amber-400/70 uppercase tracking-widest">Quizzes</span>
+                        <div className="w-px h-2.5 bg-amber-500/20 mx-0.5" />
+                        <span className="text-[10px] font-black text-amber-600 dark:text-amber-300 tabular-nums">{quizCount}</span>
+                    </div>
+
+                    {/* Task Badge */}
+                    <div className="flex items-center gap-2 px-3 py-1 bg-emerald-500/5 dark:bg-emerald-400/10 border border-emerald-500/30 dark:border-emerald-400/20 rounded-lg">
+                        <Edit3 className="w-3 h-3 text-emerald-500 dark:text-emerald-400" />
+                        <span className="text-[8px] font-black text-emerald-600/70 dark:text-emerald-400/70 uppercase tracking-widest">Tasks</span>
+                        <div className="w-px h-2.5 bg-emerald-500/20 mx-0.5" />
+                        <span className="text-[10px] font-black text-emerald-600 dark:text-emerald-300 tabular-nums">{assignmentCount}</span>
+                    </div>
+                </div>
+
+                {/* Actions */}
+                <div className="flex items-center justify-between pt-4 border-t border-slate-100 dark:border-white/5 mt-auto">
+                    <button 
+                        onClick={() => onFeedbackClick(module)}
+                        className="flex items-center gap-2 px-5 h-9 rounded-lg bg-amber-500/15 text-amber-600 dark:text-amber-400 text-xs font-bold hover:bg-amber-500/25 transition-all active:scale-95 border border-amber-500/20"
+                        title="Give Feedback"
+                    >
+                        <MessageSquare className="w-4 h-4" />
+                        Feedback
+                    </button>
+                    <Link 
+                        href={`/dashboard/my-courses/${courseSlug}/${module.lessons?.[0]?.id || ''}`}
+                        className="flex items-center gap-2 px-5 h-9 rounded-lg bg-blue-600/15 text-blue-600 dark:text-blue-400 text-xs font-bold hover:bg-blue-600/25 transition-all active:scale-[0.98] border border-blue-600/20"
+                    >
+                        Explore
+                        <Play className="w-3.5 h-3.5" />
+                    </Link>
                 </div>
             </div>
-
-            <h4 className="text-lg font-black text-slate-900 dark:text-white leading-tight mb-8 line-clamp-2 min-h-[56px] group-hover:text-emerald-500 transition-colors">
-                {module.title}
-            </h4>
-
-            <div className="flex items-center gap-4 text-[9px] font-bold text-slate-400 uppercase tracking-widest mb-8">
-                <span className="flex items-center gap-1"><Video className="w-3 h-3" /> {itemsCount} Live Classes</span>
-            </div>
-
-            <div className="grid grid-cols-2 gap-2 mt-auto">
-                <Link 
-                    href={`/dashboard/my-courses/${courseSlug}/${module.lessons?.[0]?.id || ''}`}
-                    className="flex items-center justify-center h-8 rounded-lg bg-emerald-500 text-white text-[9px] font-black uppercase tracking-widest hover:bg-emerald-600 transition-all active:scale-95"
-                >
-                    Continue <Play className="w-2.5 h-2.5 ml-1.5 fill-current" />
-                </Link>
-                <button 
-                    onClick={() => onFeedbackClick(module)}
-                    className="flex items-center justify-center h-8 rounded-lg bg-slate-50 dark:bg-slate-800 text-slate-600 dark:text-slate-300 text-[9px] font-black uppercase tracking-widest border border-slate-300 dark:border-white/10 hover:bg-slate-100 dark:hover:bg-slate-700 transition-all active:scale-95"
-                >
-                    Feedback <MessageCircle className="w-2.5 h-2.5 ml-1.5" />
-                </button>
-            </div>
-        </div>
+        </motion.div>
     );
 }
 
 function CircularStat({ value, label, color }: { value: number; label: string; color: string }) {
     const circumference = 125.6; // 2 * Math.PI * 20
     return (
-        <div className="flex flex-col items-center gap-3 p-4 rounded-3xl border border-slate-300 dark:border-white/5 bg-slate-50/50 dark:bg-slate-800/20 group hover:border-primary/20 transition-all">
-            <div className="relative w-20 h-20">
+        <div className="flex flex-col items-center gap-2.5 p-3 rounded-2xl border border-slate-300 dark:border-white/5 bg-slate-50/50 dark:bg-slate-800/20 transition-all">
+            <div className="relative w-16 h-16">
                 <svg className="w-full h-full -rotate-90">
-                    <circle cx="40" cy="40" r="32" stroke="currentColor" strokeWidth="6" fill="transparent" className="text-slate-100 dark:text-white/5" />
+                    <circle cx="32" cy="32" r="28" stroke="currentColor" strokeWidth="4" fill="transparent" className="text-slate-100 dark:text-white/5" />
                     <motion.circle 
-                        cx="40" 
-                        cy="40" 
-                        r="32" 
+                        cx="32" 
+                        cy="32" 
+                        r="28" 
                         stroke="currentColor" 
-                        strokeWidth="6" 
+                        strokeWidth="4" 
                         fill="transparent" 
-                        strokeDasharray={circumference * 1.6}
-                        initial={{ strokeDashoffset: circumference * 1.6 }}
-                        animate={{ strokeDashoffset: (circumference * 1.6) - (circumference * 1.6 * value) / 100 }}
+                        strokeDasharray={circumference}
+                        initial={{ strokeDashoffset: circumference }}
+                        animate={{ strokeDashoffset: circumference - (circumference * value) / 100 }}
                         transition={{ duration: 1.5, ease: "easeOut", delay: 0.2 }}
                         className={cn("transition-all duration-700", color)} 
                     />
                 </svg>
                 <div className="absolute inset-0 flex items-center justify-center">
-                    <span className="text-sm font-black text-slate-900 dark:text-white">{value}%</span>
+                    <span className="text-xs font-black text-slate-900 dark:text-white tabular-nums">{value}%</span>
                 </div>
             </div>
-            <span className="text-[10px] font-black uppercase tracking-tighter text-slate-500 text-center leading-none">{label}</span>
+            <span className="text-[9px] font-black uppercase tracking-widest text-slate-500 leading-none">{label}</span>
         </div>
     );
 }

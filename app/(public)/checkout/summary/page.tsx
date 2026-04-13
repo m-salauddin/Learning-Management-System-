@@ -284,6 +284,7 @@ function SummaryContent() {
                                     src={course.thumbnail_url || "/placeholder-course.jpg"} 
                                     alt="Course" 
                                     fill 
+                                    unoptimized
                                     className="object-cover opacity-80 group-hover/course:scale-110 transition-transform duration-1000"
                                 />
                                 <div className="absolute inset-0 bg-linear-to-t from-slate-950/80 via-slate-950/20 to-transparent" />

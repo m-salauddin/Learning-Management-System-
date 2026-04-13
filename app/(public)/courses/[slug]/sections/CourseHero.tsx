@@ -16,6 +16,7 @@ interface CourseHeroProps {
     timeLeft: { d: number, h: number, m: number, s: number } | null;
     handleEnroll: () => void;
     loading: boolean;
+    isEnrolled: boolean;
     setShowVideoModal: (show: boolean) => void;
 }
 
@@ -26,6 +27,7 @@ export default function CourseHero({
     timeLeft,
     handleEnroll,
     loading,
+    isEnrolled,
     setShowVideoModal
 }: CourseHeroProps) {
 
@@ -99,7 +101,7 @@ export default function CourseHero({
             <div className="flex flex-wrap items-center gap-4 sm:gap-6 mt-4 sm:mt-6">
                 <div className="flex items-center gap-2 text-sm text-muted-foreground">
                     <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center">
-                        <Star className="w-4 h-4 text-primary fill-primary" />
+                        <Star className="w-4 h-4 text-primary" />
                     </div>
                     <span className="font-medium">{(Number(course.rating) || 0).toFixed(1)} ({course.reviews} ratings)</span>
                 </div>
@@ -118,7 +120,7 @@ export default function CourseHero({
                 {timeLeft && (
                     <div className="flex items-center gap-2 text-sm text-muted-foreground group">
                         <div className="w-8 h-8 rounded-lg bg-amber-500/10 flex items-center justify-center group-hover:scale-110 transition-transform duration-500">
-                            <Zap className="w-4 h-4 text-amber-500 fill-amber-500" />
+                            <Zap className="w-4 h-4 text-amber-500" />
                         </div>
                         <div className="flex flex-col">
                             <span className="text-[10px] font-black text-amber-500 uppercase tracking-widest leading-none mb-1">
@@ -161,7 +163,7 @@ export default function CourseHero({
                     loading={loading}
                     className="h-10! sm:h-12!"
                 >
-                    Enroll Now
+                    {isEnrolled ? 'Go to Course' : 'Enroll Now'}
                 </PrimaryCTAButton>
             </div>
         </motion.div>

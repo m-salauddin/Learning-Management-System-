@@ -30,6 +30,7 @@ interface CourseDetailClientProps {
 export default function CourseDetailClient({ course, pageData }: CourseDetailClientProps) {
     const router = useRouter();
     const [loading, setLoading] = useState(false);
+    const [isEnrolled, setIsEnrolled] = useState(false);
     const [expandedModules, setExpandedModules] = useState<number[]>([]);
     const [expandedFaq, setExpandedFaq] = useState<number | null>(null);
     const [showAllModules, setShowAllModules] = useState(false);
@@ -91,6 +92,31 @@ export default function CourseDetailClient({ course, pageData }: CourseDetailCli
         })) as MappedCourse[];
     }, [relatedCourses]);
     const isLive = !!(course.type?.toLowerCase().includes('live') || pageData?.batches?.some(b => b.is_active));
+    useEffect(() => {
+        const checkEnrollment = async () => {
+            const { data: { user } } = await supabase.auth.getUser();
+            if (!user) return;
+
+            const { data } = await supabase
+                .from('enrollments')
+                .select('id, status')
+                .eq('user_id', user.id)
+                .eq('course_id', course.id);
+
+            if (data && data.length > 0) {
+                const activeEnrollment = data.find((e: any) => 
+                    !e.status || 
+                    ['active', 'completed', 'success', 'successful'].includes(e.status.toLowerCase())
+                );
+                if (activeEnrollment) {
+                    setIsEnrolled(true);
+                }
+            }
+        };
+
+        checkEnrollment();
+    }, [course.id, supabase]);
+
     useEffect(() => {
         const targetStr = course.discountExpiresAt ||
             (pageData?.batches?.find(b => b.is_active)?.start_date);
@@ -223,6 +249,11 @@ export default function CourseDetailClient({ course, pageData }: CourseDetailCli
         }
     };
     const handleEnroll = async () => {
+        if (isEnrolled) {
+            router.push(`/dashboard/my-courses/${course.slug}`);
+            return;
+        }
+
         setLoading(true);
         const { data: { user } } = await supabase.auth.getUser();
         if (!user) {
@@ -287,6 +318,7 @@ export default function CourseDetailClient({ course, pageData }: CourseDetailCli
                             timeLeft={timeLeft}
                             handleEnroll={handleEnroll}
                             loading={loading}
+                            isEnrolled={isEnrolled}
                             setShowVideoModal={setShowVideoModal}
                         />
                         {}
@@ -349,6 +381,7 @@ export default function CourseDetailClient({ course, pageData }: CourseDetailCli
                         handleApplyCoupon={handleApplyCoupon}
                         handleEnroll={handleEnroll}
                         loading={loading}
+                        isEnrolled={isEnrolled}
                         setShowShareModal={setShowShareModal}
                         setShowVideoModal={setShowVideoModal}
                     />

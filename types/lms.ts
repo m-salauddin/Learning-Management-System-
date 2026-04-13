@@ -439,7 +439,7 @@ export interface CreateCourseInput {
     resources?: { title: string; type: string; url: string }[];
     milestones?: CurriculumMilestone[];
     modules?: { title: string; lessons: { title: string; video_url: string }[] }[];
-    coupons?: { code: string; discount_percentage: number; expires_at?: string }[];
+    coupons?: any[];
     community_facebook_url?: string;
     community_whatsapp_url?: string;
     bkash_automatic_enabled?: boolean;

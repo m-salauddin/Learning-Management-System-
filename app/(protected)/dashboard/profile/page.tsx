@@ -669,7 +669,12 @@ export default function ProfilePage() {
                                                     type="file"
                                                     ref={fileInputRef}
                                                     className="hidden"
-                                                    accept="image}
+                                                    accept="image/*"
+                                                />
+                                            </div>
+                                        </div>
+                                    </CardContent>
+                                </Card>
                                 <Card className="bg-muted/30 border-border/50">
                                     <CardHeader className="pb-4">
                                         <CardTitle className="text-base flex items-center gap-3">

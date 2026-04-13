@@ -268,7 +268,9 @@ export default function CreateCoursePage() {
                     if (path) newErrors[path] = issue.message;
                 });
                 setErrors(newErrors);
-                toast.error("Please fix the errors in your course data");
+                const firstError = errorDetail.issues[0];
+                const fieldName = String(firstError.path[0] || "Field").replace(/_/g, " ").replace(/\b\w/g, l => l.toUpperCase());
+                toast.error(`Invalid ${fieldName}`, firstError.message);
             } else {
                 toast.error(errorDetail.message || "Failed to create course");
             }
@@ -292,7 +294,9 @@ export default function CreateCoursePage() {
                     if (issue.path[0]) newErrors[issue.path[0] as string] = issue.message;
                 });
                 setErrors(newErrors);
-                toast.error("Validation Error", "Please check the form for missing or invalid fields.");
+                const firstError = errorDetail.issues[0];
+                const fieldName = String(firstError.path[0] || "Field").replace(/_/g, " ").replace(/\b\w/g, l => l.toUpperCase());
+                toast.error(`Invalid ${fieldName}`, firstError.message);
                 window.scrollTo({ top: 0, behavior: 'smooth' });
             }
         }

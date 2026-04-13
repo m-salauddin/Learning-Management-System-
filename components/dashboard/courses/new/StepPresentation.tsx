@@ -12,7 +12,6 @@ import { cn } from "@/lib/utils";
 import { inputClasses, labelClasses } from "./constants";
 import { CreateCourseInput } from "@/types/lms";
 import { StepHeader } from "./StepHeader";
-import { DateTimePicker } from "@/components/ui/date-time-picker";
 interface StepPresentationProps {
     formData: CreateCourseInput;
     setFormData: React.Dispatch<React.SetStateAction<CreateCourseInput>>;
@@ -41,59 +40,6 @@ export const StepPresentation = ({
     removeThumbnail,
     errors
 }: StepPresentationProps) => {
-    const [couponInput, setCouponInput] = useState<{ 
-        code: string; 
-        discount_percentage: number | string; 
-        expires_at?: string 
-    }>({
-        code: "",
-        discount_percentage: "100",
-        expires_at: undefined
-    });
-
-    const [showCouponForm, setShowCouponForm] = useState(false);
-    const [editIndex, setEditIndex] = useState<number | null>(null);
-
-    const addCoupon = () => {
-        const discountVal = Number(couponInput.discount_percentage);
-        if (couponInput.code && discountVal > 0) {
-            setFormData(prev => {
-                const updatedCoupons = [...(prev.coupons || [])];
-                if (editIndex !== null) {
-                    updatedCoupons[editIndex] = { ...couponInput, discount_percentage: discountVal };
-                } else {
-                    updatedCoupons.push({ ...couponInput, discount_percentage: discountVal });
-                }
-                return { ...prev, coupons: updatedCoupons };
-            });
-            setCouponInput({
-                code: "",
-                discount_percentage: "100",
-                expires_at: undefined
-            });
-            setEditIndex(null);
-            setShowCouponForm(false);
-        }
-    };
-
-    const startEditingCoupon = (index: number) => {
-        const coupon = formData.coupons![index];
-        setCouponInput({
-            code: coupon.code,
-            discount_percentage: String(coupon.discount_percentage),
-            expires_at: coupon.expires_at
-        });
-        setEditIndex(index);
-        setShowCouponForm(true);
-    };
-
-    const removeCoupon = (index: number) => {
-        setFormData(prev => ({
-            ...prev,
-            coupons: prev.coupons?.filter((_, i) => i !== index)
-        }));
-    };
-
     return (
         <motion.div
             key="step3"
@@ -186,131 +132,95 @@ export const StepPresentation = ({
                         <div className="grid grid-cols-1 md:grid-cols-12 gap-6">
                             <div className="md:col-span-12 lg:col-span-12 space-y-4">
                                 <div className="grid grid-cols-1 md:grid-cols-12 gap-6">
-                                    <div className="md:col-span-7 space-y-4 group/thumbnail">
-                                        <label className={cn(labelClasses, "mb-1.5 scale-95 origin-left text-slate-600 dark:text-slate-300")}>
-                                            <ImageIcon className="w-4 h-4 text-muted-foreground group-focus-within/thumbnail:text-emerald-400 transition-colors" />
-                                            Course Thumbnail <span className="text-[9px] font-normal lowercase opacity-50 ml-1">(1280x720 recommended)</span>
-                                        </label>
-                                        <div
-                                            onClick={() => fileInputRef.current?.click()}
-                                            onDragOver={handleDragOver}
-                                            onDragLeave={handleDragLeave}
-                                            onDrop={handleDrop}
-                                            className={cn(
-                                                "relative aspect-video rounded-2xl overflow-hidden border-2 border-dashed transition-all cursor-pointer group/upload",
-                                                isDragging ? "border-emerald-500 bg-emerald-500/10" : (errors.thumbnail_url ? "border-red-500/30 bg-red-500/5" : "border-slate-200 dark:border-white/5 bg-white dark:bg-slate-950/50 hover:border-emerald-500/30 hover:bg-emerald-500/5")
-                                            )}
-                                        >
-                                            {(formData.thumbnail_url || thumbnailPreview) ? (
-                                                <>
-                                                    <Image 
-                                                        src={thumbnailPreview || formData.thumbnail_url || ""} 
-                                                        alt="Thumbnail" 
-                                                        fill 
-                                                        unoptimized
-                                                        className="object-cover transition-transform duration-500 group-hover/upload:scale-105" 
-                                                    />
-                                                    <div className="absolute inset-0 bg-black/40 opacity-0 group-hover/upload:opacity-100 transition-opacity flex items-center justify-center gap-4 backdrop-blur-[2px]">
-                                                        <div className="p-3 rounded-full bg-white/20 text-white shadow-xl transform scale-90 group-hover/upload:scale-100 transition-transform"><Upload className="w-6 h-6" /></div>
-                                                        <div onClick={(e) => { e.stopPropagation(); removeThumbnail(); }} className="p-3 rounded-full bg-red-500/40 text-white shadow-xl transform scale-90 group-hover/upload:scale-100 transition-transform"><X className="w-6 h-6" /></div>
+                                    <div className="md:col-span-7 space-y-6">
+                                        <div className="space-y-4 group/thumbnail">
+                                            <label className={cn(labelClasses, "mb-1.5 scale-95 origin-left text-slate-600 dark:text-slate-300")}>
+                                                <ImageIcon className="w-4 h-4 text-muted-foreground group-focus-within/thumbnail:text-emerald-400 transition-colors" />
+                                                Course Thumbnail <span className="text-[9px] font-normal lowercase opacity-50 ml-1">(1280x720 recommended)</span>
+                                            </label>
+                                            <div
+                                                onClick={() => fileInputRef.current?.click()}
+                                                onDragOver={handleDragOver}
+                                                onDragLeave={handleDragLeave}
+                                                onDrop={handleDrop}
+                                                className={cn(
+                                                    "relative aspect-video rounded-2xl overflow-hidden border-2 border-dashed transition-all cursor-pointer group/upload",
+                                                    isDragging ? "border-emerald-500 bg-emerald-500/10" : (errors.thumbnail_url ? "border-red-500/30 bg-red-500/5" : "border-slate-200 dark:border-white/5 bg-white dark:bg-slate-950/50 hover:border-emerald-500/30 hover:bg-emerald-500/5")
+                                                )}
+                                            >
+                                                {(formData.thumbnail_url || thumbnailPreview) ? (
+                                                    <>
+                                                        <Image 
+                                                            src={thumbnailPreview || formData.thumbnail_url || ""} 
+                                                            alt="Thumbnail" 
+                                                            fill 
+                                                            unoptimized
+                                                            className="object-cover transition-transform duration-500 group-hover/upload:scale-105" 
+                                                        />
+                                                        <div className="absolute inset-0 bg-black/40 opacity-0 group-hover/upload:opacity-100 transition-opacity flex items-center justify-center gap-4 backdrop-blur-[2px]">
+                                                            <div className="p-3 rounded-full bg-white/20 text-white shadow-xl transform scale-90 group-hover/upload:scale-100 transition-transform"><Upload className="w-6 h-6" /></div>
+                                                            <div onClick={(e) => { e.stopPropagation(); removeThumbnail(); }} className="p-3 rounded-full bg-red-500/40 text-white shadow-xl transform scale-90 group-hover/upload:scale-100 transition-transform"><X className="w-6 h-6" /></div>
+                                                        </div>
+                                                    </>
+                                                ) : (
+                                                    <div className="absolute inset-0 flex flex-col items-center justify-center text-center p-6 space-y-3">
+                                                        <div className="w-16 h-16 rounded-full bg-emerald-500/5 flex items-center justify-center border border-emerald-500/10 group-hover/upload:scale-110 transition-transform">
+                                                            <Upload className="w-7 h-7 text-emerald-500/40" />
+                                                        </div>
+                                                        <div>
+                                                            <p className="text-xs font-black text-slate-700 dark:text-white uppercase tracking-wider">Drop Cover Asset</p>
+                                                            <p className="text-[10px] text-slate-400 mt-1">Recommended size: 16:9 aspect ratio</p>
+                                                        </div>
                                                     </div>
-                                                </>
-                                            ) : (
-                                                <div className="absolute inset-0 flex flex-col items-center justify-center text-center p-6 space-y-3">
-                                                    <div className="w-16 h-16 rounded-full bg-emerald-500/5 flex items-center justify-center border border-emerald-500/10 group-hover/upload:scale-110 transition-transform">
-                                                        <Upload className="w-7 h-7 text-emerald-500/40" />
+                                                )}
+                                                {isUploadingThumbnail && (
+                                                    <div className="absolute inset-0 bg-white/80 dark:bg-slate-950/80 backdrop-blur-sm flex items-center justify-center">
+                                                        <Loader2 className="w-10 h-10 text-emerald-500 animate-spin" />
                                                     </div>
-                                                    <div>
-                                                        <p className="text-xs font-black text-slate-700 dark:text-white uppercase tracking-wider">Drop Cover Asset</p>
-                                                        <p className="text-[10px] text-slate-400 mt-1">Recommended size: 16:9 aspect ratio</p>
-                                                    </div>
-                                                </div>
+                                                )}
+                                            </div>
+                                            {errors.thumbnail_url && (
+                                                <p className="text-[10px] text-red-500 font-bold ml-1 flex items-center gap-1.5 px-2">
+                                                    <AlertCircle className="w-3.5 h-3.5" />
+                                                    {errors.thumbnail_url}
+                                                </p>
                                             )}
-                                            {isUploadingThumbnail && (
-                                                <div className="absolute inset-0 bg-white/80 dark:bg-slate-950/80 backdrop-blur-sm flex items-center justify-center">
-                                                    <Loader2 className="w-10 h-10 text-emerald-500 animate-spin" />
-                                                </div>
-                                            )}
+                                            <input 
+                                                type="file" 
+                                                ref={fileInputRef} 
+                                                className="hidden" 
+                                                accept="image/*" 
+                                                onChange={handleFileChange} 
+                                            />
                                         </div>
-                                        {errors.thumbnail_url && (
-                                            <p className="text-[10px] text-red-500 font-bold ml-1 flex items-center gap-1.5 px-2">
-                                                <AlertCircle className="w-3.5 h-3.5" />
-                                                {errors.thumbnail_url}
-                                            </p>
-                                        )}
-                                        <input type="file" ref={fileInputRef} className="hidden" accept="image}
-                            <div className="space-y-4">
-                                {!formData.coupons?.length ? (
-                                    <div className="py-14 sm:py-20 flex flex-col items-center justify-center gap-4 border-2 border-dashed border-slate-200 dark:border-white/5 rounded-2xl bg-white/5 text-slate-400/50 transition-colors hover:border-emerald-500/20 group/empty">
-                                        <div className="w-16 h-16 rounded-full bg-emerald-500/5 flex items-center justify-center border border-emerald-500/10 group-hover/empty:scale-110 transition-transform">
-                                            <Tag className="w-8 h-8 text-emerald-500/40" />
-                                        </div>
-                                        <p className="text-[10px] font-black uppercase tracking-[0.25em] text-center px-6">No Promotional Hooks Found</p>
-                                    </div>
-                                ) : (
-                                    <div className="rounded-2xl border border-border/60 bg-card overflow-hidden shadow-sm">
-                                        <div className="grid grid-cols-[1fr_80px_1fr_80px] bg-muted/30 border-b border-border/80 px-5 py-3 items-center gap-4">
-                                            <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/60">Coupon Code</span>
-                                            <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/60 text-center">Benefit</span>
-                                            <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/60">Expiration</span>
-                                            <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/60 text-right">Actions</span>
-                                        </div>
-                                        <div className="divide-y divide-border/40">
-                                            <AnimatePresence mode="popLayout">
-                                                {formData.coupons.map((coupon, i) => (
-                                                    <motion.div
-                                                        key={coupon.code}
-                                                        layout
-                                                        initial={{ opacity: 0, y: 5 }}
-                                                        animate={{ opacity: 1, y: 0 }}
-                                                        exit={{ opacity: 0, scale: 0.98 }}
-                                                        className="grid grid-cols-[1fr_80px_1fr_80px] px-5 py-3 hover:bg-muted/30 transition-all items-center gap-4 group/cp"
-                                                    >
-                                                        <div className="flex items-center gap-3 min-w-0">
-                                                            <div className="w-8 h-8 rounded-lg bg-emerald-500/10 flex items-center justify-center shrink-0 border border-emerald-500/20 group-hover/cp:scale-110 transition-transform">
-                                                                <Tag className="w-4 h-4 text-emerald-500" />
-                                                            </div>
-                                                            <span className="text-[12px] font-black uppercase tracking-[0.1em] text-foreground truncate">
-                                                                {coupon.code}
-                                                            </span>
-                                                        </div>
-                                                        <div className="text-center">
-                                                            <span className="text-[11px] font-bold text-emerald-600 bg-emerald-500/10 px-2 py-0.5 rounded-md border border-emerald-500/20">
-                                                                {coupon.discount_percentage}%
-                                                            </span>
-                                                        </div>
-                                                        <div className="flex items-center gap-2 min-w-0">
-                                                            <Calendar className="w-3.5 h-3.5 text-muted-foreground/40" />
-                                                            <span className="text-[11px] font-medium text-muted-foreground truncate">
-                                                                {coupon.expires_at ? new Date(coupon.expires_at).toLocaleDateString() : 'Lifetime'}
-                                                            </span>
-                                                        </div>
-                                                        <div className="flex items-center justify-end gap-1.5 opacity-0 group-hover/cp:opacity-100 transition-opacity">
-                                                            <button
-                                                                type="button" 
-                                                                onClick={() => startEditingCoupon(i)} 
-                                                                className="w-7 h-7 rounded-lg text-muted-foreground hover:text-emerald-500 hover:bg-emerald-500/10 transition-all flex items-center justify-center active:scale-90"
-                                                            >
-                                                                <Pencil className="w-3.5 h-3.5" />
-                                                            </button>
-                                                            <button
-                                                                type="button" 
-                                                                onClick={() => removeCoupon(i)} 
-                                                                className="w-7 h-7 rounded-lg text-muted-foreground hover:text-rose-500 hover:bg-rose-500/10 transition-all flex items-center justify-center active:scale-90"
-                                                            >
-                                                                <Trash2 className="w-3.5 h-3.5" />
-                                                            </button>
-                                                        </div>
-                                                    </motion.div>
-                                                ))}
-                                            </AnimatePresence>
+
+                                        <div className="space-y-2 group/video">
+                                            <label className={cn(labelClasses, "mb-1.5 scale-95 origin-left text-slate-600 dark:text-slate-300")}>
+                                                <Video className="w-4 h-4 text-muted-foreground group-focus-within/video:text-emerald-400 transition-colors" />
+                                                Course Trailer Video <span className="text-[9px] font-normal lowercase opacity-50 ml-1">(YouTube / Vimeo URL)</span>
+                                            </label>
+                                            <div className="space-y-1">
+                                                <input
+                                                    type="url"
+                                                    value={formData.preview_video_url || ""}
+                                                    onChange={(e) => setFormData(prev => ({ ...prev, preview_video_url: e.target.value }))}
+                                                    placeholder="https://youtube.com/watch?v=..."
+                                                    className={cn(inputClasses, "h-11 focus:border-emerald-500/50 focus:ring-2 focus:ring-emerald-500/20 bg-white dark:bg-slate-950", errors.preview_video_url && "border-red-500/50 focus:border-red-500")}
+                                                />
+                                                {errors.preview_video_url && (
+                                                    <p className="text-[10px] text-red-500 font-bold ml-1 flex items-center gap-1.5 mt-1.5">
+                                                        <AlertCircle className="w-3.5 h-3.5" />
+                                                        {errors.preview_video_url}
+                                                    </p>
+                                                )}
+                                            </div>
                                         </div>
                                     </div>
-                                )}
-                            </div>
                         </div>
-                    </div>
                 </div>
+            </div>
+        </div>
+    </div>
 
                 <div className="space-y-3">
                     <div className="flex items-center gap-2.5 px-1.5">

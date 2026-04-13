@@ -335,19 +335,20 @@ export default function EnrollmentsPage() {
             <PageHeader
                 icon={GraduationCap}
                 title="Enrollments"
-                subtitle="Manage student enrollments and course access."
-            >
-                <div className="flex items-center gap-3">
-                    <button 
-                        onClick={fetchEnrollments}
-                        disabled={isLoading}
-                        className="flex items-center gap-2 px-4 py-2 rounded-xl bg-card border border-border shadow-sm hover:border-primary/40 hover:bg-muted/50 transition-all font-bold text-[13px] tracking-tight disabled:opacity-50"
-                    >
-                        <RefreshCw className={cn("w-4 h-4 text-primary", isLoading && "animate-spin")} />
-                        <span>Refresh</span>
-                    </button>
-                </div>
-            </PageHeader>
+                description="Manage student enrollments and course access."
+                actions={
+                    <div className="flex items-center gap-3">
+                        <button 
+                            onClick={fetchEnrollments}
+                            disabled={isLoading}
+                            className="flex items-center gap-2 px-4 py-2 rounded-xl bg-card border border-border shadow-sm hover:border-primary/40 hover:bg-muted/50 transition-all font-bold text-[13px] tracking-tight disabled:opacity-50"
+                        >
+                            <RefreshCw className={cn("w-4 h-4 text-primary", isLoading && "animate-spin")} />
+                            <span>Refresh</span>
+                        </button>
+                    </div>
+                }
+            />
 
             <DashboardGrid cols={isAdmin ? 4 : 3} className="mb-8">
                 <StatsCard 
