@@ -10,7 +10,7 @@ export const fetchCoupons = createAsyncThunk(
         try {
             const supabase = createClient();
             const { data, error } = await supabase
-                .from('coupon_codes')
+                .from('coupons')
                 .select('*')
                 .order('created_at', { ascending: false });
             if (error) throw error;

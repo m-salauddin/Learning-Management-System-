@@ -63,14 +63,14 @@ export default function CouponsPage() {
         }
         try {
             const { data: newCoupon, error: couponError } = await (supabase as any)
-                .from('coupon_codes')
+                .from('coupons')
                 .insert({
                     code: formData.code.toUpperCase(),
-                    type: formData.type,
-                    value: parseInt(formData.value),
-                    max_uses: formData.max_uses ? parseInt(formData.max_uses) : null,
-                    starts_at: formData.starts_at || null,
-                    ends_at: formData.ends_at || null,
+                    discount_type: formData.type,
+                    discount_value: parseInt(formData.value),
+                    usage_limit: formData.max_uses ? parseInt(formData.max_uses) : null,
+                    valid_from: formData.starts_at || new Date().toISOString(),
+                    valid_until: formData.ends_at || null,
                     is_active: true
                 })
                 .select()
