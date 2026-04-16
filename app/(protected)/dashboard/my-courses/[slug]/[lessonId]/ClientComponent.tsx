@@ -1,14 +1,16 @@
 "use client";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { 
     Play, CheckCircle2, Lock, Menu, X, ChevronLeft, ChevronRight, FileText, 
-    ArrowLeft, MessageSquare, User, Trophy, HelpCircle, Edit3, MoreHorizontal,
+    User, Trophy, HelpCircle, Edit3, 
     Bold, Italic, Underline, List, ListOrdered, Code, Quote, Undo, Redo,
-    Heading1, Heading2, Type, Highlighter, Link as LinkIcon, 
-    CheckSquare, Image as ImageIcon, AlignLeft, AlignCenter, AlignRight,
-    ShieldAlert, Fingerprint, Eye, ShieldCheck, Terminal, Clock, Target, RotateCcw, BarChart3
+    Heading1, Heading2, Highlighter, Link as LinkIcon, 
+    CheckSquare, Image as ImageIcon,
+    ShieldAlert, Fingerprint, ShieldCheck, Terminal, Clock, Target, RotateCcw, BarChart3, Search,
+    Upload,
+    Download
 } from "lucide-react";
 import { useEditor, EditorContent } from '@tiptap/react';
 import { BubbleMenu, FloatingMenu } from '@tiptap/react/menus';
@@ -22,55 +24,103 @@ import TextAlign from '@tiptap/extension-text-align';
 import Typography from '@tiptap/extension-typography';
 import Image from '@tiptap/extension-image';
 import { motion, AnimatePresence } from "framer-motion";
+import { parseMarkdown } from "@/lib/markdown-parser";
 import { ClassValue, clsx } from "clsx";
 import { twMerge } from "tailwind-merge";
 import { createClient } from "@/lib/supabase/client";
 import { useToast } from "@/components/ui/toast";
-import type { Database } from "@/types/supabase";
+import type { Database, Json } from "@/types/supabase";
 
 type LessonProgressInsert = Database['public']['Tables']['lesson_progress']['Insert'];
 
 function cn_local(...inputs: ClassValue[]) {
-    return twMerge(clsx(inputs));
+    return twMerge(clsx(...inputs));
 }
 
-interface Lesson {
+interface QuizResources {
+    questions?: {
+        question: string;
+        options: string[];
+        correct: string;
+    }[];
+    guidelines?: string[];
+    success_steps?: string[];
+}
+
+type LessonRow = Database['public']['Tables']['module_lessons']['Row'];
+type ModuleRow = Database['public']['Tables']['modules']['Row'];
+type CourseRow = Database['public']['Tables']['courses']['Row'];
+type AssetRowBase = Database['public']['Tables']['lesson_assets']['Row'];
+type AssetRow = Omit<AssetRowBase, 'resources'> & {
+    resources?: any;
+    content?: any;
+};
+
+type QuizRow = Database['public']['Tables']['module_quizzes']['Row'];
+type AssignmentRow = Database['public']['Tables']['module_assignments']['Row'];
+
+interface Lesson extends Omit<LessonRow, 'lesson_type' | 'is_free_preview'> {
+    lesson_type: string | null;
+    is_free_preview: boolean | null;
+}
+
+interface ModuleWithLessons extends ModuleRow {
+    lessons?: Lesson[];
+    quizzes?: QuizRow[];
+    assignments?: AssignmentRow[];
+}
+
+interface Milestone {
     id: string;
-    module_id: string;
     title: string;
-    description?: string | null;
-    lesson_type?: 'video' | 'text' | 'quiz' | 'assignment' | (string & {}) | null;
-    position?: number;
-    duration_minutes?: number | null;
-    is_free_preview?: boolean | null;
+    modules: ModuleWithLessons[];
+}
+
+interface CourseWithContent extends CourseRow {
+    milestones?: Milestone[];
+    modules?: ModuleWithLessons[];
 }
 
 interface CoursePlayerClientProps {
-    course: any;
+    course: CourseWithContent;
     currentLesson: Lesson;
-    asset: any;
+    asset: AssetRow | null;
+    quiz?: QuizRow | null;
+    assignment?: AssignmentRow | null;
     hasAccess: boolean;
     userId: string;
     enrollmentId?: string;
 }
 
-export function CoursePlayerClient({ course, currentLesson, asset, hasAccess, userId, enrollmentId }: CoursePlayerClientProps) {
+export function CoursePlayerClient({ 
+    course, currentLesson, asset, quiz, assignment, hasAccess, userId, enrollmentId 
+}: CoursePlayerClientProps) {
     const router = useRouter();
     const [sidebarOpen, setSidebarOpen] = useState(true);
     const [videoUrl, setVideoUrl] = useState<string | null>(null);
     const [loadingVideo, setLoadingVideo] = useState(false);
     const [activeTab, setActiveTab] = useState<'notes' | 'warning'>('notes');
     const [isCinematic, setIsCinematic] = useState(false);
+    const [searchQuery, setSearchQuery] = useState("");
+    const [lessonProgress, setLessonProgress] = useState<Record<string, boolean>>({});
+    const [mounted, setMounted] = useState(false);
     
-    // Quiz State Management
     const [quizStatus, setQuizStatus] = useState<'idle' | 'active' | 'finished'>('idle');
     const [showRules, setShowRules] = useState(false);
     const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
     const [selectedAnswers, setSelectedAnswers] = useState<Record<number, string>>({});
-    const [timeLeft, setTimeLeft] = useState(600); // Default 10 mins
+    const [timeLeft, setTimeLeft] = useState(0);
     const [quizResult, setQuizResult] = useState<{ score: number, total: number } | null>(null);
 
-    const questions = (asset?.content as any)?.questions || [
+    // Assignment States
+    const [submissionLink, setSubmissionLink] = useState("");
+    const [isSubmitting, setIsSubmitting] = useState(false);
+    const [showSubmissionModal, setShowSubmissionModal] = useState(false);
+    const supabase = createClient();
+    const { success, error } = useToast();
+    const [submissionStatus, setSubmissionStatus] = useState<any>(null);
+
+    const questions = (quiz?.questions as any) || (currentLesson as any).quiz_data || (asset?.resources as QuizResources)?.questions || (asset?.content as any)?.questions || [
         { 
             question: "What is the primary benefit of SSR (Server-Side Rendering) in Next.js?", 
             options: ["Faster Initial Page Loads", "Smaller Client-Side Bundles", "Optimized SEO Performance", "All of the above"],
@@ -89,6 +139,12 @@ export function CoursePlayerClient({ course, currentLesson, asset, hasAccess, us
     ];
 
     useEffect(() => {
+        if (questions.length > 0) {
+            setTimeLeft(questions.length * 60); // 1 minute per question
+        }
+    }, [questions.length]);
+
+    useEffect(() => {
         if (quizStatus === 'active' && timeLeft > 0) {
             const timer = setInterval(() => setTimeLeft(prev => prev - 1), 1000);
             return () => clearInterval(timer);
@@ -102,8 +158,8 @@ export function CoursePlayerClient({ course, currentLesson, asset, hasAccess, us
         if (currentLesson.lesson_type === 'quiz' && userId) {
             const checkExistingScore = async () => {
                 try {
-                    const { data, error } = await (supabase
-                        .from('quiz_submissions') as any)
+                    const { data, error } = await supabase
+                        .from('quiz_submissions')
                         .select('score, total_questions')
                         .eq('lesson_id', currentLesson.id)
                         .eq('user_id', userId)
@@ -121,6 +177,25 @@ export function CoursePlayerClient({ course, currentLesson, asset, hasAccess, us
         }
     }, [currentLesson.id, userId]);
 
+    useEffect(() => {
+        if (currentLesson.lesson_type === 'assignment' && userId) {
+            const checkSubmission = async () => {
+                const { data, error: subError } = await supabase
+                    .from('assignment_submissions')
+                    .select('*')
+                    .eq('lesson_id', currentLesson.id)
+                    .eq('user_id', userId)
+                    .maybeSingle();
+
+                if (data) {
+                    setSubmissionStatus(data);
+                    setSubmissionLink(data.submission_link);
+                }
+            };
+            checkSubmission();
+        }
+    }, [currentLesson.id, userId]);
+
     const calculateResults = async () => {
         let score = 0;
         questions.forEach((q: any, idx: number) => {
@@ -131,9 +206,8 @@ export function CoursePlayerClient({ course, currentLesson, asset, hasAccess, us
         setQuizResult(result);
         setQuizStatus('finished');
 
-        // Save to database
         try {
-            await (supabase.from('quiz_submissions') as any).insert({
+            await supabase.from('quiz_submissions').insert({
                 user_id: userId,
                 lesson_id: currentLesson.id,
                 score: score,
@@ -145,17 +219,143 @@ export function CoursePlayerClient({ course, currentLesson, asset, hasAccess, us
         }
     };
 
+    const allLessons = useMemo(() => {
+        const milestones = course.milestones || [];
+        const modules = course.modules || [];
+        
+        const structuralMilestones: Milestone[] = milestones.length > 0 
+            ? milestones 
+            : [{ id: 'default', title: "Curriculum Plan", modules: modules }];
+            
+        return structuralMilestones.flatMap((ms) => 
+            (ms.modules || []).flatMap((mod) => mod.lessons || [])
+        ).filter(Boolean) as Lesson[];
+    }, [course.milestones, course.modules]);
+
+    const lessonsWithStatus = useMemo(() => {
+        let isPreviousCompleted = true;
+        
+        return allLessons.map((lesson, index: number) => {
+            const isCompleted = lessonProgress[lesson.id] || false;
+            const isLocked = index > 0 && !isPreviousCompleted;
+            
+            isPreviousCompleted = isCompleted;
+            
+            return {
+                id: lesson.id,
+                isCompleted,
+                isLocked
+            };
+        });
+    }, [allLessons, lessonProgress]);
+
     const formatTime = (seconds: number) => {
         const mins = Math.floor(seconds / 60);
         const secs = seconds % 60;
         return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
     };
 
-    const [mounted, setMounted] = useState(false);
+    const handleDownloadMarkdown = () => {
+        const content = assignment?.markdown_content || asset?.markdown_content || currentLesson.description;
+        
+        if (!content) {
+            error("Download Unavailable", "No operational brief has been provided for this mission yet.");
+            return;
+        }
+        
+        const blob = new Blob([content], { type: 'text/markdown' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `assignment-${currentLesson.title.toLowerCase().replace(/\s+/g, '-')}.md`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+        success("Download Started", "Your assignment file is being downloaded.");
+    };
+
+    const handleSubmitAssignment = async () => {
+        if (!submissionLink.trim()) {
+            error("Invalid Link", "Please provide a valid project or submission link.");
+            return;
+        }
+
+        setIsSubmitting(true);
+        try {
+            const { data, error: subError } = await supabase
+                .from('assignment_submissions')
+                .upsert({
+                    user_id: userId,
+                    lesson_id: currentLesson.id,
+                    submission_link: submissionLink,
+                    status: 'pending'
+                }, { onConflict: 'user_id,lesson_id' })
+                .select()
+                .single();
+
+            if (subError) throw subError;
+
+            setSubmissionStatus(data);
+            setShowSubmissionModal(false);
+            success("Submission Successful", "Your assignment solution has been stored safely.");
+        } catch (err: any) {
+            console.error("Submission failed:", err);
+            error("Submission Failed", err.message || "Failed to submit assignment. Please try again.");
+        } finally {
+            setIsSubmitting(false);
+        }
+    };
 
     useEffect(() => {
         setMounted(true);
     }, []);
+
+    useEffect(() => {
+        if (userId && enrollmentId) {
+            const fetchProgress = async () => {
+                const { data } = await supabase
+                    .from('lesson_progress')
+                    .select('lesson_id, is_completed')
+                    .eq('enrollment_id', enrollmentId)
+                    .eq('user_id', userId);
+                
+                if (data) {
+                    const progress: Record<string, boolean> = {};
+                    data.forEach((p: any) => {
+                        progress[p.lesson_id] = p.is_completed;
+                    });
+                    setLessonProgress(progress);
+                }
+            };
+            fetchProgress();
+            
+            const channel = supabase
+                .channel('lesson_progress_changes')
+                .on('postgres_changes', { 
+                    event: '*', 
+                    schema: 'public', 
+                    table: 'lesson_progress',
+                    filter: `user_id=eq.${userId}`
+                }, (payload: any) => {
+                    if (payload.new && payload.new.enrollment_id === enrollmentId) {
+                        setLessonProgress(prev => ({
+                            ...prev,
+                            [payload.new.lesson_id]: payload.new.is_completed
+                        }));
+                    }
+                })
+                .subscribe();
+                
+            return () => {
+                supabase.removeChannel(channel);
+            };
+        }
+    }, [userId, enrollmentId, supabase]);
+
+    const currentIndex = allLessons.findIndex((l: any) => l.id === currentLesson.id);
+    const nextLesson = allLessons[currentIndex + 1];
+    const prevLesson = allLessons[currentIndex - 1];
 
     const editor = useEditor({
         immediatelyRender: false,
@@ -210,7 +410,7 @@ export function CoursePlayerClient({ course, currentLesson, asset, hasAccess, us
 
     const addTimestamp = () => {
         if (!editor) return;
-        const time = '01:23'; // Logic for current timestamp would go here
+        const time = '01:23';
         editor.chain().focus().insertContent(` [${time}] `).run();
     };
     const [showPlayer, setShowPlayer] = useState(true);
@@ -220,8 +420,7 @@ export function CoursePlayerClient({ course, currentLesson, asset, hasAccess, us
 
     const [expandedModules, setExpandedModules] = useState<string[]>([currentLesson.module_id]);
     const [expandedMilestones, setExpandedMilestones] = useState<string[]>([currentMilestoneId]);
-    const supabase = createClient();
-    const { success, error } = useToast();
+
 
     const toggleModule = (moduleId: string) => {
         setExpandedModules(prev => 
@@ -306,20 +505,19 @@ export function CoursePlayerClient({ course, currentLesson, asset, hasAccess, us
         })();
     }, [currentLesson.id, hasAccess]);
 
-    const allLessons = course.modules.flatMap((m: any) => m.lessons);
-    const currentIndex = allLessons.findIndex((l: any) => l.id === currentLesson.id);
-    const nextLesson = allLessons[currentIndex + 1];
-    const prevLesson = allLessons[currentIndex - 1];
+
 
     const handleNext = () => {
+        const slug = course.slug || '';
         if (nextLesson) {
-            router.push(`/dashboard/my-courses/${course.slug}/${nextLesson.id}`);
+            router.push(`/dashboard/my-courses/${slug}/${nextLesson.id}`);
         }
     };
 
     const handlePrev = () => {
+        const slug = course.slug || '';
         if (prevLesson) {
-            router.push(`/dashboard/my-courses/${course.slug}/${prevLesson.id}`);
+            router.push(`/dashboard/my-courses/${slug}/${prevLesson.id}`);
         }
     };
 
@@ -344,15 +542,16 @@ export function CoursePlayerClient({ course, currentLesson, asset, hasAccess, us
 
         try {
             await (supabase.from('lesson_progress') as any).upsert(progressData, { onConflict: 'user_id,lesson_id' });
-            success("Lesson completed!");
+            success("Mission Accomplished!");
+            const slug = course.slug || '';
             if (nextLesson) {
-                router.push(`/dashboard/my-courses/${course.slug}/${nextLesson.id}`);
+                router.push(`/dashboard/my-courses/${slug}/${nextLesson.id}`);
             } else {
-                router.push(`/courses/${course.slug}`);
-                success("Course finished! Congratulations!");
+                router.push(`/courses/${slug}`);
+                success("Course Protocol Complete!");
             }
         } catch (err) {
-            console.error("Failed to save progress:", err);
+            console.error("Progress upload intercept failed:", err);
             handleNext();
         }
     };
@@ -366,7 +565,7 @@ export function CoursePlayerClient({ course, currentLesson, asset, hasAccess, us
             
             <aside
                 className={cn_local(
-                    "fixed inset-y-0 left-0 z-50 w-[360px] bg-white dark:bg-slate-900 border-r border-slate-200 dark:border-white/10 transform transition-transform duration-300 ease-out lg:relative lg:translate-x-0 shadow-xl",
+                    "fixed inset-y-0 left-0 z-50 w-[360px] bg-white dark:bg-[#0b0f1a] border-r border-slate-200 dark:border-white/5 transform transition-transform duration-300 ease-out lg:relative lg:translate-x-0 shadow-xl",
                     !sidebarOpen && "-translate-x-full lg:hidden",
                     isCinematic && "lg:-translate-x-full lg:w-0 lg:opacity-0 lg:hidden"
                 )}
@@ -387,40 +586,89 @@ export function CoursePlayerClient({ course, currentLesson, asset, hasAccess, us
                     </div>
 
                     
-                    <div className="flex-1 overflow-y-auto custom-scrollbar p-3 space-y-6">
-                        {(course.milestones?.length > 0 ? course.milestones : [{ id: 'default', title: "Curriculum Plan", modules: course.modules }]).map((milestone: any, msIdx: number) => {
-                            const isMsExpanded = expandedMilestones.includes(milestone.id || 'default');
+                    <div className="px-5 py-3 border-b border-white/5 bg-slate-50/50 dark:bg-white/2">
+                        <div className="relative group/search">
+                            <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500 group-focus-within/search:text-primary transition-all duration-300" />
+                            <input 
+                                type="text"
+                                value={searchQuery}
+                                onChange={(e) => setSearchQuery(e.target.value)}
+                                placeholder="Search training protocol..."
+                                className="w-full bg-white dark:bg-black/20 border border-slate-200 dark:border-white/5 rounded-2xl py-2.5 pl-10 pr-4 text-[11px] font-semibold focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary/40 transition-all placeholder:text-slate-500 shadow-sm"
+                            />
+                            {searchQuery && (
+                                <button 
+                                    onClick={() => setSearchQuery("")}
+                                    className="absolute right-3 top-1/2 -translate-y-1/2 p-1 hover:bg-slate-100 dark:hover:bg-white/10 rounded-full transition-colors"
+                                >
+                                    <X className="w-3 h-3 text-slate-400" />
+                                </button>
+                            )}
+                        </div>
+                    </div>
+
+                    <div className="px-5 py-2 flex items-center justify-between text-[9px] font-black uppercase tracking-widest text-slate-500 border-b border-white/5">
+                        <span>Intelligence Sync</span>
+                        <div className="flex items-center gap-2">
+                             <div className="flex -space-x-1">
+                                {allLessons.slice(0, 5).map((l, i) => (
+                                    <div key={i} className={cn_local(
+                                        "w-2 h-2 rounded-full border border-slate-950",
+                                        lessonProgress[l.id] ? "bg-emerald-500" : "bg-slate-800"
+                                    )} />
+                                ))}
+                             </div>
+                             <span className="text-primary">{Math.round((Object.values(lessonProgress).filter(Boolean).length / (allLessons.length || 1)) * 100)}%</span>
+                        </div>
+                    </div>
+
+                    
+                    <div className="flex-1 overflow-y-auto custom-scrollbar p-3.5 space-y-4">
+                        {(course.milestones && course.milestones.length > 0 
+                            ? course.milestones 
+                            : [{ id: 'default', title: "Curriculum Plan", modules: course.modules || [] }])
+                          .filter((ms: any) => {
+                              if (!searchQuery) return true;
+                              const q = searchQuery.toLowerCase();
+                              return ms.title.toLowerCase().includes(q) ||
+                                  ms.modules?.some((mod: any) => 
+                                      mod.title.toLowerCase().includes(q) ||
+                                      mod.lessons?.some((less: any) => less.title.toLowerCase().includes(q))
+                                  );
+                          })
+                          .map((milestone: any, msIdx: number) => {
+                            const isMsExpanded = expandedMilestones.includes(milestone.id || 'default') || !!searchQuery;
 
                             return (
                                 <div key={milestone.id || msIdx} 
                                     className={cn_local(
-                                        "rounded-2xl border transition-all duration-300",
+                                        "rounded-[1.5rem] border transition-all duration-500",
                                         isMsExpanded 
-                                            ? "bg-slate-50/50 dark:bg-white/5 border-slate-100 dark:border-white/10 p-2" 
+                                            ? "bg-slate-50/50 dark:bg-white/3 border-slate-100 dark:border-white/10 p-2 shadow-inner" 
                                             : "p-0 border-transparent"
                                     )}
                                 >
                                     <button 
                                         onClick={() => toggleMilestone(milestone.id || 'default')}
                                         className={cn_local(
-                                            "w-full flex items-center justify-between p-2 group transition-all rounded-xl",
+                                            "w-full flex items-center justify-between p-3 group transition-all rounded-2xl",
                                             !isMsExpanded && "hover:bg-slate-50 dark:hover:bg-white/5"
                                         )}
                                     >
-                                        <div className="flex items-center gap-2">
+                                        <div className="flex items-center gap-3">
                                             <div className={cn_local(
-                                                "w-1.5 h-1.5 rounded-full transition-colors",
-                                                isMsExpanded ? "bg-primary" : "bg-slate-300 dark:bg-white/10"
+                                                "w-2 h-2 rounded-full transition-all duration-700",
+                                                isMsExpanded ? "bg-primary shadow-[0_0_12px_rgba(var(--primary),0.6)]" : "bg-slate-300 dark:bg-white/10"
                                             )} />
                                             <span className={cn_local(
-                                                "text-[9px] font-black uppercase tracking-tight transition-colors",
-                                                isMsExpanded ? "text-primary" : "text-slate-500 dark:text-slate-400"
+                                                "text-[10px] font-black uppercase tracking-wider transition-colors",
+                                                isMsExpanded ? "text-primary transition-all scale-105 origin-left" : "text-slate-500 dark:text-slate-400"
                                             )}>
                                                 {msIdx + 1}. {milestone.title}
                                             </span>
                                         </div>
                                         <ChevronRight className={cn_local(
-                                            "w-3 h-3 text-slate-400 transition-transform duration-300",
+                                            "w-4 h-4 text-slate-400 transition-transform duration-500",
                                             isMsExpanded && "rotate-90 text-primary"
                                         )} />
                                     </button>
@@ -431,45 +679,58 @@ export function CoursePlayerClient({ course, currentLesson, asset, hasAccess, us
                                                 initial={{ height: 0, opacity: 0 }}
                                                 animate={{ height: "auto", opacity: 1 }}
                                                 exit={{ height: 0, opacity: 0 }}
-                                                transition={{ duration: 0.3, ease: "easeInOut" }}
+                                                transition={{ duration: 0.4, ease: [0.23, 1, 0.32, 1] }}
                                                 className="overflow-hidden"
                                             >
-                                                <div className="space-y-2 mt-2">
-                                                    {milestone.modules?.map((module: any, modIdx: number) => {
-                                                        const isExpanded = expandedModules.includes(module.id);
+                                                <div className="space-y-2 mt-2 px-1">
+                                                    {milestone.modules?.filter((mod: any) => {
+                                                        if (!searchQuery) return true;
+                                                        const q = searchQuery.toLowerCase();
+                                                        return mod.title.toLowerCase().includes(q) ||
+                                                               mod.lessons?.some((less: any) => less.title.toLowerCase().includes(q));
+                                                    }).map((module: any, modIdx: number) => {
+                                                        const isExpanded = expandedModules.includes(module.id) || !!searchQuery;
                                                         const isCurrentModule = module.id === currentLesson.module_id;
 
                                                         return (
-                                                            <div key={module.id} className="space-y-1">
+                                                            <div key={module.id} className="space-y-1.5">
                                                                 <button
                                                                     onClick={() => toggleModule(module.id)}
                                                                     className={cn_local(
-                                                                        "w-full flex items-center justify-between p-3 rounded-xl transition-all border shadow-sm",
+                                                                        "w-full flex items-center justify-between p-3 rounded-2xl transition-all border shadow-sm group/mod",
                                                                         isCurrentModule 
-                                                                            ? "bg-slate-100 dark:bg-slate-800 border-slate-200 dark:border-white/20" 
-                                                                            : "bg-white dark:bg-slate-900 border-slate-100 dark:border-white/5 hover:border-slate-200 dark:hover:border-white/10"
+                                                                            ? "bg-slate-100 dark:bg-slate-400/10 border-slate-200 dark:border-white/20" 
+                                                                            : "bg-white dark:bg-black/20 border-slate-100 dark:border-white/5 hover:border-slate-200 dark:hover:border-white/10"
                                                                     )}
                                                                 >
-                                                                    <div className="flex items-center gap-3 min-w-0 text-left">
+                                                                    <div className="flex items-center gap-3.5 min-w-0 text-left">
                                                                         <div className={cn_local(
-                                                                            "w-7 h-7 rounded-lg flex items-center justify-center shrink-0 border text-[10px] font-black",
-                                                                            isCurrentModule ? "bg-primary text-white border-primary shadow-sm" : "bg-white dark:bg-slate-900 text-slate-400 border-slate-200 dark:border-white/5"
+                                                                            "w-8 h-8 rounded-xl flex items-center justify-center shrink-0 border text-[11px] font-black transition-all duration-300",
+                                                                            isCurrentModule 
+                                                                                ? "bg-primary text-white border-primary shadow-[0_6px_16px_rgba(var(--primary),0.3)] scale-105" 
+                                                                                : "bg-white dark:bg-slate-900 text-slate-400 border-slate-200 dark:border-white/5 group-hover/mod:border-primary/40 group-hover/mod:text-primary/70"
                                                                         )}>
                                                                             {modIdx + 1}
                                                                         </div>
                                                                         <div className="min-w-0">
                                                                             <h4 className={cn_local(
-                                                                                "text-[11px] font-bold leading-tight truncate",
+                                                                                "text-[12px] font-bold leading-tight truncate",
                                                                                 isCurrentModule ? "text-slate-900 dark:text-white" : "text-slate-500"
                                                                             )}>
                                                                                 {module.title}
                                                                             </h4>
+                                                                            {isCurrentModule && (
+                                                                                <span className="text-[7px] font-black uppercase text-primary/70 tracking-widest block mt-0.5">Execution Active</span>
+                                                                            )}
                                                                         </div>
                                                                     </div>
-                                                                    <ChevronRight className={cn_local(
-                                                                        "w-3.5 h-3.5 text-slate-400 transition-transform duration-300",
-                                                                        isExpanded && "rotate-90 text-primary"
-                                                                    )} />
+                                                                    <div className="flex items-center gap-2">
+                                                                        <span className="text-[9px] font-bold text-slate-600 dark:text-slate-500">{module.lessons?.length || 0}</span>
+                                                                        <ChevronRight className={cn_local(
+                                                                            "w-4 h-4 text-slate-400 transition-transform duration-300",
+                                                                            isExpanded && "rotate-90 text-primary"
+                                                                        )} />
+                                                                    </div>
                                                                 </button>
 
                                                                 <AnimatePresence initial={false}>
@@ -481,43 +742,198 @@ export function CoursePlayerClient({ course, currentLesson, asset, hasAccess, us
                                                                             transition={{ duration: 0.3, ease: "easeInOut" }}
                                                                             className="overflow-hidden"
                                                                         >
-                                                                            <div className="pl-6 pr-1 py-2 space-y-1.5 ml-3 border-l-2 border-slate-100 dark:border-white/5">
-                                                                                {module.lessons?.map((lesson: any) => {
-                                                                                    const isActive = lesson.id === currentLesson.id;
-                                                                                    const isLocked = !hasAccess && !lesson.is_free_preview;
+                                                                            <div className="pl-4 pr-1 py-1 space-y-1 ml-4 border-l border-slate-100 dark:border-white/5">
+                                                                                {(() => {
+                                                                                    const filteredLessons = module.lessons?.filter((less: any) => {
+                                                                                        if (!searchQuery) return true;
+                                                                                        return less.title.toLowerCase().includes(searchQuery.toLowerCase());
+                                                                                    }) || [];
 
-                                                                                    let Icon = Play;
-                                                                                    if (lesson.lesson_type === 'quiz') Icon = HelpCircle;
-                                                                                    if (lesson.lesson_type === 'assignment') Icon = Edit3;
+                                                                                    // Grouping logic: Merging ALL quizzes into a single section, regardless of position
+                                                                                    const quizzes = filteredLessons.filter((l: any) => l.lesson_type === 'quiz');
+                                                                                    
+                                                                                    const processedItems: any[] = [];
+                                                                                    let quizGroupAdded = false;
 
-                                                                                    return (
-                                                                                        <Link
-                                                                                            key={lesson.id}
-                                                                                            href={`/dashboard/my-courses/${course.slug}/${lesson.id}`}
-                                                                                            className={cn_local(
-                                                                                                "flex items-center gap-3 p-2.5 rounded-xl transition-all group border",
-                                                                                                isActive 
-                                                                                                    ? "bg-primary/5 border-primary/20" 
-                                                                                                    : "bg-white/50 dark:bg-slate-900/50 border-slate-50 dark:border-white/5 hover:bg-white dark:hover:bg-slate-800 hover:border-slate-200 dark:hover:border-white/10"
-                                                                                            )}
-                                                                                        >
-                                                                                            <div className={cn_local(
-                                                                                                "w-6 h-6 rounded-lg flex items-center justify-center shrink-0",
-                                                                                                isActive ? "bg-primary text-white" : "bg-white dark:bg-slate-800 text-slate-400 border border-slate-100 dark:border-white/5"
-                                                                                            )}>
-                                                                                                {isLocked ? <Lock className="w-3 h-3" /> : <Icon className={cn_local("w-3 h-3", isActive && "fill-current")} />}
-                                                                                            </div>
-                                                                                            <div className="min-w-0">
-                                                                                                <p className={cn_local(
-                                                                                                    "text-[10px] font-bold truncate",
-                                                                                                    isActive ? "text-primary" : "text-slate-600 dark:text-slate-400 group-hover:text-slate-900 dark:group-hover:text-white"
+                                                                                    filteredLessons.forEach((lesson: any) => {
+                                                                                        if (lesson.lesson_type === 'quiz') {
+                                                                                            if (!quizGroupAdded && quizzes.length > 0) {
+                                                                                                processedItems.push({ 
+                                                                                                    type: 'assessment_group', 
+                                                                                                    items: quizzes 
+                                                                                                });
+                                                                                                quizGroupAdded = true;
+                                                                                            }
+                                                                                            // Skip individual quiz items as they are now grouped
+                                                                                        } else {
+                                                                                            processedItems.push({ type: 'single', item: lesson });
+                                                                                        }
+                                                                                    });
+
+                                                                                    return processedItems.map((group, groupIdx) => {
+                                                                                        if (group.type === 'assessment_group') {
+                                                                                            const isGroupActive = currentLesson.id === `assessments-${module.id}`;
+                                                                                            const groupTitle = "Mission Assessment Protocol";
+                                                                                            const GroupIcon = ShieldCheck;
+                                                                                            const isLocked = !hasAccess;
+
+                                                                                            return (
+                                                                                                <Link
+                                                                                                    key={`group-${groupIdx}`}
+                                                                                                    href={isLocked ? "#" : `/dashboard/my-courses/${course.slug}/assessments-${module.id}`}
+                                                                                                    onClick={(e) => {
+                                                                                                        if (isLocked) {
+                                                                                                            e.preventDefault();
+                                                                                                            error("Sequential Access Protocol: Complete previous units first.");
+                                                                                                        }
+                                                                                                    }}
+                                                                                                    className={cn_local(
+                                                                                                        "flex items-center gap-3 p-3 rounded-[1.2rem] transition-all group border relative overflow-hidden my-2",
+                                                                                                        isGroupActive 
+                                                                                                            ? "bg-primary/5 border-primary/30 shadow-lg shadow-primary/10" 
+                                                                                                            : isLocked
+                                                                                                                ? "bg-black/20 dark:bg-white/2 border-white/5 opacity-60"
+                                                                                                                : "bg-orange-500/5 border-orange-500/10 hover:bg-orange-500/10 hover:border-orange-500/20"
+                                                                                                    )}
+                                                                                                >
+                                                                                                    <div className={cn_local(
+                                                                                                        "w-8 h-8 rounded-xl flex items-center justify-center shrink-0 transition-all duration-300",
+                                                                                                        isGroupActive 
+                                                                                                            ? "bg-primary text-white shadow-[0_4px_12px_rgba(var(--primary),0.4)]" 
+                                                                                                            : isLocked
+                                                                                                                ? "bg-slate-800 text-slate-600"
+                                                                                                                : "bg-orange-500 text-white shadow-[0_4px_12px_rgba(249,115,22,0.3)]"
+                                                                                                    )}>
+                                                                                                        {isLocked ? (
+                                                                                                            <Lock className="w-3.5 h-3.5" />
+                                                                                                        ) : (
+                                                                                                            <GroupIcon className={cn_local("w-4 h-4", isGroupActive && "animate-pulse")} />
+                                                                                                        )}
+                                                                                                    </div>
+                                                                                                    <div className="min-w-0 flex-1">
+                                                                                                        <p className={cn_local(
+                                                                                                            "text-[10px] font-black uppercase tracking-tight transition-colors duration-300",
+                                                                                                            isGroupActive ? "text-primary" : isLocked ? "text-slate-600" : "text-orange-500/90 group-hover:text-orange-500"
+                                                                                                        )}>
+                                                                                                            {groupTitle}
+                                                                                                        </p>
+                                                                                                        <div className="flex items-center gap-1.5 mt-0.5">
+                                                                                                            <span className={cn_local(
+                                                                                                                "text-[7px] font-bold uppercase tracking-widest",
+                                                                                                                isLocked ? "text-slate-700" : "text-slate-500"
+                                                                                                            )}>
+                                                                                                                {isLocked ? "Locked Protocol" : `${group.items.length} Units • MANDATORY`}
+                                                                                                            </span>
+                                                                                                        </div>
+                                                                                                    </div>
+                                                                                                    {isGroupActive && (
+                                                                                                        <motion.div 
+                                                                                                            layoutId="active-lesson-glow"
+                                                                                                            className="absolute right-0 top-0 bottom-0 w-1 bg-primary shadow-[0_0_12px_rgba(var(--primary),1)]"
+                                                                                                        />
+                                                                                                    )}
+                                                                                                </Link>
+                                                                                            );
+                                                                                        }
+
+                                                                                        const lesson = group.item;
+                                                                                        const isActive = lesson.id === currentLesson.id;
+                                                                                        const statusData = lessonsWithStatus.find(l => l.id === lesson.id);
+                                                                                        const isCompleted = statusData?.isCompleted;
+                                                                                        const isLocked = (!hasAccess || statusData?.isLocked) && !lesson.is_free_preview;
+                                                                                        
+                                                                                        let CardIcon = Play;
+                                                                                        let accentColor = "bg-primary";
+                                                                                        let textColor = "text-primary";
+                                                                                        let cardBg = "bg-primary/5";
+                                                                                        let subTitle = "Tactical Unit";
+
+                                                                                        if (isCompleted) {
+                                                                                            accentColor = "bg-emerald-500";
+                                                                                            textColor = "text-emerald-500";
+                                                                                            cardBg = "bg-emerald-500/5";
+                                                                                            subTitle = "Unit Completed";
+                                                                                        } else if (lesson.lesson_type === 'assignment') {
+                                                                                            CardIcon = Edit3;
+                                                                                            accentColor = "bg-blue-600";
+                                                                                            textColor = "text-blue-600";
+                                                                                            cardBg = "bg-blue-600/5";
+                                                                                            subTitle = "Operational Brief";
+                                                                                        } else {
+                                                                                            CardIcon = Play;
+                                                                                            accentColor = "bg-orange-500";
+                                                                                            textColor = "text-orange-500";
+                                                                                            cardBg = "bg-orange-500/5";
+                                                                                            subTitle = "Tactical Unit";
+                                                                                        }
+
+                                                                                        return (
+                                                                                            <Link
+                                                                                                key={lesson.id}
+                                                                                                href={isLocked ? "#" : `/dashboard/my-courses/${course.slug}/${lesson.id}`}
+                                                                                                onClick={(e) => {
+                                                                                                    if (isLocked) {
+                                                                                                        e.preventDefault();
+                                                                                                        error("Sequential Access Protocol: Complete previous units first.");
+                                                                                                    }
+                                                                                                }}
+                                                                                                className={cn_local(
+                                                                                                    "flex items-center gap-3 p-3 rounded-[1.2rem] transition-all group border relative overflow-hidden my-2",
+                                                                                                    isActive 
+                                                                                                        ? "bg-primary/5 border-primary/30 shadow-lg shadow-primary/10" 
+                                                                                                        : isLocked 
+                                                                                                            ? "bg-black/20 dark:bg-white/2 border-white/5 opacity-60"
+                                                                                                            : `${cardBg} border-transparent hover:border-white/10 hover:bg-opacity-15`
+                                                                                                )}
+                                                                                            >
+                                                                                                <div className={cn_local(
+                                                                                                    "w-8 h-8 rounded-xl flex items-center justify-center shrink-0 transition-all duration-300",
+                                                                                                    isActive 
+                                                                                                        ? "bg-primary text-white shadow-[0_4px_12px_rgba(var(--primary),0.4)]" 
+                                                                                                        : isLocked 
+                                                                                                            ? "bg-slate-800 text-slate-600"
+                                                                                                            : `${accentColor} text-white shadow-lg shadow-opacity-40`
                                                                                                 )}>
-                                                                                                    {lesson.title}
-                                                                                                </p>
-                                                                                            </div>
-                                                                                        </Link>
-                                                                                    );
-                                                                                })}
+                                                                                                    {isLocked ? (
+                                                                                                        <Lock className="w-3.5 h-3.5" />
+                                                                                                    ) : isCompleted ? (
+                                                                                                        <CheckCircle2 className="w-4 h-4" />
+                                                                                                    ) : (
+                                                                                                        <CardIcon className={cn_local("w-4 h-4", isActive && "animate-pulse")} />
+                                                                                                    )}
+                                                                                                </div>
+                                                                                                <div className="min-w-0 flex-1">
+                                                                                                    <p className={cn_local(
+                                                                                                        "text-[10px] font-black uppercase tracking-tight transition-colors duration-300 truncate",
+                                                                                                        isActive ? "text-primary" : isLocked ? "text-slate-600" : `${textColor}/90 group-hover:${textColor}`
+                                                                                                    )}>
+                                                                                                        {lesson.title}
+                                                                                                    </p>
+                                                                                                    <div className="flex items-center gap-1.5 mt-0.5">
+                                                                                                        <span className={cn_local(
+                                                                                                            "text-[7px] font-bold uppercase tracking-widest",
+                                                                                                            isLocked ? "text-slate-700" : "text-slate-500"
+                                                                                                        )}>
+                                                                                                            {isLocked ? "Locked Protocol" : subTitle}
+                                                                                                        </span>
+                                                                                                        {isCompleted && (
+                                                                                                            <>
+                                                                                                                <div className="w-1 h-1 rounded-full bg-emerald-500" />
+                                                                                                                <span className="text-[7px] font-bold uppercase text-emerald-500 tracking-widest">Completed</span>
+                                                                                                            </>
+                                                                                                        )}
+                                                                                                    </div>
+                                                                                                </div>
+                                                                                                {isActive && (
+                                                                                                    <motion.div 
+                                                                                                        layoutId="active-lesson-glow"
+                                                                                                        className="absolute right-0 top-0 bottom-0 w-1 bg-primary shadow-[0_0_12px_rgba(var(--primary),1)]"
+                                                                                                    />
+                                                                                                )}
+                                                                                            </Link>
+                                                                                        );
+                                                                                    });
+                                                                                })()}
                                                                             </div>
                                                                         </motion.div>
                                                                     )}
@@ -595,13 +1011,13 @@ export function CoursePlayerClient({ course, currentLesson, asset, hasAccess, us
                             <div className={cn_local(
                                 "relative overflow-hidden group shadow-xl mb-8 transform-gpu",
                                 isCinematic ? "aspect-21/9 border-b border-white/10" : "rounded-[2.5rem] border border-white/10 transition-[border-radius] duration-500",
-                                !isCinematic && (currentLesson.lesson_type as string) !== 'quiz' && (currentLesson.lesson_type as string) !== 'assignment' && "aspect-video"
+                                !isCinematic && (currentLesson.lesson_type !== 'quiz' && currentLesson.lesson_type !== 'assignment') && "aspect-video min-h-[500px]"
                             )}>
-                                {((currentLesson.lesson_type as string) === 'quiz' || (currentLesson.lesson_type as string) === 'assignment') ? null : <div className="absolute inset-0 bg-slate-900" />}
+                                {((currentLesson.lesson_type) === 'quiz' || (currentLesson.lesson_type) === 'assignment') ? null : <div className="absolute inset-0 bg-slate-900" />}
                                 {hasAccess ? (
                                     <>
                                         
-                                        {(currentLesson.lesson_type?.toLowerCase() === 'video') && (
+                                        {(currentLesson.lesson_type?.toLowerCase() === 'video') ? (
                                             loadingVideo ? (
                                                 <div className="absolute inset-0 flex flex-col items-center justify-center text-white bg-slate-950 z-10">
                                                     <div className="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin shadow-[0_0_20px_rgba(var(--primary),0.3)]"></div>
@@ -644,9 +1060,139 @@ export function CoursePlayerClient({ course, currentLesson, asset, hasAccess, us
                                                     <p className="text-xs mt-2 text-slate-600">Review the documentation below for further instructions</p>
                                                 </div>
                                             )
-                                        )}
+                                        ) : (currentLesson.lesson_type === 'text' || currentLesson.lesson_type === 'assignment') ? (
+                                            <div className="relative flex flex-col bg-[#020617] p-8 lg:p-12 z-10">
+                                                <div className="max-w-3xl mx-auto w-full space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
+                                                    <div className="space-y-4">
+                                                        <div className="flex items-center gap-3">
+                                                            <div className="px-3 py-1 rounded-full bg-primary/10 border border-primary/20">
+                                                                <span className="text-[10px] font-black text-primary uppercase tracking-widest">
+                                                                    {currentLesson.lesson_type === 'assignment' ? 'Operational Brief' : 'Technical Documentation'}
+                                                                </span>
+                                                            </div>
+                                                            <div className="h-px flex-1 bg-white/5" />
+                                                        </div>
+                                                                <h2 className="text-3xl lg:text-4xl font-black text-white tracking-tight leading-tight">
+                                                            {currentLesson.title}
+                                                        </h2>
+                                                    </div>
+                                                    
+                                                    <div className="prose prose-sm lg:prose-base prose-invert prose-slate max-w-none text-slate-400">
+                                                        {assignment?.markdown_content ? (
+                                                            <div dangerouslySetInnerHTML={{ __html: parseMarkdown(assignment.markdown_content) }} />
+                                                        ) : asset?.markdown_content ? (
+                                                            <div dangerouslySetInnerHTML={{ __html: parseMarkdown(asset.markdown_content) }} />
+                                                        ) : currentLesson.description ? (
+                                                            <div dangerouslySetInnerHTML={{ __html: parseMarkdown(currentLesson.description) }} />
+                                                        ) : (
+                                                            <div className="py-20 flex flex-col items-center justify-center text-slate-600 italic">
+                                                                <Terminal className="w-12 h-12 mb-4 opacity-20" />
+                                                                <p className="text-sm">No operational brief provided for this mission...</p>
+                                                            </div>
+                                                        )}
+                                                    </div>
+
+                                                    {currentLesson.lesson_type === 'assignment' && (
+                                                        <div className="flex flex-col sm:flex-row gap-3 pt-6 border-t border-white/5">
+                                                            <button 
+                                                                onClick={handleDownloadMarkdown}
+                                                                className="flex-1 py-3 bg-slate-800 text-white rounded-xl font-bold text-[9px] uppercase tracking-widest hover:bg-slate-700 transition-all active:scale-95 flex items-center justify-center gap-2 border border-white/5"
+                                                            >
+                                                                <Download className="w-3.5 h-3.5" />
+                                                                Download Brief (.md)
+                                                            </button>
+                                                            <button 
+                                                                onClick={() => setShowSubmissionModal(true)}
+                                                                className={cn_local(
+                                                                    "flex-1 py-3 rounded-xl font-bold text-[9px] uppercase tracking-widest transition-all shadow-lg active:scale-95 flex items-center justify-center gap-2",
+                                                                    submissionStatus 
+                                                                        ? "bg-emerald-500/10 border border-emerald-500/30 text-emerald-500 hover:bg-emerald-500/20" 
+                                                                        : "bg-primary text-white hover:bg-primary/90 shadow-primary/20"
+                                                                )}
+                                                            >
+                                                                {submissionStatus ? <CheckCircle2 className="w-3.5 h-3.5" /> : <Upload className="w-3.5 h-3.5" />}
+                                                                {submissionStatus ? "Edit Submission" : "Submit Solution"}
+                                                            </button>
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            </div>
+                                        ) : null}
 
                                         
+                                         {currentLesson.lesson_type === 'assessment_center' && (
+                                            <div className="relative w-full bg-[#020617] z-20 flex flex-col p-8 lg:p-12 space-y-12 animate-in fade-in duration-500 overflow-y-auto max-h-[85vh]">
+                                                <div className="max-w-4xl mx-auto w-full space-y-8">
+                                                    <div className="flex items-center justify-between border-b border-white/5 pb-8">
+                                                        <div className="space-y-1">
+                                                            <div className="flex items-center gap-3">
+                                                                <div className="p-2 rounded-xl bg-orange-500/10 border border-orange-500/20">
+                                                                    <ShieldCheck className="w-5 h-5 text-orange-500" />
+                                                                </div>
+                                                                <h2 className="text-3xl font-black text-white tracking-tight uppercase">Mission Assessment Protocol</h2>
+                                                            </div>
+                                                            <p className="text-[10px] font-bold text-slate-500 uppercase tracking-[0.2em] ml-12">Sector Synchronization Required</p>
+                                                        </div>
+                                                        <div className="px-4 py-2 rounded-2xl bg-white/5 border border-white/10 flex flex-col items-end">
+                                                            <span className="text-[8px] font-black text-slate-500 uppercase">Status</span>
+                                                            <span className="text-[11px] font-black text-emerald-500 uppercase">Active Deck</span>
+                                                        </div>
+                                                    </div>
+
+                                                    <div className="grid grid-cols-1 gap-6">
+                                                        {/* Quizzes */}
+                                                        {(course.modules?.find((m: any) => m.id === currentLesson.module_id)?.quizzes || []).map((q: any, idx: number) => (
+                                                            <div key={q.id} className="group relative">
+                                                                <div className="absolute -inset-0.5 bg-linear-to-r from-orange-500/20 to-primary/20 rounded-[2rem] blur opacity-0 group-hover:opacity-100 transition duration-500" />
+                                                                <div className="relative bg-black/40 border border-white/5 rounded-[1.8rem] p-8 hover:border-white/10 transition-all flex flex-col md:flex-row items-center justify-between gap-8 overflow-hidden">
+                                                                    <div className="flex items-center gap-6">
+                                                                        <div className="w-16 h-16 rounded-2xl bg-white/5 border border-white/5 flex items-center justify-center shrink-0 group-hover:bg-primary/10 group-hover:border-primary/20 transition-all">
+                                                                            <span className="text-2xl font-black text-slate-700 group-hover:text-primary transition-colors">{idx + 1}</span>
+                                                                        </div>
+                                                                        <div className="space-y-1">
+                                                                            <h3 className="text-xl font-bold text-white group-hover:text-primary transition-colors">{q.title || `Protocol Quiz ${idx + 1}`}</h3>
+                                                                            <div className="flex items-center gap-3">
+                                                                                <div className="flex items-center gap-1.5">
+                                                                                    <HelpCircle className="w-3 h-3 text-slate-500" />
+                                                                                    <span className="text-[9px] font-bold text-slate-500 uppercase tracking-wider">{JSON.parse(q.questions_json || '[]').length} Intel Checks</span>
+                                                                                </div>
+                                                                                <div className="w-1 h-1 rounded-full bg-white/10" />
+                                                                                <div className="flex items-center gap-1.5">
+                                                                                    <Clock className="w-3 h-3 text-slate-500" />
+                                                                                    <span className="text-[9px] font-bold text-slate-500 uppercase tracking-wider">Estimated 5m</span>
+                                                                                </div>
+                                                                            </div>
+                                                                        </div>
+                                                                    </div>
+                                                                    
+                                                                    <Link 
+                                                                        href={`/dashboard/my-courses/${course.slug}/quiz-${q.id}`}
+                                                                        className="w-full md:w-auto px-10 py-4 bg-white/5 border border-white/10 rounded-2xl text-[10px] font-black uppercase tracking-widest text-slate-300 hover:bg-primary hover:text-white hover:border-primary transition-all active:scale-95 shadow-lg flex items-center justify-center gap-2 group/btn"
+                                                                    >
+                                                                        Execute Test
+                                                                        <ChevronRight className="w-4 h-4 transition-transform group-hover/btn:translate-x-1" />
+                                                                    </Link>
+                                                                </div>
+                                                            </div>
+                                                        ))}
+
+                                                     </div>
+
+                                                    <div className="pt-12 border-t border-white/5">
+                                                        <div className="p-8 rounded-[2rem] bg-emerald-500/5 border border-emerald-500/10 flex items-center gap-6">
+                                                            <div className="w-14 h-14 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center shrink-0">
+                                                                <Trophy className="w-6 h-6 text-emerald-500" />
+                                                            </div>
+                                                            <div>
+                                                                <h4 className="text-sm font-black text-white uppercase tracking-tight">Mission Completion Objective</h4>
+                                                                <p className="text-xs text-slate-400 mt-1">Successfully synchronize all Protocol Quizzes with a minimum threshold of 80% to achieve full sector clearance.</p>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        )}
+
                                         {currentLesson.lesson_type === 'quiz' && (
                                             <div className="relative w-full bg-[#020617] z-20 flex flex-col overflow-hidden animate-in fade-in duration-500">
                                                 {quizStatus === 'idle' ? (
@@ -814,28 +1360,7 @@ export function CoursePlayerClient({ course, currentLesson, asset, hasAccess, us
                                         )}
 
                                         
-                                        {currentLesson.lesson_type === 'assignment' && (
-                                            <div className="absolute inset-0 flex flex-col items-center justify-center text-white bg-slate-950/80 backdrop-blur-md z-10 p-12 overflow-hidden">
-                                                <div className="mb-8">
-                                                    <div className="w-24 h-24 rounded-[2rem] bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center relative group">
-                                                        <div className="absolute inset-0 bg-emerald-500/20 rounded-[2rem] blur-2xl group-hover:blur-3xl transition-all" />
-                                                        <Edit3 className="w-10 h-10 text-emerald-500 relative z-10" />
-                                                    </div>
-                                                </div>
-                                                <h2 className="text-3xl font-black tracking-tighter mb-4 text-center">DEPLOY TACTICAL TASK</h2>
-                                                <p className="text-slate-400 max-w-md text-center text-sm leading-relaxed mb-10">
-                                                    Practical application protocol. Download the technical brief, implement solutions, and submit your source files for verification.
-                                                </p>
-                                                <div className="flex flex-col sm:flex-row gap-4">
-                                                    <button className="px-10 py-4 bg-emerald-500 text-white rounded-2xl font-black text-[10px] uppercase tracking-[0.2em] hover:bg-emerald-600 transition-all shadow-xl shadow-emerald-500/20 active:scale-95">
-                                                        Download Brief
-                                                    </button>
-                                                    <button className="px-10 py-4 bg-white/5 border border-white/10 text-white rounded-2xl font-black text-[10px] uppercase tracking-[0.2em] hover:bg-white/10 transition-all active:scale-95">
-                                                        Upload Solution
-                                                    </button>
-                                                </div>
-                                            </div>
-                                        )}
+
                                     </>
                                 ) : (
                                     <div className="absolute inset-0 flex flex-col items-center justify-center text-white bg-slate-950 p-6 text-center z-10">
@@ -859,8 +1384,8 @@ export function CoursePlayerClient({ course, currentLesson, asset, hasAccess, us
 
                         
                         {!isCinematic && (
-                            <div className="mt-12 space-y-12 pb-32 max-w-5xl mx-auto">
-                                {(currentLesson.lesson_type as string) !== 'quiz' && (currentLesson.lesson_type as string) !== 'assignment' && (
+                                <div className="mt-12 space-y-12 pb-32 max-w-5xl mx-auto">
+                                {currentLesson.lesson_type !== 'quiz' && currentLesson.lesson_type !== 'assignment' && (
                                 <div className="flex flex-col lg:flex-row lg:items-start justify-between gap-6">
                                     <div className="space-y-2">
                                         <h1 className="text-4xl font-black tracking-tight text-white leading-tight capitalize">{currentLesson.title}</h1>
@@ -885,7 +1410,7 @@ export function CoursePlayerClient({ course, currentLesson, asset, hasAccess, us
                                 )}
 
                                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                                    {(currentLesson.lesson_type as string) !== 'quiz' && (currentLesson.lesson_type as string) !== 'assignment' && (
+                                    {currentLesson.lesson_type !== 'quiz' && currentLesson.lesson_type !== 'assignment' && (
                                         <div className="lg:col-span-2 space-y-8">
                                         <div className="space-y-4">
                                             
@@ -1101,7 +1626,7 @@ export function CoursePlayerClient({ course, currentLesson, asset, hasAccess, us
                                     </div>
                                     )}
 
-                                    {(currentLesson.lesson_type as string) !== 'quiz' && (currentLesson.lesson_type as string) !== 'assignment' && (
+                                    {currentLesson.lesson_type !== 'quiz' && currentLesson.lesson_type !== 'assignment' && (
                                         <div className={cn_local(
                                             "space-y-4 lg:pt-[44px]",
                                             (currentLesson.lesson_type === 'quiz' || currentLesson.lesson_type === 'assignment') && "lg:col-span-3 lg:pt-0 max-w-2xl mx-auto w-full"
@@ -1161,7 +1686,6 @@ export function CoursePlayerClient({ course, currentLesson, asset, hasAccess, us
             </main>
         </div>
 
-            {/* Quiz Rules Modal - Root Level */}
             <AnimatePresence>
                 {showRules && (
                     <motion.div
@@ -1224,7 +1748,106 @@ export function CoursePlayerClient({ course, currentLesson, asset, hasAccess, us
                     </motion.div>
                 )}
             </AnimatePresence>
+            <SubmissionModal 
+                isOpen={showSubmissionModal}
+                onClose={() => setShowSubmissionModal(false)}
+                link={submissionLink}
+                setLink={setSubmissionLink}
+                onSubmit={handleSubmitAssignment}
+                isSubmitting={isSubmitting}
+                status={submissionStatus}
+            />
         </>
+    );
+}
+
+// Assignment Submission Modal Component
+function SubmissionModal({ isOpen, onClose, link, setLink, onSubmit, isSubmitting, status }: any) {
+    return (
+        <AnimatePresence>
+            {isOpen && (
+                <div className="fixed inset-0 z-100 flex items-center justify-center p-4">
+                    <motion.div 
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        onClick={onClose}
+                        className="absolute inset-0 bg-slate-950/80 backdrop-blur-xl"
+                    />
+                    <motion.div 
+                        initial={{ opacity: 0, scale: 0.95, y: 20 }}
+                        animate={{ opacity: 1, scale: 1, y: 0 }}
+                        exit={{ opacity: 0, scale: 0.95, y: 20 }}
+                        className="relative w-full max-w-lg bg-slate-900 border border-white/10 rounded-[2.5rem] shadow-2xl overflow-hidden p-8 lg:p-12"
+                    >
+                        <div className="absolute top-0 right-0 w-64 h-64 bg-primary/5 rounded-full blur-3xl -mr-32 -mt-32" />
+                        
+                        <div className="relative space-y-8 text-center">
+                            <div className="w-20 h-20 rounded-3xl bg-primary/10 border border-primary/20 flex items-center justify-center mx-auto mb-6">
+                                <LinkIcon className="w-8 h-8 text-primary" />
+                            </div>
+
+                            <div className="space-y-2">
+                                <h3 className="text-3xl font-black text-white tracking-tight uppercase">Solution Interface</h3>
+                                <p className="text-xs text-slate-500 font-bold tracking-widest uppercase">Encryption Status: Active</p>
+                            </div>
+
+                            <div className="space-y-4 text-left">
+                                <div className="space-y-2">
+                                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
+                                        <Target className="w-3 h-3 text-primary" />
+                                        Project / Repository URL
+                                    </label>
+                                    <div className="relative group">
+                                        <input 
+                                            type="url" 
+                                            value={link}
+                                            onChange={(e) => setLink(e.target.value)}
+                                            placeholder="https://github.com/your-username/project"
+                                            className="w-full h-14 bg-white/5 border border-white/10 rounded-2xl px-6 text-sm text-white focus:outline-none focus:border-primary/50 transition-all placeholder:text-slate-700"
+                                        />
+                                        <div className="absolute inset-0 rounded-2xl bg-primary/5 opacity-0 group-focus-within:opacity-100 pointer-events-none transition-opacity" />
+                                    </div>
+                                </div>
+
+                                {status && (
+                                    <div className="p-4 rounded-2xl bg-white/5 border border-white/5 flex items-center justify-between">
+                                        <div className="flex flex-col">
+                                            <span className="text-[9px] font-black text-slate-500 uppercase">Current Status</span>
+                                            <span className="text-xs font-bold text-white capitalize">{status.status}</span>
+                                        </div>
+                                        <div className="px-3 py-1 rounded-full bg-slate-800 border border-white/5">
+                                            <span className="text-[9px] font-black text-slate-400 uppercase">v{status.id.substring(0,4)}</span>
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
+
+                            <div className="flex gap-3 pt-4">
+                                <button 
+                                    onClick={onClose}
+                                    className="flex-1 py-4 bg-white/5 border border-white/10 text-white rounded-2xl font-bold text-[10px] uppercase tracking-widest hover:bg-white/10 transition-all"
+                                >
+                                    Abort
+                                </button>
+                                <button 
+                                    onClick={onSubmit}
+                                    disabled={isSubmitting}
+                                    className="flex-1 py-4 bg-primary text-white rounded-2xl font-black text-[10px] uppercase tracking-widest hover:bg-primary/90 transition-all shadow-xl shadow-primary/40 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                                >
+                                    {isSubmitting ? (
+                                        <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                                    ) : (
+                                        <CheckCircle2 className="w-4 h-4" />
+                                    )}
+                                    Confirm Submission
+                                </button>
+                            </div>
+                        </div>
+                    </motion.div>
+                </div>
+            )}
+        </AnimatePresence>
     );
 }
 

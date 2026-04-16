@@ -84,9 +84,11 @@ export async function getCoursePageData(slug: string): Promise<{
             `).eq('course_id', course.id),
             supabase.from('modules').select(`
                 id, course_id, title, description, position, is_published,
-                lessons (
+                lessons:module_lessons (
                     id, title, description, lesson_type, position, duration_minutes, is_free_preview, is_published
-                )
+                ),
+                quizzes:module_quizzes(*),
+                assignments:module_assignments(*)
             `).eq('course_id', course.id).eq('is_published', true).order('position', { ascending: true }),
             supabase.from('course_projects').select('*').eq('course_id', course.id).order('order_index', { ascending: true }),
             supabase.from('course_resources').select('*').eq('course_id', course.id).order('order_index', { ascending: true }),
@@ -101,9 +103,11 @@ export async function getCoursePageData(slug: string): Promise<{
                 id, course_id, title, description, position,
                 modules (
                     id, course_id, title, description, position, is_published,
-                    lessons (
+                    lessons:module_lessons (
                         id, title, description, lesson_type, position, duration_minutes, is_free_preview, is_published
-                    )
+                    ),
+                    quizzes:module_quizzes(*),
+                    assignments:module_assignments(*)
                 )
             `).eq('course_id', course.id).order('position', { ascending: true })
         ]);
@@ -241,7 +245,7 @@ export async function getCoursePageData(slug: string): Promise<{
         if (isEnrolled && user && enrollmentId) {
             const { data: progressData } = await supabase
                 .from('lesson_progress')
-                .select('lesson_id, is_completed, lesson:lessons(lesson_type)')
+                .select('lesson_id, is_completed, lesson:module_lessons(lesson_type)')
                 .eq('enrollment_id', enrollmentId);
 
             userLessonProgress = (progressData as any[]) || [];
@@ -520,7 +524,7 @@ export async function getSignedVideoUrl(lessonId: string): Promise<{
             return { success: false, error: 'Authentication required' };
         }
         const { data: lesson, error: lessonError } = await supabase
-            .from('lessons')
+            .from('module_lessons')
             .select(`
                 id,
                 is_free_preview,
@@ -599,7 +603,7 @@ export async function getLessonContent(lessonId: string): Promise<{
             return { success: false, error: 'Authentication required' };
         }
         const { data: lesson, error: lessonError } = await supabase
-            .from('lessons')
+            .from('module_lessons')
             .select(`
                 id,
                 title,

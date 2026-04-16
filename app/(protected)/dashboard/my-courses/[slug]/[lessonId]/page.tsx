@@ -18,39 +18,21 @@ export default async function MyCourseLessonPage({ params }: PageProps) {
     const { data: course, error: courseError } = await supabase
         .from('courses')
         .select(`
-            id,
-            title,
-            slug,
+            *,
             milestones (
-                id,
-                title,
-                position,
+                *,
                 modules (
-                    id,
-                    title,
-                    position,
-                    lessons (
-                        id,
-                        title,
-                        lesson_type,
-                        is_free_preview,
-                        duration_minutes,
-                        position
-                    )
+                    *,
+                    lessons:module_lessons(*),
+                    quizzes:module_quizzes(*),
+                    assignments:module_assignments(*)
                 )
             ),
             modules (
-                id,
-                title,
-                position,
-                lessons (
-                    id,
-                    title,
-                    lesson_type,
-                    is_free_preview,
-                    duration_minutes,
-                    position
-                )
+                *,
+                lessons:module_lessons(*),
+                quizzes:module_quizzes(*),
+                assignments:module_assignments(*)
             )
         `)
         .eq('slug', slug)
@@ -60,11 +42,72 @@ export default async function MyCourseLessonPage({ params }: PageProps) {
         return notFound();
     }
 
-    const { data: currentLesson, error: lessonError } = await supabase
-        .from('lessons')
-        .select('id, title, is_free_preview, module_id, lesson_type')
-        .eq('id', lessonId)
-        .single();
+    let currentLesson: any = null;
+    let lessonError: any = null;
+
+    if (lessonId.startsWith('assessments-')) {
+        const moduleId = lessonId.replace('assessments-', '');
+        const { data: moduleData, error: modError } = await supabase
+            .from('modules')
+            .select('*')
+            .eq('id', moduleId)
+            .single();
+        
+        if (modError || !moduleData) return notFound();
+
+        currentLesson = {
+            id: lessonId,
+            module_id: moduleId,
+            title: "Mission Assessment Protocol",
+            lesson_type: 'assessment_center',
+            is_free_preview: false,
+            is_published: true
+        };
+    } else if (lessonId.startsWith('quiz-')) {
+        const quizId = lessonId.replace('quiz-', '');
+        const { data: quizData, error: qError } = await supabase
+            .from('module_quizzes')
+            .select('*')
+            .eq('id', quizId)
+            .single();
+        
+        if (qError || !quizData) return notFound();
+
+        currentLesson = {
+            id: lessonId,
+            module_id: quizData.module_id,
+            title: quizData.title,
+            lesson_type: 'quiz',
+            is_free_preview: false,
+            is_published: true
+        };
+    } else if (lessonId.startsWith('assignment-')) {
+        const assignmentId = lessonId.replace('assignment-', '');
+        const { data: assignmentData, error: aError } = await supabase
+            .from('module_assignments')
+            .select('*')
+            .eq('id', assignmentId)
+            .single();
+        
+        if (aError || !assignmentData) return notFound();
+
+        currentLesson = {
+            id: lessonId,
+            module_id: assignmentData.module_id,
+            title: assignmentData.title,
+            lesson_type: 'assignment',
+            is_free_preview: false,
+            is_published: true
+        };
+    } else {
+        const { data: lesson, error: err } = await supabase
+            .from('module_lessons')
+            .select('*')
+            .eq('id', lessonId)
+            .single();
+        currentLesson = lesson;
+        lessonError = err;
+    }
 
     if (lessonError || !currentLesson) {
         return notFound();
@@ -72,9 +115,41 @@ export default async function MyCourseLessonPage({ params }: PageProps) {
 
     const { data: asset } = await supabase
         .from('lesson_assets')
-        .select('content_markdown, video_path, resources, video_duration_seconds')
-        .eq('lesson_id', lessonId)
+        .select('*')
+        .eq('lesson_id', currentLesson.id)
         .single();
+
+    const { data: quizzes } = await supabase
+        .from('module_quizzes')
+        .select('*')
+        .eq('module_id', currentLesson.module_id)
+        .order('position', { ascending: true });
+
+    const { data: assignments } = await supabase
+        .from('module_assignments')
+        .select('*')
+        .eq('module_id', currentLesson.module_id)
+        .order('position', { ascending: true });
+
+    let quizData = null;
+    let assignmentData = null;
+
+    if (lessonId.startsWith('quiz-')) {
+        quizData = await supabase.from('module_quizzes').select('*').eq('id', lessonId.replace('quiz-', '')).single().then(r => r.data);
+    } else if (lessonId.startsWith('assignment-')) {
+        assignmentData = await supabase.from('module_assignments').select('*').eq('id', lessonId.replace('assignment-', '')).single().then(r => r.data);
+    } else if (!lessonId.startsWith('assessments-')) {
+        const { data: siblingLessons } = await supabase
+            .from('module_lessons')
+            .select('id')
+            .eq('module_id', currentLesson.module_id)
+            .eq('lesson_type', currentLesson.lesson_type)
+            .order('position', { ascending: true });
+        
+        const lessonIndex = siblingLessons?.findIndex(l => l.id === lessonId) ?? 0;
+        quizData = quizzes?.[lessonIndex] || null;
+        assignmentData = assignments?.[lessonIndex] || null;
+    }
 
     const { data: enrollment } = await supabase
         .from('enrollments')
@@ -95,6 +170,12 @@ export default async function MyCourseLessonPage({ params }: PageProps) {
                 if (m.lessons) {
                     m.lessons.sort((a: any, b: any) => (a.position || 0) - (b.position || 0));
                 }
+                if (m.quizzes) {
+                    m.quizzes.sort((a: any, b: any) => (a.position || 0) - (b.position || 0));
+                }
+                if (m.assignments) {
+                    m.assignments.sort((a: any, b: any) => (a.position || 0) - (b.position || 0));
+                }
             });
         }
     });
@@ -104,9 +185,14 @@ export default async function MyCourseLessonPage({ params }: PageProps) {
         if (m.lessons) {
             m.lessons.sort((a: any, b: any) => (a.position || 0) - (b.position || 0));
         }
+        if (m.quizzes) {
+            m.quizzes.sort((a: any, b: any) => (a.position || 0) - (b.position || 0));
+        }
+        if (m.assignments) {
+            m.assignments.sort((a: any, b: any) => (a.position || 0) - (b.position || 0));
+        }
     });
 
-    // Update course object with sorted data
     course.milestones = milestones;
     course.modules = modules;
 
@@ -115,6 +201,8 @@ export default async function MyCourseLessonPage({ params }: PageProps) {
             course={course}
             currentLesson={currentLesson}
             asset={asset}
+            quiz={quizData}
+            assignment={assignmentData}
             hasAccess={!!hasAccess}
             userId={user.id}
             enrollmentId={enrollment?.id}
