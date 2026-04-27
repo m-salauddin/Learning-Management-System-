@@ -15,36 +15,52 @@ interface StatsCardProps {
 export function StatsCard({ title, value, icon: Icon, trend, trendUp, description, delay = 0, className }: StatsCardProps) {
     return (
         <motion.div
-            initial={{ opacity: 0, y: 20 }}
+            initial={{ opacity: 0, y: 15 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.4, delay }}
             className={cn(
-                "p-6 rounded-2xl bg-card/50 backdrop-blur-xl border border-white/5 shadow-sm hover:shadow-md hover:bg-card/80 transition-all group",
+                "relative overflow-hidden group p-5 rounded-[1.25rem] bg-card border border-border shadow-sm hover:shadow-md hover:border-primary/30 transition-all duration-300",
                 className
             )}
         >
-            <div className="flex items-start justify-between mb-4">
-                <div className="p-3 rounded-xl bg-primary/10 text-primary group-hover:scale-110 transition-transform duration-300">
-                    <Icon className="w-6 h-6" />
+            {}
+            <div className="absolute -right-4 -top-4 w-24 h-24 bg-primary/5 rounded-full blur-3xl group-hover:bg-primary/10 transition-colors duration-500" />
+            
+            <div className="flex items-center gap-4 relative z-10">
+                <div className="shrink-0 p-3 rounded-xl bg-muted/50 text-primary border border-border group-hover:bg-primary group-hover:text-primary-foreground group-hover:border-primary transition-all duration-500 shadow-xs">
+                    <Icon className="w-5 h-5" />
                 </div>
-                {trend && (
-                    <div className={cn(
-                        "flex items-center text-xs font-medium px-2 py-1 rounded-full border",
-                        trendUp
-                            ? "text-emerald-500 bg-emerald-500/10 border-emerald-500/20"
-                            : "text-red-500 bg-red-500/10 border-red-500/20"
-                    )}>
-                        {trendUp ? "+" : ""}{trend}
+                
+                <div className="flex-1 min-w-0">
+                    <p className="text-[11px] font-bold text-muted-foreground uppercase tracking-[0.05em] leading-none mb-1.5">
+                        {title}
+                    </p>
+                    <div className="flex items-baseline gap-2">
+                        <h2 className="text-2xl font-black text-foreground tracking-tight leading-none">
+                            {value}
+                        </h2>
+                        {trend && (
+                            <div className={cn(
+                                "flex items-center text-[10px] font-bold px-1.5 py-0.5 rounded-md border leading-none",
+                                trendUp
+                                    ? "text-emerald-500 bg-emerald-500/10 border-emerald-500/20"
+                                    : "text-red-500 bg-red-500/10 border-red-500/20"
+                            )}>
+                                {trendUp ? "↑" : "↓"} {trend}
+                            </div>
+                        )}
                     </div>
-                )}
+                </div>
             </div>
-            <h3 className="text-sm font-medium text-muted-foreground mb-1">{title}</h3>
-            <div className="flex items-baseline gap-2">
-                <h2 className="text-3xl font-bold bg-clip-text text-transparent bg-linear-to-r from-foreground to-foreground/70">
-                    {value}
-                </h2>
-                {description && <span className="text-xs text-muted-foreground">{description}</span>}
-            </div>
+            
+            {description && (
+                <div className="mt-4 pt-3 border-t border-border/50">
+                    <p className="text-[10px] font-semibold text-muted-foreground/70 uppercase tracking-wider flex items-center gap-1.5">
+                        <span className="w-1 h-1 rounded-full bg-primary/40" />
+                        {description}
+                    </p>
+                </div>
+            )}
         </motion.div>
     );
 }

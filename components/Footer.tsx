@@ -1,5 +1,6 @@
 import { ChevronRight } from "lucide-react";
-import { SiFacebook, SiLinkedin, SiGithub, SiYoutube } from "react-icons/si";
+import { SiFacebook, SiGithub, SiYoutube } from "react-icons/si";
+import { FaLinkedin } from "react-icons/fa6";
 import { Logo } from "@/components/ui/Logo";
 const FOOTER_SECTIONS = [
     {
@@ -30,7 +31,7 @@ const FOOTER_SECTIONS = [
         ]
     },
 ] as const;
-const SOCIAL_ICONS = [SiFacebook, SiLinkedin, SiGithub, SiYoutube] as const;
+const SOCIAL_ICONS = [SiFacebook, FaLinkedin, SiGithub, SiYoutube] as const;
 const LEGAL_LINKS = [
     { text: "Privacy", href: "/privacy" },
     { text: "Terms", href: "/terms" },

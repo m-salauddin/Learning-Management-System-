@@ -99,7 +99,7 @@ export function DateTimePicker({
                 className="w-auto p-0 bg-slate-950/95 backdrop-blur-2xl border-white/10 shadow-2xl rounded-2xl overflow-hidden" 
                 align="start"
                 style={{ 
-                    // Overriding these for both CSS vars and TW theme keys
+                    
                     '--primary': '#3b82f6', 
                     '--color-primary': '#3b82f6',
                     '--primary-foreground': '#ffffff',

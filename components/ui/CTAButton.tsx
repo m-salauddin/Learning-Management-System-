@@ -28,10 +28,10 @@ export function PrimaryCTAButton({
 }: Omit<CTAButtonProps, "variant">) {
     const buttonContent = (
         <>
-            <span className="text-sm sm:text-lg font-bold text-primary-foreground">{loading ? "Processing..." : children}</span>
+            <span className="text-sm sm:text-lg font-bold text-white dark:text-[#020615]">{loading ? "Processing..." : children}</span>
             {!hideIcon && (
-                <div className="flex h-[26px] w-[26px] sm:h-7 sm:w-7 items-center justify-center rounded-full bg-white transition-transform duration-300 -rotate-45 group-hover/btn:rotate-0 shadow-lg shadow-black/10">
-                    <ArrowRight className="h-4 w-4 sm:h-5 sm:w-5 text-[#0036F9] dark:text-primary" />
+                <div className="flex h-[26px] w-[26px] sm:h-7 sm:w-7 items-center justify-center rounded-full bg-white dark:bg-[#020615] transition-transform duration-300 -rotate-45 group-hover/btn:rotate-0 shadow-lg shadow-black/10">
+                    <ArrowRight className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
                 </div>
             )}
         </>

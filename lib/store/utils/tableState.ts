@@ -74,9 +74,9 @@ export function processTableData<T>(
     const totalFiltered = filtered.length;
     if (sort.field) {
         filtered.sort((a, b) => {
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            
             const valA = (a as Record<string, any>)[sort.field as string];
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            
             const valB = (b as Record<string, any>)[sort.field as string];
             if (valA < valB) return sort.order === 'asc' ? -1 : 1;
             if (valA > valB) return sort.order === 'asc' ? 1 : -1;

@@ -1,52 +1,39 @@
 import type { Metadata } from "next";
-import { Suspense } from "react";
+import { Suspense, cache } from "react";
 import { notFound } from "next/navigation";
 import CourseDetailClient from "./CourseDetailClient";
-import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { getCoursePageData } from "@/lib/actions/course-page";
 import { MappedCourse, CurriculumModule } from "@/types/mapped-course";
 import { CoursePageData } from "@/types/course-page";
-
-export const dynamic = "force-dynamic";
 
 interface PageProps {
     params: Promise<{ slug: string }>;
 }
 
+const getCachedCourseData = cache(async (slug: string) => {
+    return await getCoursePageData(slug);
+});
+
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
     const { slug } = await params;
-    const supabase = await createSupabaseServerClient();
-    const { data: course } = await supabase
-        .from('courses')
-        .select('id, title, description')
-        .eq('slug', slug)
-        .maybeSingle();
+    const result = await getCachedCourseData(slug);
 
-    let seoTitle: string | null = null;
-    let seoDescription: string | null = null;
-
-    if (course?.id) {
-        const { data: details } = await supabase
-            .from('course_details')
-            .select('seo_title, seo_description')
-            .eq('course_id', course.id)
-            .maybeSingle();
-        seoTitle = details?.seo_title || null;
-        seoDescription = details?.seo_description || null;
+    if (!result.success || !result.data) {
+        return { title: "Course Not Found" };
     }
 
+    const { course, details } = result.data;
+
     return {
-        title: seoTitle || (course?.title ? `${course.title} - Dokkhota IT` : "Course Details"),
-        description: seoDescription || course?.description || "Course details",
+        title: details?.seo_title || `${course.title} - Dokkhota IT`,
+        description: details?.seo_description || course.description || "Course details",
     };
 }
 
 export default async function CourseDetailPage({ params }: PageProps) {
     const { slug } = await params;
-    const supabase = await createSupabaseServerClient();
-    const { data: { user } } = await supabase.auth.getUser();
-
-    const result = await getCoursePageData(slug);
+    
+    const result = await getCachedCourseData(slug);
 
     if (!result.success || !result.data) {
         notFound();

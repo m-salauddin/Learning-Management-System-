@@ -112,7 +112,7 @@ function SummaryContent() {
         data?: any;
     } | null>(null);
 
-    // Helper to resolve course data from either bKash or manual payment data shape
+    
     const getCourse = () => result?.data?.transaction?.course || result?.data?.course || null;
     const getUser = () => result?.data?.transaction?.user || result?.data?.user || null;
     const getTransaction = () => result?.data?.transaction || null;
@@ -284,6 +284,7 @@ function SummaryContent() {
                                     src={course.thumbnail_url || "/placeholder-course.jpg"} 
                                     alt="Course" 
                                     fill 
+                                    unoptimized
                                     className="object-cover opacity-80 group-hover/course:scale-110 transition-transform duration-1000"
                                 />
                                 <div className="absolute inset-0 bg-linear-to-t from-slate-950/80 via-slate-950/20 to-transparent" />

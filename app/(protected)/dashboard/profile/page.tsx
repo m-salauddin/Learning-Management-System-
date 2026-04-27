@@ -577,7 +577,7 @@ export default function ProfilePage() {
                 />
 
 
-                {/* Tab Navigation */}
+                {}
                 <motion.div
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
@@ -621,9 +621,9 @@ export default function ProfilePage() {
                     })}
                 </motion.div>
 
-                {/* Tab Content */}
+                {}
                 <AnimatePresence mode="wait">
-                    {/* Profile Tab */}
+                    {}
                     {activeTab === "profile" && (
                         <motion.div
                             key="profile"
@@ -633,9 +633,9 @@ export default function ProfilePage() {
                             transition={{ duration: 0.2 }}
                             className="grid grid-cols-1 xl:grid-cols-3 gap-6"
                         >
-                            {/* Left Column - Avatar & Stats */}
+                            {}
                             <div className="space-y-6">
-                                {/* Avatar Card */}
+                                {}
                                 <Card className="overflow-hidden bg-muted/30 border-border/50">
                                     <CardContent className="pt-8 pb-6">
                                         <div className="flex flex-col items-center">
@@ -670,21 +670,11 @@ export default function ProfilePage() {
                                                     ref={fileInputRef}
                                                     className="hidden"
                                                     accept="image/*"
-                                                    onChange={handleFileChange}
                                                 />
-                                            </div>
-                                            <h2 className="text-xl font-bold text-foreground">{userProfile.name}</h2>
-                                            <p className="text-sm text-muted-foreground">{userProfile.email}</p>
-                                            <div className="flex items-center gap-2 mt-3">
-                                                <Badge variant="outline" className="bg-primary/5 text-primary border-primary/20 capitalize">
-                                                    {userProfile.role === 'admin' ? 'Administrator' : 'Student'}
-                                                </Badge>
                                             </div>
                                         </div>
                                     </CardContent>
                                 </Card>
-
-                                {/* Stats Card */}
                                 <Card className="bg-muted/30 border-border/50">
                                     <CardHeader className="pb-4">
                                         <CardTitle className="text-base flex items-center gap-3">
@@ -725,7 +715,7 @@ export default function ProfilePage() {
                                     </CardContent>
                                 </Card>
 
-                                {/* Profile Completion */}
+                                {}
                                 <Card className="bg-muted/30 border-border/50">
                                     <CardHeader className="pb-4">
                                         <CardTitle className="text-base flex items-center gap-3">
@@ -756,7 +746,7 @@ export default function ProfilePage() {
                                 </Card>
                             </div>
 
-                            {/* Right Column - Form */}
+                            {}
                             <div className="xl:col-span-2">
                                 <Card className="bg-muted/30 border-border/50">
                                     <CardHeader>
@@ -773,7 +763,7 @@ export default function ProfilePage() {
                                     <CardContent>
                                         <form onSubmit={handleSubmit} className="space-y-6">
                                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                                {/* Name */}
+                                                {}
                                                 <div className="space-y-2">
                                                     <div className="flex items-center justify-between h-6">
                                                         <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Full Name</label>
@@ -791,7 +781,7 @@ export default function ProfilePage() {
                                                     </div>
                                                 </div>
 
-                                                {/* Email */}
+                                                {}
                                                 <div className="space-y-2">
                                                     <div className="flex items-center justify-between h-6">
                                                         <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Email Address</label>
@@ -810,7 +800,7 @@ export default function ProfilePage() {
                                                     </div>
                                                 </div>
 
-                                                {/* Phone */}
+                                                {}
                                                 <div className="space-y-2">
                                                     <div className="flex items-center justify-between h-6">
                                                         <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Phone Number</label>
@@ -828,7 +818,7 @@ export default function ProfilePage() {
                                                     </div>
                                                 </div>
 
-                                                {/* Location */}
+                                                {}
                                                 <div className="space-y-2">
                                                     <div className="flex items-center justify-between h-6">
                                                         <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Location</label>
@@ -846,7 +836,7 @@ export default function ProfilePage() {
                                                     </div>
                                                 </div>
 
-                                                {/* Website - Full Width */}
+                                                {}
                                                 <div className="md:col-span-2 space-y-2">
                                                     <div className="flex items-center justify-between h-6">
                                                         <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Portfolio / Website</label>
@@ -864,7 +854,7 @@ export default function ProfilePage() {
                                                     </div>
                                                 </div>
 
-                                                {/* Bio - Full Width */}
+                                                {}
                                                 <div className="md:col-span-2 space-y-2">
                                                     <div className="flex items-center justify-between h-6">
                                                         <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">About Me</label>
@@ -891,7 +881,7 @@ export default function ProfilePage() {
                                     </CardContent>
                                 </Card>
 
-                                {/* Social Links - Totally Separated Section */}
+                                {}
                                 <Card className="mt-6 bg-muted/30 border-border/50">
                                     <CardContent className="p-6 md:p-8">
                                         <div className="space-y-6">
@@ -927,7 +917,7 @@ export default function ProfilePage() {
                                                 </button>
                                             </div>
 
-                                            {/* Social Links List */}
+                                            {}
                                             {socialLinks.length > 0 ? (
                                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                                     {socialLinks.map((link, index) => {
@@ -985,7 +975,7 @@ export default function ProfilePage() {
                         </motion.div>
                     )}
 
-                    {/* Security Tab */}
+                    {}
                     {activeTab === "security" && (
                         <motion.div
                             key="security"
@@ -995,7 +985,7 @@ export default function ProfilePage() {
                             transition={{ duration: 0.2 }}
                             className="grid grid-cols-1 xl:grid-cols-3 gap-6"
                         >
-                            {/* Connected Accounts */}
+                            {}
                             <Card className="bg-muted/30 border-border/50">
                                 <CardHeader>
                                     <CardTitle className="text-base flex items-center gap-3">
@@ -1057,7 +1047,7 @@ export default function ProfilePage() {
                                 </CardContent>
                             </Card>
 
-                            {/* Password Change */}
+                            {}
                             <div className="xl:col-span-2">
                                 <Card className="bg-muted/30 border-border/50">
                                     <CardHeader>
@@ -1085,7 +1075,7 @@ export default function ProfilePage() {
                                             </div>
                                         ) : (
                                             <form onSubmit={handlePasswordSubmit} className="space-y-6">
-                                                {/* Error Messages */}
+                                                {}
                                                 {passwordErrors.length > 0 && (
                                                     <div className="p-4 rounded-xl bg-red-500/10 border border-red-500/20">
                                                         <div className="flex items-start gap-3">
@@ -1100,7 +1090,7 @@ export default function ProfilePage() {
                                                 )}
 
                                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                                    {/* Current Password */}
+                                                    {}
                                                     <div className="md:col-span-2 space-y-2">
                                                         <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Current Password</label>
                                                         <div className="relative">
@@ -1123,7 +1113,7 @@ export default function ProfilePage() {
                                                         </div>
                                                     </div>
 
-                                                    {/* New Password */}
+                                                    {}
                                                     <div className="space-y-2">
                                                         <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">New Password</label>
                                                         <div className="relative">
@@ -1144,7 +1134,7 @@ export default function ProfilePage() {
                                                                 {showNewPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                                                             </button>
                                                         </div>
-                                                        {/* Password Strength Indicator */}
+                                                        {}
                                                         {passwordData.newPassword && (
                                                             <div className="space-y-2">
                                                                 <div className="flex gap-1">
@@ -1169,7 +1159,7 @@ export default function ProfilePage() {
                                                         )}
                                                     </div>
 
-                                                    {/* Confirm Password */}
+                                                    {}
                                                     <div className="space-y-2">
                                                         <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Confirm New Password</label>
                                                         <div className="relative">
@@ -1201,7 +1191,7 @@ export default function ProfilePage() {
                                                     </div>
                                                 </div>
 
-                                                {/* Password Requirements */}
+                                                {}
                                                 <div className="p-4 rounded-xl bg-muted/20 border border-border">
                                                     <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3">Password Requirements</p>
                                                     <ul className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs text-muted-foreground">
@@ -1224,7 +1214,7 @@ export default function ProfilePage() {
                                                     </ul>
                                                 </div>
 
-                                                {/* Submit Button */}
+                                                {}
                                                 <div className="flex justify-end">
                                                     <button
                                                         type="submit"
@@ -1253,7 +1243,7 @@ export default function ProfilePage() {
                     )}
                 </AnimatePresence>
 
-                {/* Add/Edit Social Link Dialog */}
+                {}
                 <AnimatePresence>
                     {showAddLinkDialog && (
                         <motion.div
@@ -1282,7 +1272,7 @@ export default function ProfilePage() {
                                     </p>
                                 </div>
 
-                                {/* Platform Selection */}
+                                {}
                                 <div className="space-y-2">
                                     <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Platform</label>
                                     <Select
@@ -1308,7 +1298,7 @@ export default function ProfilePage() {
                                     </Select>
                                 </div>
 
-                                {/* URL Input */}
+                                {}
                                 <div className="space-y-2">
                                     <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Profile URL</label>
                                     <div className="relative">
@@ -1332,7 +1322,7 @@ export default function ProfilePage() {
                                     )}
                                 </div>
 
-                                {/* Dialog Actions */}
+                                {}
                                 <div className="flex gap-3 pt-4">
                                     <button
                                         type="button"
@@ -1354,7 +1344,7 @@ export default function ProfilePage() {
                     )}
                 </AnimatePresence>
 
-                {/* Sticky Action Footer - Only shows when there are unsaved changes */}
+                {}
                 <AnimatePresence>
                     {
                         hasChanges && activeTab === "profile" && !isAutoSaving && (

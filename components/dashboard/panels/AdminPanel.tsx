@@ -24,8 +24,16 @@ import { DashboardCard } from "@/components/dashboard/ui/DashboardCard";
 import { DashboardGrid } from "@/components/dashboard/ui/DashboardGrid";
 import { StatsCard } from "@/components/dashboard/StatsCard";
 
+interface AdminStats {
+    total_users: number;
+    total_courses: number;
+    total_revenue: number;
+    active_enrollments: number;
+    total_enrollments: number;
+}
+
 export default function AdminPanel() {
-    const [stats, setStats] = useState({
+    const [stats, setStats] = useState<AdminStats>({
         total_users: 0,
         total_courses: 0,
         total_revenue: 0,
@@ -46,7 +54,7 @@ export default function AdminPanel() {
                     const { count: courseCount } = await supabase.from('courses').select('*', { count: 'exact', head: true });
                     setStats(prev => ({ ...prev, total_users: userCount || 0, total_courses: courseCount || 0 }));
                 } else if (data) {
-                    setStats(data);
+                    setStats(data as unknown as AdminStats);
                 }
             } catch (err) {
                 console.error('Unexpected error:', err);
@@ -133,7 +141,7 @@ export default function AdminPanel() {
                 />
             </DashboardGrid>
 
-            {/* Secondary Stats */}
+            {}
             <DashboardGrid cols={4}>
                 <div className="p-5 rounded-2xl bg-linear-to-br from-violet-500/10 to-purple-500/5 border border-violet-500/20">
                     <div className="flex items-center gap-2 mb-2">

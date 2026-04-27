@@ -8,10 +8,10 @@ import {
     Smartphone, HardDrive, GitBranch, Coffee, Activity, UploadCloud, Tablet
 } from "lucide-react";
 import {
-    SiHtml5, SiCss3, SiBootstrap, SiTailwindcss, SiGit, SiGithub, SiNetlify, SiJavascript,
+    SiHtml5,  SiBootstrap, SiTailwindcss, SiGit, SiGithub, SiNetlify, SiJavascript,
     SiReact, SiNextdotjs, SiNodedotjs, SiTypescript, SiPostgresql, SiSupabase,
-    SiPython, SiFigma, SiAdobephotoshop, SiAdobeillustrator, SiMongodb, SiExpress, SiPrisma, SiDrizzle, SiVercel, SiDocker, SiRedis,
-    SiAmazon, SiCloudflare, SiKubernetes, SiLinux, SiPhp, SiLaravel, SiMysql, SiSpring, SiRust, SiGo, SiCplusplus, SiRuby,
+    SiPython, SiFigma, SiMongodb, SiExpress, SiPrisma, SiDrizzle, SiVercel, SiDocker, SiRedis,
+     SiCloudflare, SiKubernetes, SiLinux, SiPhp, SiLaravel, SiMysql, SiSpring, SiRust, SiGo, SiCplusplus, SiRuby,
     SiRubyonrails, SiVuedotjs, SiSvelte, SiFlutter, SiKotlin, SiSwift, SiFirebase, SiGraphql, SiRedux, SiWordpress, SiShopify, SiPostman, SiSharp,
     SiOpenai, SiTensorflow, SiPytorch, SiAnaconda, SiPandas, SiNumpy, SiScikitlearn, SiJupyter, SiKeras
 } from "react-icons/si";
@@ -36,9 +36,8 @@ const TECH_DATA = [
     { keys: ['numpy'], icon: <SiNumpy className="w-4 h-4" />, color: "#013243" },
     { keys: ['jupyter'], icon: <SiJupyter className="w-4 h-4" />, color: "#F37626" },
 
-    // Languages & Frameworks
+    
     { keys: ['html'], icon: <SiHtml5 className="w-4 h-4" />, color: "#E34F26" },
-    { keys: ['css'], icon: <SiCss3 className="w-4 h-4" />, color: "#1572B6" },
     { keys: ['javascript', 'js'], icon: <SiJavascript className="w-4 h-4" />, color: "#F7DF1E" },
     { keys: ['typescript', 'ts'], icon: <SiTypescript className="w-4 h-4" />, color: "#3178C6" },
     { keys: ['react'], icon: <SiReact className="w-4 h-4" />, color: "#61DAFB" },
@@ -96,10 +95,7 @@ const TECH_DATA = [
     { keys: ['ios', 'iphone', 'apple'], icon: <Tablet className="w-4 h-4" />, color: "#A2AAAD" },
     { keys: ['android'], icon: <Smartphone className="w-4 h-4" />, color: "#3DDC84" },
     { keys: ['database', 'sql'], icon: <Database className="w-4 h-4" />, color: "#4479A1" },
-    { keys: ['photoshop', 'ps'], icon: <SiAdobephotoshop className="w-4 h-4" />, color: "#31A8FF" },
-    { keys: ['illustrator', 'adobeillustrator'], icon: <SiAdobeillustrator className="w-4 h-4" />, color: "#FF9A00" },
     { keys: ['cloudflare'], icon: <SiCloudflare className="w-4 h-4" />, color: "#F38020" },
-    { keys: ['amazon'], icon: <SiAmazon className="w-4 h-4" />, color: "#FF9900" },
     { keys: ['security', 'cyber'], icon: <Shield className="w-4 h-4" />, color: "#10B981" },
     { keys: ['terminal', 'cli', 'shell'], icon: <Terminal className="w-4 h-4" />, color: "#4B5563" },
     { keys: ['search', 'seo'], icon: <Search className="w-4 h-4" />, color: "#6366F1" },

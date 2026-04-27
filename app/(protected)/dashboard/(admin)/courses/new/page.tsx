@@ -1,11 +1,11 @@
 "use client";
 import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
-import { motion, AnimatePresence } from "motion/react";
+import { AnimatePresence } from "motion/react";
 import { createClient } from "@/lib/supabase/client";
 import { useToast } from "@/components/ui/toast";
 import { createCourse, getCategories, getTeachers } from "@/lib/actions/courses";
-import { CourseLevel, CreateCourseInput } from "@/types/lms";
+import { CreateCourseInput, CurriculumMilestone } from "@/types/lms";
 import {
     courseStep1Schema,
     courseStep2Schema,
@@ -67,7 +67,7 @@ export default function CreateCoursePage() {
         projects: [] as { title: string; description: string }[],
         faqs: [] as { question: string; answer: string }[],
         resources: [] as { title: string; type: string; url: string }[],
-        modules: [] as { title: string; lessons: { title: string; video_url: string }[] }[],
+        milestones: [] as CurriculumMilestone[],
         community_facebook_url: "",
         community_whatsapp_url: "",
         bkash_automatic_enabled: false,
@@ -268,7 +268,9 @@ export default function CreateCoursePage() {
                     if (path) newErrors[path] = issue.message;
                 });
                 setErrors(newErrors);
-                toast.error("Please fix the errors in your course data");
+                const firstError = errorDetail.issues[0];
+                const fieldName = String(firstError.path[0] || "Field").replace(/_/g, " ").replace(/\b\w/g, l => l.toUpperCase());
+                toast.error(`Invalid ${fieldName}`, firstError.message);
             } else {
                 toast.error(errorDetail.message || "Failed to create course");
             }
@@ -292,7 +294,9 @@ export default function CreateCoursePage() {
                     if (issue.path[0]) newErrors[issue.path[0] as string] = issue.message;
                 });
                 setErrors(newErrors);
-                toast.error("Validation Error", "Please check the form for missing or invalid fields.");
+                const firstError = errorDetail.issues[0];
+                const fieldName = String(firstError.path[0] || "Field").replace(/_/g, " ").replace(/\b\w/g, l => l.toUpperCase());
+                toast.error(`Invalid ${fieldName}`, firstError.message);
                 window.scrollTo({ top: 0, behavior: 'smooth' });
             }
         }

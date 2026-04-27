@@ -6,13 +6,13 @@ import {
     SiNodedotjs,
     SiSpring,
     SiPython,
-    SiAmazonwebservices,
     SiDocker,
     SiPostgresql,
     SiMongodb,
     SiTailwindcss,
     SiGit,
 } from "react-icons/si";
+import { FaAws } from "react-icons/fa6";
 import { Code2 } from "lucide-react";
 import { Badge } from "@/components/ui/Badge";
 const TECH_STACK = [
@@ -22,7 +22,7 @@ const TECH_STACK = [
     { name: "Node.js", icon: SiNodedotjs, color: "text-green-500" },
     { name: "Spring Boot", icon: SiSpring, color: "text-green-400" },
     { name: "Python", icon: SiPython, color: "text-yellow-400" },
-    { name: "AWS", icon: SiAmazonwebservices, color: "text-orange-400" },
+    { name: "AWS", icon: FaAws, color: "text-orange-400" },
     { name: "Docker", icon: SiDocker, color: "text-blue-400" },
     { name: "PostgreSQL", icon: SiPostgresql, color: "text-sky-400" },
     { name: "MongoDB", icon: SiMongodb, color: "text-green-500" },

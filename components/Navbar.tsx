@@ -70,6 +70,8 @@ export function Navbar() {
                     left: activeItem.offsetLeft,
                     width: activeItem.offsetWidth,
                 });
+            } else {
+                setActiveRect({ left: 0, width: 0 });
             }
         };
         updateRect();
@@ -131,7 +133,7 @@ export function Navbar() {
                                     data-active={isActive}
                                     className={cn(
                                         "relative px-4 py-2 text-sm font-bold transition-all duration-300 cursor-pointer rounded-lg z-10",
-                                        isActive ? "text-primary-foreground" : "text-muted-foreground hover:text-foreground hover:bg-muted/30"
+                                        isActive ? "text-white dark:text-[#020615]" : "text-white/60 dark:text-white/40 hover:text-white dark:hover:text-white"
                                     )}
                                 >
                                     {item.name}
@@ -144,15 +146,15 @@ export function Navbar() {
                             onClick={() => setIsSearchOpen(true)}
                             className="hidden xl:flex items-center gap-3 px-4 py-2.5 rounded-2xl bg-muted/50 border border-border/50 hover:bg-muted/80 transition-all duration-200 group min-w-[240px] cursor-pointer"
                         >
-                            <Search className="w-5 h-5 text-muted-foreground group-hover:text-primary transition-colors" />
-                            <span className="text-muted-foreground text-sm">Search...</span>
-                            <kbd className="hidden lg:inline-flex h-6 select-none items-center gap-1 rounded-lg border border-primary bg-primary px-2 font-mono text-[10px] font-medium text-primary-foreground ml-auto opacity-100 transition-colors">
+                            <Search className="w-5 h-5 text-white/50 group-hover:text-white transition-colors" />
+                            <span className="text-white/50 text-sm group-hover:text-white transition-colors">Search...</span>
+                            <kbd className="hidden lg:inline-flex h-6 select-none items-center gap-1 rounded-lg border border-white/20 bg-primary px-2 font-mono text-[10px] font-medium text-white dark:text-[#020615] ml-auto opacity-100 transition-colors">
                                 <span className="xs">⌘</span>K
                             </kbd>
                         </button>
                         <button
                             onClick={() => setIsSearchOpen(true)}
-                            className="flex xl:hidden items-center justify-center w-10 h-10 text-muted-foreground hover:text-foreground transition-colors rounded-xl bg-muted/50 border border-border/50 hover:bg-muted/80 cursor-pointer"
+                            className="flex xl:hidden items-center justify-center w-10 h-10 text-white/60 hover:text-white transition-colors rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 cursor-pointer"
                         >
                             <Search className="w-5 h-5" />
                         </button>

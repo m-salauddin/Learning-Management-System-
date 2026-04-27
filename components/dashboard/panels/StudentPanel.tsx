@@ -91,7 +91,7 @@ export default function StudentPanel({ user, profile, stats, enrollments }: Stud
                                     />
                                     <div className="absolute inset-0 bg-linear-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-end p-4">
                                         <Link 
-                                            href={`/courses/${enrollment.course.slug}/learn`}
+                                            href={`/dashboard/my-courses/${enrollment.course.slug}`}
                                             className="w-full py-2 bg-primary text-primary-foreground text-center text-xs font-bold rounded-lg uppercase tracking-widest"
                                         >
                                             Resume Course

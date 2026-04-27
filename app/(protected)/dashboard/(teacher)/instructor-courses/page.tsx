@@ -14,7 +14,7 @@ export default function InstructorCoursesPage() {
                 actions={
                     <Link 
                         href="/dashboard/courses/new" 
-                        className="flex items-center gap-2 px-4 py-2 bg-primary text-primary-foreground text-sm font-bold rounded-xl hover:bg-primary/90 transition-all shadow-lg shadow-primary/20 uppercase tracking-widest"
+                        className="flex items-center gap-2 px-4 py-2 bg-primary text-white text-sm font-bold rounded-xl hover:bg-primary/90 transition-all shadow-lg shadow-primary/20 uppercase tracking-widest"
                     >
                         <PlusCircle className="w-4 h-4" />
                         New Course

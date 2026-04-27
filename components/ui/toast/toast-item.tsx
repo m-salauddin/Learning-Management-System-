@@ -48,7 +48,7 @@ export const ToastItem = ({ title, description, variant, onDismiss, paused }: To
         return () => {
             if (timerRef.current) clearTimeout(timerRef.current);
         };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    
     }, [paused, variant]);
     const handleCopy = async () => {
         const textToCopy = description ? `${title}\n${description}` : title;

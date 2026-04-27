@@ -3,6 +3,7 @@ import Link from "next/link";
 import { motion, AnimatePresence } from "motion/react";
 import { Home, ArrowLeft, X, Send, AlertCircle } from "lucide-react";
 import { Logo } from "@/components/ui/Logo";
+import { PrimaryCTAButton, SecondaryCTAButton } from "@/components/ui/CTAButton";
 import { useState } from "react";
 import { z, ZodError } from "zod";
 const feedbackSchema = z.object({
@@ -94,28 +95,26 @@ export default function NotFound() {
                 >
                     The learning path you're looking for seems to have vanished. Let's get you back to your studies.
                 </motion.p>
+
                 <motion.div
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: 0.5 }}
-                    className="flex flex-col sm:flex-row gap-4 justify-center items-center"
+                    className="flex flex-col sm:flex-row gap-6 justify-center items-center"
                 >
-                    <Link
+                    <PrimaryCTAButton 
                         href="/"
-                        className="group relative w-full sm:w-auto overflow-hidden rounded-xl bg-primary p-px transition-all hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:ring-offset-background"
+                        className="w-full sm:w-auto min-w-[200px]"
                     >
-                        <span className="relative flex h-full w-full items-center justify-center gap-2 rounded-xl bg-primary px-8 py-3.5 text-sm font-semibold text-primary-foreground backdrop-blur-3xl transition-all">
-                            <Home className="w-4 h-4" />
-                            Return Home
-                        </span>
-                    </Link>
-                    <button
+                        Return Home
+                    </PrimaryCTAButton>
+                    
+                    <SecondaryCTAButton
                         onClick={() => window.history.back()}
-                        className="w-full sm:w-auto flex items-center justify-center gap-2 px-8 py-3.5 rounded-xl border border-input bg-background hover:bg-muted/50 text-foreground font-medium text-sm transition-all focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 cursor-pointer"
+                        className="w-full sm:w-auto min-w-[200px]"
                     >
-                        <ArrowLeft className="w-4 h-4" />
                         Go Back
-                    </button>
+                    </SecondaryCTAButton>
                 </motion.div>
                 <motion.div
                     initial={{ opacity: 0 }}

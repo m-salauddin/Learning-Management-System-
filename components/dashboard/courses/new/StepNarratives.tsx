@@ -3,18 +3,20 @@ import { useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import {
     PencilLine, ListChecks, FileText, Target, Plus, X, Users, Tags, AlertCircle, HelpCircle,
-    Pencil, Trash2, MessageSquare, Tag
+    Pencil, Trash2, MessageSquare, Tag, FolderKanban, Code2
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { inputClasses, labelClasses } from "./constants";
 import { CreateCourseInput } from "@/types/lms";
 import { StepHeader } from "./StepHeader";
+import { useToast } from "@/components/ui/toast";
 interface StepNarrativesProps {
     formData: CreateCourseInput;
     setFormData: React.Dispatch<React.SetStateAction<CreateCourseInput>>;
     errors: Record<string, string>;
 }
 export const StepNarratives = ({ formData, setFormData, errors }: StepNarrativesProps) => {
+    const toast = useToast();
     const [requirementInput, setRequirementInput] = useState("");
     const [audienceInput, setAudienceInput] = useState("");
     const [tagInput, setTagInput] = useState("");
@@ -39,6 +41,11 @@ export const StepNarratives = ({ formData, setFormData, errors }: StepNarratives
 
     const addFaq = () => {
         if (faqInput.question.trim() && faqInput.answer.trim()) {
+            const isDuplicate = formData.faqs?.some((f, i) => f.question.trim().toLowerCase() === faqInput.question.trim().toLowerCase() && i !== editFaqIndex);
+            if (isDuplicate) {
+                toast.error("Duplicate Query", "This exact FAQ question is already present in your Knowledge Base.");
+                return;
+            }
             setFormData(prev => {
                 const updatedFaqs = [...(prev.faqs || [])];
                 if (editFaqIndex !== null) {
@@ -68,6 +75,48 @@ export const StepNarratives = ({ formData, setFormData, errors }: StepNarratives
             setFaqInput({ question: "", answer: "" });
         }
     };
+
+    const [showProjectForm, setShowProjectForm] = useState(false);
+    const [editProjectIndex, setEditProjectIndex] = useState<number | null>(null);
+    const [projectInput, setProjectInput] = useState({ title: "", description: "", tech_stack: "" });
+
+    const addProject = () => {
+        if (projectInput.title.trim() && projectInput.description.trim()) {
+            const isDuplicate = formData.projects?.some((p, i) => p.title.trim().toLowerCase() === projectInput.title.trim().toLowerCase() && i !== editProjectIndex);
+            if (isDuplicate) {
+                toast.error("Duplicate Project", "A project with this identical title has already been forged.");
+                return;
+            }
+            setFormData(prev => {
+                const updatedProjects = [...(prev.projects || [])];
+                if (editProjectIndex !== null) {
+                    updatedProjects[editProjectIndex] = projectInput;
+                } else {
+                    updatedProjects.push(projectInput);
+                }
+                return { ...prev, projects: updatedProjects };
+            });
+            setProjectInput({ title: "", description: "", tech_stack: "" });
+            setEditProjectIndex(null);
+            setShowProjectForm(false);
+        }
+    };
+
+    const startEditingProject = (index: number) => {
+        const p = formData.projects![index];
+        setProjectInput({ title: p.title, description: p.description, tech_stack: p.tech_stack || "" });
+        setEditProjectIndex(index);
+        setShowProjectForm(true);
+    };
+
+    const removeProject = (index: number) => {
+        setFormData(prev => ({ ...prev, projects: (prev.projects || []).filter((_, i) => i !== index) }));
+        if (editProjectIndex === index) {
+            setEditProjectIndex(null);
+            setProjectInput({ title: "", description: "", tech_stack: "" });
+        }
+    };
+
     return (
         <motion.div
             key="step2"
@@ -335,7 +384,7 @@ export const StepNarratives = ({ formData, setFormData, errors }: StepNarratives
                                             <AnimatePresence mode="popLayout">
                                                 {formData.faqs.map((f, i) => (
                                                     <motion.div
-                                                        key={f.question}
+                                                        key={`${f.question}-${i}`}
                                                         layout
                                                         initial={{ opacity: 0, x: -10 }}
                                                         animate={{ opacity: 1, x: 0 }}
@@ -362,6 +411,172 @@ export const StepNarratives = ({ formData, setFormData, errors }: StepNarratives
                                                             <button
                                                                 type="button" 
                                                                 onClick={() => removeFaq(i)} 
+                                                                className="w-8 h-8 rounded-lg text-slate-400 hover:text-red-500 hover:bg-red-500/10 transition-all flex items-center justify-center"
+                                                            >
+                                                                <Trash2 className="w-3.5 h-3.5" />
+                                                            </button>
+                                                        </div>
+                                                    </motion.div>
+                                                ))}
+                                            </AnimatePresence>
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div className="space-y-3">
+                    <div className="flex items-center gap-2.5 px-1.5">
+                        <div className="w-9 h-9 rounded-xl bg-violet-500/10 border border-violet-500/20 flex items-center justify-center shadow-[0_0_15px_-5px_rgba(139,92,246,0.3)]">
+                            <FolderKanban className="w-4.5 h-4.5 text-violet-400" />
+                        </div>
+                        <div>
+                            <h3 className="text-[12px] font-black uppercase tracking-[0.15em] text-violet-400">Practical Forge (Projects)</h3>
+                            <p className="text-[9px] font-medium text-slate-500 dark:text-white/30 tracking-tight">Add hands-on projects and laboratory exercises for real-world practice.</p>
+                        </div>
+                    </div>
+                    <div className="p-5 md:p-6 rounded-xl border border-slate-200 dark:border-white/5 bg-slate-50/50 dark:bg-slate-900/40 backdrop-blur-xl shadow-lg dark:shadow-2xl space-y-6 transition-all hover:bg-slate-100/50 dark:hover:bg-slate-900/50 hover:border-slate-300 dark:hover:border-white/10 group/section">
+                        <div className="space-y-6">
+                            <div className="flex items-center justify-between pb-2 border-b border-slate-200/60 dark:border-white/5">
+                                <label className={cn(labelClasses, "text-slate-600 dark:text-slate-300 pointer-events-none")}>
+                                    <FolderKanban className="w-4 h-4 text-muted-foreground" />
+                                    Project Management
+                                </label>
+                                <button
+                                    type="button"
+                                    onClick={() => {
+                                        setShowProjectForm(!showProjectForm);
+                                        if (showProjectForm) {
+                                            setEditProjectIndex(null);
+                                            setProjectInput({ title: "", description: "", tech_stack: "" });
+                                        }
+                                    }}
+                                    className={cn(
+                                        "h-8 px-3 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all flex items-center gap-2",
+                                        showProjectForm 
+                                            ? "bg-slate-100 dark:bg-white/5 text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-white/10" 
+                                            : "bg-violet-500/10 text-violet-600 dark:text-violet-400 hover:bg-violet-500/20 shadow-[0_0_15px_-5px_rgba(139,92,246,0.3)]"
+                                    )}
+                                >
+                                    {showProjectForm ? <><X className="w-3.5 h-3.5" /> Close</> : <><Plus className="w-3.5 h-3.5" /> Add Project</>}
+                                </button>
+                            </div>
+
+                            <AnimatePresence mode="wait">
+                                {showProjectForm && (
+                                    <motion.div
+                                        initial={{ height: 0, opacity: 0 }}
+                                        animate={{ height: "auto", opacity: 1 }}
+                                        exit={{ height: 0, opacity: 0 }}
+                                        className="overflow-hidden"
+                                    >
+                                        <div className="p-5 rounded-2xl bg-white/50 dark:bg-white/2 border border-slate-200 dark:border-white/10 space-y-4">
+                                            <div className="grid grid-cols-1 gap-5">
+                                                <div className="space-y-2 group/pt">
+                                                    <label className={cn(labelClasses, "mb-1.5 scale-95 origin-left text-slate-600 dark:text-slate-300")}>
+                                                        <FileText className="w-3.5 h-3.5 text-muted-foreground group-focus-within/pt:text-violet-400 transition-colors" />
+                                                        Project Title
+                                                    </label>
+                                                    <input
+                                                        value={projectInput.title}
+                                                        onChange={(e) => setProjectInput(prev => ({ ...prev, title: e.target.value }))}
+                                                        placeholder="e.g. Build evaluating dashboard"
+                                                        className={cn(inputClasses, "h-11 bg-white dark:bg-slate-950 focus:border-violet-500/50 focus:ring-2 focus:ring-violet-500/20")}
+                                                    />
+                                                </div>
+                                                <div className="space-y-2 group/ptech">
+                                                    <label className={cn(labelClasses, "mb-1.5 scale-95 origin-left text-slate-600 dark:text-slate-300")}>
+                                                        <Code2 className="w-3.5 h-3.5 text-muted-foreground group-focus-within/ptech:text-violet-400 transition-colors" />
+                                                        Tech Stack
+                                                    </label>
+                                                    <input
+                                                        value={projectInput.tech_stack}
+                                                        onChange={(e) => setProjectInput(prev => ({ ...prev, tech_stack: e.target.value }))}
+                                                        placeholder="e.g. React, Node.js, PostgreSQL (comma separated)"
+                                                        className={cn(inputClasses, "h-11 bg-white dark:bg-slate-950 focus:border-violet-500/50 focus:ring-2 focus:ring-violet-500/20")}
+                                                    />
+                                                </div>
+                                                <div className="space-y-2 group/pd">
+                                                    <label className={cn(labelClasses, "mb-1.5 scale-95 origin-left text-slate-600 dark:text-slate-300")}>
+                                                        <MessageSquare className="w-3.5 h-3.5 text-muted-foreground group-focus-within/pd:text-violet-400 transition-colors" />
+                                                        Project Description
+                                                    </label>
+                                                    <textarea
+                                                        value={projectInput.description}
+                                                        onChange={(e) => setProjectInput(prev => ({ ...prev, description: e.target.value }))}
+                                                        placeholder="Provide a detailed brief of the project requirements..."
+                                                        className={cn(inputClasses, "h-[100px] resize-none py-3 bg-white dark:bg-slate-950 focus:border-violet-500/50 focus:ring-2 focus:ring-violet-500/20 custom-scrollbar mt-1.5")}
+                                                    />
+                                                </div>
+                                            </div>
+                                            <div className="flex justify-end pt-2">
+                                                <button
+                                                    type="button"
+                                                    onClick={addProject}
+                                                    disabled={!projectInput.title || !projectInput.description}
+                                                    className="h-10 px-6 bg-violet-500 hover:bg-violet-600 disabled:opacity-50 disabled:cursor-not-allowed text-white rounded-xl text-[10px] font-black uppercase tracking-widest transition-all active:scale-95 flex items-center gap-2 shadow-sm"
+                                                >
+                                                    {editProjectIndex !== null ? <><Pencil className="w-3.5 h-3.5" /> Update Project</> : <><Plus className="w-3.5 h-3.5" /> Deploy Project</>}
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </motion.div>
+                                )}
+                            </AnimatePresence>
+
+                            <div className="space-y-4">
+                                {!formData.projects?.length ? (
+                                    <div className="py-14 sm:py-20 flex flex-col items-center justify-center gap-4 border-2 border-dashed border-slate-200 dark:border-white/5 rounded-2xl bg-white/5 text-slate-400/50 transition-colors hover:border-violet-500/20 group/empty">
+                                        <div className="w-16 h-16 rounded-full bg-violet-500/5 flex items-center justify-center border border-violet-500/10 group-hover/empty:scale-110 transition-transform">
+                                            <FolderKanban className="w-8 h-8 text-violet-500/40" />
+                                        </div>
+                                        <p className="text-[10px] font-black uppercase tracking-[0.25em] text-center px-6">No Projects Forged Yet</p>
+                                    </div>
+                                ) : (
+                                    <div className="space-y-4">
+                                        <div className="flex items-center gap-2">
+                                            <div className="px-2 py-0.5 rounded-lg bg-violet-500/10 text-violet-600 dark:text-violet-400 text-[10px] font-black tracking-tight">
+                                                {String(formData.projects?.length || 0).padStart(2, '0')} PROJECTS
+                                            </div>
+                                            <span className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Practical Forge</span>
+                                        </div>
+                                        <div className="grid grid-cols-1 gap-2.5">
+                                            <AnimatePresence mode="popLayout">
+                                                {formData.projects.map((p, i) => (
+                                                    <motion.div
+                                                        key={`${p.title}-${i}`}
+                                                        layout
+                                                        initial={{ opacity: 0, x: -10 }}
+                                                        animate={{ opacity: 1, x: 0 }}
+                                                        exit={{ opacity: 0, scale: 0.95 }}
+                                                        className="px-4 py-3 rounded-xl border border-slate-200 dark:border-white/5 bg-white dark:bg-slate-950/50 flex items-center justify-between group/pj transition-all hover:border-violet-500/30"
+                                                    >
+                                                        <div className="flex items-center gap-4 flex-1 min-w-0">
+                                                            <div className="w-10 h-10 rounded-lg bg-violet-500/5 border border-violet-500/10 flex items-center justify-center shrink-0">
+                                                                <FolderKanban className="w-4 h-4 text-violet-500" />
+                                                            </div>
+                                                            <div className="flex flex-col min-w-0 overflow-hidden">
+                                                                <p className="text-[11px] font-black uppercase tracking-wider text-slate-900 dark:text-white truncate">{p.title}</p>
+                                                                <div className="flex items-center gap-2 mt-0.5">
+                                                                    {p.tech_stack && (
+                                                                        <span className="text-[9px] font-medium text-slate-500 truncate"><Code2 className="w-3 h-3 inline mr-1" />{p.tech_stack}</span>
+                                                                    )}
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                        <div className="flex items-center gap-1 shrink-0 ml-4">
+                                                            <button
+                                                                type="button" 
+                                                                onClick={() => startEditingProject(i)} 
+                                                                className="w-8 h-8 rounded-lg text-slate-400 hover:text-violet-500 hover:bg-violet-500/10 transition-all flex items-center justify-center"
+                                                            >
+                                                                <Pencil className="w-3.5 h-3.5" />
+                                                            </button>
+                                                            <button
+                                                                type="button" 
+                                                                onClick={() => removeProject(i)} 
                                                                 className="w-8 h-8 rounded-lg text-slate-400 hover:text-red-500 hover:bg-red-500/10 transition-all flex items-center justify-center"
                                                             >
                                                                 <Trash2 className="w-3.5 h-3.5" />

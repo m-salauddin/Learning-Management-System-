@@ -3,7 +3,7 @@ import React from "react";
 import { RefreshCw, Inbox, FileX, RotateCcw } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-// ─── LoadingState ────────────────────────────────────────────────────────────
+
 interface LoadingStateProps {
     message?: string;
     className?: string;
@@ -27,7 +27,7 @@ export function LoadingState({
     );
 }
 
-// ─── EmptyDataState ──────────────────────────────────────────────────────────
+
 interface EmptyDataStateProps {
     icon?: React.ElementType;
     title?: string;
@@ -58,7 +58,7 @@ export function EmptyDataState({
     );
 }
 
-// ─── EmptyFilterState ────────────────────────────────────────────────────────
+
 interface EmptyFilterStateProps {
     searchTerm?: string;
     message?: string;
@@ -103,16 +103,22 @@ export function EmptyFilterState({
     );
 }
 
-// ─── StatsSkeleton ────────────────────────────────────────────────────────────
-// Standard loading skeleton for stats cards grid
+
+
 export function StatsSkeleton({ count = 4 }: { count?: number }) {
     return (
         <>
             {Array.from({ length: count }).map((_, i) => (
                 <div
                     key={i}
-                    className="h-32 rounded-2xl bg-card/50 border border-border/20 animate-pulse"
-                />
+                    className="h-[104px] rounded-[1.25rem] bg-card/60 border border-border/40 p-5 flex items-center gap-4 animate-pulse"
+                >
+                    <div className="w-11 h-11 rounded-xl bg-muted/60 shrink-0" />
+                    <div className="flex-1 space-y-2">
+                        <div className="h-2.5 w-16 bg-muted/60 rounded-full" />
+                        <div className="h-6 w-12 bg-muted/80 rounded-lg" />
+                    </div>
+                </div>
             ))}
         </>
     );

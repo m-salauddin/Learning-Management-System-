@@ -8,7 +8,7 @@ export const DashboardTableContainer = React.forwardRef<
   <div
     ref={ref}
     className={cn(
-      "rounded-[2.5rem] border border-border/80 bg-card/30 backdrop-blur-xl overflow-hidden",
+      "rounded-[2.5rem] border border-border/80 bg-card/30 backdrop-blur-xl",
       className
     )}
     {...props}
@@ -37,7 +37,7 @@ export const DashboardTableWrapper = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <div
     ref={ref}
-    className={cn("overflow-x-auto min-w-full dashboard-scrollbar", className)}
+    className={cn("overflow-x-auto overflow-y-visible min-w-full dashboard-scrollbar", className)}
   >
     <div className="inline-block min-w-full align-middle" {...props} />
   </div>
@@ -93,7 +93,7 @@ export const DashboardTableRow = React.forwardRef<
   <div
     ref={ref}
     className={cn(
-      "grid px-8 py-5 items-center hover:bg-primary/5 transition-all duration-300 group",
+      "grid px-8 py-5 items-center hover:bg-primary/5 transition-all duration-300 group relative",
       className
     )}
     {...props}

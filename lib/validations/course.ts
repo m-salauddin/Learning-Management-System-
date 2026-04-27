@@ -62,6 +62,20 @@ export const courseStep4Schema = z.object({
             video_url: z.string().optional(),
         })).optional(),
     })).optional(),
+    milestones: z.array(z.object({
+        title: z.string().min(1, "Milestone title required"),
+        description: z.string().optional(),
+        modules: z.array(z.object({
+            title: z.string().min(1, "Module title required"),
+            items: z.array(z.object({
+                type: z.enum(['lesson', 'quiz', 'assignment']),
+                title: z.string().min(1, "Item title required"),
+                video_url: z.string().url("Invalid video URL").optional().or(z.literal("")),
+                description: z.string().optional(),
+                points: z.number().optional(),
+            })).optional().default([]),
+        })).optional().default([]),
+    })).optional().default([]),
 });
 export const courseFormSchema = courseStep1Schema
     .merge(courseStep2Schema)

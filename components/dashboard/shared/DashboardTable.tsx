@@ -138,11 +138,11 @@ export function DashboardTable<T extends { id?: string | number }>({
                     </div>
                 </div>
             )}
-            {/* Grid Container */}
+            {}
             {showTable && (
                 <div className="bg-card/30 backdrop-blur-xl border border-border/40 rounded-[2.5rem] overflow-hidden overflow-x-auto min-w-0">
                     <div className="min-w-[800px] divide-y divide-border/10">
-                        {/* Header */}
+                        {}
                         <div
                             className="grid px-8 py-5 bg-muted/5 border-b border-border/20 items-center whitespace-nowrap"
                             style={{ gridTemplateColumns: gridTemplate }}
@@ -159,14 +159,14 @@ export function DashboardTable<T extends { id?: string | number }>({
                                 </div>
                             ))}
                         </div>
-                        {/* Body */}
+                        {}
                         <div className="divide-y divide-border/10">
                             {isLoading ? renderSkeletonRows() : renderDataRows()}
                         </div>
                     </div>
                 </div>
             )}
-            {/* Pagination Component */}
+            {}
             {pagination && emptyStateType === 'HAS_ROWS' && (
                 <div className="pt-2">
                     <Pagination

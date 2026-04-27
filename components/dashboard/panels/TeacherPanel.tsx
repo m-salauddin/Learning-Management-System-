@@ -61,7 +61,7 @@ export default function TeacherPanel({ stats, myCourses }: TeacherPanelProps) {
                 />
             </DashboardGrid>
 
-            {/* Quick Actions */}
+            {}
             <DashboardGrid cols={2}>
                 <DashboardCard 
                     title="Course Builder" 

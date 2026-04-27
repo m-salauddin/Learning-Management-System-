@@ -133,6 +133,22 @@ export function DashboardLayoutClient({ children, role: serverRole }: DashboardL
     const { user } = useAppSelector((state) => state.auth);
     const role = user?.role || serverRole;
     const groups = NAV_GROUPS[role] || NAV_GROUPS.student;
+    
+    
+    
+    const pathSegments = pathname.split("/").filter(Boolean);
+    const isPlayerPage = pathSegments.length >= 4 && pathSegments[1] === "my-courses";
+
+    if (isPlayerPage) {
+        return (
+            <div className="min-h-screen bg-background w-full">
+                <main className="w-full min-h-screen">
+                    {children}
+                </main>
+            </div>
+        );
+    }
+
     return (
         <div className="flex min-h-screen bg-background">
             {}

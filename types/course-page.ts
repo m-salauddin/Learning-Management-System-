@@ -161,12 +161,21 @@ export interface ModuleWithLessonsPreview {
     total_duration_minutes: number;
     lesson_count: number;
 }
+export interface MilestoneWithModulesPreview {
+    id: string;
+    course_id: string;
+    title: string;
+    description: string;
+    position: number;
+    modules: ModuleWithLessonsPreview[];
+}
 export interface CoursePageData {
     course: Course;
     details: CourseDetails | null;
     instructor: InstructorInfo;
     instructors?: InstructorInfo[];
     modules: ModuleWithLessonsPreview[];
+    milestones: MilestoneWithModulesPreview[];
     totalLessons: number;
     totalDuration: number;
     courseOutline: CourseOutlineModule[];
@@ -181,6 +190,21 @@ export interface CoursePageData {
     enrollmentId: string | null;
     userProgress: number;
     batches: CourseBatch[];
+    completedLessonIds?: string[];
+    dashboardStats?: {
+        overallScore: number;
+        quizScore: number;
+        assignmentScore: number;
+        progress: number;
+    };
+    leaderboard?: Array<{
+        id: string;
+        name: string;
+        avatar: string;
+        score: number;
+        rank: number;
+        isCurrentUser?: boolean;
+    }>;
 }
 export interface CourseBatch {
     id: string;
