@@ -2,6 +2,7 @@ import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { notFound, redirect } from "next/navigation";
 import { CoursePlayerClient } from "./ClientComponent";
 
+export const dynamic = 'force-dynamic';
 interface PageProps {
     params: Promise<{ slug: string; lessonId: string }>;
 }
@@ -15,6 +16,7 @@ export default async function MyCourseLessonPage({ params }: PageProps) {
         redirect(`/login?next=/dashboard/my-courses/${slug}/${lessonId}`);
     }
 
+    // Fetch course for lock enforcement + lesson matching
     const { data: course, error: courseError } = await supabase
         .from('courses')
         .select(`
@@ -42,6 +44,7 @@ export default async function MyCourseLessonPage({ params }: PageProps) {
         return notFound();
     }
 
+    // ── Resolve currentLesson based on lessonId format ──
     let currentLesson: any = null;
     let lessonError: any = null;
 
@@ -113,6 +116,7 @@ export default async function MyCourseLessonPage({ params }: PageProps) {
         return notFound();
     }
 
+    // Fetch lesson-specific data
     const { data: asset } = await supabase
         .from('lesson_assets')
         .select('*')
@@ -139,18 +143,19 @@ export default async function MyCourseLessonPage({ params }: PageProps) {
     } else if (lessonId.startsWith('assignment-')) {
         assignmentData = await supabase.from('module_assignments').select('*').eq('id', lessonId.replace('assignment-', '')).single().then(r => r.data);
     } else if (!lessonId.startsWith('assessments-')) {
-        const { data: siblingLessons } = await supabase
-            .from('module_lessons')
-            .select('id')
-            .eq('module_id', currentLesson.module_id)
-            .eq('lesson_type', currentLesson.lesson_type)
-            .order('position', { ascending: true });
-        
-        const lessonIndex = siblingLessons?.findIndex(l => l.id === lessonId) ?? 0;
-        quizData = quizzes?.[lessonIndex] || null;
-        assignmentData = assignments?.[lessonIndex] || null;
+        if (currentLesson.lesson_type === 'quiz') {
+            const matchingQuiz = quizzes?.find((q: any) => q.position === currentLesson.position);
+            quizData = matchingQuiz || quizzes?.[0] || null;
+        }
+        if (currentLesson.lesson_type === 'assignment') {
+            const matchingAssignment = assignments?.find((a: any) => a.position === currentLesson.position)
+                || assignments?.find((a: any) => a.title?.toLowerCase().includes(currentLesson.title?.toLowerCase()?.split(':')?.[0]))
+                || assignments?.[0] || null;
+            assignmentData = matchingAssignment;
+        }
     }
 
+    // ── Server-side sequential lock enforcement ──
     const { data: enrollment } = await supabase
         .from('enrollments')
         .select('id, status')
@@ -159,53 +164,60 @@ export default async function MyCourseLessonPage({ params }: PageProps) {
         .in('status', ['active', 'success'])
         .maybeSingle();
 
-    const hasAccess = !!enrollment || currentLesson.is_free_preview;
-    const rawMilestones = course.milestones || [];
-    const milestones = rawMilestones.sort((a: any, b: any) => (a.position || 0) - (b.position || 0));
-    
-    milestones.forEach((ms: any) => {
-        if (ms.modules) {
-            ms.modules.sort((a: any, b: any) => (a.position || 0) - (b.position || 0));
-            ms.modules.forEach((m: any) => {
-                if (m.lessons) {
-                    m.lessons.sort((a: any, b: any) => (a.position || 0) - (b.position || 0));
-                }
-                if (m.quizzes) {
-                    m.quizzes.sort((a: any, b: any) => (a.position || 0) - (b.position || 0));
-                }
-                if (m.assignments) {
-                    m.assignments.sort((a: any, b: any) => (a.position || 0) - (b.position || 0));
-                }
+    if (enrollment && !currentLesson.is_free_preview) {
+        // Sort for consistent ordering
+        const rawMilestones = course.milestones || [];
+        const milestones = rawMilestones.sort((a: any, b: any) => (a.position || 0) - (b.position || 0));
+        milestones.forEach((ms: any) => {
+            if (ms.modules) {
+                ms.modules.sort((a: any, b: any) => (a.position || 0) - (b.position || 0));
+                ms.modules.forEach((m: any) => {
+                    if (m.lessons) m.lessons.sort((a: any, b: any) => (a.position || 0) - (b.position || 0));
+                });
+            }
+        });
+        const modules = (course.modules || []).sort((a: any, b: any) => (a.position || 0) - (b.position || 0));
+        modules.forEach((m: any) => { if (m.lessons) m.lessons.sort((a: any, b: any) => (a.position || 0) - (b.position || 0)); });
+
+        const structural = milestones.length > 0 ? milestones : [{ id: 'default', title: "Curriculum", modules }];
+        const allLessonsFlat: { id: string }[] = [];
+        structural.forEach((ms: any) => {
+            (ms.modules || []).forEach((mod: any) => {
+                const lessons = (mod.lessons || []).filter((l: any) => l.lesson_type !== 'quiz');
+                lessons.filter((l: any) => l.lesson_type !== 'assignment').forEach((lesson: any) => allLessonsFlat.push({ id: lesson.id }));
+                const hasQuizzes = (mod.quizzes || []).length > 0;
+                if (hasQuizzes) allLessonsFlat.push({ id: `assessments-${mod.id}` });
+                lessons.filter((l: any) => l.lesson_type === 'assignment').forEach((lesson: any) => allLessonsFlat.push({ id: lesson.id }));
             });
-        }
-    });
+        });
 
-    const modules = (course.modules || []).sort((a: any, b: any) => (a.position || 0) - (b.position || 0));
-    modules.forEach((m: any) => {
-        if (m.lessons) {
-            m.lessons.sort((a: any, b: any) => (a.position || 0) - (b.position || 0));
-        }
-        if (m.quizzes) {
-            m.quizzes.sort((a: any, b: any) => (a.position || 0) - (b.position || 0));
-        }
-        if (m.assignments) {
-            m.assignments.sort((a: any, b: any) => (a.position || 0) - (b.position || 0));
-        }
-    });
+        const currentIdx = allLessonsFlat.findIndex(l => l.id === currentLesson.id);
+        if (currentIdx > 0) {
+            const previousLessonIds = allLessonsFlat.slice(0, currentIdx).map(l => l.id);
+            const { data: completedProgress } = await supabase
+                .from('lesson_progress')
+                .select('lesson_id')
+                .eq('user_id', user.id)
+                .eq('enrollment_id', enrollment.id)
+                .eq('is_completed', true)
+                .in('lesson_id', previousLessonIds);
 
-    course.milestones = milestones;
-    course.modules = modules;
+            const completedSet = new Set((completedProgress || []).map((p: any) => p.lesson_id));
+            const allPrevDone = previousLessonIds.every(id => completedSet.has(id));
+
+            if (!allPrevDone) {
+                const firstIncomplete = previousLessonIds.find(id => !completedSet.has(id)) || allLessonsFlat[0].id;
+                redirect(`/dashboard/my-courses/${slug}/${firstIncomplete}`);
+            }
+        }
+    }
 
     return (
         <CoursePlayerClient
-            course={course}
             currentLesson={currentLesson}
             asset={asset}
             quiz={quizData}
             assignment={assignmentData}
-            hasAccess={!!hasAccess}
-            userId={user.id}
-            enrollmentId={enrollment?.id}
         />
     );
 }

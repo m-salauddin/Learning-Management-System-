@@ -1,4 +1,5 @@
 'use server';
+
 import { createClient } from '@/lib/supabase/server';
 import { createClient as createAdminClient } from '@supabase/supabase-js';
 import {
@@ -19,19 +20,65 @@ import {
     CourseBatch,
 } from '@/types/course-page';
 import { Course, Category } from '@/types/lms';
-export async function getCoursePageData(slug: string): Promise<{
-    success: boolean;
-    data?: CoursePageData;
-    error?: string;
-}> {
+
+// ─── Shared Helpers ──────────────────────────────────────────────────────────
+
+type ActionResult<T = undefined> = T extends undefined
+    ? { success: boolean; error?: string }
+    : { success: boolean; data?: T; error?: string };
+
+function getAdminClient() {
+    return createAdminClient(
+        process.env.NEXT_PUBLIC_SUPABASE_URL!,
+        process.env.SUPABASE_SERVICE_ROLE_KEY || ''
+    );
+}
+
+/** Maps raw module rows into ModuleWithLessonsPreview, filtering/sorting published lessons. */
+function mapModuleRow(mod: any): ModuleWithLessonsPreview & { _duration: number } {
+    const lessons = (mod.lessons || [])
+        .filter((l: any) => l.is_published)
+        .sort((a: any, b: any) => a.position - b.position);
+    const duration = lessons.reduce((sum: number, l: any) => sum + (l.duration_minutes || 0), 0);
+    return {
+        id: mod.id,
+        course_id: mod.course_id,
+        title: mod.title,
+        description: mod.description || '',
+        position: mod.position,
+        is_published: mod.is_published,
+        lessons,
+        total_duration_minutes: duration,
+        lesson_count: lessons.length,
+        _duration: duration,
+    };
+}
+
+function mapInstructorRow(row: any): InstructorInfo {
+    const u = row.users ?? row;
+    const p = u?.profile ?? row;
+    return {
+        id: u.id,
+        name: u.name || 'Unknown',
+        email: u.email || '',
+        avatar_url: u.avatar_url || '',
+        bio: u.bio || p?.bio || null,
+        expertise: p?.expertise || [],
+        social_links: p?.social_links || {},
+        total_courses: p?.total_courses || 0,
+        total_students: p?.total_students || 0,
+        rating: p?.rating || 0,
+        role: row.role as 'main' | 'support' | undefined,
+    };
+}
+// ─── Course Page Data ────────────────────────────────────────────────────────
+
+export async function getCoursePageData(slug: string): Promise<ActionResult<CoursePageData>> {
     try {
         const supabase = await createClient();
-        const adminClient = createAdminClient(
-            process.env.NEXT_PUBLIC_SUPABASE_URL!,
-            process.env.SUPABASE_SERVICE_ROLE_KEY || ''
-        );
+        const adminClient = getAdminClient();
 
-        
+        // Phase 1: Fetch course + auth in parallel
         const [{ data: { user } }, { data: course, error: courseError }] = await Promise.all([
             supabase.auth.getUser(),
             supabase
@@ -43,7 +90,7 @@ export async function getCoursePageData(slug: string): Promise<{
                     )
                 `)
                 .eq('slug', slug)
-                .single()
+                .single(),
         ]);
 
         if (courseError || !course) {
@@ -52,8 +99,8 @@ export async function getCoursePageData(slug: string): Promise<{
 
         const courseData = course as Course & { category: Category | null };
 
-        
-        
+        // Phase 2: Fetch all related data in parallel
+
         const [
             { data: details },
             { data: instructorData },
@@ -85,7 +132,7 @@ export async function getCoursePageData(slug: string): Promise<{
             supabase.from('modules').select(`
                 id, course_id, title, description, position, is_published,
                 lessons:module_lessons (
-                    id, title, description, lesson_type, position, duration_minutes, is_free_preview, is_published
+                    id, module_id, title, description, lesson_type, position, duration_minutes, is_free_preview, is_published
                 ),
                 quizzes:module_quizzes(*),
                 assignments:module_assignments(*)
@@ -97,14 +144,14 @@ export async function getCoursePageData(slug: string): Promise<{
             adminClient.from('course_outline_topics').select('*').eq('course_id', course.id).eq('is_published', true).order('position', { ascending: true }),
             supabase.from('course_reviews').select('*, user:user_id (id, name, avatar_url)').eq('course_id', course.id).order('created_at', { ascending: false }).limit(20),
             supabase.from('courses').select('id, title, slug, thumbnail_url, price, discount_price, rating, rating_count, total_students, level, course_type, tags, batch_no, updated_at, duration_hours, short_description, description').eq('published', true).neq('id', course.id).eq('category_id', course.category_id).limit(4),
-            user ? supabase.from('enrollments').select('id, progress_percentage').eq('user_id', user.id).eq('course_id', course.id).maybeSingle() : Promise.resolve({ data: null }),
-            supabase.from('course_batches').select('*').eq('course_id', course.id).eq('is_active', true).order('start_date', { ascending: true }),
+            user ? supabase.from('enrollments').select('id, progress_percentage').eq('user_id', user.id).eq('course_id', course.id).in('status', ['active', 'success']).maybeSingle() : Promise.resolve({ data: null }),
+            supabase.from('course_batches').select('*').eq('course_id', course.id).eq('is_active', true).order('start_date', { ascending: true }).then(r => r).catch(() => ({ data: null })),
             supabase.from('milestones').select(`
                 id, course_id, title, description, position,
                 modules (
                     id, course_id, title, description, position, is_published,
                     lessons:module_lessons (
-                        id, title, description, lesson_type, position, duration_minutes, is_free_preview, is_published
+                        id, module_id, title, description, lesson_type, position, duration_minutes, is_free_preview, is_published
                     ),
                     quizzes:module_quizzes(*),
                     assignments:module_assignments(*)
@@ -114,7 +161,7 @@ export async function getCoursePageData(slug: string): Promise<{
 
         const allTopics = (allTopicsRaw as unknown as CourseOutlineTopic[]) || [];
 
-        
+        // ── Transform: Instructors ──
         const instructor: InstructorInfo = {
             id: instructorData?.id || course.instructor_id,
             name: instructorData?.name || 'Unknown',
@@ -128,103 +175,58 @@ export async function getCoursePageData(slug: string): Promise<{
             rating: instructorProfile?.rating || 0,
         };
 
-        const instructors: InstructorInfo[] = [];
-        if (ciRows && ciRows.length > 0) {
-            ciRows.forEach((row: any) => {
-                const u = row.users;
-                const p = u?.profile;
-                if (u) {
-                    instructors.push({
-                        id: u.id,
-                        name: u.name || 'Unknown',
-                        email: u.email || '',
-                        avatar_url: u.avatar_url || '',
-                        bio: u.bio || p?.bio || null,
-                        expertise: p?.expertise || [],
-                        social_links: p?.social_links || {},
-                        total_courses: p?.total_courses || 0,
-                        total_students: p?.total_students || 0,
-                        rating: p?.rating || 0,
-                        role: row.role as 'main' | 'support'
-                    });
-                }
-            });
-        }
+        const instructors: InstructorInfo[] = (ciRows || [])
+            .filter((row: any) => row.users)
+            .map((row: any) => mapInstructorRow(row));
         if (instructors.length === 0) instructors.push(instructor);
 
-        
+        // ── Transform: Modules & Milestones (shared mapModuleRow helper) ──
         let totalLessons = 0;
         let totalDuration = 0;
+
         const modules: ModuleWithLessonsPreview[] = (modulesData || []).map((mod) => {
-            const lessons = (mod.lessons || [])
-                .filter((l: any) => l.is_published)
-                .sort((a: any, b: any) => a.position - b.position);
-            const moduleDuration = lessons.reduce((sum: number, l: any) => sum + (l.duration_minutes || 0), 0);
-            totalLessons += lessons.length;
-            totalDuration += moduleDuration;
-            return {
-                id: mod.id,
-                course_id: mod.course_id,
-                title: mod.title,
-                description: mod.description || '',
-                position: mod.position,
-                is_published: mod.is_published,
-                lessons,
-                total_duration_minutes: moduleDuration,
-                lesson_count: lessons.length,
-            };
+            const mapped = mapModuleRow(mod);
+            totalLessons += mapped.lesson_count;
+            totalDuration += mapped._duration;
+            return mapped;
         });
-        
-        const milestones: any[] = (milestonesData || []).map((ms: any) => ({
+
+        const milestones = (milestonesData || []).map((ms: any) => ({
             id: ms.id,
             course_id: ms.course_id,
             title: ms.title,
             description: ms.description || '',
             position: ms.position,
-            modules: (ms.modules || []).map((mod: any) => {
-                 const lessons = (mod.lessons || [])
-                    .filter((l: any) => l.is_published)
-                    .sort((a: any, b: any) => a.position - b.position);
-                const moduleDuration = lessons.reduce((sum: number, l: any) => sum + (l.duration_minutes || 0), 0);
-                return {
-                    id: mod.id,
-                    course_id: mod.course_id,
-                    title: mod.title,
-                    description: mod.description || '',
-                    position: mod.position,
-                    is_published: mod.is_published,
-                    lessons,
-                    total_duration_minutes: moduleDuration,
-                    lesson_count: lessons.length,
-                };
-            }).sort((a: any, b: any) => a.position - b.position)
+            modules: (ms.modules || [])
+                .map((mod: any) => mapModuleRow(mod))
+                .sort((a: any, b: any) => a.position - b.position),
         }));
 
-        
-        const courseOutline: CourseOutlineModule[] = (outlineModulesData || []).map((mod) => {
-            const topics = allTopics
+        // ── Transform: Course Outline ──
+        const courseOutline: CourseOutlineModule[] = (outlineModulesData || []).map((mod) => ({
+            id: mod.id,
+            course_id: mod.course_id,
+            title: mod.title,
+            description: mod.description,
+            position: mod.position,
+            is_published: mod.is_published,
+            estimated_duration_minutes: mod.estimated_duration_minutes || 0,
+            created_at: mod.created_at,
+            updated_at: mod.updated_at,
+            topics: allTopics
                 .filter(t => t.module_id === mod.id)
-                .sort((a, b) => a.position - b.position);
-            return {
-                id: mod.id,
-                course_id: mod.course_id,
-                title: mod.title,
-                description: mod.description,
-                position: mod.position,
-                is_published: mod.is_published,
-                estimated_duration_minutes: mod.estimated_duration_minutes || 0,
-                created_at: mod.created_at,
-                updated_at: mod.updated_at,
-                topics,
-            };
-        });
+                .sort((a, b) => a.position - b.position),
+        }));
 
+        // Fallback totals from outline data when modules have none
         if (totalDuration === 0 && outlineModulesData) {
             totalDuration = outlineModulesData.reduce((acc, mod) => acc + (mod.estimated_duration_minutes || 0), 0);
         }
-        if (totalLessons === 0 && allTopics.length > 0) totalLessons = allTopics.length;
+        if (totalLessons === 0 && allTopics.length > 0) {
+            totalLessons = allTopics.length;
+        }
 
-        
+
         const reviews: ReviewWithUser[] = (reviewsData || []).map((r: any) => ({
             ...r,
             user: (r.user as { id: string; name: string; avatar_url: string }) || {
@@ -238,68 +240,83 @@ export async function getCoursePageData(slug: string): Promise<{
         const enrollmentId = enrollmentResult?.data?.id || null;
         const userProgress = enrollmentResult?.data?.progress_percentage || 0;
 
-        let dashboardStats = undefined;
-        let leaderboard = undefined;
+        // ── Phase 3: Enrolled-user dashboard stats (only if enrolled) ──
+        let dashboardStats: CoursePageData['dashboardStats'];
+        let leaderboard: CoursePageData['leaderboard'];
         let userLessonProgress: any[] = [];
 
         if (isEnrolled && user && enrollmentId) {
+            // Fetch all completed lesson IDs (no FK join — lesson_id can be virtual like assessments-*)
             const { data: progressData } = await supabase
                 .from('lesson_progress')
-                .select('lesson_id, is_completed, lesson:module_lessons(lesson_type)')
-                .eq('enrollment_id', enrollmentId);
+                .select('lesson_id, is_completed')
+                .eq('enrollment_id', enrollmentId)
+                .eq('is_completed', true);
 
             userLessonProgress = (progressData as any[]) || [];
+            const completedIds = new Set(userLessonProgress.map(p => p.lesson_id));
 
-            // Calculate Quiz and Assignment scores based on completion
-            const quizzes = modules.flatMap(m => m.lessons.filter(l => l.lesson_type === 'quiz'));
-            const assignments = modules.flatMap(m => m.lessons.filter(l => l.lesson_type === 'assignment'));
+            // Also check quiz_submissions for assessment completions
+            const { data: quizSubs } = await supabase
+                .from('quiz_submissions')
+                .select('lesson_id')
+                .eq('user_id', user.id);
+            if (quizSubs) quizSubs.forEach((qs: any) => {
+                if (qs.lesson_id && !completedIds.has(qs.lesson_id)) {
+                    completedIds.add(qs.lesson_id);
+                    userLessonProgress.push({ lesson_id: qs.lesson_id, is_completed: true });
+                }
+            });
 
-            const completedQuizzes = userLessonProgress.filter(p => 
-                p.is_completed && p.lesson?.lesson_type === 'quiz'
-            ).length;
-            
-            const completedAssignments = userLessonProgress.filter(p => 
-                p.is_completed && p.lesson?.lesson_type === 'assignment'
-            ).length;
+            // Compute quiz/assignment stats from module data
+            const allLessons = modules.flatMap(m => m.lessons || []);
+            const quizLessons = allLessons.filter(l => l.lesson_type === 'quiz');
+            const assignmentLessons = allLessons.filter(l => l.lesson_type === 'assignment');
+            const completedQuizzes = quizLessons.filter(l => completedIds.has(l.id)).length;
+            const completedAssignments = assignmentLessons.filter(l => completedIds.has(l.id)).length;
 
             dashboardStats = {
                 overallScore: userProgress,
-                quizScore: quizzes.length > 0 ? (completedQuizzes / quizzes.length) * 100 : 0,
-                assignmentScore: assignments.length > 0 ? (completedAssignments / assignments.length) * 100 : 0,
-                progress: userProgress
+                quizScore: quizLessons.length > 0 ? (completedQuizzes / quizLessons.length) * 100 : 0,
+                assignmentScore: assignmentLessons.length > 0 ? (completedAssignments / assignmentLessons.length) * 100 : 0,
+                progress: userProgress,
             };
 
-                const { data: boardData } = await adminClient
+            const { data: boardData } = await adminClient
                 .from('enrollments')
                 .select('user_id, progress_percentage, user:users(id, name, avatar_url)')
                 .eq('course_id', course.id)
                 .order('progress_percentage', { ascending: false })
                 .limit(10);
 
+            const avatarUrl = (name: string, url?: string) =>
+                url || `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=random`;
+
             leaderboard = (boardData as any[])?.map((entry, idx) => ({
                 id: entry.user.id,
                 name: entry.user.name,
-                avatar: entry.user.avatar_url || `https://ui-avatars.com/api/?name=${encodeURIComponent(entry.user.name)}&background=random`,
+                avatar: avatarUrl(entry.user.name, entry.user.avatar_url),
                 score: entry.progress_percentage || 0,
                 rank: idx + 1,
-                isCurrentUser: entry.user.id === user.id
-            })).slice(0, 5); 
-            
+                isCurrentUser: entry.user.id === user.id,
+            })).slice(0, 5);
+
+            // Append current user if not already in top 5
             const currentUserInBoard = (boardData as any[])?.find(e => e.user.id === user.id);
-            if (currentUserInBoard && !leaderboard.find(l => l.id === user.id)) {
+            if (currentUserInBoard && !leaderboard?.find(l => l.id === user.id)) {
                 const { count: rankCount } = await adminClient
                     .from('enrollments')
                     .select('*', { count: 'exact', head: true })
                     .eq('course_id', course.id)
                     .gt('progress_percentage', currentUserInBoard.progress_percentage);
-                
-                leaderboard.push({
+
+                leaderboard?.push({
                     id: user.id,
                     name: currentUserInBoard.user.name,
-                    avatar: currentUserInBoard.user.avatar_url || `https://ui-avatars.com/api/?name=${encodeURIComponent(currentUserInBoard.user.name)}&background=random`,
+                    avatar: avatarUrl(currentUserInBoard.user.name, currentUserInBoard.user.avatar_url),
                     score: currentUserInBoard.progress_percentage || 0,
                     rank: (rankCount || 0) + 1,
-                    isCurrentUser: true
+                    isCurrentUser: true,
                 });
             }
         }
@@ -333,27 +350,33 @@ export async function getCoursePageData(slug: string): Promise<{
             },
         };
     } catch (error) {
-        console.error('Error fetching course page data:', error);
+        console.error('[getCoursePageData] Error:', error);
         return { success: false, error: 'Failed to fetch course data' };
     }
 }
+
 function calculateRatingBreakdown(reviews: ReviewWithUser[]): RatingBreakdown {
-    const distribution = { 5: 0, 4: 0, 3: 0, 2: 0, 1: 0 };
+    const distribution: RatingBreakdown['distribution'] = { 5: 0, 4: 0, 3: 0, 2: 0, 1: 0 };
     let total = 0;
     let sum = 0;
-    reviews.forEach((review) => {
+
+    for (const review of reviews) {
         if (review.rating >= 1 && review.rating <= 5) {
             distribution[review.rating as 1 | 2 | 3 | 4 | 5]++;
             sum += review.rating;
             total++;
         }
-    });
+    }
+
     return {
         average: total > 0 ? Math.round((sum / total) * 10) / 10 : 0,
         total,
         distribution,
     };
 }
+
+// ─── Coupon Validation ───────────────────────────────────────────────────────
+
 export async function validateCoupon(
     courseId: string,
     couponCode: string
@@ -407,6 +430,8 @@ export async function validateCoupon(
         return { valid: false, error: 'Failed to validate coupon' };
     }
 }
+// ─── Lead Submission ─────────────────────────────────────────────────────────
+
 export async function submitCourseLead(input: CreateLeadInput): Promise<{
     success: boolean;
     error?: string;
@@ -433,6 +458,8 @@ export async function submitCourseLead(input: CreateLeadInput): Promise<{
         return { success: false, error: 'Failed to submit your message' };
     }
 }
+// ─── Review Submission ───────────────────────────────────────────────────────
+
 export async function submitCourseReview(input: SubmitReviewInput): Promise<{
     success: boolean;
     error?: string;
@@ -511,6 +538,8 @@ async function updateCourseRating(courseId: string): Promise<void> {
         })
         .eq('id', courseId);
 }
+// ─── Video & Lesson Content ──────────────────────────────────────────────────
+
 export async function getSignedVideoUrl(lessonId: string): Promise<{
     success: boolean;
     url?: string;
@@ -578,6 +607,7 @@ export async function getSignedVideoUrl(lessonId: string): Promise<{
         return { success: false, error: 'Failed to get video URL' };
     }
 }
+
 export async function getLessonContent(lessonId: string): Promise<{
     success: boolean;
     data?: {
@@ -661,6 +691,8 @@ export async function getLessonContent(lessonId: string): Promise<{
         return { success: false, error: 'Failed to get lesson content' };
     }
 }
+// ─── Access Check Helpers ────────────────────────────────────────────────────
+
 async function checkIsEnrolled(userId: string, courseId: string): Promise<boolean> {
     const supabase = await createClient();
     const { data } = await supabase
@@ -671,6 +703,7 @@ async function checkIsEnrolled(userId: string, courseId: string): Promise<boolea
         .maybeSingle();
     return !!data;
 }
+
 async function checkIsAdmin(userId: string): Promise<boolean> {
     const supabase = await createClient();
     const { data } = await supabase
@@ -680,6 +713,8 @@ async function checkIsAdmin(userId: string): Promise<boolean> {
         .single();
     return data?.role === 'admin';
 }
+// ─── Related Courses ─────────────────────────────────────────────────────────
+
 export async function getRelatedCourses(
     courseId: string,
     categoryId: string | null,

@@ -179,7 +179,7 @@ export const ActionDropdown = ({
                                             </span>
                                             
                                             {}
-                                            <div className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/5 to-white/0 opacity-0 group-hover:opacity-100 transition-opacity translate-x-[-100%] group-hover:translate-x-[100%] duration-1000 pointer-events-none" />
+                                            <div className="absolute inset-0 bg-linear-to-r from-white/0 via-white/5 to-white/0 opacity-0 group-hover:opacity-100 transition-opacity translate-x-[-100%] group-hover:translate-x-[100%] duration-1000 pointer-events-none" />
                                         </button>
                                     </div>
                                 ))}

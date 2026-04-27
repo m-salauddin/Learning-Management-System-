@@ -150,7 +150,7 @@ export const BlockEditor = ({
                     "focus:outline-none min-h-[300px] px-8 py-8 text-base text-slate-900 dark:text-white/90 leading-snug transition-all",
                     "selection:bg-primary/30 prose dark:prose-invert max-w-none",
                     "[&_ol]:list-decimal [&_ol]:pl-6 [&_ol]:my-4 [&_ol_li]:my-1.5",
-                    "[&_blockquote]:border-l-2 [&_blockquote]:border-primary/50 [&_blockquote]:pl-6 [&_blockquote]:italic [&_blockquote]:my-6 [&_blockquote]:bg-gradient-to-r [&_blockquote]:from-primary/5 [&_blockquote]:to-transparent [&_blockquote]:py-3 [&_blockquote]:rounded-r-xl",
+                    "[&_blockquote]:border-l-2 [&_blockquote]:border-primary/50 [&_blockquote]:pl-6 [&_blockquote]:italic [&_blockquote]:my-6 [&_blockquote]:bg-linear-to-r [&_blockquote]:from-primary/5 [&_blockquote]:to-transparent [&_blockquote]:py-3 [&_blockquote]:rounded-r-xl",
                     "[&_a]:text-primary [&_a]:underline [&_a]:underline-offset-4 [&_a]:font-bold",
                     "[&_p]:my-3",
                     "[&_h1]:text-2xl [&_h1]:font-black [&_h1]:mt-8 [&_h1]:mb-4",
