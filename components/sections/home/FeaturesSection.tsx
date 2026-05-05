@@ -15,8 +15,8 @@ export function FeaturesSection() {
     return (
         <section id="features" className="py-24 relative overflow-hidden">
             {}
-            <div className="absolute inset-0 bg-muted/30" />
-            <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div suppressHydrationWarning className="absolute inset-0 bg-muted/30" />
+            <div suppressHydrationWarning className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 <motion.div
                     initial={{ opacity: 0, y: 20 }}
                     whileInView={{ opacity: 1, y: 0 }}
@@ -50,14 +50,14 @@ export function FeaturesSection() {
                         variants={staggerItem}
                         className="lg:col-span-2 lg:row-span-2 group relative"
                     >
-                        <div className="relative h-full flex flex-col p-8 bg-card/80 dark:bg-card/60 backdrop-blur-xl border border-border/50 dark:border-white/10 rounded-3xl overflow-hidden transition-all duration-500 group-hover:border-primary/30 group-hover:shadow-2xl group-hover:-translate-y-2">
+                        <div suppressHydrationWarning className="relative h-full flex flex-col p-8 bg-card/80 dark:bg-card/60 backdrop-blur-xl border border-border/50 dark:border-white/10 rounded-3xl overflow-hidden transition-all duration-500 group-hover:border-primary/30 group-hover:shadow-2xl group-hover:-translate-y-2">
                             {}
                             <div className="absolute top-0 right-0 w-64 h-64 bg-primary/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2 group-hover:bg-primary/20 group-hover:scale-110 transition-all duration-700" />
                             {}
                             <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none">
                                 <div className="absolute inset-0 bg-linear-to-r from-transparent via-white/5 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000" />
                             </div>
-                            <div className="relative z-10 flex flex-col h-full">
+                            <div suppressHydrationWarning className="relative z-10 flex flex-col h-full">
                                 <div className="w-16 h-16 rounded-2xl bg-primary/10 flex items-center justify-center mb-6 group-hover:scale-110 transition-all duration-300 border border-primary/10">
                                     <BookOpen className="w-8 h-8 text-primary" />
                                 </div>
@@ -85,7 +85,7 @@ export function FeaturesSection() {
                             variants={staggerItem}
                             className="group relative h-full"
                         >
-                            <div className="relative h-full flex flex-col p-6 bg-card/80 dark:bg-card/60 backdrop-blur-xl border border-border/50 dark:border-white/10 rounded-3xl overflow-hidden transition-all duration-500 group-hover:border-primary/30 group-hover:shadow-2xl group-hover:-translate-y-2">
+                            <div suppressHydrationWarning className="relative h-full flex flex-col p-6 bg-card/80 dark:bg-card/60 backdrop-blur-xl border border-border/50 dark:border-white/10 rounded-3xl overflow-hidden transition-all duration-500 group-hover:border-primary/30 group-hover:shadow-2xl group-hover:-translate-y-2">
                                 {}
                                 <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none">
                                     <div className="absolute inset-0 bg-linear-to-r from-transparent via-white/5 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000" />

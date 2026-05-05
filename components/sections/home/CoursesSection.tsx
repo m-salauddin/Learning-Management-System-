@@ -8,15 +8,15 @@ import { CourseCard } from "@/components/CourseCard";
 import { MappedCourse } from "@/types/mapped-course";
 export function CoursesSection({ courses }: { courses: MappedCourse[] }) {
     return (
-        <section id="courses" className="py-24">
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <section id="courses" suppressHydrationWarning className="py-24">
+            <div suppressHydrationWarning className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 <motion.div
                     initial={{ opacity: 0, y: 20 }}
                     whileInView={{ opacity: 1, y: 0 }}
                     viewport={{ once: true }}
                     className="flex flex-col md:flex-row md:items-end md:justify-between mb-12"
                 >
-                    <div>
+                    <div suppressHydrationWarning>
                         <Badge icon={GraduationCap} className="mb-4">
                             Popular Courses
                         </Badge>

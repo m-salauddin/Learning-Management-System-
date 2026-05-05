@@ -4,25 +4,70 @@ import { RefreshCw, Inbox, FileX, RotateCcw } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 
+import { motion } from "motion/react";
+
 interface LoadingStateProps {
     message?: string;
     className?: string;
+    rows?: number;
+    gridClass?: string;
 }
+
 export function LoadingState({
     message = "Synchronizing data...",
-    className
-}: LoadingStateProps) {
+    className,
+    rows = 6,
+    gridClass = "grid-cols-[1.5fr_1fr_1fr_1fr_100px]",
+    colCount
+}: LoadingStateProps & { colCount?: number }) {
+    const inferredColCount = colCount || (gridClass.match(/ /g) || []).length + 1;
+
     return (
-        <div className={cn("py-24 flex flex-col items-center justify-center gap-4 text-center", className)}>
-            <div className="relative">
-                <div className="w-12 h-12 rounded-full border-4 border-primary/10 border-t-primary animate-spin" />
-                <div className="absolute inset-0 flex items-center justify-center">
-                    <div className="w-3 h-3 rounded-full bg-primary/30 animate-pulse" />
-                </div>
+        <div className={cn("divide-y divide-border/10 w-full", className)}>
+            {/* Shimmer Bar at the Top */}
+            <div className="h-0.5 w-full bg-primary/5 overflow-hidden">
+                <motion.div 
+                    className="h-full w-1/3 bg-primary/40"
+                    animate={{ x: ["-100%", "300%"] }}
+                    transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut" }}
+                />
             </div>
-            <p className="text-xs font-black uppercase tracking-widest text-muted-foreground/60">
-                {message}
-            </p>
+
+            {Array.from({ length: rows }).map((_, i) => (
+                <div 
+                    key={i} 
+                    className={cn("grid gap-4 px-8 py-6 items-center animate-pulse", gridClass)}
+                >
+                    {Array.from({ length: inferredColCount }).map((_, j) => {
+                        if (j === 0) {
+                            return (
+                                <div key={j} className="flex items-center gap-4">
+                                    <div className="w-12 h-12 rounded-2xl bg-muted/60 shrink-0" />
+                                    <div className="flex-1 space-y-2.5">
+                                        <div className="h-3 w-3/4 bg-muted/80 rounded-full" />
+                                        <div className="h-2 w-1/2 bg-muted/40 rounded-full" />
+                                    </div>
+                                </div>
+                            );
+                        }
+                        
+                        if (j === inferredColCount - 1) {
+                            return (
+                                <div key={j} className="flex justify-end pr-2">
+                                    <div className="w-9 h-9 rounded-xl bg-muted/40" />
+                                </div>
+                            );
+                        }
+
+                        return (
+                            <div key={j} className="flex flex-col items-center gap-2">
+                                <div className="h-2.5 w-16 bg-muted/60 rounded-full" />
+                                <div className="h-1.5 w-10 bg-muted/40 rounded-full" />
+                            </div>
+                        );
+                    })}
+                </div>
+            ))}
         </div>
     );
 }

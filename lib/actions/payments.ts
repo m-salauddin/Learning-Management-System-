@@ -6,6 +6,8 @@ import {
     CouponValidationResult, CreateTransactionInput,
     ApiResponse, PaginatedResponse
 } from "@/types/lms";
+import { createNotification } from "./notifications";
+import { getAdminIds } from "./users";
 export async function validateCoupon(
     code: string,
     courseId: string
@@ -130,6 +132,20 @@ export async function createTransaction(
         await supabase.rpc('create_pending_enrollment', {
             p_transaction_id: transaction.id
         });
+
+        // Notify Admins about manual payment
+        const adminIds = await getAdminIds();
+        const courseTitle = (await supabase.from('courses').select('title').eq('id', input.course_id).single()).data?.title || 'a course';
+        
+        for (const adminId of adminIds) {
+            await createNotification(
+                adminId,
+                'New Manual Payment Request',
+                `${user.user_metadata?.name || 'A student'} has requested manual enrollment for "${courseTitle}".`,
+                'payment',
+                `/dashboard/admin/enrollments`
+            );
+        }
     }
 
     return {
@@ -195,6 +211,17 @@ export async function confirmPayment(
     if (enrollError) {
         return { success: false, error: enrollError.message };
     }
+
+    // Notify User about successful enrollment
+    const courseTitle = (await supabase.from('courses').select('title').eq('id', transaction.course_id).single()).data?.title || 'the course';
+    await createNotification(
+        transaction.user_id,
+        'Enrollment Confirmed!',
+        `Your enrollment in "${courseTitle}" has been confirmed. You can now start learning.`,
+        'success',
+        `/dashboard/my-courses`
+    );
+
     revalidatePath('/dashboard/my-courses');
     return {
         success: true,

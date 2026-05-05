@@ -50,7 +50,7 @@ export function TechMarquee({ direction = "left" }: TechMarqueeProps) {
 }
 export function TechStackSection() {
     return (
-        <section className="relative py-16 border-y border-border/50">
+        <section suppressHydrationWarning className="relative py-16 border-y border-border/50">
             {}
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-10">
                 <div className="text-center">

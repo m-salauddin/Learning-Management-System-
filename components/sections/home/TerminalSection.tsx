@@ -161,7 +161,7 @@ export function TerminalSection() {
         return () => clearTimeout(timeout);
     }, [currentLineIndex, currentText, isTyping]);
     return (
-        <section className="py-24 bg-background relative overflow-hidden">
+        <section suppressHydrationWarning className="py-24 bg-background relative overflow-hidden">
             <div className="absolute inset-0 pointer-events-none">
                 <div className="absolute top-1/3 left-1/4 w-[500px] h-[500px] bg-[#FCB900]/10 rounded-full blur-[150px]" />
                 <div className="absolute bottom-1/3 right-1/4 w-[400px] h-[400px] bg-[#22D3EE]/10 rounded-full blur-[120px]" />

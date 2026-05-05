@@ -55,6 +55,7 @@ function FAQItem({ item, index, isOpen, onClick }: {
         >
             <div
                 onClick={onClick}
+                suppressHydrationWarning
                 className={`
                     relative p-6 rounded-2xl cursor-pointer transition-all duration-300
                     ${isOpen
@@ -65,13 +66,13 @@ function FAQItem({ item, index, isOpen, onClick }: {
                 `}
             >
                 {}
-                <div className={`
+                <div suppressHydrationWarning className={`
                     absolute inset-0 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none
                     ${isOpen ? "bg-linear-to-r from-primary/5 via-transparent to-primary/5" : ""}
                 `} />
-                <div className="relative flex items-start justify-between gap-4">
+                <div suppressHydrationWarning className="relative flex items-start justify-between gap-4">
                     {}
-                    <div className={`
+                    <div suppressHydrationWarning className={`
                         shrink-0 w-8 h-8 rounded-xl flex items-center justify-center text-sm font-bold
                         transition-all duration-300
                         ${isOpen
@@ -169,13 +170,13 @@ export function FAQSection() {
     const leftColumnFAQs = FAQ_DATA.filter((_, i) => i % 2 === 0);
     const rightColumnFAQs = FAQ_DATA.filter((_, i) => i % 2 === 1);
     return (
-        <section id="faq" className="py-24 relative overflow-hidden">
+        <section id="faq" suppressHydrationWarning className="py-24 relative overflow-hidden">
             {}
-            <div className="absolute inset-0 bg-linear-to-b from-background via-muted/20 to-background" />
+            <div suppressHydrationWarning className="absolute inset-0 bg-linear-to-b from-background via-muted/20 to-background" />
             {}
             <div className="absolute top-1/4 left-0 w-[400px] h-[400px] bg-primary/5 rounded-full blur-[100px] pointer-events-none" />
             <div className="absolute bottom-1/4 right-0 w-[400px] h-[400px] bg-secondary/5 rounded-full blur-[100px] pointer-events-none" />
-            <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div suppressHydrationWarning className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 {}
                 <motion.div
                     initial={{ opacity: 0, y: 20 }}

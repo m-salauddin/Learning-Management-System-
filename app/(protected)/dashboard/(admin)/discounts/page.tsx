@@ -142,11 +142,6 @@ export default function DiscountsPage() {
                         <RefreshCw className={cn("w-4 h-4", isLoading && "animate-spin")} />
                     </button>
                 </DashboardTableToolbar>
-                {isLoading ? (
-                    <LoadingState message="Syncing price map..." />
-                ) : discounts.length === 0 ? (
-                    <EmptyDataState icon={Tag} title="No Overrides Found" description="There are currently no active price overrides." />
-                ) : (
                     <DashboardTableWrapper className="min-w-[900px]">
                         <DashboardTableHeader className="grid-cols-[1.5fr_1fr_120px_1fr_80px]">
                             <DashboardTableHead>Target Course Identity</DashboardTableHead>
@@ -155,9 +150,20 @@ export default function DiscountsPage() {
                             <DashboardTableHead className="text-center">Temporal Bounds</DashboardTableHead>
                             <DashboardTableHead className="text-right">Action</DashboardTableHead>
                         </DashboardTableHeader>
-                        
                         <DashboardTableBody>
-                            {discounts.map((discount) => (
+                            {isLoading ? (
+                                <LoadingState 
+                                    message="Syncing price map..." 
+                                    gridClass="grid-cols-[1.5fr_1fr_120px_1fr_80px]"
+                                    rows={5}
+                                />
+                            ) : discounts.length === 0 ? (
+                                <div className="py-20">
+                                    <EmptyDataState icon={Tag} title="No Overrides Found" description="There are currently no active price overrides." />
+                                </div>
+                            ) : (
+                                <>
+                                    {discounts.map((discount) => (
                                 <DashboardTableRow key={discount.id} className="grid-cols-[1.5fr_1fr_120px_1fr_80px]">
                                     <div className="px-4 flex items-center gap-4">
                                         <div className="w-12 h-12 rounded-2xl bg-muted border border-border/20 flex items-center justify-center text-primary opacity-40 group-hover:opacity-100 transition-all group-hover:scale-105 duration-500">
@@ -202,10 +208,11 @@ export default function DiscountsPage() {
                                         </button>
                                     </DashboardTableCell>
                                 </DashboardTableRow>
-                            ))}
-                        </DashboardTableBody>
-                    </DashboardTableWrapper>
-                )}
+                                    ))}</>
+                                )}
+                            </DashboardTableBody>
+                        </DashboardTableWrapper>
+
             </DashboardTableContainer>
             {}
             <Dialog open={isCreating} onClose={() => setIsCreating(false)} size="md">

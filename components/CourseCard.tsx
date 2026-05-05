@@ -35,10 +35,10 @@ export function CourseCard({ course }: { course: MappedCourse }) {
         return parts.join(" ");
     };
     return (
-        <div className="group relative h-full">
-            <div className="relative h-full flex flex-col bg-card/80 border border-border rounded-2xl overflow-hidden transition-all duration-500 group-hover:border-border">
-                <div className="relative p-3">
-                    <div className="relative h-48 rounded-xl overflow-hidden">
+        <div suppressHydrationWarning className="group relative h-full">
+            <div suppressHydrationWarning className="relative h-full flex flex-col bg-card/80 border border-border rounded-2xl overflow-hidden transition-all duration-500 group-hover:border-border">
+                <div suppressHydrationWarning className="relative p-3">
+                    <div suppressHydrationWarning className="relative h-48 rounded-xl overflow-hidden">
                         <Image
                             src={course.image || '/placeholder-course.jpg'}
                             alt={course.title}
@@ -47,7 +47,7 @@ export function CourseCard({ course }: { course: MappedCourse }) {
                             className="object-cover transition-transform duration-700 group-hover:scale-105"
                         />
                         <div className="absolute inset-0 bg-linear-to-t from-black/90 via-black/40 to-black/20" />
-                        <div className="absolute top-3 left-3 right-3 flex items-start justify-between gap-2">
+                        <div suppressHydrationWarning className="absolute top-3 left-3 right-3 flex items-start justify-between gap-2">
                             {hasDiscount && (
                                 <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/20 dark:bg-black/60 backdrop-blur-md border border-white/30 dark:border-white/10 shadow-sm">
                                     <Timer className="w-3.5 h-3.5 text-amber-400" />
@@ -56,7 +56,7 @@ export function CourseCard({ course }: { course: MappedCourse }) {
                                     </span>
                                 </div>
                             )}
-                            <div className="ml-auto flex flex-col items-end gap-1.5">
+                            <div suppressHydrationWarning className="ml-auto flex flex-col items-end gap-1.5">
                                 {course.batchNo && (
                                     <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/20 dark:bg-black/60 backdrop-blur-md text-white text-xs font-medium border border-white/30 dark:border-white/10 shadow-sm w-fit">
                                         <Hash className="w-3 h-3 text-amber-400" />
@@ -71,7 +71,7 @@ export function CourseCard({ course }: { course: MappedCourse }) {
                                 )}
                             </div>
                         </div>
-                        <div className="absolute bottom-3 left-3 right-3 flex items-center justify-between">
+                        <div suppressHydrationWarning className="absolute bottom-3 left-3 right-3 flex items-center justify-between">
                             <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/20 dark:bg-black/60 backdrop-blur-md border border-white/30 dark:border-white/10 shadow-sm">
                                 <Star className="w-3.5 h-3.5 fill-amber-400 text-amber-400" />
                                 <span className="text-white text-xs font-bold">{course.rating.toFixed(1)}</span>
@@ -84,8 +84,8 @@ export function CourseCard({ course }: { course: MappedCourse }) {
                         </div>
                     </div>
                 </div>
-                <div className="relative px-4 pb-5 flex flex-col grow">
-                    <div className="flex items-center flex-wrap gap-2 mb-3">
+                <div suppressHydrationWarning className="relative px-4 pb-5 flex flex-col grow">
+                    <div suppressHydrationWarning className="flex items-center flex-wrap gap-2 mb-3">
                         <span className="inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider text-primary bg-primary/10 border border-primary/20 px-2.5 py-1 rounded-full">
                             <Zap className="w-3 h-3" />
                             {course.level}
@@ -100,7 +100,7 @@ export function CourseCard({ course }: { course: MappedCourse }) {
                     <p className="text-muted-foreground text-sm leading-relaxed mb-4 line-clamp-2 min-h-[46px]">
                         {course.description}
                     </p>
-                    <div className="flex items-center justify-between py-3 px-4 mb-4 rounded-xl bg-card/50 border border-border/50">
+                    <div suppressHydrationWarning className="flex items-center justify-between py-3 px-4 mb-4 rounded-xl bg-card/50 border border-border/50">
                         <div className="flex items-center gap-2">
                             <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-secondary/10">
                                 <Users className="w-3.5 h-3.5 text-secondary" />
@@ -123,7 +123,7 @@ export function CourseCard({ course }: { course: MappedCourse }) {
                         </div>
                     </div>
                     <div className="grow" />
-                    <div className="flex items-end justify-between pt-4 border-t border-border/50">
+                    <div suppressHydrationWarning className="flex items-end justify-between pt-4 border-t border-border/50">
                         <div className="flex flex-col">
                             {hasDiscount ? (
                                 <>

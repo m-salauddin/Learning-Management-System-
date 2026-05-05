@@ -261,7 +261,10 @@ export default function CategoryManagementPage() {
                             collisionDetection={closestCenter}
                             onDragEnd={handleDragEnd}
                         >{isLoading && localCategories.length === 0 ? (
-                            <LoadingState message="Initializing registry..." />
+                        <LoadingState 
+                            message="Initializing registry..." 
+                            gridClass="grid-cols-[48px_48px_2fr_1fr_100px_120px_80px]"
+                        />
                         ) : localCategories.length === 0 ? (
                             <EmptyFilterState 
                                 searchTerm={searchTerm}

@@ -65,12 +65,16 @@ const courses = [
         thumbnail: "🚀"
     },
 ]
-export function TopCoursesTable() {
+import { LoadingState } from "@/components/dashboard/shared/TableStates"
+
+export function TopCoursesTable({ isLoading = false }: { isLoading?: boolean }) {
+    const gridClass = "grid-cols-[2fr_1fr_120px_100px_120px_100px_120px]";
+    
     return (
         <div className="w-full bg-card/30 backdrop-blur-xl border border-border/40 rounded-3xl overflow-hidden shadow-xl overflow-x-auto min-w-0">
             <div className="min-w-[800px] divide-y divide-border/20">
-                {}
-                <div className="grid grid-cols-[2fr_1fr_120px_100px_120px_100px_120px] px-6 py-4 bg-muted/10 border-b border-border/10">
+                {/* Header */}
+                <div className={cn("grid px-6 py-4 bg-muted/10 border-b border-border/10", gridClass)}>
                     <div className="px-4 text-[10px] font-black uppercase tracking-widest text-muted-foreground/70">Course</div>
                     <div className="px-4 text-[10px] font-black uppercase tracking-widest text-muted-foreground/70 hidden md:block">Instructor</div>
                     <div className="px-4 text-[10px] font-black uppercase tracking-widest text-muted-foreground/70 text-center">Students</div>
@@ -81,11 +85,19 @@ export function TopCoursesTable() {
                 </div>
                 {}
                 <div className="divide-y divide-border/20">
-                    {courses.map((course) => (
-                        <div
-                            key={course.id}
-                            className="grid grid-cols-[2fr_1fr_120px_100px_120px_100px_120px] px-6 py-4 items-center transition-colors hover:bg-muted/10 group bg-card/5"
-                        >
+                    {isLoading ? (
+                        <LoadingState 
+                            message="Crunching analytics..." 
+                            gridClass={gridClass}
+                            rows={5}
+                            className="bg-transparent"
+                        />
+                    ) : (
+                        courses.map((course) => (
+                            <div
+                                key={course.id}
+                                className={cn("grid px-6 py-4 items-center transition-colors hover:bg-muted/10 group bg-card/5", gridClass)}
+                            >
                             {}
                             <div className="px-4">
                                 <div className="flex items-center gap-3">
@@ -182,7 +194,8 @@ export function TopCoursesTable() {
                                 </div>
                             </div>
                         </div>
-                    ))}
+                        ))
+                    )}
                 </div>
             </div>
         </div>

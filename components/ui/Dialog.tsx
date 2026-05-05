@@ -37,7 +37,7 @@ export function Dialog({ open, onClose, children, className, size = 'md' }: Dial
                         animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}
                         onClick={onClose}
-                        className="fixed inset-0 bg-black/80 backdrop-blur-xl z-100"
+                        className="fixed inset-0 bg-black/40 dark:bg-black/80 backdrop-blur-sm dark:backdrop-blur-xl z-100"
                         style={{ height: '100dvh' }}
                     />
                     <div
@@ -50,7 +50,7 @@ export function Dialog({ open, onClose, children, className, size = 'md' }: Dial
                             exit={{ opacity: 0, scale: 0.95, y: 20 }}
                             transition={{ type: "spring", damping: 25, stiffness: 300 }}
                             className={cn(
-                                "relative w-full bg-slate-950/95 backdrop-blur-3xl border border-white/10 rounded-2xl shadow-2xl overflow-hidden text-white",
+                                "relative w-full bg-white/95 dark:bg-slate-950/95 backdrop-blur-3xl border border-border dark:border-white/10 rounded-2xl shadow-2xl overflow-hidden text-foreground",
                                 sizeClasses[size],
                                 className
                             )}
@@ -80,7 +80,7 @@ export function DialogTitle({ children, className }: { children: ReactNode; clas
 }
 export function DialogDescription({ children, className }: { children: ReactNode; className?: string }) {
     return (
-        <p className={cn("text-sm text-slate-400 leading-relaxed", className)}>
+        <p className={cn("text-sm text-muted-foreground leading-relaxed", className)}>
             {children}
         </p>
     );

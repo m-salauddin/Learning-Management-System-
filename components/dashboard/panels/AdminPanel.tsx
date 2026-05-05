@@ -254,7 +254,7 @@ export default function AdminPanel() {
                     </div>
                 }
             >
-                <TopCoursesTable />
+                <TopCoursesTable isLoading={loading} />
             </DashboardCard>
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">

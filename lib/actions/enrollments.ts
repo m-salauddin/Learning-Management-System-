@@ -5,6 +5,7 @@ import {
     Enrollment, EnrollmentWithCourse, EnrollmentWithProgress,
     LessonProgress, ApiResponse, PaginatedResponse
 } from "@/types/lms";
+import { createNotification } from "./notifications";
 export async function getMyEnrollments(params: {
     page?: number;
     pageSize?: number;
@@ -292,7 +293,7 @@ export async function getAllEnrollments(params: {
                     user:users(id, name, email, avatar_url)
                 )
             ),
-            user:users(id, name, email),
+            user:users(id, name, email, avatar_url),
             transaction:transactions(*)
         `, { count: 'exact' });
     if (courseId && courseId !== 'all') {
@@ -320,7 +321,7 @@ export async function getAllEnrollments(params: {
                             user:users(id, name, email, avatar_url)
                         )
                     ),
-                    user:users(id, name, email),
+                    user:users(id, name, email, avatar_url),
                     transaction:transactions!inner(*)
                 `, { count: 'exact' })
                 .eq('transaction.payment_provider', paymentMethod);
@@ -412,6 +413,16 @@ export async function approveEnrollment(enrollmentId: string): Promise<ApiRespon
 
         if (updateError) return { success: false, error: updateError.message };
         
+        // Notify Student about approval
+        const { data: course } = await supabase.from('courses').select('title').eq('id', enrollment.course_id).single();
+        await createNotification(
+            enrollment.user_id,
+            'Enrollment Approved!',
+            `Your enrollment in "${course?.title || 'the course'}" has been approved by an administrator.`,
+            'success',
+            `/dashboard/my-courses`
+        );
+
         revalidatePath('/dashboard/enrollments');
         revalidatePath('/dashboard/my-courses');
         return { success: true };
@@ -434,3 +445,55 @@ export async function approveEnrollment(enrollmentId: string): Promise<ApiRespon
     }
 }
 
+export async function cancelEnrollment(enrollmentId: string): Promise<ApiResponse<null>> {
+    const supabase = await createClient();
+    const { data: { user }, error: authError } = await supabase.auth.getUser();
+    if (authError || !user) {
+        return { success: false, error: 'Unauthorized' };
+    }
+
+    const { data: profile } = await supabase
+        .from('users')
+        .select('role')
+        .eq('id', user.id)
+        .single();
+
+    if (profile?.role !== 'admin' && profile?.role !== 'moderator') {
+        return { success: false, error: 'Unauthorized: Admin or Moderator access required' };
+    }
+
+    const { data: enrollment, error: enrollError } = await supabase
+        .from('enrollments')
+        .select('user_id, course_id, transaction_id')
+        .eq('id', enrollmentId)
+        .single();
+
+    if (enrollError || !enrollment) {
+        return { success: false, error: 'Enrollment record not found' };
+    }
+
+    
+    const { error: updateError } = await supabase
+        .from('enrollments')
+        .update({ 
+            status: 'cancelled', 
+            updated_at: new Date().toISOString() 
+        })
+        .eq('id', enrollmentId);
+
+    if (updateError) return { success: false, error: updateError.message };
+
+    
+    if (enrollment.transaction_id) {
+        await supabase
+            .from('transactions')
+            .update({ status: 'failed', updated_at: new Date().toISOString() })
+            .eq('id', enrollment.transaction_id)
+            .eq('status', 'pending');
+    }
+
+    revalidatePath('/dashboard/enrollments');
+    revalidatePath('/dashboard/my-courses');
+
+    return { success: true };
+}

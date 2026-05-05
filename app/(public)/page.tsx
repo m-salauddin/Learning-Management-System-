@@ -76,7 +76,7 @@ export default async function Home() {
       tags: course.tags || [],
       level: course.level || "Beginner",
       language: course.language || "English",
-      lastUpdated: new Date().toLocaleDateString(),
+      lastUpdated: "2024-05-05", // Standardized date for hydration consistency
       whatYouLearn: [],
       curriculum: [],
       type: "Recorded",

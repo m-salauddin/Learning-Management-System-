@@ -42,7 +42,9 @@ export function ThemeToggle() {
                         "relative z-10 flex cursor-pointer items-center justify-center w-8 h-8 rounded-full",
                         "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
                         "transition-all duration-300",
-                        theme === value ? "text-white dark:text-[#020615]" : "text-white/60 dark:text-white/40 hover:text-white"
+                        theme === value 
+                            ? "text-white dark:text-[#020615]" 
+                            : "text-muted-foreground hover:text-foreground"
                     )}
                     aria-label={`Switch to ${label} theme`}
                 >
