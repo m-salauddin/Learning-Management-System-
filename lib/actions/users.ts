@@ -674,3 +674,18 @@ export async function getUserCourseCount(userId: string) {
         return { count: 0, error: error instanceof Error ? error.message : 'Unknown error' };
     }
 }
+
+export async function getAdminIds(): Promise<string[]> {
+    const supabase = await createClient();
+    const { data, error } = await supabase
+        .from('users')
+        .select('id')
+        .eq('role', 'admin');
+    
+    if (error) {
+        console.error('Error fetching admin IDs:', error);
+        return [];
+    }
+    
+    return data.map(u => u.id);
+}

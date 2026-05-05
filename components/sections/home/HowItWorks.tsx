@@ -79,7 +79,7 @@ export function HowItWorks() {
     const shouldReduceMotion = useReducedMotion();
     const activeStep = steps.find(s => s.id === activeStepId) || steps[0];
     return (
-        <section className="py-24 relative overflow-hidden bg-background">
+        <section suppressHydrationWarning className="py-24 relative overflow-hidden bg-background">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
                 {}
                 <motion.div

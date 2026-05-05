@@ -1,5 +1,7 @@
 "use client";
 
+import Image from "next/image";
+
 import {
     GraduationCap, Search, RefreshCw, User, Calendar, 
     Activity, Award, CheckCircle2, XCircle, Clock, Mail,
@@ -8,7 +10,7 @@ import {
 import { motion, AnimatePresence } from "motion/react";
 import { useEffect, useState, useCallback, memo, useMemo } from "react";
 import { cn } from "@/lib/utils";
-import { getAllEnrollments, getMyEnrollments, approveEnrollment } from "@/lib/actions/enrollments";
+import { getAllEnrollments, getMyEnrollments, approveEnrollment, cancelEnrollment } from "@/lib/actions/enrollments";
 import { getAllCoursesList } from "@/lib/actions/courses";
 import { Pagination } from "@/components/ui/Pagination";
 import { useToast } from "@/components/ui/toast";
@@ -32,7 +34,6 @@ import {
     DashboardTableToolbar,
 } from "@/components/dashboard/ui/DashboardTable";
 import { useAppSelector } from "@/lib/store/hooks";
-import Image from "next/image";
 
 
 const EnrollmentRow = memo(({ 
@@ -42,7 +43,8 @@ const EnrollmentRow = memo(({
     onToggleMenu,
     activeMenu,
     setActiveMenu,
-    onApprove
+    onApprove,
+    onRevoke
 }: { 
     enrollment: any; 
     role: string; 
@@ -51,6 +53,7 @@ const EnrollmentRow = memo(({
     activeMenu: string | null;
     setActiveMenu: (id: string | null) => void;
     onApprove: (id: string) => void;
+    onRevoke: (id: string) => void;
 }) => {
     const isAdmin = role === 'admin';
     const gridCols = isAdmin 
@@ -95,10 +98,20 @@ const EnrollmentRow = memo(({
             {isAdmin && (
                 <div className="flex flex-col min-w-0 pr-4">
                     <div className="flex items-center gap-3 justify-start">
-                        <div className="relative shrink-0 w-9 h-9 rounded-full bg-primary/10 flex items-center justify-center border border-primary/20">
-                            <User className="w-4 h-4 text-primary" />
+                        <div className="relative shrink-0 w-9 h-9 rounded-full bg-primary/10 flex items-center justify-center border border-primary/20 overflow-hidden">
+                            {enrollment.user?.avatar_url ? (
+                                <Image 
+                                    src={enrollment.user.avatar_url} 
+                                    alt={enrollment.user.name || ""} 
+                                    fill 
+                                    className="object-cover"
+                                    unoptimized
+                                />
+                            ) : (
+                                <User className="w-4 h-4 text-primary" />
+                            )}
                             {enrollment.status === 'success' || enrollment.status === 'active' ? (
-                                <div className="absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full bg-emerald-500 border-2 border-background" />
+                                <div className="absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full bg-emerald-500 border-2 border-background z-10" />
                             ) : null}
                         </div>
                         <div className="min-w-0 flex-1 text-left">
@@ -179,7 +192,7 @@ const EnrollmentRow = memo(({
                         {
                             label: "Revoke",
                             icon: XCircle,
-                            onClick: () => {}, 
+                            onClick: () => onRevoke(enrollment.id), 
                             variant: 'danger'
                         }
                     ]}
@@ -266,6 +279,21 @@ export default function EnrollmentsPage() {
             }
         } catch (err) {
             error("A critical system error occurred during approval");
+        }
+    };
+    const handleRevoke = async (id: string) => {
+        if (!confirm("Are you sure you want to revoke this enrollment? This will cancel their access and mark any pending payment as failed.")) return;
+        loading("Initiating revocation sequence...");
+        try {
+            const res = await cancelEnrollment(id);
+            if (res.success) {
+                success("Enrollment access revoked successfully");
+                fetchEnrollments();
+            } else {
+                error(res.error || "Revocation failed");
+            }
+        } catch (err) {
+            error("System fault detected during revocation");
         }
     };
 
@@ -440,7 +468,7 @@ export default function EnrollmentsPage() {
                                         <SelectContent className="rounded-xl border-border bg-card text-foreground">
                                             <SelectItem value="all" className="text-[11px] font-bold">ALL PAYMENTS</SelectItem>
                                             <SelectItem value="manual" className="text-[11px] font-bold uppercase">Manual Payment</SelectItem>
-                                            <SelectItem value="bkash" className="text-[11px] font-bold uppercase">bKash (Auto)</SelectItem>
+                                            <SelectItem value="bkash_auto" className="text-[11px] font-bold uppercase">bKash (Auto)</SelectItem>
                                             <SelectItem value="shurjopay" className="text-[11px] font-bold uppercase">Shurjopay</SelectItem>
                                             <SelectItem value="system" className="text-[11px] font-bold uppercase">System/Free</SelectItem>
                                         </SelectContent>
@@ -451,23 +479,6 @@ export default function EnrollmentsPage() {
                     </div>
                 </DashboardTableToolbar>
 
-                {isLoading ? (
-                    <div className="bg-card">
-                        <LoadingState message="Synchronizing data..." />
-                    </div>
-                ) : filteredEnrollments.length === 0 ? (
-                    <div className="bg-card">
-                        {searchTerm ? (
-                            <EmptyFilterState searchTerm={searchTerm} onReset={() => setSearchTerm("")} />
-                        ) : (
-                            <EmptyDataState
-                                icon={GraduationCap}
-                                title="No Enrollments Found"
-                                description="There are no records in the database yet."
-                            />
-                        )}
-                    </div>
-                ) : (
                     <div className="bg-card w-full">
                         <DashboardTableWrapper className="dashboard-scrollbar">
                             <DashboardTableHeader className={cn(
@@ -485,7 +496,28 @@ export default function EnrollmentsPage() {
                             </DashboardTableHeader>
                             
                             <DashboardTableBody className="divide-y-0">
-                                {filteredEnrollments.map((enrollment) => (
+                                {isLoading ? (
+                                    <LoadingState 
+                                        message="Synchronizing data..." 
+                                        gridClass={isAdmin ? "grid-cols-[2fr_1.5fr_1fr_110px_110px_60px]" : "grid-cols-[2fr_1fr_110px_110px_60px]"}
+                                        rows={8}
+                                        className="bg-transparent"
+                                    />
+                                ) : filteredEnrollments.length === 0 ? (
+                                    <div className="py-20">
+                                        {searchTerm ? (
+                                            <EmptyFilterState searchTerm={searchTerm} onReset={() => setSearchTerm("")} />
+                                        ) : (
+                                            <EmptyDataState
+                                                icon={GraduationCap}
+                                                title="No Enrollments Found"
+                                                description="There are no records in the database yet."
+                                            />
+                                        )}
+                                    </div>
+                                ) : (
+                                    <>
+                                        {filteredEnrollments.map((enrollment) => (
                                     <EnrollmentRow 
                                         key={enrollment.id}
                                         enrollment={enrollment}
@@ -495,8 +527,10 @@ export default function EnrollmentsPage() {
                                         activeMenu={activeMenu}
                                         setActiveMenu={setActiveMenu}
                                         onApprove={handleApprove}
+                                        onRevoke={handleRevoke}
                                     />
-                                ))}
+                                ))}</>
+                        )}
                             </DashboardTableBody>
                         </DashboardTableWrapper>
 
@@ -513,9 +547,8 @@ export default function EnrollmentsPage() {
                                 />
                             </div>
                         )}
+                        </div>
                     </div>
-                )}
-            </div>
-        </motion.div>
-    );
-}
+            </motion.div>
+        );
+    }

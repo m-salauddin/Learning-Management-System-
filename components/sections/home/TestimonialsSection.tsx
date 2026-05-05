@@ -39,7 +39,7 @@ function TestimonialCard({ testimonial, index }: { testimonial: Testimonial; ind
             variants={staggerItem}
             className={`group relative ${index === 1 ? "lg:-translate-y-8" : ""}`}
         >
-            <div className={`relative h-full p-8 rounded-3xl backdrop-blur-xl border overflow-hidden transition-all duration-500 group-hover:-translate-y-1 group-hover:shadow-2xl
+            <div suppressHydrationWarning className={`relative h-full p-8 rounded-3xl backdrop-blur-xl border overflow-hidden transition-all duration-500 group-hover:-translate-y-1 group-hover:shadow-2xl
                 ${index === 1
                     ? "bg-card/70 dark:bg-card/50 border-primary/30"
                     : "bg-card/50 dark:bg-card/30 border-border/50 dark:border-white/10 group-hover:border-primary/30"
@@ -49,9 +49,9 @@ function TestimonialCard({ testimonial, index }: { testimonial: Testimonial; ind
                 <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none">
                     <div className="absolute inset-0 bg-linear-to-r from-transparent via-white/5 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000" />
                 </div>
-                <div className="relative z-10">
+                <div suppressHydrationWarning className="relative z-10">
                     {}
-                    <div className="relative mb-6">
+                    <div suppressHydrationWarning className="relative mb-6">
                         <div
                             className={`w-12 h-12 rounded-2xl bg-linear-to-br ${testimonial.gradient} flex items-center justify-center group-hover:scale-110 transition-transform duration-300 shadow-lg`}
                         >
@@ -79,11 +79,11 @@ function TestimonialCard({ testimonial, index }: { testimonial: Testimonial; ind
 }
 export function TestimonialsSection() {
     return (
-        <section id="community" className="relative py-32 overflow-hidden bg-muted/20">
+        <section id="community" suppressHydrationWarning className="relative py-32 overflow-hidden bg-muted/20">
             {}
             <div className="absolute top-1/4 left-1/4 w-[500px] h-[500px] bg-primary/20 rounded-full blur-[120px] mix-blend-screen opacity-30 animate-gentle-pulse" />
             <div className="absolute bottom-1/4 right-1/4 w-[500px] h-[500px] bg-secondary/20 rounded-full blur-[120px] mix-blend-screen opacity-30 animate-gentle-pulse" />
-            <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div suppressHydrationWarning className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 <motion.div
                     initial={{ opacity: 0, y: 20 }}
                     whileInView={{ opacity: 1, y: 0 }}

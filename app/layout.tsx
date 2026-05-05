@@ -92,6 +92,36 @@ export default function RootLayout({
         className={`${spaceGrotesk.variable} ${jetbrainsMono.variable} antialiased`}
         suppressHydrationWarning
       >
+        {/* Strip browser extension attributes (Bitdefender bis_skin_checked, etc.) before React hydration */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+(function(){
+  var a=['bis_skin_checked','bis_size','bis_id','bis_register'];
+  function c(el){for(var i=0;i<a.length;i++)el.removeAttribute(a[i]);}
+  document.querySelectorAll('[bis_skin_checked],[bis_size],[bis_id],[bis_register]').forEach(c);
+  new MutationObserver(function(ms){
+    for(var i=0;i<ms.length;i++){
+      var m=ms[i];
+      if(m.type==='attributes'&&a.indexOf(m.attributeName)>-1){
+        m.target.removeAttribute(m.attributeName);
+      }
+      if(m.type==='childList'){
+        for(var j=0;j<m.addedNodes.length;j++){
+          var n=m.addedNodes[j];
+          if(n.nodeType===1){
+            c(n);
+            var d=n.querySelectorAll&&n.querySelectorAll('[bis_skin_checked],[bis_size]');
+            if(d)d.forEach(c);
+          }
+        }
+      }
+    }
+  }).observe(document.documentElement,{attributes:true,attributeFilter:a,subtree:true,childList:true});
+})();
+`,
+          }}
+        />
         <ThemeProvider
           attribute="class"
           defaultTheme="dark"

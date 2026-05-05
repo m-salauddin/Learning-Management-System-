@@ -12,7 +12,7 @@ export function StatusBadge({ status }: { status?: string }) {
             "inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[10px] font-black uppercase tracking-wider border backdrop-blur-md shadow-sm transition-all",
             (s === 'published' || s === 'active' || s === 'success') && "bg-emerald-500/20 text-emerald-400 border-emerald-500/30 ring-1 ring-emerald-500/10",
             (s === 'draft' || s === 'inactive') && "bg-slate-500/20 text-slate-300 border-slate-500/30 ring-1 ring-slate-500/10",
-            (s === 'archived' || s === 'suspended' || s === 'expired') && "bg-red-500/20 text-red-400 border-red-500/30 ring-1 ring-red-500/10",
+            (s === 'archived' || s === 'suspended' || s === 'expired' || s === 'cancelled' || s === 'failed') && "bg-red-500/20 text-red-400 border-red-500/30 ring-1 ring-red-500/10",
             (s === 'pending' || s === 'pending_review') && "bg-amber-500/20 text-amber-400 border-amber-500/30 ring-1 ring-amber-500/10",
             s === 'completed' && "bg-blue-500/20 text-blue-400 border-blue-500/30 ring-1 ring-blue-500/10",
         )}>

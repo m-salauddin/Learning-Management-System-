@@ -20,7 +20,7 @@ export function Badge({
         solid: "bg-primary text-primary-foreground hover:bg-primary/90",
     };
     return (
-        <div className={cn("inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium transition-colors", variants[variant], className)}>
+        <div suppressHydrationWarning className={cn("inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium transition-colors", variants[variant], className)}>
             {Icon && <Icon className={cn("w-4 h-4", iconClassName)} />}
             {children}
         </div>

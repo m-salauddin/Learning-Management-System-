@@ -1,43 +1,21 @@
 "use client";
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "motion/react";
-import { Bell, Check, Clock, Info, Shield, BookOpen, X } from "lucide-react";
+import { Bell, Check, Clock, Info, Shield, BookOpen, X, CreditCard, UserPlus, AlertTriangle } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Skeleton } from "@/components/ui/skeleton";
-const MOCK_NOTIFICATIONS = [
-    {
-        id: "1",
-        title: "New Course Available",
-        description: "Advanced React Patterns course is now live.",
-        time: "2 min ago",
-        type: "course",
-        unread: true,
-    },
-    {
-        id: "2",
-        title: "Security Alert",
-        description: "New login detected from a new device.",
-        time: "1 hour ago",
-        type: "security",
-        unread: true,
-    },
-    {
-        id: "3",
-        title: "Assignment Due",
-        description: "Your assignment for Next.js Fundamentals is due tomorrow.",
-        time: "5 hours ago",
-        type: "info",
-        unread: false,
-    },
-    {
-        id: "4",
-        title: "System Update",
-        description: "Platform maintenance scheduled for this weekend.",
-        time: "1 day ago",
-        type: "system",
-        unread: false,
-    },
-];
+import { 
+    getNotifications, 
+    markNotificationAsRead, 
+    markAllNotificationsAsRead, 
+    deleteNotification,
+    Notification 
+} from "@/lib/actions/notifications";
+import { createClient } from "@/lib/supabase/client";
+import { formatDistanceToNow } from "date-fns";
+import { useRouter } from "next/navigation";
+import { toast } from "sonner";
+
 const panelVariants = {
     hidden: {
         opacity: 0,
@@ -63,6 +41,7 @@ const panelVariants = {
         }
     }
 };
+
 const listContainerVariants = {
     hidden: { opacity: 0 },
     visible: {
@@ -73,20 +52,72 @@ const listContainerVariants = {
         }
     }
 };
+
 export function NotificationPanel() {
+    const router = useRouter();
     const [isOpen, setIsOpen] = useState(false);
-    const [notifications, setNotifications] = useState(MOCK_NOTIFICATIONS);
+    const [notifications, setNotifications] = useState<Notification[]>([]);
     const [activeTab, setActiveTab] = useState<'all' | 'unread'>('all');
-    const [isLoading, setIsLoading] = useState(false);
+    const [isLoading, setIsLoading] = useState(true);
     const wrapperRef = useRef<HTMLDivElement>(null);
-    const handleToggleOpen = () => {
-        const newOpenState = !isOpen;
-        setIsOpen(newOpenState);
-        if (newOpenState) {
-            setIsLoading(true);
-            setTimeout(() => setIsLoading(false), 1500);
+    const supabase = createClient();
+
+    const fetchNotifications = useCallback(async () => {
+        setIsLoading(true);
+        const result = await getNotifications();
+        if (result.success && result.data) {
+            setNotifications(result.data);
         }
-    };
+        setIsLoading(false);
+    }, []);
+
+    useEffect(() => {
+        fetchNotifications();
+
+        // Set up Realtime subscription
+        const channel = supabase
+            .channel('notifications_changes')
+            .on(
+                'postgres_changes',
+                {
+                    event: '*',
+                    schema: 'public',
+                    table: 'notifications'
+                },
+                (payload) => {
+                    if (payload.eventType === 'INSERT') {
+                        const newNotification = payload.new as Notification;
+                        setNotifications(prev => [newNotification, ...prev]);
+                        // Show a toast for new notifications if the panel is closed
+                        if (!isOpen) {
+                            toast.info(newNotification.title, {
+                                description: newNotification.message,
+                                action: {
+                                    label: 'View',
+                                    onClick: () => {
+                                        setIsOpen(true);
+                                    }
+                                }
+                            });
+                        }
+                    } else if (payload.eventType === 'UPDATE') {
+                        const updatedNotification = payload.new as Notification;
+                        setNotifications(prev => 
+                            prev.map(n => n.id === updatedNotification.id ? updatedNotification : n)
+                        );
+                    } else if (payload.eventType === 'DELETE') {
+                        const deletedId = payload.old.id;
+                        setNotifications(prev => prev.filter(n => n.id !== deletedId));
+                    }
+                }
+            )
+            .subscribe();
+
+        return () => {
+            supabase.removeChannel(channel);
+        };
+    }, [fetchNotifications, supabase, isOpen]);
+
     useEffect(() => {
         const handleClickOutside = (event: MouseEvent) => {
             if (wrapperRef.current && !wrapperRef.current.contains(event.target as Node)) {
@@ -100,40 +131,73 @@ export function NotificationPanel() {
             document.removeEventListener("mousedown", handleClickOutside);
         };
     }, [isOpen]);
-    const unreadCount = notifications.filter(n => n.unread).length;
+
+    const unreadCount = notifications.filter(n => !n.is_read).length;
     const filteredNotifications = activeTab === 'all'
         ? notifications
-        : notifications.filter(n => n.unread);
-    const markAllAsRead = () => {
-        setNotifications(notifications.map(n => ({ ...n, unread: false })));
+        : notifications.filter(n => !n.is_read);
+
+    const handleMarkAllAsRead = async () => {
+        const result = await markAllNotificationsAsRead();
+        if (result.success) {
+            setNotifications(notifications.map(n => ({ ...n, is_read: true })));
+        }
     };
-    const markAsRead = (id: string) => {
-        setNotifications(notifications.map(n => n.id === id ? ({ ...n, unread: false }) : n));
+
+    const handleMarkAsRead = async (id: string) => {
+        const result = await markNotificationAsRead(id);
+        if (result.success) {
+            setNotifications(notifications.map(n => n.id === id ? ({ ...n, is_read: true }) : n));
+        }
     };
-    const deleteNotification = (id: string) => {
-        setNotifications(notifications.filter(n => n.id !== id));
+
+    const handleDeleteNotification = async (id: string) => {
+        const result = await deleteNotification(id);
+        if (result.success) {
+            setNotifications(notifications.filter(n => n.id !== id));
+        }
     };
+
+    const handleNotificationClick = async (notification: Notification) => {
+        if (!notification.is_read) {
+            await handleMarkAsRead(notification.id);
+        }
+        if (notification.link) {
+            router.push(notification.link);
+            setIsOpen(false);
+        }
+    };
+
     const getIcon = (type: string) => {
-        switch (type) {
+        switch (type.toLowerCase()) {
             case 'security': return <Shield className="w-4 h-4 text-red-500" />;
             case 'course': return <BookOpen className="w-4 h-4 text-blue-500" />;
-            case 'system': return <Info className="w-4 h-4 text-amber-500" />;
+            case 'payment': return <CreditCard className="w-4 h-4 text-emerald-500" />;
+            case 'success': return <Check className="w-4 h-4 text-emerald-500" />;
+            case 'info': return <Info className="w-4 h-4 text-blue-500" />;
+            case 'warning': return <AlertTriangle className="w-4 h-4 text-amber-500" />;
+            case 'enrollment': return <UserPlus className="w-4 h-4 text-violet-500" />;
             default: return <Bell className="w-4 h-4 text-primary" />;
         }
     };
+
     const getIconBg = (type: string) => {
-        switch (type) {
+        switch (type.toLowerCase()) {
             case 'security': return "bg-red-500/10";
             case 'course': return "bg-blue-500/10";
-            case 'system': return "bg-amber-500/10";
+            case 'payment': return "bg-emerald-500/10";
+            case 'success': return "bg-emerald-500/10";
+            case 'info': return "bg-blue-500/10";
+            case 'warning': return "bg-amber-500/10";
+            case 'enrollment': return "bg-violet-500/10";
             default: return "bg-primary/10";
         }
     };
+
     return (
         <div className="relative" ref={wrapperRef}>
-            {}
             <motion.button
-                onClick={handleToggleOpen}
+                onClick={() => setIsOpen(!isOpen)}
                 className={cn(
                     "relative flex items-center justify-center w-10 h-10 rounded-xl border border-border/50 cursor-pointer",
                     "bg-muted/50 hover:bg-muted/80 transition-colors text-muted-foreground hover:text-foreground",
@@ -157,7 +221,7 @@ export function NotificationPanel() {
                     )}
                 </AnimatePresence>
             </motion.button>
-            {}
+
             <AnimatePresence>
                 {isOpen && (
                     <motion.div
@@ -165,9 +229,8 @@ export function NotificationPanel() {
                         initial="hidden"
                         animate="visible"
                         exit="exit"
-                        className="absolute right-0 top-14.5 mt-2 w-80 sm:w-96 rounded-2xl border border-white/20 dark:border-white/10 bg-white dark:bg-slate-950 shadow-xl overflow-hidden z-50 flex flex-col max-h-[80vh]"
+                        className="absolute right-0 top-14.5 mt-2 w-80 sm:w-96 rounded-2xl border border-border bg-background shadow-xl overflow-hidden z-50 flex flex-col max-h-[80vh]"
                     >
-                        {}
                         <div className="px-4 py-3 border-b border-border/30 flex items-center justify-between bg-muted/30">
                             <div className="flex items-center gap-2">
                                 <h3 className="font-semibold text-sm">Notifications</h3>
@@ -179,14 +242,14 @@ export function NotificationPanel() {
                             </div>
                             {unreadCount > 0 && (
                                 <button
-                                    onClick={markAllAsRead}
+                                    onClick={handleMarkAllAsRead}
                                     className="text-xs text-primary hover:text-primary/80 font-medium transition-colors cursor-pointer hover:underline"
                                 >
                                     Mark all read
                                 </button>
                             )}
                         </div>
-                        {}
+
                         <div className="flex p-1.5 gap-1 border-b border-border/30 bg-muted/20">
                             {(['all', 'unread'] as const).map((tab) => (
                                 <button
@@ -215,7 +278,7 @@ export function NotificationPanel() {
                                 </button>
                             ))}
                         </div>
-                        {}
+
                         <div className="flex-1 overflow-y-auto overflow-x-hidden scrollbar-none" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
                             <AnimatePresence mode="popLayout">
                                 {isLoading ? (
@@ -227,11 +290,11 @@ export function NotificationPanel() {
                                         className="p-2 space-y-2"
                                     >
                                         {[1, 2, 3].map((i) => (
-                                            <Skeleton key={i} className="flex gap-3 p-3 rounded-lg">
-                                                <div className="w-9 h-9 rounded-lg shrink-0 bg-muted-foreground/20" />
+                                            <Skeleton key={i} className="flex gap-3 p-3 rounded-lg bg-muted/50 border border-border/20">
+                                                <div className="w-9 h-9 rounded-lg shrink-0 bg-muted-foreground/10" />
                                                 <div className="flex-1 space-y-2">
-                                                    <div className="h-3 w-3/4 bg-muted-foreground/20 rounded-md" />
-                                                    <div className="h-2 w-full bg-muted-foreground/20 rounded-md" />
+                                                    <div className="h-3 w-3/4 bg-muted-foreground/10 rounded-md" />
+                                                    <div className="h-2 w-full bg-muted-foreground/10 rounded-md" />
                                                 </div>
                                             </Skeleton>
                                         ))}
@@ -265,9 +328,10 @@ export function NotificationPanel() {
                                             {filteredNotifications.map((notification, index) => (
                                                 <motion.div
                                                     key={notification.id}
-                                                    initial={{ opacity: 0 }}
+                                                    initial={{ opacity: 0, x: -10 }}
                                                     animate={{
                                                         opacity: 1,
+                                                        x: 0,
                                                         transition: {
                                                             duration: 0.2,
                                                             delay: index * 0.03
@@ -275,50 +339,50 @@ export function NotificationPanel() {
                                                     }}
                                                     exit={{
                                                         opacity: 0,
+                                                        x: 10,
                                                         transition: { duration: 0.15 }
                                                     }}
                                                     className={cn(
-                                                        "group relative flex items-start gap-3 p-3 rounded-lg cursor-pointer transition-colors duration-150",
-                                                        notification.unread
-                                                            ? "bg-primary/3 hover:bg-primary/6"
-                                                            : "hover:bg-muted/40"
+                                                        "group relative flex items-start gap-3 p-3 rounded-lg cursor-pointer transition-all duration-150 border border-transparent",
+                                                        !notification.is_read
+                                                            ? "bg-primary/5 hover:bg-primary/8 border-primary/10"
+                                                            : "hover:bg-muted/50"
                                                     )}
-                                                    onClick={() => notification.unread && markAsRead(notification.id)}
+                                                    onClick={() => handleNotificationClick(notification)}
                                                 >
-                                                    {}
                                                     <div className={cn(
                                                         "w-9 h-9 rounded-lg flex items-center justify-center shrink-0",
-                                                        getIconBg(notification.type)
+                                                        getIconBg(notification.type || 'info')
                                                     )}>
-                                                        {getIcon(notification.type)}
+                                                        {getIcon(notification.type || 'info')}
                                                     </div>
-                                                    {}
+                                                    
                                                     <div className="flex-1 min-w-0 space-y-0.5 pr-8">
                                                         <p className={cn(
                                                             "text-sm",
-                                                            notification.unread
+                                                            !notification.is_read
                                                                 ? "font-semibold text-foreground"
                                                                 : "font-medium text-foreground/80"
                                                         )}>
                                                             {notification.title}
                                                         </p>
                                                         <p className="text-xs text-muted-foreground line-clamp-2 leading-relaxed">
-                                                            {notification.description}
+                                                            {notification.message}
                                                         </p>
                                                         <div className="flex items-center gap-1 pt-1">
                                                             <Clock className="w-3 h-3 text-muted-foreground/60" />
                                                             <span className="text-[11px] text-muted-foreground/60">
-                                                                {notification.time}
+                                                                {formatDistanceToNow(new Date(notification.created_at), { addSuffix: true })}
                                                             </span>
                                                         </div>
                                                     </div>
-                                                    {}
-                                                    <div className="absolute top-2 right-2 flex items-center gap-0.5">
-                                                        {notification.unread && (
+                                                    
+                                                    <div className="absolute top-2 right-2 flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
+                                                        {!notification.is_read && (
                                                             <motion.button
                                                                 onClick={(e) => {
                                                                     e.stopPropagation();
-                                                                    markAsRead(notification.id);
+                                                                    handleMarkAsRead(notification.id);
                                                                 }}
                                                                 className="p-1.5 rounded-md text-muted-foreground/60 hover:text-primary hover:bg-primary/10 transition-colors cursor-pointer"
                                                                 whileHover={{ scale: 1.1 }}
@@ -331,7 +395,7 @@ export function NotificationPanel() {
                                                         <motion.button
                                                             onClick={(e) => {
                                                                 e.stopPropagation();
-                                                                deleteNotification(notification.id);
+                                                                handleDeleteNotification(notification.id);
                                                             }}
                                                             className="p-1.5 rounded-md text-muted-foreground/60 hover:text-red-500 hover:bg-red-500/10 transition-colors cursor-pointer"
                                                             whileHover={{ scale: 1.1 }}

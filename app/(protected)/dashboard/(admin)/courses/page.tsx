@@ -595,12 +595,7 @@ export default function CourseManagementPage() {
                         </div>
                     </div>
                 </DashboardTableToolbar>
-                {isLoading ? (
-                    <LoadingState message="Synchronizing Catalog..." />
-                ) : courses.length === 0 ? (
-                    <EmptyFilterState searchTerm={searchTerm || categoryFilter !== 'all' ? "your filters" : ""} />
-                ) : (
-                    <DashboardTableWrapper className="min-w-[1100px] dashboard-scrollbar">
+                <DashboardTableWrapper className="min-w-[1100px] dashboard-scrollbar">
                         <DashboardTableHeader className="grid-cols-[48px_48px_60px_2.5fr_1fr_120px_100px_100px_60px] bg-muted/30 border-b border-border/80 px-6 py-3.5 items-center gap-4">
                             <div className="flex items-center justify-center"></div>
                             <div className="flex justify-center">
@@ -614,35 +609,46 @@ export default function CourseManagementPage() {
                             <DashboardTableHead className="px-0 text-center">Impact</DashboardTableHead>
                             <DashboardTableHead className="px-0 text-center">Action</DashboardTableHead>
                         </DashboardTableHeader>
-                        <DndContext
-                            sensors={sensors}
-                            collisionDetection={closestCenter}
-                            onDragEnd={handleDragEnd}
-                            modifiers={[restrictToVerticalAxis]}
-                        >
-                            <SortableContext
-                                items={courses.map((c) => c.id)}
-                                strategy={verticalListSortingStrategy}
-                            >
-                                <DashboardTableBody>
-                                    {courses.map((course) => (
-                                        <CourseRow
-                                            key={course.id}
-                                            course={course}
-                                            isSelected={selectedCourses.has(course.id)}
-                                            onSelect={() => toggleSelectCourse(course.id)}
-                                            onDelete={handleDeleteCourse}
-                                            onTogglePublish={togglePublishStatus}
-                                            router={router}
-                                            activeMenu={activeMenu}
-                                            setActiveMenu={setActiveMenu}
-                                        />
-                                    ))}
-                                </DashboardTableBody>
-                            </SortableContext>
-                        </DndContext>
+                        <DashboardTableBody>
+                            {isLoading ? (
+                                <LoadingState 
+                                    message="Synchronizing Catalog..." 
+                                    gridClass="grid-cols-[48px_48px_60px_2.5fr_1fr_120px_100px_100px_60px]"
+                                    rows={8}
+                                    className="px-6"
+                                />
+                            ) : courses.length === 0 ? (
+                                <EmptyFilterState searchTerm={searchTerm || categoryFilter !== 'all' ? "your filters" : ""} />
+                            ) : (
+                                <DndContext
+                                    sensors={sensors}
+                                    collisionDetection={closestCenter}
+                                    onDragEnd={handleDragEnd}
+                                    modifiers={[restrictToVerticalAxis]}
+                                >
+                                    <SortableContext
+                                        items={courses.map((c) => c.id)}
+                                        strategy={verticalListSortingStrategy}
+                                    >
+                                        {courses.map((course) => (
+                                            <CourseRow
+                                                key={course.id}
+                                                course={course}
+                                                isSelected={selectedCourses.has(course.id)}
+                                                onSelect={() => toggleSelectCourse(course.id)}
+                                                onDelete={() => setDeleteModal({ isOpen: true, id: course.id })}
+                                                onTogglePublish={togglePublishStatus}
+                                                router={router}
+                                                activeMenu={activeMenu}
+                                                setActiveMenu={setActiveMenu}
+                                            />
+                                        ))}
+                                    </SortableContext>
+                                </DndContext>
+                            )}
+                        </DashboardTableBody>
                     </DashboardTableWrapper>
-                )}
+
                 {!isLoading && totalCourses > pageSize && (
                     <div className="px-6 py-4 border-t border-border bg-muted/10">
                         <Pagination

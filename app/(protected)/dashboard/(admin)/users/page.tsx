@@ -344,11 +344,6 @@ export default function UserManagementPage() {
                         )}
                     </div>
                 </DashboardTableToolbar>
-                {isLoading ? (
-                    <LoadingState message="Resolving Directory Hash..." />
-                ) : users.length === 0 ? (
-                    <EmptyFilterState searchTerm={searchTerm} message="Null Data Set" />
-                ) : (
                     <DashboardTableWrapper className="min-w-[1000px]">
                         <DashboardTableHeader className="grid-cols-[48px_2.5fr_1fr_120px_120px_80px]">
                             <div className="flex justify-center">
@@ -361,7 +356,17 @@ export default function UserManagementPage() {
                             <DashboardTableHead className="text-right">Intervention</DashboardTableHead>
                         </DashboardTableHeader>
                         <DashboardTableBody>
-                            {users.map((user) => (
+                            {isLoading ? (
+                                <LoadingState 
+                                    message="Resolving Directory Hash..." 
+                                    gridClass="grid-cols-[48px_2.5fr_1fr_120px_120px_80px]"
+                                    rows={8}
+                                />
+                            ) : users.length === 0 ? (
+                                <EmptyFilterState searchTerm={searchTerm} message="Null Data Set" />
+                            ) : (
+                                <>
+                                    {users.map((user) => (
                                 <DashboardTableRow key={user.id} className="grid-cols-[48px_2.5fr_1fr_120px_120px_80px]">
                                     <div className="flex justify-center">
                                         <AnimatedCheckbox id={`select-${user.id}`} checked={selectedUsers.has(user.id)} onChange={() => toggleSelectUser(user.id)} />
@@ -411,10 +416,11 @@ export default function UserManagementPage() {
                                         />
                                     </DashboardTableCell>
                                 </DashboardTableRow>
-                            ))}
+                            ))}</>)}
+
                         </DashboardTableBody>
                     </DashboardTableWrapper>
-                )}
+
                 {!isLoading && totalUsers > pageSize && (
                     <div className="p-8 border-t border-border/20 bg-muted/5">
                         <Pagination currentPage={currentPage} totalPages={totalPages} onPageChange={setCurrentPage} pageSize={pageSize} onPageSizeChange={setPageSize} totalItems={totalUsers} />

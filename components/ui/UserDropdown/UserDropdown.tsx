@@ -113,8 +113,8 @@ export function UserDropdown({ user, onOpen }: UserDropdownProps) {
                     )}
                 </div>
                 <div className="flex-col items-start text-xs hidden min-[775px]:flex">
-                    <span className="font-semibold max-w-25 truncate">{displayName}</span>
-                    <span className="text-muted-foreground capitalize">{userRole}</span>
+                    <span className="font-bold text-foreground max-w-25 truncate">{displayName}</span>
+                    <span className="text-muted-foreground/80 font-medium capitalize">{userRole}</span>
                 </div>
                 <ChevronDown className={`w-4 h-4 text-muted-foreground group-hover:text-foreground transition-all duration-200 hidden sm:block ${isOpen ? "rotate-180" : ""}`} />
             </button>

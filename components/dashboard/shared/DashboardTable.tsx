@@ -49,19 +49,32 @@ export function DashboardTable<T extends { id?: string | number }>({
 }: DashboardTableProps<T>) {
     const gridTemplate = columns.map(col => col.width || "1fr").join(" ");
     const renderSkeletonRows = () => {
-        return Array.from({ length: 5 }).map((_, i) => (
-            <div
-                key={`skeleton-${i}`}
-                className="grid px-8 py-5 items-center bg-card/10 hover:bg-muted/5 transition-colors"
-                style={{ gridTemplateColumns: gridTemplate }}
-            >
-                {columns.map((col, j) => (
-                    <div key={j} className={cn("px-4", col.className)}>
-                        <Skeleton className="h-4 w-full max-w-48 rounded bg-muted/60" />
+        return (
+            <div className="divide-y divide-border/10">
+                {/* Shimmer Bar at the Top */}
+                <div className="h-0.5 w-full bg-primary/5 overflow-hidden">
+                    <div className="h-full w-1/3 bg-primary/40 animate-[shimmer_1.5s_infinite_ease-in-out]" 
+                         style={{ transform: 'translateX(-100%)' }} />
+                </div>
+                
+                {Array.from({ length: 5 }).map((_, i) => (
+                    <div
+                        key={`skeleton-${i}`}
+                        className="grid px-8 py-5 items-center animate-pulse"
+                        style={{ gridTemplateColumns: gridTemplate }}
+                    >
+                        {columns.map((col, j) => (
+                            <div key={j} className={cn("px-4", col.className)}>
+                                <div className="flex flex-col gap-2">
+                                    <div className="h-3 w-3/4 bg-muted/80 rounded-full" />
+                                    <div className="h-2 w-1/2 bg-muted/40 rounded-full" />
+                                </div>
+                            </div>
+                        ))}
                     </div>
                 ))}
             </div>
-        ));
+        );
     };
     const renderDataRows = () => {
         return rows.map((row, i) => (

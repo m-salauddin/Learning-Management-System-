@@ -71,9 +71,9 @@ const staggerItem = {
     visible: {
         opacity: 1,
         y: 0,
-        transition: { 
-            duration: 0.5, 
-            ease: [0.22, 1, 0.36, 1] as const 
+        transition: {
+            duration: 0.5,
+            ease: [0.22, 1, 0.36, 1] as const
         },
     },
 };
@@ -267,8 +267,8 @@ export default function CheckoutClient({ course, user, bkashEnabled, manualMetho
                     transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] as const }}
                     className="mb-10"
                 >
-                    <Breadcrumbs 
-                        rootHref="/" 
+                    <Breadcrumbs
+                        rootHref="/"
                         rootLabel="Home"
                         className="mb-6"
                         items={[
@@ -306,7 +306,7 @@ export default function CheckoutClient({ course, user, bkashEnabled, manualMetho
 
                         <motion.div
                             variants={staggerItem}
-                            className="group relative p-6 bg-white/80 dark:bg-slate-950 backdrop-blur-xl border border-border/50 dark:border-white/10 rounded-3xl overflow-hidden transition-all duration-500 hover:border-primary/30 hover:shadow-2xl"
+                            className="group relative p-6 bg-white/80 dark:bg-slate-950 backdrop-blur-xl border border-border/50 dark:border-white/10 rounded-3xl overflow-hidden transition-all duration-500 hover:border-primary/30"
                         >
                             <h3 className="text-sm font-bold mb-6 flex items-center gap-2 relative z-10">
                                 <div className="w-7 h-7 rounded-xl bg-indigo-500/10 flex items-center justify-center border border-indigo-500/10">
@@ -316,97 +316,97 @@ export default function CheckoutClient({ course, user, bkashEnabled, manualMetho
                             </h3>
 
                             <div className="flex flex-col sm:flex-row gap-6 relative z-10">
-                            {/* glow blob */}
-                            <div className="absolute top-0 right-0 w-48 h-48 bg-white/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2 group-hover:bg-white/20 group-hover:scale-110 transition-all duration-700 pointer-events-none" />
+                                {/* glow blob */}
+                                <div className="absolute top-0 right-0 w-48 h-48 bg-white/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2 group-hover:bg-white/20 group-hover:scale-110 transition-all duration-700 pointer-events-none" />
 
-                            {/* Thumbnail */}
-                            <div className="relative w-full sm:w-48 aspect-video rounded-2xl overflow-hidden shrink-0 border border-white/20 shadow-md">
-                                <Image
-                                    src={course.thumbnail_url || '/placeholder-course.jpg'}
-                                    alt={course.title}
-                                    fill
-                                    sizes="(max-width: 640px) 100vw, 192px"
-                                    className="object-cover"
-                                    unoptimized
-                                />
-                                {/* Gradient Fade */}
-                                <div className="absolute inset-0 bg-linear-to-t from-black/80 via-black/20 to-transparent opacity-60" />
-                                
-                                {/* Play Button */}
-                                <div 
-                                    className="absolute inset-0 flex items-center justify-center cursor-pointer group/play"
-                                    onClick={() => setShowVideoModal(true)}
-                                >
-                                    <div className="w-12 h-12 rounded-full  backdrop-blur-md flex items-center justify-center border border-primary/40 shadow-2xl group-hover/play:scale-110  transition-all duration-500 ">
-                                        <Play className="w-5 h-5 text-primary fill-primary ml-0.5" />
+                                {/* Thumbnail */}
+                                <div className="relative w-full sm:w-48 aspect-video rounded-2xl overflow-hidden shrink-0 border border-white/20">
+                                    <Image
+                                        src={course.thumbnail_url || '/placeholder-course.jpg'}
+                                        alt={course.title}
+                                        fill
+                                        sizes="(max-width: 640px) 100vw, 192px"
+                                        className="object-cover"
+                                        unoptimized
+                                    />
+                                    {/* Gradient Fade */}
+                                    <div className="absolute inset-0 bg-linear-to-t from-black/80 via-black/20 to-transparent opacity-60" />
+
+                                    {/* Play Button */}
+                                    <div
+                                        className="absolute inset-0 flex items-center justify-center cursor-pointer group/play"
+                                        onClick={() => setShowVideoModal(true)}
+                                    >
+                                        <div className="w-12 h-12 rounded-full  backdrop-blur-md flex items-center justify-center border border-primary/40 group-hover/play:scale-110  transition-all duration-500 ">
+                                            <Play className="w-5 h-5 text-primary fill-primary ml-0.5" />
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {/* Info */}
+                                <div className="flex-1 space-y-4 relative z-10">
+                                    <div className="flex items-center gap-2 flex-wrap">
+                                        <span className={cn(
+                                            "px-3 py-0.5 rounded-full text-[10px] font-bold uppercase border",
+                                            course.level === 'beginner' ? "bg-emerald-500/10 border-emerald-500/30 text-emerald-400" :
+                                                course.level === 'intermediate' ? "bg-blue-500/10 border-blue-500/30 text-blue-400" :
+                                                    "bg-primary/10 border-primary/30 text-primary"
+                                        )}>
+                                            {course.level || 'All Levels'}
+                                        </span>
+
+                                        <span className="px-3 py-0.5 rounded-full text-[10px] font-bold uppercase border bg-secondary/10 border-secondary/30 text-secondary flex items-center gap-1.5">
+                                            {course.course_type === 'live' ? <Radio className="size-2.5" /> : <Play className="size-2.5" />}
+                                            {course.course_type === 'live' ? 'Live Class' : 'Recorded'}
+                                        </span>
+
+                                        {course.batch_no && (
+                                            <span className="px-3 py-0.5 rounded-full text-[10px] font-bold uppercase border bg-accent/10 border-accent/20 text-accent">
+                                                Batch {course.batch_no}
+                                            </span>
+                                        )}
+                                    </div>
+
+                                    <h2 className="text-xl font-bold text-foreground leading-tight group-hover:text-primary transition-colors duration-300">
+                                        {course.title}
+                                    </h2>
+
+                                    <div className="flex flex-wrap items-center gap-6">
+                                        {course.rating > 0 && (
+                                            <div className="flex flex-col gap-0.5">
+                                                <div className="flex items-center gap-1">
+                                                    {[...Array(5)].map((_, i) => (
+                                                        <Sparkles key={i} className={cn(
+                                                            "w-3 h-3",
+                                                            i < Math.floor(course.rating) ? "text-primary fill-primary" : "text-muted-foreground"
+                                                        )} />
+                                                    ))}
+                                                    <span className="text-xs font-bold text-foreground ml-1">{course.rating}</span>
+                                                </div>
+                                                <span className="text-[9px] font-bold text-muted-foreground uppercase tracking-widest">Rating</span>
+                                            </div>
+                                        )}
+
+                                        {metrics.map((m, i) => (
+                                            <div key={i} className="flex flex-col gap-0.5">
+                                                <div className="flex items-center gap-1.5 text-foreground">
+                                                    <div className="w-5 h-5 rounded-full bg-primary/10 flex items-center justify-center border border-primary/10">
+                                                        <m.icon className="w-2.5 h-2.5 text-primary" />
+                                                    </div>
+                                                    <span className="text-xs font-bold">{m.value}</span>
+                                                </div>
+                                                <span className="text-[9px] font-bold text-muted-foreground uppercase tracking-widest">{m.label}</span>
+                                            </div>
+                                        ))}
                                     </div>
                                 </div>
                             </div>
+                        </motion.div>
 
-                            {/* Info */}
-                            <div className="flex-1 space-y-4 relative z-10">
-                                <div className="flex items-center gap-2 flex-wrap">
-                                    <span className={cn(
-                                        "px-3 py-0.5 rounded-full text-[10px] font-bold uppercase border",
-                                        course.level === 'beginner' ? "bg-emerald-500/10 border-emerald-500/30 text-emerald-400" :
-                                        course.level === 'intermediate' ? "bg-blue-500/10 border-blue-500/30 text-blue-400" :
-                                        "bg-primary/10 border-primary/30 text-primary"
-                                    )}>
-                                        {course.level || 'All Levels'}
-                                    </span>
-
-                                    <span className="px-3 py-0.5 rounded-full text-[10px] font-bold uppercase border bg-secondary/10 border-secondary/30 text-secondary flex items-center gap-1.5">
-                                        {course.course_type === 'live' ? <Radio className="size-2.5" /> : <Play className="size-2.5" />}
-                                        {course.course_type === 'live' ? 'Live Class' : 'Recorded'}
-                                    </span>
-
-                                    {course.batch_no && (
-                                        <span className="px-3 py-0.5 rounded-full text-[10px] font-bold uppercase border bg-accent/10 border-accent/20 text-accent">
-                                            Batch {course.batch_no}
-                                        </span>
-                                    )}
-                                </div>
-
-                                <h2 className="text-xl font-bold text-foreground leading-tight group-hover:text-primary transition-colors duration-300">
-                                    {course.title}
-                                </h2>
-
-                                <div className="flex flex-wrap items-center gap-6">
-                                    {course.rating > 0 && (
-                                        <div className="flex flex-col gap-0.5">
-                                            <div className="flex items-center gap-1">
-                                                {[...Array(5)].map((_, i) => (
-                                                    <Sparkles key={i} className={cn(
-                                                        "w-3 h-3",
-                                                        i < Math.floor(course.rating) ? "text-primary fill-primary" : "text-muted-foreground"
-                                                    )} />
-                                                ))}
-                                                <span className="text-xs font-bold text-foreground ml-1">{course.rating}</span>
-                                            </div>
-                                            <span className="text-[9px] font-bold text-muted-foreground uppercase tracking-widest">Rating</span>
-                                        </div>
-                                    )}
-
-                                    {metrics.map((m, i) => (
-                                        <div key={i} className="flex flex-col gap-0.5">
-                                            <div className="flex items-center gap-1.5 text-foreground">
-                                                <div className="w-5 h-5 rounded-full bg-primary/10 flex items-center justify-center border border-primary/10">
-                                                    <m.icon className="w-2.5 h-2.5 text-primary" />
-                                                </div>
-                                                <span className="text-xs font-bold">{m.value}</span>
-                                            </div>
-                                            <span className="text-[9px] font-bold text-muted-foreground uppercase tracking-widest">{m.label}</span>
-                                        </div>
-                                    ))}
-                                </div>
-                            </div>
-                        </div>
-                    </motion.div>
-                        
                         {/* Payment Selection Card */}
                         <motion.div
                             variants={staggerItem}
-                            className="group relative p-6 bg-white/80 dark:bg-card/20 backdrop-blur-xl border border-border/50 dark:border-white/10 rounded-3xl overflow-hidden transition-all duration-500 hover:border-primary/30 hover:shadow-2xl"
+                            className="group relative p-6 bg-white/80 dark:bg-card/20 backdrop-blur-xl border border-border/50 dark:border-white/10 rounded-3xl overflow-hidden transition-all duration-500 hover:border-primary/30"
                         >
                             <div className="absolute top-0 right-0 w-48 h-48 bg-accent/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2 group-hover:bg-accent/15 transition-all duration-700 pointer-events-none" />
 
@@ -418,12 +418,15 @@ export default function CheckoutClient({ course, user, bkashEnabled, manualMetho
                             </h3>
 
                             <div className={cn(
-                                "grid gap-4 relative z-10",
-                                availableGateways.length > 2 ? "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3" : "grid-cols-1 sm:grid-cols-2"
+                                "grid gap-3 sm:gap-4 relative z-10",
+                                availableGateways.length > 2
+                                    ? "grid-cols-1 sm:grid-cols-2 xl:grid-cols-3"
+                                    : "grid-cols-1 sm:grid-cols-2"
                             )}>
                                 {availableGateways.map((gate) => (
-                                    <div
+                                    <motion.div
                                         key={gate.id}
+                                        layout
                                         role="button"
                                         tabIndex={0}
                                         onClick={() => setSelectedProvider(gate.id as any)}
@@ -433,30 +436,28 @@ export default function CheckoutClient({ course, user, bkashEnabled, manualMetho
                                             }
                                         }}
                                         className={cn(
-                                            "relative flex items-center p-5 rounded-[2rem] transition-all duration-500 gap-5 group/card hover:shadow-2xl cursor-pointer",
+                                            "relative flex items-center p-4 sm:p-5 rounded-[1.5rem] sm:rounded-[2.2rem] transition-all duration-500 gap-4 sm:gap-5 group/card cursor-pointer border-2",
                                             selectedProvider === gate.id
-                                                ? "shadow-2xl scale-[1.02] border-2 border-dashed"
-                                                : "bg-white/5 backdrop-blur-md border-black/20 dark:border-white/5 border hover:bg-background/5"
+                                                ? "scale-[1.02] bg-white/10 dark:bg-white/5 border-dashed"
+                                                : "bg-white/5 backdrop-blur-md border-border/30 dark:border-border/20 hover:bg-white/10 dark:hover:bg-white/5 hover:border-primary/20"
                                         )}
                                         style={selectedProvider === gate.id ? {
                                             backgroundColor: `${gate.color}15`,
                                             borderColor: gate.color,
-                                            boxShadow: `0 20px 40px ${gate.color}20`,
                                         } as any : {}}
                                     >
                                         <div
-                                            className="h-16 w-16 shrink-0 rounded-3xl flex items-center justify-center relative overflow-hidden shadow-2xl group-hover/card:scale-110 transition-transform duration-700"
-                                            style={{ 
+                                            className="h-12 w-12 sm:h-16 sm:w-16 shrink-0 rounded-2xl sm:rounded-3xl flex items-center justify-center relative overflow-hidden transition-transform duration-700 group-hover/card:scale-110"
+                                            style={{
                                                 background: `linear-gradient(135deg, ${gate.color}, ${gate.color}dd)`,
-                                                border: `1px solid ${gate.color}40`
                                             }}
                                         >
                                             <div className="absolute inset-0 bg-linear-to-tr from-white/20 to-transparent opacity-30" />
-                                            <div className="relative z-10 w-11 h-11 flex items-center justify-center invert brightness-0">
+                                            <div className="relative z-10 w-8 h-8 sm:w-11 sm:h-11 flex items-center justify-center invert brightness-0">
                                                 {gate.icon ? (
                                                     gate.icon
                                                 ) : (
-                                                    <span className="text-2xl font-black" style={{ color: 'white' }}>
+                                                    <span className="text-xl sm:text-2xl font-black text-white">
                                                         {gate.name.slice(0, 1)}
                                                     </span>
                                                 )}
@@ -464,31 +465,48 @@ export default function CheckoutClient({ course, user, bkashEnabled, manualMetho
                                         </div>
 
                                         {/* Method Text */}
-                                        <div className="flex-1 text-left">
-                                            <div className="flex items-center gap-2 mb-1">
-                                                <p className="text-sm font-bold text-foreground tracking-tight">{gate.name}</p>
+                                        <div className="flex-1 min-w-0 text-left">
+                                            <div className="flex items-center gap-2 mb-0.5 sm:mb-1 flex-wrap">
+                                                <p className="text-sm sm:text-base font-bold text-foreground tracking-tight truncate">
+                                                    {gate.name}
+                                                </p>
                                                 {gate.id === 'bkash_auto' && (
-                                                    <span className="px-2 py-0.5 rounded-full bg-emerald-500 text-white text-[9px] font-black uppercase tracking-widest shadow-lg shadow-emerald-500/20">
+                                                    <span className="px-1.5 sm:px-2 py-0.5 rounded-full bg-emerald-500 text-white text-[8px] sm:text-[9px] font-black uppercase tracking-widest shrink-0">
                                                         Instant
                                                     </span>
                                                 )}
                                             </div>
-                                            <p className="text-[10px] text-muted-foreground font-semibold leading-tight opacity-80">
+                                            <p className="text-[9px] sm:text-[10px] text-muted-foreground font-semibold leading-tight opacity-80 line-clamp-1">
                                                 {gate.id === 'bkash_auto' ? "Auto-portal enrollment" : "Manual verification step"}
                                             </p>
                                         </div>
 
                                         {/* Selection indicator */}
-                                        <div className="relative z-10 pointer-events-none">
-                                            <AnimatedCheckbox 
-                                                id={`pay-${gate.id}`}
-                                                checked={selectedProvider === gate.id}
-                                                variant="circle"
-                                                activeColor={gate.color}
-                                                // onChange is handled by parent div's onClick
-                                            />
+                                        <div className="shrink-0 relative z-10">
+                                            <div className={cn(
+                                                "w-5 h-5 sm:w-6 sm:h-6 rounded-full border-2 flex items-center justify-center transition-all duration-300",
+                                                selectedProvider === gate.id
+                                                    ? "border-transparent"
+                                                    : "border-muted-foreground/30"
+                                            )}
+                                                style={{
+                                                    backgroundColor: selectedProvider === gate.id ? gate.color : 'transparent'
+                                                }}>
+                                                <AnimatePresence>
+                                                    {selectedProvider === gate.id && (
+                                                        <motion.div
+                                                            initial={{ scale: 0, rotate: -45 }}
+                                                            animate={{ scale: 1, rotate: 0 }}
+                                                            exit={{ scale: 0, rotate: -45 }}
+                                                            className="flex items-center justify-center"
+                                                        >
+                                                            <CheckCircle2 className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-white fill-white/20" />
+                                                        </motion.div>
+                                                    )}
+                                                </AnimatePresence>
+                                            </div>
                                         </div>
-                                    </div>
+                                    </motion.div>
                                 ))}
                             </div>
                         </motion.div>
@@ -499,7 +517,7 @@ export default function CheckoutClient({ course, user, bkashEnabled, manualMetho
                         {/* ── Coupon Section ── */}
                         <motion.div
                             variants={staggerItem}
-                            className="group relative p-6 bg-white/80 dark:bg-card/20 backdrop-blur-xl border border-border/50 dark:border-white/10 rounded-3xl overflow-hidden transition-all duration-500 hover:border-primary/30 hover:shadow-2xl"
+                            className="group relative p-6 bg-white/80 dark:bg-card/20 backdrop-blur-xl border border-border/50 dark:border-white/10 rounded-3xl overflow-hidden transition-all duration-500 hover:border-primary/30"
                         >
                             <div className="absolute top-0 right-0 w-32 h-32 bg-secondary/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2 pointer-events-none" />
 
@@ -553,7 +571,7 @@ export default function CheckoutClient({ course, user, bkashEnabled, manualMetho
                         </motion.div>
                         <motion.div
                             variants={staggerItem}
-                            className="group relative bg-white/80 dark:bg-card/20 backdrop-blur-xl border border-border/50 dark:border-white/10 rounded-3xl overflow-hidden transition-all duration-500 hover:border-primary/30 hover:shadow-2xl"
+                            className="group relative bg-white/80 dark:bg-card/20 backdrop-blur-xl border border-border/50 dark:border-white/10 rounded-3xl overflow-hidden transition-all duration-500 hover:border-primary/30"
                         >
                             {/* glow */}
                             <div className="absolute top-0 left-1/4 w-48 h-48 bg-primary/10 rounded-full blur-3xl -translate-y-1/2 pointer-events-none opacity-60 group-hover:bg-primary/15 transition-colors duration-700" />
@@ -621,7 +639,7 @@ export default function CheckoutClient({ course, user, bkashEnabled, manualMetho
                                     <button
                                         onClick={handleCheckout}
                                         disabled={isSubmitting || !termsAccepted || !selectedProvider}
-                                        className="group/btn w-full flex items-center justify-center gap-3 pl-6 pr-3 py-3 bg-primary hover:bg-primary/90 rounded-full transition-all duration-300 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed disabled:active:scale-100 shadow-lg shadow-primary/20 hover:shadow-primary/30"
+                                        className="group/btn w-full flex items-center justify-center gap-3 pl-6 pr-3 py-3 bg-primary hover:bg-primary/90 rounded-full transition-all duration-300 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed disabled:active:scale-100"
                                     >
                                         <span className="text-sm font-bold text-primary-foreground">
                                             {isSubmitting ? "Processing..." : "Pay & Complete Enrollment"}
@@ -678,11 +696,11 @@ export default function CheckoutClient({ course, user, bkashEnabled, manualMetho
                                 <span className="text-muted-foreground">{selectedProvider?.toUpperCase()} Number</span>
                                 <div className="flex items-center gap-2">
                                     <span className="font-mono font-bold text-foreground">
-                                        {((manualMethods as any)[selectedProvider || ''] || '').startsWith('0') 
-                                            ? (manualMethods as any)[selectedProvider || ''] 
+                                        {((manualMethods as any)[selectedProvider || ''] || '').startsWith('0')
+                                            ? (manualMethods as any)[selectedProvider || '']
                                             : `0${(manualMethods as any)[selectedProvider || '']}`}
                                     </span>
-                                    <button 
+                                    <button
                                         onClick={() => {
                                             const num = (manualMethods as any)[selectedProvider || ''] || '';
                                             const formatted = num.startsWith('0') ? num : `0${num}`;
@@ -716,7 +734,7 @@ export default function CheckoutClient({ course, user, bkashEnabled, manualMetho
                                             const val = e.target.value.replace(/\D/g, '').slice(0, 11);
                                             setSenderNumber(val);
                                         }}
-                                        className="w-full bg-background/50 border border-border/60 rounded-xl pl-10 pr-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary/50 transition-all font-mono"
+                                        className="w-full bg-muted/50 dark:bg-white/5 border border-border/60 dark:border-white/10 rounded-xl pl-10 pr-4 py-2.5 text-sm text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary/50 transition-all font-mono"
                                     />
                                 </div>
                                 <p className="text-[10px] text-muted-foreground">The number you sent the money from.</p>
@@ -734,7 +752,7 @@ export default function CheckoutClient({ course, user, bkashEnabled, manualMetho
                                         placeholder="TXNID12345"
                                         value={transactionId}
                                         onChange={(e) => setTransactionId(e.target.value.toUpperCase())}
-                                        className="w-full bg-background/50 border border-border/60 rounded-xl pl-10 pr-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary/50 transition-all font-mono uppercase"
+                                        className="w-full bg-muted/50 dark:bg-white/5 border border-border/60 dark:border-white/10 rounded-xl pl-10 pr-4 py-2.5 text-sm text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary/50 transition-all font-mono uppercase"
                                     />
                                 </div>
                                 <p className="text-[10px] text-muted-foreground">Enter the unique transaction ID from your SMS.</p>
@@ -755,7 +773,7 @@ export default function CheckoutClient({ course, user, bkashEnabled, manualMetho
                         type="submit"
                         form="manual-payment-form"
                         disabled={isSubmitting}
-                        className="flex-1 sm:flex-none px-8 py-2.5 bg-primary text-primary-foreground font-black text-sm rounded-xl hover:bg-primary/90 hover:shadow-lg hover:shadow-primary/20 active:scale-95 transition-all disabled:opacity-50 flex items-center justify-center gap-2"
+                        className="flex-1 sm:flex-none px-8 py-2.5 bg-primary text-primary-foreground font-black text-sm rounded-xl hover:bg-primary/90 active:scale-95 transition-all disabled:opacity-50 flex items-center justify-center gap-2"
                     >
                         {isSubmitting ? (
                             <>
@@ -773,7 +791,7 @@ export default function CheckoutClient({ course, user, bkashEnabled, manualMetho
             <Dialog open={showVideoModal} onClose={() => setShowVideoModal(false)} size="xl">
                 <DialogHeader className="border-none absolute top-4 right-4 z-50 p-0">
                     <DialogTitle className="sr-only">Course Preview</DialogTitle>
-                    <button 
+                    <button
                         onClick={() => setShowVideoModal(false)}
                         className="w-10 h-10 rounded-full bg-black/60 backdrop-blur-md border border-white/20 text-white flex items-center justify-center hover:bg-black/80 transition-all"
                     >
@@ -783,11 +801,11 @@ export default function CheckoutClient({ course, user, bkashEnabled, manualMetho
                 <DialogBody className="p-0 bg-black aspect-video flex items-center justify-center">
                     {course.preview_video_url ? (
                         <iframe
-                            src={course.preview_video_url.includes('youtube.com/watch') 
-                                ? course.preview_video_url.replace('watch?v=', 'embed/') 
+                            src={course.preview_video_url.includes('youtube.com/watch')
+                                ? course.preview_video_url.replace('watch?v=', 'embed/')
                                 : course.preview_video_url.includes('youtu.be/')
-                                ? course.preview_video_url.replace('youtu.be/', 'youtube.com/embed/')
-                                : course.preview_video_url
+                                    ? course.preview_video_url.replace('youtu.be/', 'youtube.com/embed/')
+                                    : course.preview_video_url
                             }
                             className="w-full h-full"
                             allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"

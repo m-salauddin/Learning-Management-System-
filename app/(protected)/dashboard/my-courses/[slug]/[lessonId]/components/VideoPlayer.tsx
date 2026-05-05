@@ -51,12 +51,18 @@ export function VideoPlayer({
 
 function LoadingState() {
     return (
-        <div className="absolute inset-0 flex flex-col items-center justify-center bg-slate-950 z-10">
-            <div className="relative">
-                <div className="w-14 h-14 border-[3px] border-primary/20 rounded-full" />
-                <div className="absolute inset-0 w-14 h-14 border-[3px] border-primary border-t-transparent rounded-full animate-spin" />
+        <div className="absolute inset-0 flex flex-col items-center justify-center bg-slate-950 z-10 overflow-hidden">
+            {/* Shimmer Effect */}
+            <div className="absolute inset-0 bg-gradient-to-r from-transparent via-primary/5 to-transparent -translate-x-full animate-[shimmer_2s_infinite_ease-in-out]" />
+            
+            <div className="relative group">
+                <div className="w-16 h-16 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center backdrop-blur-xl">
+                    <div className="w-8 h-8 rounded-full border-2 border-primary/20 border-t-primary animate-spin" />
+                </div>
             </div>
-            <p className="mt-5 text-[10px] font-bold uppercase tracking-[0.2em] text-slate-500">Loading video...</p>
+            <p className="mt-6 text-[10px] font-black uppercase tracking-[0.3em] text-slate-500 animate-pulse">
+                Initializing Stream
+            </p>
         </div>
     );
 }

@@ -63,7 +63,7 @@ function AnimatedStatCard({
 }
 export function HeroSection() {
     return (
-        <section id="hero" className="relative min-h-screen overflow-visible pt-32 pb-20">
+        <section id="hero" suppressHydrationWarning className="relative min-h-screen overflow-visible pt-32 pb-20">
             <div className="absolute inset-0 overflow-hidden">
                 <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-linear-to-br from-primary/15 via-accent/10 to-transparent rounded-full blur-2xl translate-x-1/4 -translate-y-1/4" />
                 <div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-linear-to-tr from-secondary/15 via-primary/10 to-transparent rounded-full blur-2xl -translate-x-1/4 translate-y-1/4" />
@@ -101,19 +101,20 @@ export function HeroSection() {
                                 Explore <span className="sm:inline hidden">Courses</span>
                             </SecondaryCTAButton>
                         </div>
-                        <div className="flex items-center gap-6 justify-center lg:justify-start">
-                            <div className="flex -space-x-3">
+                        <div suppressHydrationWarning className="flex items-center gap-6 justify-center lg:justify-start">
+                            <div suppressHydrationWarning className="flex -space-x-3">
                                 {[1, 2, 3, 4, 5].map((i) => (
                                     <div
                                         key={i}
+                                        suppressHydrationWarning
                                         className="w-10 h-10 rounded-full bg-linear-to-br from-gray-200 to-gray-300 dark:from-gray-700 dark:to-gray-800 border-2 border-background flex items-center justify-center text-xs font-medium"
                                     >
-                                        {String.fromCharCode(64 + i)}
+                                        {String.fromCharCode(65 + (i - 1))}
                                     </div>
                                 ))}
                             </div>
-                            <div className="text-left">
-                                <div className="flex items-center gap-1 text-yellow-500">
+                            <div suppressHydrationWarning className="text-left">
+                                <div suppressHydrationWarning className="flex items-center gap-1 text-yellow-500">
                                     {[1, 2, 3, 4, 5].map((i) => (
                                         <Star key={i} className="w-4 h-4 fill-current" />
                                     ))}
@@ -124,8 +125,8 @@ export function HeroSection() {
                             </div>
                         </div>
                     </div>
-                    <div className="relative mt-12 lg:mt-0 animate-fade-in-up" style={{ animationDelay: '0.2s' }}>
-                        <div className="flex justify-end mb-4">
+                    <div suppressHydrationWarning className="relative mt-12 lg:mt-0 animate-fade-in-up" style={{ animationDelay: '0.2s' }}>
+                        <div suppressHydrationWarning className="flex justify-end mb-4">
                             <div className="inline-flex items-center gap-3 px-5 py-3 rounded-2xl bg-linear-to-r from-primary via-accent to-secondary dark:from-primary dark:via-secondary dark:to-accent text-white dark:text-slate-950 shadow-lg shadow-primary/20">
                                 <div className="w-10 h-10 rounded-xl bg-white/20 dark:bg-black/5 flex items-center justify-center">
                                     <Trophy className="w-5 h-5 text-white dark:text-slate-950" />
