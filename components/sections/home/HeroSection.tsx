@@ -1,6 +1,7 @@
 "use client";
 import * as React from "react";
 import { useInView } from "motion/react";
+import { useTranslations } from "next-intl";
 import {
     Users,
     Star,
@@ -12,6 +13,7 @@ import {
 } from "lucide-react";
 import { Badge } from "@/components/ui/Badge";
 import { PrimaryCTAButton, SecondaryCTAButton } from "@/components/ui/CTAButton";
+
 function AnimatedStatCard({
     icon: Icon,
     end,
@@ -32,23 +34,27 @@ function AnimatedStatCard({
     const [count, setCount] = React.useState(0);
     const ref = React.useRef<HTMLDivElement>(null);
     const isInView = useInView(ref, { once: true, margin: "-50px" });
+
     React.useEffect(() => {
         if (!isInView) return;
         const duration = 2000;
         const start = 0;
         const startTime = performance.now();
+
         const animate = (currentTime: number) => {
             const elapsed = currentTime - startTime;
             const progress = Math.min(elapsed / duration, 1);
             const easeOutQuart = 1 - Math.pow(1 - progress, 4);
             const current = start + (end - start) * easeOutQuart;
             setCount(decimals > 0 ? parseFloat(current.toFixed(decimals)) : Math.floor(current));
+
             if (progress < 1) {
                 requestAnimationFrame(animate);
             }
         };
         requestAnimationFrame(animate);
     }, [isInView, end, decimals]);
+
     return (
         <div ref={ref} className="text-center">
             <div className={`w-10 h-10 rounded-xl ${bgColor} flex items-center justify-center mx-auto mb-2`}>
@@ -61,9 +67,13 @@ function AnimatedStatCard({
         </div>
     );
 }
+
 export function HeroSection() {
+    const t = useTranslations("Hero");
+    const tc = useTranslations("Common");
+
     return (
-        <section id="hero" suppressHydrationWarning className="relative min-h-screen overflow-visible pt-32 pb-20">
+        <section id="hero" suppressHydrationWarning className="relative min-h-screen flex items-center overflow-visible pt-32 pb-20">
             <div className="absolute inset-0 overflow-hidden">
                 <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-linear-to-br from-primary/15 via-accent/10 to-transparent rounded-full blur-2xl translate-x-1/4 -translate-y-1/4" />
                 <div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-linear-to-tr from-secondary/15 via-primary/10 to-transparent rounded-full blur-2xl -translate-x-1/4 translate-y-1/4" />
@@ -80,25 +90,25 @@ export function HeroSection() {
                     <div className="text-center lg:text-left animate-fade-in-up">
                         <div className="inline-flex mb-8">
                             <Badge icon={Rocket}>
-                                Start Your Learning Journey on 2026
+                                {t("badge")}
                             </Badge>
                         </div>
                         <h1 className="text-5xl sm:text-6xl lg:text-7xl font-bold leading-tight tracking-tight mb-8">
-                            Build What
+                            {t("title1")}
                             <br />
                             <span className="bg-linear-to-r from-primary via-secondary to-accent bg-clip-text text-transparent">
-                                Matters.
+                                {t("title2")}
                             </span>
                         </h1>
                         <p className="text-xl text-muted-foreground mb-10 max-w-2xl mx-auto lg:mx-0 leading-relaxed">
-                            From your first line of code to your first day at a tech giant. We’re with you every step of the journey.
+                            {t("description")}
                         </p>
                         <div className="flex flex-row flex-wrap gap-4 justify-center lg:justify-start mb-12">
                             <PrimaryCTAButton href="#courses" isAnchor>
-                                Get Started
+                                {tc("getStarted")}
                             </PrimaryCTAButton>
                             <SecondaryCTAButton href="/courses">
-                                Explore <span className="sm:inline hidden">Courses</span>
+                                {tc("exploreCourses")}
                             </SecondaryCTAButton>
                         </div>
                         <div suppressHydrationWarning className="flex items-center gap-6 justify-center lg:justify-start">
@@ -120,7 +130,7 @@ export function HeroSection() {
                                     ))}
                                 </div>
                                 <p className="text-sm text-muted-foreground">
-                                    <strong className="text-foreground">50,000+</strong> learners joined
+                                    <strong className="text-foreground">{t("learnersJoined", { count: "50,000+" })}</strong>
                                 </p>
                             </div>
                         </div>
@@ -132,8 +142,8 @@ export function HeroSection() {
                                     <Trophy className="w-5 h-5 text-white dark:text-slate-950" />
                                 </div>
                                 <div>
-                                    <p className="font-bold">Top Rated</p>
-                                    <p className="text-white/90 dark:text-slate-950/80 font-medium text-sm">BD Platform</p>
+                                    <p className="font-bold">{t("topRated")}</p>
+                                    <p className="text-white/90 dark:text-slate-950/80 font-medium text-sm">{t("bdPlatform")}</p>
                                 </div>
                             </div>
                         </div>
@@ -144,7 +154,7 @@ export function HeroSection() {
                                         icon={GraduationCap}
                                         end={200}
                                         suffix="+"
-                                        label="Expert Courses"
+                                        label={t("expertCourses")}
                                         color="text-primary"
                                         bgColor="bg-primary/10"
                                     />
@@ -154,7 +164,7 @@ export function HeroSection() {
                                         icon={Users}
                                         end={50}
                                         suffix="K+"
-                                        label="Active Learners"
+                                        label={t("activeLearners")}
                                         color="text-secondary"
                                         bgColor="bg-secondary/10"
                                     />
@@ -164,7 +174,7 @@ export function HeroSection() {
                                         icon={Briefcase}
                                         end={95}
                                         suffix="%"
-                                        label="Job Placement"
+                                        label={t("jobPlacement")}
                                         color="text-success"
                                         bgColor="bg-success/10"
                                     />
@@ -174,7 +184,7 @@ export function HeroSection() {
                                         icon={Star}
                                         end={4.9}
                                         suffix=""
-                                        label="Average Rating"
+                                        label={t("averageRating")}
                                         color="text-warning"
                                         bgColor="bg-warning/10"
                                         decimals={1}
@@ -188,8 +198,8 @@ export function HeroSection() {
                                     <Check className="w-5 h-5 text-success" />
                                 </div>
                                 <div>
-                                    <p className="font-semibold">Certificate Verified</p>
-                                    <p className="text-muted-foreground text-sm">Industry recognized</p>
+                                    <p className="font-semibold">{t("certificateVerified")}</p>
+                                    <p className="text-muted-foreground text-sm">{t("industryRecognized")}</p>
                                 </div>
                             </div>
                         </div>

@@ -2,86 +2,35 @@
 import React, { useState } from "react";
 import Image from "next/image";
 import { motion, AnimatePresence, useReducedMotion } from "motion/react";
-import { UserPlus, MousePointerClick, PlayCircle, LayoutDashboard, Check, Sparkles } from "lucide-react";
+import { useTranslations } from "next-intl";
+import { UserPlus, MousePointerClick, PlayCircle, LayoutDashboard, Check } from "lucide-react";
 import { Badge } from "@/components/ui/Badge";
-const steps = [
-    {
-        id: 1,
-        title: "Create an account",
-        details: [
-            "Visit our registration page",
-            "Fill in your personal details",
-            "Verify your email address",
-            "Complete your student profile"
-        ],
-        icon: UserPlus
-    },
-    {
-        id: 2,
-        title: "Select course/career path",
-        details: [
-            "Browse our extensive course catalog",
-            "Filter by your interest or skill level",
-            "Read course curriculum and reviews",
-            "Choose a path that aligns with your goals"
-        ],
-        icon: MousePointerClick
-    },
-    {
-        id: 3,
-        title: "Enroll in the course",
-        details: [
-            "Add your chosen course to cart",
-            "Proceed to secure checkout",
-            "Select your preferred payment method",
-            "Get instant access to learning materials"
-        ],
-        icon: PlayCircle
-    },
-    {
-        id: 4,
-        title: "Open course dashboard",
-        details: [
-            "Access your personalized dashboard",
-            "View video lessons and assignments",
-            "Participate in quizzes and tests",
-            "Track your progress and earn certificates"
-        ],
-        icon: LayoutDashboard
-    }
-];
+
 const smoothEasing = [0.16, 1, 0.3, 1] as const;
-const fadeInUpVariants = {
-    hidden: { opacity: 0, y: 20 },
-    visible: {
-        opacity: 1,
-        y: 0,
-        transition: { duration: 0.6, ease: smoothEasing }
-    }
-};
-const staggerContainerVariants = {
-    hidden: { opacity: 0 },
-    visible: {
-        opacity: 1,
-        transition: {
-            staggerChildren: 0.12,
-            delayChildren: 0.1
-        }
-    }
-};
+
 const contentTransitionVariants = {
     initial: { opacity: 0, y: 10, filter: "blur(4px)", scale: 0.98 },
     animate: { opacity: 1, y: 0, filter: "blur(0px)", scale: 1 },
     exit: { opacity: 0, y: -10, filter: "blur(4px)", scale: 0.98 }
 };
+
 export function HowItWorks() {
+    const t = useTranslations("HowItWorks");
     const [activeStepId, setActiveStepId] = useState(1);
     const shouldReduceMotion = useReducedMotion();
+
+    const steps = [
+        { id: 1, title: t("steps.step1.title"), details: t.raw("steps.step1.details") as string[], icon: UserPlus },
+        { id: 2, title: t("steps.step2.title"), details: t.raw("steps.step2.details") as string[], icon: MousePointerClick },
+        { id: 3, title: t("steps.step3.title"), details: t.raw("steps.step3.details") as string[], icon: PlayCircle },
+        { id: 4, title: t("steps.step4.title"), details: t.raw("steps.step4.details") as string[], icon: LayoutDashboard }
+    ];
+
     const activeStep = steps.find(s => s.id === activeStepId) || steps[0];
+
     return (
         <section suppressHydrationWarning className="py-24 relative overflow-hidden bg-background">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-                {}
                 <motion.div
                     initial={{ opacity: 0, y: 20 }}
                     whileInView={{ opacity: 1, y: 0 }}
@@ -90,28 +39,24 @@ export function HowItWorks() {
                 >
                     <div className="inline-flex mb-4">
                         <Badge icon={PlayCircle}>
-                            How it works
+                            {t("badge")}
                         </Badge>
                     </div>
                     <h2 className="text-3xl sm:text-5xl font-bold mb-4 tracking-tight">
-                        Start your journey in
+                        {t("title1")}
                         <br />
-                        <span className="bg-linear-to-r from-primary to-accent bg-clip-text text-transparent">
-                            4 simple steps
+                        <span className="bg-linear-to-r from-primary via-secondary to-accent bg-clip-text text-transparent">
+                            {t("title2")}
                         </span>
                     </h2>
                     <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
-                        Follow our professional roadmap to master new skills and accelerate your career with expert-led training.
+                        {t("description")}
                     </p>
                 </motion.div>
                 <div className="grid lg:grid-cols-2 gap-12 lg:gap-10 items-center">
-                    {}
                     <div className="relative group lg:sticky lg:top-32 h-fit">
-                        {}
                         <div className="relative overflow-hidden rounded-[2.5rem] border border-primary/20 bg-card/30 backdrop-blur-3xl  p-8 md:p-12 flex flex-col min-h-[560px] isolation-auto">
-                            {}
                             <div className="absolute inset-0 bg-linear-to-br from-white/5 to-transparent pointer-events-none" />
-                            {}
                             <AnimatePresence mode="wait">
                                 <motion.div
                                     key={activeStep.id}
@@ -122,7 +67,6 @@ export function HowItWorks() {
                                     transition={{ type: "spring", stiffness: 300, damping: 30 }}
                                     className="flex flex-col h-full"
                                 >
-                                    {}
                                     <div className="flex items-center gap-6 mb-10 relative">
                                         <div className="relative group/icon">
                                             <div className="absolute inset-0 bg-primary/40 blur-xl scale-75 opacity-0 group-hover/icon:opacity-100 transition-opacity duration-500" />
@@ -136,11 +80,10 @@ export function HowItWorks() {
                                             </h3>
                                             <div className="flex items-center gap-2 mt-1">
                                                 <span className="w-8 h-px bg-primary/40" />
-                                                <span className="text-xs font-bold uppercase tracking-[0.2em] text-primary">Phased Progress 0{activeStep.id}</span>
+                                                <span className="text-xs font-bold uppercase tracking-[0.2em] text-primary">{t("phasedProgress", { step: activeStep.id })}</span>
                                             </div>
                                         </div>
                                     </div>
-                                    {}
                                     <div className="space-y-3 grow">
                                         {activeStep.details.map((detail, idx) => (
                                             <motion.div
@@ -150,7 +93,7 @@ export function HowItWorks() {
                                                 transition={{ delay: 0.1 + idx * 0.1, duration: 0.4, ease: smoothEasing }}
                                                 className="group flex items-start gap-4 p-4 rounded-xl border bg-background/50 hover:bg-background/80 border-primary/20 hover:shadow-lg hover:shadow-primary/5 transition-all duration-300"
                                             >
-                                                <div className="w-5 h-5 rounded-full bg-primary flex items-center justify-center shrink-0 mt-0.5 group-hover:scale-110 text-background transition-all duration-300">
+                                                <div className="w-5 h-5 rounded-full bg-primary flex items-center justify-center shrink-0 mt-0.5 group-hover:scale-110 text-white dark:text-[#020615] transition-all duration-300">
                                                     <Check className="w-3 h-3" />
                                                 </div>
                                                 <span className="text-sm sm:text-base text-foreground/80 font-medium leading-relaxed group-hover:text-foreground transition-colors">
@@ -159,14 +102,12 @@ export function HowItWorks() {
                                             </motion.div>
                                         ))}
                                     </div>
-                                    {}
                                     <div className="mt-auto pt-10 relative">
-                                        {}
                                         <div className="absolute top-0 left-0 w-full h-px bg-linear-to-r from-transparent via-border/60 to-transparent opacity-50" />
                                         <div className="flex items-center justify-between text-xs sm:text-sm font-medium text-muted-foreground">
                                             <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-primary/5  border border-primary/10">
                                                 <span className="w-2 h-2 rounded-full bg-primary animate-pulse shadow-[0_0_8px_var(--primary)]" />
-                                                <span className="text-primary font-bold">Ready to start?</span>
+                                                <span className="text-primary font-bold">{t("readyToStart")}</span>
                                             </div>
                                             <div className="flex -space-x-3 transition-all duration-500 hover:-space-x-1">
                                                 {[1, 2, 3].map(i => (
@@ -182,18 +123,14 @@ export function HowItWorks() {
                                     </div>
                                 </motion.div>
                             </AnimatePresence>
-                            {}
                             <div className="absolute top-0 right-0 w-96 h-96 bg-primary/20 rounded-full blur-[100px] -translate-y-1/2 translate-x-1/3 -z-10 mix-blend-screen" />
                             <div className="absolute bottom-0 left-0 w-64 h-64 bg-accent/10 rounded-full blur-[80px] translate-y-1/3 -translate-x-1/3 -z-10" />
                         </div>
-                        {}
                         <div className="absolute -z-40 -bottom-20 -left-20 w-80 h-80 bg-primary/10 rounded-full blur-[120px] opacity-30 pointer-events-none" />
                     </div>
-                    {}
                     <div className="relative pt-4">
                         <motion.div
                             className="relative pl-2"
-                            variants={shouldReduceMotion ? undefined : staggerContainerVariants}
                             initial="hidden"
                             whileInView="visible"
                             viewport={{ once: true, margin: "-50px" }}
@@ -203,13 +140,10 @@ export function HowItWorks() {
                                 const isLastStep = index === steps.length - 1;
                                 return (
                                     <div key={step.id} className={`relative flex items-center gap-6 group/step ${isLastStep ? "" : "pb-10"}`}>
-                                        {}
                                         {!isLastStep && (
                                             <div className="absolute left-7 top-19.5 bottom-6 h-16 w-px -translate-x-1/2 rounded-full bg-border transition-colors duration-500" />
                                         )}
-                                        {}
                                         <div className="absolute left-15 top-11 h-px w-4 bg-border transition-colors duration-500" />
-                                        {}
                                         <button
                                             onClick={() => setActiveStepId(step.id)}
                                             className={`relative z-10 shrink-0 w-14 h-14 rounded-full flex items-center justify-center text-lg font-black border transition-all duration-700 outline-none
@@ -219,7 +153,6 @@ export function HowItWorks() {
                                                 }
                                             `}
                                         >
-                                            {}
                                             {isActive && (
                                                 <div className="absolute inset-0 rounded-full border border-primary/50 animate-ping opacity-20" />
                                             )}
@@ -250,7 +183,6 @@ export function HowItWorks() {
                                                 )}
                                             </AnimatePresence>
                                         </button>
-                                        {}
                                         <motion.button
                                             onClick={() => setActiveStepId(step.id)}
                                             className={`flex-1 flex items-center gap-5 p-5 rounded-2xl border transition-all duration-500 text-left outline-none relative overflow-hidden
@@ -260,11 +192,9 @@ export function HowItWorks() {
                                                 }
                                             `}
                                         >
-                                            {}
                                             {isActive && (
                                                 <div className="absolute inset-0 bg-primary/5 blur-xl -z-10" />
                                             )}
-                                            {}
                                             <div className={`w-12 h-12 rounded-xl flex items-center justify-center transition-colors duration-500
                                                 ${isActive
                                                     ? "bg-primary/10 text-primary"
@@ -273,12 +203,11 @@ export function HowItWorks() {
                                             `}>
                                                 <step.icon className="w-5 h-5" />
                                             </div>
-                                            {}
                                             <div className="flex flex-col">
                                                 <span className={`text-[10px] sm:text-xs font-semibold uppercase tracking-wider mb-1 transition-colors duration-500
                                                     ${isActive ? "text-primary" : "text-muted-foreground"}
                                                 `}>
-                                                    Step 0{step.id}
+                                                    {t("phasedProgress", { step: step.id })}
                                                 </span>
                                                 <h3 className={`font-bold text-base sm:text-lg leading-tight transition-colors duration-500
                                                     ${isActive ? "text-foreground" : "text-muted-foreground group-hover/step:text-foreground"}

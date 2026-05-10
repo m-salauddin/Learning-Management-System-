@@ -2,7 +2,8 @@
 @import "tw-animate-css";
 @custom-variant dark (&:is(.dark *));
 @theme inline {
-  --font-sans: var(--font-space-grotesk), system-ui, sans-serif;
+  --font-main-sans: var(--font-space-grotesk), var(--font-bengali), ui-sans-serif, system-ui, sans-serif;
+  --font-bengali-only: var(--font-bengali), sans-serif;
   --font-mono: var(--font-jetbrains-mono), monospace;
   --color-background: var(--background);
   --color-foreground: var(--foreground);
@@ -66,11 +67,11 @@
   --card-foreground: #0f172a;
   --popover: #ffffff;
   --popover-foreground: #0f172a;
-  --primary: #0036f9;
+  --primary: #0036F9;
   --primary-foreground: #ffffff;
-  --secondary: #06b6d4;
+  --secondary: #7C3AED;
   --secondary-foreground: #ffffff;
-  --accent: #8b5cf6;
+  --accent: #06B6D4;
   --accent-foreground: #ffffff;
   --muted: #f1f5f9;
   --muted-foreground: #64748b;
@@ -82,27 +83,27 @@
   --warning-foreground: #ffffff;
   --border: #94a3b8;
   --input: #e2e8f0;
-  --ring: #0036f9;
-  --chart-1: #0036f9;
-  --chart-2: #06b6d4;
-  --chart-3: #8b5cf6;
+  --ring: #0036F9;
+  --chart-1: #FF4D00;
+  --chart-2: #E31E6B;
+  --chart-3: #8B5CF6;
   --chart-4: #10b981;
   --chart-5: #f59e0b;
   --sidebar: #ffffff;
   --sidebar-foreground: #0f172a;
-  --sidebar-primary: #fcb900;
+  --sidebar-primary: #0036F9;
   --sidebar-primary-foreground: #ffffff;
   --sidebar-accent: #f1f5f9;
   --sidebar-accent-foreground: #0f172a;
   --sidebar-border: #e2e8f0;
-  --sidebar-ring: #0036f9;
+  --sidebar-ring: #0036F9;
   --glass: rgba(255, 255, 255, 0.8);
   --glass-border: rgba(0, 0, 0, 0.05);
   --navbar-glass: rgba(255, 255, 255, 0.6);
   --navbar-glass-border: rgba(0, 0, 0, 0.08);
   --primary-rgb: 0, 54, 249;
-  --secondary-rgb: 6, 182, 212;
-  --accent-rgb: 139, 92, 246;
+  --secondary-rgb: 124, 58, 237;
+  --accent-rgb: 6, 182, 212;
   --input-dark: #f8fafc;
   --input-dark-hover: #f1f5f9;
   --input-dark-selected: #e2e8f0;
@@ -118,11 +119,11 @@
   --card-foreground: #f8fafc;
   --popover: #0f172a;
   --popover-foreground: #f8fafc;
-  --primary: #f05220;
-  --primary-foreground: #030712;
-  --secondary: #22d3ee;
+  --primary: #FF4D00;
+  --primary-foreground: #020615;
+  --secondary: #8b5cf6;
   --secondary-foreground: #030712;
-  --accent: #a78bfa;
+  --accent: #22d3ee;
   --accent-foreground: #030712;
   --muted: #1e293b;
   --muted-foreground: #94a3b8;
@@ -134,27 +135,27 @@
   --warning-foreground: #030712;
   --border: rgba(255, 255, 255, 0.1);
   --input: rgba(255, 255, 255, 0.15);
-  --ring: #fcb900;
-  --chart-1: #fcb900;
-  --chart-2: #22d3ee;
-  --chart-3: #a78bfa;
+  --ring: #FF4D00;
+  --chart-1: #FF4D00;
+  --chart-2: #E31E6B;
+  --chart-3: #8B5CF6;
   --chart-4: #34d399;
   --chart-5: #fbbf24;
   --sidebar: #0f172a;
   --sidebar-foreground: #f8fafc;
-  --sidebar-primary: #fcb900;
-  --sidebar-primary-foreground: #030712;
+  --sidebar-primary: #FF4D00;
+  --sidebar-primary-foreground: #ffffff;
   --sidebar-accent: #1e293b;
   --sidebar-accent-foreground: #f8fafc;
   --sidebar-border: rgba(255, 255, 255, 0.1);
-  --sidebar-ring: #fcb900;
+  --sidebar-ring: #FF4D00;
   --glass: rgba(15, 23, 42, 0.8);
   --glass-border: rgba(255, 255, 255, 0.1);
   --navbar-glass: rgba(15, 23, 42, 0.5);
   --navbar-glass-border: rgba(255, 255, 255, 0.12);
-  --primary-rgb: 252, 185, 0;
-  --secondary-rgb: 34, 211, 238;
-  --accent-rgb: 167, 139, 250;
+  --primary-rgb: 255, 77, 0;
+  --secondary-rgb: 139, 92, 246;
+  --accent-rgb: 34, 211, 238;
   --input-dark: #030712;
   --input-dark-hover: #060c1a;
   --input-dark-selected: #0f172a;
@@ -175,8 +176,13 @@
     margin-right: 0 !important;
     scrollbar-gutter: stable;
   }
+  html,
   body {
-    @apply bg-background text-foreground font-sans antialiased;
+    @apply bg-background text-foreground antialiased;
+    font-family: var(--font-main-sans);
+  }
+  [lang="bn"] body {
+    font-family: var(--font-main-sans);
   }
   body.nav-open {
     overflow: hidden;
@@ -294,6 +300,13 @@
   .mask-gradient-r {
     mask-image: linear-gradient(to right, black 85%, transparent 100%);
     -webkit-mask-image: linear-gradient(to right, black 85%, transparent 100%);
+  }
+  .hero-fullscreen {
+    height: 100vh !important;
+    height: 100svh !important;
+    height: 100dvh !important;
+    min-height: 100vh !important;
+    min-height: 100svh !important;
   }
 }
 

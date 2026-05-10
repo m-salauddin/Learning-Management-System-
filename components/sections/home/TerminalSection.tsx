@@ -1,6 +1,7 @@
 "use client";
 import * as React from "react";
 import { motion } from "motion/react";
+import { useTranslations } from "next-intl";
 import { Terminal, Zap, GitBranch, Clock, Cpu, CheckCircle2, Loader2, Folder } from "lucide-react";
 import { Badge } from "@/components/ui/Badge";
 interface TerminalLine {
@@ -8,40 +9,7 @@ interface TerminalLine {
     text: string;
     id: string;
 }
-const TERMINAL_SEQUENCE = [
-    {
-        cmd: "npx create-next-app@latest dokkhota-it", output: [
-            { type: "info", text: "◐ Creating a new app in ~/projects/dokkhota-it..." },
-            { type: "warning", text: "◐ Installing dependencies: react, react-dom, next..." },
-            { type: "success", text: "✓ Success! Created dokkhota-it" }
-        ]
-    },
-    {
-        cmd: "cd dokkhota-it && bun run dev", output: [
-            { type: "info", text: "◐ Starting development server..." },
-            { type: "success", text: "✓ Ready in 847ms" },
-            { type: "output", text: "➜ Local:   http://localhost:3000" },
-            { type: "output", text: "➜ Network: http://192.168.1.5:3000" }
-        ]
-    },
-    {
-        cmd: "git add . && git commit -m 'feat: initial commit'", output: [
-            { type: "info", text: "[main (root-commit) a1b2c3d] feat: initial commit" },
-            { type: "info", text: " 23 files changed, 1847 insertions(+)" },
-            { type: "success", text: "✓ Changes committed successfully" }
-        ]
-    },
-    {
-        cmd: "bun run deploy --production", output: [
-            { type: "warning", text: "◐ Building optimized production bundle..." },
-            { type: "info", text: "◐ Compiling TypeScript..." },
-            { type: "info", text: "◐ Optimizing assets..." },
-            { type: "success", text: "✓ Build completed in 12.4s" },
-            { type: "success", text: "✓ Deployed to https://dokkhota-it.com" },
-            { type: "output", text: "🚀 Your journey has officially begun!" }
-        ]
-    }
-];
+
 const TerminalCursor = () => (
     <motion.span
         className="inline-block w-[10px] h-[18px] bg-[#FCB900] ml-0.5 rounded-[2px]"
@@ -105,16 +73,54 @@ const OmpPromptCompact = () => (
     </div>
 );
 export function TerminalSection() {
+    const t = useTranslations("Terminal");
+
+    const TERMINAL_SEQUENCE = [
+        {
+            cmd: t("Sequence.step1.cmd"), output: [
+                { type: "info", text: `◐ ${t("Sequence.step1.output1")}` },
+                { type: "warning", text: `◐ ${t("Sequence.step1.output2")}` },
+                { type: "success", text: `✓ ${t("Sequence.step1.output3")}` }
+            ]
+        },
+        {
+            cmd: t("Sequence.step2.cmd"), output: [
+                { type: "info", text: `◐ ${t("Sequence.step2.output1")}` },
+                { type: "success", text: `✓ ${t("Sequence.step2.output2")}` },
+                { type: "output", text: `➜ ${t("Sequence.step2.output3")}` },
+                { type: "output", text: `➜ ${t("Sequence.step2.output4")}` }
+            ]
+        },
+        {
+            cmd: t("Sequence.step3.cmd"), output: [
+                { type: "info", text: t("Sequence.step3.output1") },
+                { type: "info", text: t("Sequence.step3.output2") },
+                { type: "success", text: `✓ ${t("Sequence.step3.output3")}` }
+            ]
+        },
+        {
+            cmd: t("Sequence.step4.cmd"), output: [
+                { type: "warning", text: `◐ ${t("Sequence.step4.output1")}` },
+                { type: "info", text: `◐ ${t("Sequence.step4.output2")}` },
+                { type: "info", text: `◐ ${t("Sequence.step4.output3")}` },
+                { type: "success", text: `✓ ${t("Sequence.step4.output4")}` },
+                { type: "success", text: `✓ ${t("Sequence.step4.output5")}` },
+                { type: "output", text: `🚀 ${t("Sequence.step4.output6")}` }
+            ]
+        }
+    ];
     const [history, setHistory] = React.useState<TerminalLine[]>([]);
     const [currentLineIndex, setCurrentLineIndex] = React.useState(0);
     const [currentText, setCurrentText] = React.useState("");
     const [isTyping, setIsTyping] = React.useState(true);
     const containerRef = React.useRef<HTMLDivElement>(null);
+
     React.useEffect(() => {
         if (containerRef.current) {
             containerRef.current.scrollTop = containerRef.current.scrollHeight;
         }
     }, [currentText, history]);
+
     React.useEffect(() => {
         let timeout: NodeJS.Timeout;
         const processSequence = async () => {
@@ -127,6 +133,7 @@ export function TerminalSection() {
                 }, 5000);
                 return;
             }
+
             const step = TERMINAL_SEQUENCE[currentLineIndex];
             if (currentText.length < step.cmd.length) {
                 timeout = setTimeout(() => {
@@ -157,9 +164,11 @@ export function TerminalSection() {
                 }
             }
         };
+
         processSequence();
         return () => clearTimeout(timeout);
     }, [currentLineIndex, currentText, isTyping]);
+
     return (
         <section suppressHydrationWarning className="py-24 bg-background relative overflow-hidden">
             <div className="absolute inset-0 pointer-events-none">
@@ -175,19 +184,16 @@ export function TerminalSection() {
                     className="text-center mb-12"
                 >
                     <Badge icon={Zap} iconClassName="text-primary" className="mb-6">
-                        Real Developer Experience
+                        {t("badge")}
                     </Badge>
                     <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold mb-4">
-                        Build{" "}
+                        {t("title1")}{" "}
                         <span className="bg-linear-to-r from-[#FCB900] via-[#22D3EE] to-[#A78BFA] bg-clip-text text-transparent">
-                            Production-Ready
-                        </span>{" "}
-                        Software
+                            {t("title2")}
+                        </span>
                     </h2>
                     <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
-                        Experience the authentic workflow of professional software engineers.
-                        From <code className="px-2 py-0.5 rounded bg-muted text-[#22D3EE] font-mono text-sm">init</code> to{" "}
-                        <code className="px-2 py-0.5 rounded bg-muted text-[#34D399] font-mono text-sm">deploy</code>.
+                        {t("description")}
                     </p>
                 </motion.div>
                 <motion.div
@@ -202,7 +208,7 @@ export function TerminalSection() {
                         <div className="bg-indigo-50/50 dark:bg-transparent dark:bg-linear-to-b dark:from-[#0F172A] dark:to-[#1E293B] px-4 py-3 flex items-center justify-between border-b border-indigo-100 dark:border-white/10">
                             <div className="flex items-center gap-2">
                                 <div className="w-3 h-3 rounded-full bg-[#EF4444] hover:bg-[#EF4444]/80 transition-colors cursor-pointer shadow-lg shadow-[#EF4444]/40" />
-                                <div className="w-3 h-3 rounded-full bg-[#FCB900] hover:bg-[#FCB900]/80 transition-colors cursor-pointer shadow-lg shadow-[#FCB900]/40" />
+                                <div className="w-3 h-3 rounded-full bg-[#FF4D00] hover:bg-[#FF4D00]/80 transition-colors cursor-pointer shadow-lg shadow-[#FF4D00]/40" />
                                 <div className="w-3 h-3 rounded-full bg-[#34D399] hover:bg-[#34D399]/80 transition-colors cursor-pointer shadow-lg shadow-[#34D399]/40" />
                             </div>
                             <div className="absolute left-1/2 -translate-x-1/2 flex items-center gap-2">
@@ -224,7 +230,7 @@ export function TerminalSection() {
                         </div>
                         <div
                             ref={containerRef}
-                            className="px-8 py-6 pb-12 h-[480px] overflow-hidden font-mono text-sm leading-relaxed bg-white dark:bg-[#030712] selection:bg-[#FCB900]/30 selection:text-white"
+                            className="px-8 py-6 pb-12 h-[480px] overflow-hidden font-main-sans text-sm leading-relaxed bg-white dark:bg-[#030712] selection:bg-[#FF4D00]/30 selection:text-white"
                             style={{
                                 backgroundImage: `
                                     radial-gradient(ellipse at top, rgba(252, 185, 0, 0.04) 0%, transparent 50%),
@@ -238,7 +244,7 @@ export function TerminalSection() {
                                     animate={{ opacity: 1 }}
                                     className="mb-4 text-slate-500 dark:text-muted-foreground text-xs border-b border-slate-200 dark:border-white/10 pb-3"
                                 >
-                                    <span className="text-cyan-600 dark:text-[#22D3EE]">●</span> Welcome to DokkhotaIT Terminal{" "}
+                                    <span className="text-cyan-600 dark:text-[#22D3EE]">●</span> {t("welcomeTerminal")}{" "}
                                     <span className="text-slate-300 dark:text-muted-foreground">|</span>{" "}
                                     <span className="text-emerald-600 dark:text-[#34D399]">v2.0.0</span>{" "}
                                     <span className="text-slate-300 dark:text-muted-foreground">|</span>{" "}
@@ -312,7 +318,7 @@ export function TerminalSection() {
                                         className="w-full flex items-center text-emerald-600 dark:text-[#34D399] py-2 mt-2"
                                     >
                                         <OmpPrompt showTime={true} className="mr-0" />
-                                        <span className="text-slate-500 dark:text-muted-foreground pl-8">Session complete. Restarting...</span>
+                                        <span className="text-slate-500 dark:text-muted-foreground pl-8">{t("sessionComplete")}</span>
                                     </motion.div>
                                 )}
                             </div>

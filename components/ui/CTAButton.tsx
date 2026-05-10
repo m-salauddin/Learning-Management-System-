@@ -37,7 +37,7 @@ export function PrimaryCTAButton({
         </>
     );
     const buttonClasses = cn(
-        "group/btn flex items-center justify-center gap-2.5 sm:gap-4 pl-6 sm:pl-10 pr-2 py-2 bg-[#0036F9] dark:bg-primary hover:bg-[#0036F9]/90 dark:hover:bg-primary/90 rounded-full transition-all duration-300 active:scale-95 cursor-pointer h-[34px] sm:h-11 disabled:opacity-70 disabled:cursor-not-allowed",
+        "group/btn flex items-center justify-center gap-2.5 sm:gap-4 pl-6 sm:pl-10 pr-2 py-2 bg-primary hover:bg-primary/90 rounded-full transition-all duration-300 active:scale-95 cursor-pointer h-[34px] sm:h-11 disabled:opacity-70 disabled:cursor-not-allowed",
         className
     );
     if (onClick || type !== "button" || !href) {
