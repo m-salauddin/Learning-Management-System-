@@ -2,7 +2,7 @@
 @import "tw-animate-css";
 @custom-variant dark (&:is(.dark *));
 @theme inline {
-  --font-main-sans: var(--font-bengali), var(--font-space-grotesk), ui-sans-serif, system-ui, sans-serif;
+  --font-main-sans: var(--font-space-grotesk), var(--font-bengali), ui-sans-serif, system-ui, sans-serif;
   --font-bengali-only: var(--font-bengali), sans-serif;
   --font-mono: var(--font-jetbrains-mono), monospace;
   --color-background: var(--background);
