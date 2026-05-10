@@ -23,7 +23,7 @@ function PricingCard({ plan }: { plan: PricingPlan }) {
         >
             {plan.popular && (
                 <div suppressHydrationWarning className="absolute top-0 left-1/2 -translate-x-1/2 z-10">
-                    <Badge icon={Crown} className="bg-linear-to-r from-primary to-accent dark:from-primary dark:to-secondary text-primary-foreground font-semibold shadow-lg px-5 py-1.5 border-none whitespace-nowrap">
+                    <Badge icon={Crown} className="bg-linear-to-r from-primary via-secondary to-accent text-primary-foreground font-semibold shadow-lg px-5 py-1.5 border-none whitespace-nowrap">
                         {t("popular")}
                     </Badge>
                 </div>
@@ -40,7 +40,7 @@ function PricingCard({ plan }: { plan: PricingPlan }) {
                     <h3 className="text-xl font-bold mb-2 group-hover:text-primary transition-colors duration-300">{plan.name}</h3>
                     <p className="text-muted-foreground text-sm mb-6">{plan.description}</p>
                     <div suppressHydrationWarning className={`text-4xl font-black ${plan.popular
-                        ? "bg-linear-to-r from-primary to-accent bg-clip-text text-transparent dark:from-primary dark:to-secondary"
+                        ? "bg-linear-to-r from-primary via-secondary to-accent bg-clip-text text-transparent"
                         : ""}`}
                     >
                         {plan.price}

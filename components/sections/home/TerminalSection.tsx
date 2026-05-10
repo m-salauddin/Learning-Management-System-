@@ -208,7 +208,7 @@ export function TerminalSection() {
                         <div className="bg-indigo-50/50 dark:bg-transparent dark:bg-linear-to-b dark:from-[#0F172A] dark:to-[#1E293B] px-4 py-3 flex items-center justify-between border-b border-indigo-100 dark:border-white/10">
                             <div className="flex items-center gap-2">
                                 <div className="w-3 h-3 rounded-full bg-[#EF4444] hover:bg-[#EF4444]/80 transition-colors cursor-pointer shadow-lg shadow-[#EF4444]/40" />
-                                <div className="w-3 h-3 rounded-full bg-[#FCB900] hover:bg-[#FCB900]/80 transition-colors cursor-pointer shadow-lg shadow-[#FCB900]/40" />
+                                <div className="w-3 h-3 rounded-full bg-[#FF4D00] hover:bg-[#FF4D00]/80 transition-colors cursor-pointer shadow-lg shadow-[#FF4D00]/40" />
                                 <div className="w-3 h-3 rounded-full bg-[#34D399] hover:bg-[#34D399]/80 transition-colors cursor-pointer shadow-lg shadow-[#34D399]/40" />
                             </div>
                             <div className="absolute left-1/2 -translate-x-1/2 flex items-center gap-2">
@@ -230,7 +230,7 @@ export function TerminalSection() {
                         </div>
                         <div
                             ref={containerRef}
-                            className="px-8 py-6 pb-12 h-[480px] overflow-hidden font-mono text-sm leading-relaxed bg-white dark:bg-[#030712] selection:bg-[#FCB900]/30 selection:text-white"
+                            className="px-8 py-6 pb-12 h-[480px] overflow-hidden font-main-sans text-sm leading-relaxed bg-white dark:bg-[#030712] selection:bg-[#FF4D00]/30 selection:text-white"
                             style={{
                                 backgroundImage: `
                                     radial-gradient(ellipse at top, rgba(252, 185, 0, 0.04) 0%, transparent 50%),

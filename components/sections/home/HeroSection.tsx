@@ -73,137 +73,111 @@ export function HeroSection() {
     const tc = useTranslations("Common");
 
     return (
-        <section id="hero" suppressHydrationWarning className="relative min-h-screen overflow-visible pt-32 pb-20">
-            <div className="absolute inset-0 overflow-hidden">
-                <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-linear-to-br from-primary/15 via-accent/10 to-transparent rounded-full blur-2xl translate-x-1/4 -translate-y-1/4" />
-                <div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-linear-to-tr from-secondary/15 via-primary/10 to-transparent rounded-full blur-2xl -translate-x-1/4 translate-y-1/4" />
+        <section
+            id="hero"
+            suppressHydrationWarning
+            className="relative w-full flex items-center justify-center pt-20 pb-16 border-b-4 border-red-500"
+            style={{ height: '100vh', minHeight: '100vh', maxHeight: '100vh' }}
+        >
+            <div className="absolute inset-0 pointer-events-none">
+                <div className="absolute top-[-10%] left-[-10%] w-[600px] h-[600px] bg-primary/20 rounded-full blur-[120px] animate-pulse" />
+                <div className="absolute bottom-[-10%] right-[-10%] w-[500px] h-[500px] bg-accent/15 rounded-full blur-[100px]" />
                 <div
-                    className="absolute inset-0 opacity-[0.02]"
+                    className="absolute inset-0 opacity-[0.03] dark:opacity-[0.05]"
                     style={{
                         backgroundImage: `linear-gradient(var(--foreground) 1px, transparent 1px), linear-gradient(90deg, var(--foreground) 1px, transparent 1px)`,
-                        backgroundSize: '60px 60px',
+                        backgroundSize: '40px 40px',
                     }}
                 />
+
+                <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-background to-transparent" />
             </div>
-            <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                <div className="grid lg:grid-cols-2 gap-12 lg:gap-20 items-center">
-                    <div className="text-center lg:text-left animate-fade-in-up">
-                        <div className="inline-flex mb-8">
-                            <Badge icon={Rocket}>
-                                {t("badge")}
-                            </Badge>
-                        </div>
-                        <h1 className="text-5xl sm:text-6xl lg:text-7xl font-bold leading-tight tracking-tight mb-8">
-                            {t("title1")}
-                            <br />
-                            <span className="bg-linear-to-r from-primary via-secondary to-accent bg-clip-text text-transparent">
-                                {t("title2")}
-                            </span>
-                        </h1>
-                        <p className="text-xl text-muted-foreground mb-10 max-w-2xl mx-auto lg:mx-0 leading-relaxed">
-                            {t("description")}
-                        </p>
-                        <div className="flex flex-row flex-wrap gap-4 justify-center lg:justify-start mb-12">
-                            <PrimaryCTAButton href="#courses" isAnchor>
-                                {tc("getStarted")}
-                            </PrimaryCTAButton>
-                            <SecondaryCTAButton href="/courses">
-                                {tc("exploreCourses")}
-                            </SecondaryCTAButton>
-                        </div>
-                        <div suppressHydrationWarning className="flex items-center gap-6 justify-center lg:justify-start">
-                            <div suppressHydrationWarning className="flex -space-x-3">
-                                {[1, 2, 3, 4, 5].map((i) => (
-                                    <div
-                                        key={i}
-                                        suppressHydrationWarning
-                                        className="w-10 h-10 rounded-full bg-linear-to-br from-gray-200 to-gray-300 dark:from-gray-700 dark:to-gray-800 border-2 border-background flex items-center justify-center text-xs font-medium"
-                                    >
-                                        {String.fromCharCode(65 + (i - 1))}
-                                    </div>
-                                ))}
-                            </div>
-                            <div suppressHydrationWarning className="text-left">
-                                <div suppressHydrationWarning className="flex items-center gap-1 text-yellow-500">
-                                    {[1, 2, 3, 4, 5].map((i) => (
-                                        <Star key={i} className="w-4 h-4 fill-current" />
-                                    ))}
-                                </div>
-                                <p className="text-sm text-muted-foreground">
-                                    <strong className="text-foreground">{t("learnersJoined", { count: "50,000+" })}</strong>
-                                </p>
-                            </div>
-                        </div>
+
+            <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
+                <div className="flex flex-col items-center text-center max-w-4xl mx-auto">
+                    <div className="inline-flex mb-8 animate-fade-in-down">
+                        <Badge icon={Rocket} className="px-6 py-2">
+                            {t("badge")}
+                        </Badge>
                     </div>
-                    <div suppressHydrationWarning className="relative mt-12 lg:mt-0 animate-fade-in-up" style={{ animationDelay: '0.2s' }}>
-                        <div suppressHydrationWarning className="flex justify-end mb-4">
-                            <div className="inline-flex items-center gap-3 px-5 py-3 rounded-2xl bg-linear-to-r from-primary via-accent to-secondary dark:from-primary dark:via-secondary dark:to-accent text-white dark:text-slate-950 shadow-lg shadow-primary/20">
-                                <div className="w-10 h-10 rounded-xl bg-white/20 dark:bg-black/5 flex items-center justify-center">
-                                    <Trophy className="w-5 h-5 text-white dark:text-slate-950" />
-                                </div>
-                                <div>
-                                    <p className="font-bold">{t("topRated")}</p>
-                                    <p className="text-white/90 dark:text-slate-950/80 font-medium text-sm">{t("bdPlatform")}</p>
-                                </div>
-                            </div>
-                        </div>
-                        <div className="lg:p-5 lg:rounded-3xl lg:bg-card/80 lg:border lg:border-border lg:shadow-2xl">
-                            <div className="grid grid-cols-2 gap-3 lg:gap-0">
-                                <div className="bg-card/50 lg:bg-transparent border border-border/50 lg:border-0 rounded-2xl lg:rounded-none p-4 lg:border-r lg:border-b lg:border-border/50">
-                                    <AnimatedStatCard
-                                        icon={GraduationCap}
-                                        end={200}
-                                        suffix="+"
-                                        label={t("expertCourses")}
-                                        color="text-primary"
-                                        bgColor="bg-primary/10"
-                                    />
-                                </div>
-                                <div className="bg-card/50 lg:bg-transparent border border-border/50 lg:border-0 rounded-2xl lg:rounded-none p-4 lg:border-b lg:border-border/50">
-                                    <AnimatedStatCard
-                                        icon={Users}
-                                        end={50}
-                                        suffix="K+"
-                                        label={t("activeLearners")}
-                                        color="text-secondary"
-                                        bgColor="bg-secondary/10"
-                                    />
-                                </div>
-                                <div className="bg-card/50 lg:bg-transparent border border-border/50 lg:border-0 rounded-2xl lg:rounded-none p-4 lg:border-r lg:border-border/50">
-                                    <AnimatedStatCard
-                                        icon={Briefcase}
-                                        end={95}
-                                        suffix="%"
-                                        label={t("jobPlacement")}
-                                        color="text-success"
-                                        bgColor="bg-success/10"
-                                    />
-                                </div>
-                                <div className="bg-card/50 lg:bg-transparent border border-border/50 lg:border-0 rounded-2xl lg:rounded-none p-4">
-                                    <AnimatedStatCard
-                                        icon={Star}
-                                        end={4.9}
-                                        suffix=""
-                                        label={t("averageRating")}
-                                        color="text-warning"
-                                        bgColor="bg-warning/10"
-                                        decimals={1}
-                                    />
-                                </div>
-                            </div>
-                        </div>
-                        <div className="flex justify-start mt-4">
-                            <div className="inline-flex items-center gap-3 px-5 py-3 rounded-2xl bg-card border border-border shadow-xl">
-                                <div className="w-10 h-10 rounded-full bg-success/20 flex items-center justify-center">
-                                    <Check className="w-5 h-5 text-success" />
-                                </div>
-                                <div>
-                                    <p className="font-semibold">{t("certificateVerified")}</p>
-                                    <p className="text-muted-foreground text-sm">{t("industryRecognized")}</p>
-                                </div>
-                            </div>
-                        </div>
+
+                    <h1 className="text-5xl sm:text-7xl lg:text-8xl font-black leading-[1.1] tracking-tight mb-10 animate-fade-in-up">
+                        {t("title1")}
+                        <br />
+                        <span className="bg-linear-to-r from-primary via-secondary to-accent bg-clip-text text-transparent drop-shadow-sm">
+                            {t("title2")}
+                        </span>
+                    </h1>
+
+                    <p className="text-lg sm:text-xl text-muted-foreground/80 mb-12 max-w-2xl leading-relaxed animate-fade-in-up" style={{ animationDelay: '0.1s' }}>
+                        {t("description")}
+                    </p>
+
+                    <div className="flex flex-col sm:flex-row gap-5 justify-center animate-fade-in-up" style={{ animationDelay: '0.2s' }}>
+                        <PrimaryCTAButton href="#courses" isAnchor className="min-w-[200px]">
+                            {tc("getStarted")}
+                        </PrimaryCTAButton>
+                        <SecondaryCTAButton href="/courses" className="min-w-[200px]">
+                            {tc("exploreCourses")}
+                        </SecondaryCTAButton>
                     </div>
+                </div>
+            </div>
+
+
+            <div className="absolute top-[22%] left-[5%] xl:left-[8%] hidden md:block animate-float" style={{ animationDelay: '0s' }}>
+                <div className="p-4 rounded-2xl bg-card/60 backdrop-blur-xl border border-border/50 shadow-2xl flex items-center gap-4 group hover:border-primary/50 transition-colors duration-500">
+                    <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center text-primary">
+                        <GraduationCap className="w-6 h-6" />
+                    </div>
+                    <div>
+                        <p className="text-2xl font-bold leading-none mb-1">200+</p>
+                        <p className="text-xs text-muted-foreground font-medium uppercase tracking-wider">{t("expertCourses")}</p>
+                    </div>
+                </div>
+            </div>
+
+            <div className="absolute bottom-[12%] left-[5%] xl:left-[8%] hidden lg:block animate-float" style={{ animationDelay: '2s' }}>
+                <div className="p-4 rounded-2xl bg-card/60 backdrop-blur-xl border border-border/50 shadow-2xl flex items-center gap-4 group hover:border-warning/50 transition-colors duration-500">
+                    <div className="w-12 h-12 rounded-xl bg-warning/10 flex items-center justify-center text-warning">
+                        <Star className="w-6 h-6 fill-current" />
+                    </div>
+                    <div>
+                        <div className="flex items-center gap-0.5 mb-1">
+                            <p className="text-2xl font-bold leading-none mr-2">4.9</p>
+                            {[1, 2, 3, 4, 5].map((i) => (
+                                <Star key={i} className="w-3 h-3 text-warning fill-current" />
+                            ))}
+                        </div>
+                        <p className="text-xs text-muted-foreground font-medium uppercase tracking-wider">50,000+ Reviews</p>
+                    </div>
+                </div>
+            </div>
+
+            <div className="absolute top-[28%] right-[5%] xl:right-[8%] hidden md:block animate-float" style={{ animationDelay: '1s' }}>
+                <div className="p-4 rounded-2xl bg-card/60 backdrop-blur-xl border border-border/50 shadow-2xl flex items-center gap-4 group hover:border-secondary/50 transition-colors duration-500">
+                    <div className="w-12 h-12 rounded-xl bg-secondary/10 flex items-center justify-center text-secondary">
+                        <Users className="w-6 h-6" />
+                    </div>
+                    <div>
+                        <p className="text-2xl font-bold leading-none mb-1">50K+</p>
+                        <p className="text-xs text-muted-foreground font-medium uppercase tracking-wider">{t("activeLearners")}</p>
+                    </div>
+                </div>
+            </div>
+
+            <div className="absolute bottom-[12%] right-[5%] xl:right-[8%] hidden lg:block animate-float" style={{ animationDelay: '3.5s' }}>
+                <div className="p-4 rounded-2xl bg-card/60 backdrop-blur-xl border border-border/50 shadow-2xl flex flex-col gap-3 group hover:border-success/50 transition-colors duration-500 min-w-[160px]">
+                    <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 rounded-lg bg-success/10 flex items-center justify-center text-success">
+                            <Briefcase className="w-5 h-5" />
+                        </div>
+                        <p className="text-xl font-bold">95%</p>
+                    </div>
+                    <div className="w-full h-1.5 bg-muted rounded-full overflow-hidden">
+                        <div className="h-full bg-success w-[95%] rounded-full animate-pulse" />
+                    </div>
+                    <p className="text-xs text-muted-foreground font-medium uppercase tracking-wider">{t("jobPlacement")}</p>
                 </div>
             </div>
         </section>

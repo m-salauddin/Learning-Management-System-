@@ -19,7 +19,7 @@ const spaceGrotesk = Space_Grotesk({
 });
 
 const hindSiliguri = Hind_Siliguri({
-  variable: "--font-hind-siliguri",
+  variable: "--font-bengali",
   subsets: ["bengali", "latin"],
   weight: ["300", "400", "500", "600", "700"],
   display: "swap",
@@ -119,9 +119,9 @@ export default async function RootLayout({
   }
 
   return (
-    <html lang={locale} suppressHydrationWarning data-scroll-behavior="smooth">
+    <html lang={locale} className={`${spaceGrotesk.variable} ${hindSiliguri.variable} ${jetbrainsMono.variable}`} suppressHydrationWarning data-scroll-behavior="smooth">
       <body
-        className={`${spaceGrotesk.variable} ${hindSiliguri.variable} ${jetbrainsMono.variable} antialiased`}
+        className="antialiased"
         suppressHydrationWarning
       >
         <NextIntlClientProvider messages={messages} locale={locale}>

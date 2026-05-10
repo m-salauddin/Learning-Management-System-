@@ -45,7 +45,7 @@ export function HowItWorks() {
                     <h2 className="text-3xl sm:text-5xl font-bold mb-4 tracking-tight">
                         {t("title1")}
                         <br />
-                        <span className="bg-linear-to-r from-primary to-accent bg-clip-text text-transparent">
+                        <span className="bg-linear-to-r from-primary via-secondary to-accent bg-clip-text text-transparent">
                             {t("title2")}
                         </span>
                     </h2>
@@ -93,7 +93,7 @@ export function HowItWorks() {
                                                 transition={{ delay: 0.1 + idx * 0.1, duration: 0.4, ease: smoothEasing }}
                                                 className="group flex items-start gap-4 p-4 rounded-xl border bg-background/50 hover:bg-background/80 border-primary/20 hover:shadow-lg hover:shadow-primary/5 transition-all duration-300"
                                             >
-                                                <div className="w-5 h-5 rounded-full bg-primary flex items-center justify-center shrink-0 mt-0.5 group-hover:scale-110 text-background transition-all duration-300">
+                                                <div className="w-5 h-5 rounded-full bg-primary flex items-center justify-center shrink-0 mt-0.5 group-hover:scale-110 text-white dark:text-[#020615] transition-all duration-300">
                                                     <Check className="w-3 h-3" />
                                                 </div>
                                                 <span className="text-sm sm:text-base text-foreground/80 font-medium leading-relaxed group-hover:text-foreground transition-colors">

@@ -59,7 +59,7 @@ export function CTASection() {
                     <div className="space-y-6">
                         <h2 className="text-4xl md:text-5xl lg:text-7xl font-black text-slate-900 dark:text-white tracking-tighter leading-tight">
                             {t.rich("title", {
-                                brand: (chunks) => <span className="text-transparent bg-clip-text bg-linear-to-r from-primary via-indigo-400 to-secondary selection:text-white">{chunks}</span>
+                                brand: (chunks) => <span className="text-transparent bg-clip-text bg-linear-to-r from-primary via-secondary to-accent selection:text-white">{chunks}</span>
                             })}
                         </h2>
                         <p className="text-slate-600 dark:text-slate-400 text-lg md:text-xl max-w-3xl leading-relaxed mx-auto font-medium">

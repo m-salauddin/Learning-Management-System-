@@ -11,15 +11,15 @@ import { PrimaryCTAButton, SecondaryCTAButton } from "@/components/ui/CTAButton"
 export function AboutHeroSection() {
     const t = useTranslations("About.Hero");
     return (
-        <section className="relative min-h-[80vh] flex items-center overflow-hidden pt-32 pb-20">
-            {/* Background Effects */}
+        <section
+            className="relative w-full flex items-center justify-center overflow-hidden"
+            style={{ height: '100vh', minHeight: '100vh', maxHeight: '100vh' }}
+        >
             <div className="absolute inset-0 overflow-hidden">
-                {/* Gradient Blobs */}
                 <div className="absolute top-0 right-0 w-[800px] h-[800px] bg-linear-to-br from-primary/20 via-accent/15 to-transparent rounded-full blur-3xl translate-x-1/4 -translate-y-1/4 animate-gentle-pulse" />
                 <div className="absolute bottom-0 left-0 w-[600px] h-[600px] bg-linear-to-tr from-secondary/20 via-primary/15 to-transparent rounded-full blur-3xl -translate-x-1/4 translate-y-1/4 animate-gentle-pulse" style={{ animationDelay: "1s" }} />
                 <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-accent/10 rounded-full blur-[100px] animate-gentle-pulse" style={{ animationDelay: "2s" }} />
-                
-                {/* Grid Overlay */}
+
                 <div
                     className="absolute inset-0 opacity-[0.02]"
                     style={{
@@ -64,7 +64,6 @@ export function AboutHeroSection() {
                 </motion.div>
             </div>
 
-            {/* Floating Elements */}
             <FloatingCard
                 icon={Zap}
                 title={t("fastTrack")}

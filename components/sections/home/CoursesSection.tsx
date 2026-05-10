@@ -37,7 +37,7 @@ export function CoursesSection({ courses }: { courses: MappedCourse[] }) {
                         <span className="relative z-10 text-sm font-bold tracking-wide text-foreground/80 transition-colors group-hover:text-foreground">
                             {tc("viewAll")}
                         </span>
-                        <div className="relative z-10 flex h-8 w-8 items-center justify-center rounded-full bg-primary transition-all duration-500 text-primary-foreground group-hover:-rotate-45">
+                        <div className="relative z-10 flex h-8 w-8 items-center justify-center rounded-full bg-primary transition-all duration-500 text-primary-foreground dark:text-[#020615] group-hover:-rotate-45">
                             <ArrowRight className="h-4 w-4" />
                         </div>
                     </Link>

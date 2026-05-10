@@ -57,9 +57,9 @@ export function AboutCommunitySection() {
                 ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
                 
                 // Color logic
-                ctx.fillStyle = this.color.includes('primary') ? '#0036F9' : '#06B6D4';
+                ctx.fillStyle = this.color.includes('primary') ? '#FF4D00' : '#E31E6B';
                 if (document.documentElement.classList.contains('dark')) {
-                    ctx.fillStyle = this.color.includes('primary') ? '#FCB900' : '#22D3EE';
+                    ctx.fillStyle = this.color.includes('primary') ? '#FF4D00' : '#E31E6B';
                 }
                 
                 ctx.fill();

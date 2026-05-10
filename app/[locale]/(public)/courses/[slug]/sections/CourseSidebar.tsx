@@ -187,7 +187,7 @@ export default function CourseSidebar({
                                                         <button
                                                             type="submit"
                                                             disabled={isApplyingCoupon}
-                                                            className="h-full px-6 bg-[#0036F9] dark:bg-primary text-card text-[10px] font-black uppercase tracking-[0.2em] rounded-xl border border-white/10 hover:scale-105 active:scale-95 transition-all disabled:opacity-50"
+                                                            className="h-full px-6 bg-primary text-card text-[10px] font-black uppercase tracking-[0.2em] rounded-xl border border-white/10 hover:scale-105 active:scale-95 transition-all disabled:opacity-50"
                                                         >
                                                             {isApplyingCoupon ? '...' : 'Apply'}
                                                         </button>

@@ -6,7 +6,6 @@ import {
   CoursesSection,
   HowItWorks,
   TerminalSection,
-  PricingSection,
   TestimonialsSection,
   CTASection,
   FAQSection,
@@ -116,7 +115,6 @@ export default async function Home() {
       <CoursesSection courses={mappedCourses} />
       <HowItWorks />
       <TerminalSection />
-      <PricingSection />
       <TestimonialsSection />
       <FAQSection />
       <CTASection />
