@@ -1,11 +1,16 @@
-import type { Metadata } from "next";
+import { getTranslations } from "next-intl/server";
 import CoursesClient from "./CoursesClient";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { MappedCourse } from "@/types/mapped-course";
-export const metadata: Metadata = {
-    title: "Browse Courses - Dokkhota IT",
-    description: "Explore our wide range of IT courses including Web Development, App Development, Cyber Security, and more. Start your learning journey today.",
-};
+
+export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }) {
+    const { locale } = await params;
+    const t = await getTranslations({ locale, namespace: "Metadata" });
+    return {
+        title: t("courses.title"),
+        description: t("courses.description"),
+    };
+}
 export default async function CoursesPage() {
     const supabase = await createSupabaseServerClient();
     const { data: courses, error } = await supabase

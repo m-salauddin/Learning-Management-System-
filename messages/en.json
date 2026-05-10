@@ -1,0 +1,798 @@
+{
+  "Metadata": {
+    "home": {
+      "title": "Best IT Training & Skill Development Platform",
+      "description": "Join Dokkhota IT to master Web Development, App Development, and AI. Rated #1 IT Training Center in Bangladesh with job placement support."
+    },
+    "privacy": {
+      "title": "Privacy Policy",
+      "description": "Learn how DokkhotaIT collects, uses, and protects your personal information."
+    },
+    "terms": {
+      "title": "Terms of Service",
+      "description": "Read the terms and conditions for using DokkhotaIT's platform and services."
+    },
+    "checkout": {
+      "title": "Checkout | Dokkhota IT",
+      "description": "Complete your enrollment to start learning."
+    },
+    "about": {
+      "title": "About Us | Dokkhota IT",
+      "description": "Learn about our mission to empower the next generation of developers in Bangladesh."
+    },
+    "instructors": {
+      "title": "Our Mentors | Dokkhota IT",
+      "description": "Meet the industry experts who will guide you on your learning journey."
+    },
+    "courses": {
+      "title": "Browse Courses | Dokkhota IT",
+      "description": "Explore our wide range of IT courses and start your career in tech today."
+    }
+  },
+  "Navbar": {
+    "home": "Home",
+    "courses": "Courses",
+    "instructors": "Instructors",
+    "about": "About",
+    "login": "Login",
+    "register": "Register",
+    "search": "Search..."
+  },
+  "Common": {
+    "language": "Language",
+    "english": "English",
+    "bangla": "Bangla",
+    "getStarted": "Get Started",
+    "exploreCourses": "Explore Courses",
+    "viewAll": "View all courses"
+  },
+  "Hero": {
+    "badge": "Start Your Learning Journey on 2026",
+    "title1": "Build What",
+    "title2": "Matters.",
+    "description": "From your first line of code to your first day at a tech giant. We’re with you every step of the journey.",
+    "learnersJoined": "{count} learners joined",
+    "topRated": "Top Rated",
+    "bdPlatform": "BD Platform",
+    "expertCourses": "Expert Courses",
+    "activeLearners": "Active Learners",
+    "jobPlacement": "Job Placement",
+    "averageRating": "Average Rating",
+    "certificateVerified": "Certificate Verified",
+    "industryRecognized": "Industry recognized"
+  },
+  "Features": {
+    "badge": "Why Choose Us",
+    "title1": "Everything you need to",
+    "title2": "succeed in tech",
+    "description": "From zero to hero with our comprehensive learning ecosystem",
+    "expertLed": "Expert-Led Courses",
+    "expertLedDesc": "Learn from industry professionals with real-world experience at Google, Meta, Amazon, and local tech giants.",
+    "handsOn": "Hands-On Projects",
+    "handsOnDesc": "Build real applications for your portfolio",
+    "community": "Community Support",
+    "communityDesc": "Join 50,000+ active learners",
+    "placement": "Job Placement",
+    "placementDesc": "95% placement rate within 6 months",
+    "tracking": "Skill Tracking",
+    "trackingDesc": "GitHub-style learning streaks",
+    "certificates": "Verified Certificates",
+    "certificatesDesc": "Earn industry-recognized credentials",
+    "courseFeatures": {
+      "videoLessons": "Video Lessons",
+      "liveSessions": "Live Sessions",
+      "projects": "Projects",
+      "mentorship": "Mentorship"
+    }
+  },
+  "TechStack": {
+    "badge": "Industry-Ready Skills",
+    "title": "Master the Technologies That Matter",
+    "description": "Learn the most in-demand technologies used by top companies worldwide. Our curriculum is constantly updated to match industry needs."
+  },
+  "HowItWorks": {
+    "badge": "How it works",
+    "title1": "Start your journey in",
+    "title2": "4 simple steps",
+    "description": "Follow our professional roadmap to master new skills and accelerate your career with expert-led training.",
+    "phasedProgress": "Phased Progress {step}",
+    "readyToStart": "Ready to start?",
+    "steps": {
+      "step1": {
+        "title": "Create an account",
+        "details": [
+          "Visit our registration page",
+          "Fill in your personal details",
+          "Verify your email address",
+          "Complete your student profile"
+        ]
+      },
+      "step2": {
+        "title": "Select course/career path",
+        "details": [
+          "Browse our extensive course catalog",
+          "Filter by your interest or skill level",
+          "Read course curriculum and reviews",
+          "Choose a path that aligns with your goals"
+        ]
+      },
+      "step3": {
+        "title": "Enroll in the course",
+        "details": [
+          "Add your chosen course to cart",
+          "Proceed to secure checkout",
+          "Select your preferred payment method",
+          "Get instant access to learning materials"
+        ]
+      },
+      "step4": {
+        "title": "Open course dashboard",
+        "details": [
+          "Access your personalized dashboard",
+          "View video lessons and assignments",
+          "Participate in quizzes and tests",
+          "Track your progress and earn certificates"
+        ]
+      }
+    }
+  },
+  "Terminal": {
+    "badge": "Experience it now",
+    "title1": "Learn by",
+    "title2": "doing",
+    "description": "Stop just watching videos. Start building real projects in our integrated environment.",
+    "tabCode": "index.ts",
+    "tabOutput": "output.log",
+    "welcomeMsg": "Welcome to Dokkhota IT v2.0.0",
+    "welcomeTerminal": "Welcome to DokkhotaIT Terminal",
+    "sessionComplete": "Session complete. Restarting...",
+    "loadingMsg": "Loading learning environment...",
+    "readyMsg": "Ready for your first lesson.",
+    "initMsg": "Initialized new React project...",
+    "compileMsg": "Compiling components...",
+    "runningMsg": "Running development server at localhost:3000",
+    "codeLine1": "import { Dokkhota } from \"@dokkhota/core\";",
+    "codeLine2": "const student = new Student(\"You\");",
+    "codeLine3": "student.learn(\"Web Development\");",
+    "codeLine4": "student.build(\"Amazing Projects\");",
+    "codeLine5": "student.getHired();",
+    "Sequence": {
+      "step1": {
+        "cmd": "npx create-next-app@latest dokkhota-it",
+        "output1": "Creating a new app in ~/projects/dokkhota-it...",
+        "output2": "Installing dependencies: react, react-dom, next...",
+        "output3": "Success! Created dokkhota-it"
+      },
+      "step2": {
+        "cmd": "cd dokkhota-it && bun run dev",
+        "output1": "Starting development server...",
+        "output2": "Ready in 847ms",
+        "output3": "Local:   http://localhost:3000",
+        "output4": "Network: http://192.168.1.5:3000"
+      },
+      "step3": {
+        "cmd": "git add . && git commit -m 'feat: initial commit'",
+        "output1": "[main (root-commit) a1b2c3d] feat: initial commit",
+        "output2": " 23 files changed, 1847 insertions(+)",
+        "output3": "Changes committed successfully"
+      },
+      "step4": {
+        "cmd": "bun run deploy --production",
+        "output1": "Building optimized production bundle...",
+        "output2": "Compiling TypeScript...",
+        "output3": "Optimizing assets...",
+        "output4": "Build completed in 12.4s",
+        "output5": "Deployed to https://dokkhota-it.com",
+        "output6": "Your journey has officially begun!"
+      }
+    }
+  },
+  "Pricing": {
+    "badge": "Simple Pricing",
+    "title1": "Invest in your",
+    "title2": "future",
+    "description": "Choose the path that fits your goals. No hidden fees, ever.",
+    "monthly": "Monthly",
+    "yearly": "Yearly",
+    "save": "Save 20%",
+    "popular": "Most Popular",
+    "getStarted": "Get Started",
+    "features": {
+      "allCourses": "Access to all courses",
+      "community": "Community access",
+      "support": "Weekly Q&A support",
+      "certification": "Verified certificates",
+      "mentorship": "1-on-1 mentorship",
+      "jobPlacement": "Job placement assistance",
+      "projects": "Real-world projects"
+    },
+    "plans": {
+      "free": {
+        "name": "Free",
+        "price": "0",
+        "desc": "Perfect for trying things out"
+      },
+      "pro": {
+        "name": "Pro",
+        "price": "29",
+        "desc": "For serious learners"
+      },
+      "enterprise": {
+        "name": "Enterprise",
+        "price": "99",
+        "desc": "For teams and companies"
+      }
+    }
+  },
+  "Testimonials": {
+    "badge": "Success Stories",
+    "title1": "Trusted by",
+    "title2": "thousands",
+    "description": "See what our graduates have to say about their journey with Dokkhota IT.",
+    "testimonials": [
+      {
+        "quote": "I was stuck in tutorials for years. Dokkhota IT gave me the roadmap and mentorship I needed to actually build things. I landed my first remote job in 3 months!",
+        "name": "Rafiq Ahmed",
+        "role": "Software Engineer @ Pathao",
+        "avatar": "RA",
+        "gradient": "from-blue-500 to-cyan-500"
+      },
+      {
+        "quote": "The depth of the cloud computing course is insane. I went from knowing nothing about AWS to deploying scalable microservices. Worth every penny.",
+        "name": "Fatima Khan",
+        "role": "DevOps Engineer @ Grameenphone",
+        "avatar": "FK",
+        "gradient": "from-violet-500 to-fuchsia-500"
+      },
+      {
+        "quote": "It's not just a course, it's a family. The community support is unmatched. Whenever I faced a bug, someone was there to help. Truly life-changing.",
+        "name": "Tanvir Hassan",
+        "role": "Frontend Dev @ bKash",
+        "avatar": "TH",
+        "gradient": "from-emerald-500 to-teal-500"
+      }
+    ]
+  },
+  "FAQ": {
+    "badge": "Questions?",
+    "title": "Frequently Asked Questions",
+    "description": "Everything you need to know about our courses and platform.",
+    "questions": [
+      {
+        "q": "How long do I have access to the course?",
+        "a": "You get lifetime access to all course materials once enrolled. You can learn at your own pace."
+      },
+      {
+        "q": "Can I get a refund if I'm not satisfied?",
+        "a": "Yes, we offer a 7-day money-back guarantee. If you're not happy, we'll refund your payment."
+      },
+      {
+        "q": "Are the certificates industry-recognized?",
+        "a": "Yes, our certificates are recognized by top tech companies in Bangladesh and globally."
+      },
+      {
+        "q": "Is there job placement support?",
+        "a": "Absolutely! We provide dedicated job placement support to our Pro and Enterprise students."
+      }
+    ]
+  },
+  "CTA": {
+    "badge": "Why Choose Dokkho IT?",
+    "brand": "Dokkho IT",
+    "title": "The <brand>Dokkho IT</brand> advantage",
+    "advantage": "Advantage",
+    "description": "Our structured learning path and career support are designed to transform you into a <professional>job-ready professional</professional> with high market demand.",
+    "advantages": {
+      "industryExpert": { "title": "Industry Expert", "desc": "Mentor Guidelines" },
+      "realLifeProjects": { "title": "Real-life Projects", "desc": "Practical Learning" },
+      "industryRelevant": { "title": "Industry Relevant", "desc": "Skills Development" },
+      "bestCourse": { "title": "Best Course", "desc": "Outline Structure" },
+      "careerPath": { "title": "Career Path Based", "desc": "Support Session" },
+      "jobPlacement": { "title": "Job Placement", "desc": "Hands-on Support" },
+      "technicalSupport": { "title": "Technical Support", "desc": "Instant Assistance" },
+      "internship": { "title": "Internship & Job", "desc": "Full Opportunities" },
+      "priceLearning": { "title": "Price Learning", "desc": "Highly Affordable" },
+      "lifetimeAccess": { "title": "Lifetime Access", "desc": "Learn At Your Pace" }
+    }
+  },
+  "Footer": {
+    "description": "Bangladesh's premier tech learning platform. Building the next generation of developers.",
+    "rights": "All rights reserved.",
+    "sections": {
+      "platform": {
+        "title": "Platform",
+        "courses": "Courses",
+        "pricing": "Pricing",
+        "enterprise": "Enterprise",
+        "blog": "Blog"
+      },
+      "company": {
+        "title": "Company",
+        "about": "About",
+        "careers": "Careers",
+        "press": "Press",
+        "contact": "Contact"
+      },
+      "resources": {
+        "title": "Resources",
+        "documentation": "Documentation",
+        "helpCenter": "Help Center",
+        "community": "Community",
+        "partners": "Partners"
+      }
+    },
+    "legal": {
+      "privacy": "Privacy",
+      "terms": "Terms",
+      "cookies": "Cookies"
+    }
+  },
+  "About": {
+    "Hero": {
+      "badge": "Launched in 2026",
+      "title1": "Empowering the",
+      "title2": "Next Generation",
+      "description": "We're on a mission to transform tech education in Bangladesh, making world-class learning accessible to every aspiring developer.",
+      "exploreCourses": "Explore Courses",
+      "joinCommunity": "Join Community",
+      "fastTrack": "Fast Track",
+      "fasterLearning": "3x Faster Learning",
+      "learnersCount": "50K+ Learners",
+      "weeklyJoined": "+2.5k this week",
+      "rating": "4.9",
+      "reviews": "{count} Reviews",
+      "placement": "{percent}% Placement"
+    },
+    "Stats": {
+      "expertCourses": "Expert Courses",
+      "activeLearners": "Active Learners",
+      "placementRate": "Job Placement Rate",
+      "averageRating": "Average Rating"
+    },
+    "Mission": {
+      "badge": "Our Mission",
+      "title1": "Bridging the",
+      "title2": "Skills Gap",
+      "description": "Bangladesh has incredible untapped potential. Our mission is to bridge the gap between education and industry, creating a new generation of world-class developers who can compete on the global stage.",
+      "points": [
+        "Industry-aligned curriculum designed with top tech companies",
+        "Hands-on projects that build real portfolio pieces",
+        "Mentorship from senior engineers at leading companies",
+        "Job placement assistance and career guidance"
+      ],
+      "vision": {
+        "title": "Our Vision",
+        "description": "To become South Asia's leading tech education platform, producing 1 million skilled developers by 2030 and putting Bangladesh on the global tech map.",
+        "stat1": "1M+",
+        "stat1Label": "Developers by 2030",
+        "stat2": "5",
+        "stat2Label": "Countries Targeted"
+      }
+    },
+    "Values": {
+      "badge": "What Drives Us",
+      "title1": "Our Core",
+      "title2": "Values",
+      "description": "These principles guide everything we do, from course design to community building.",
+      "items": {
+        "innovation": {
+          "title": "Innovation First",
+          "description": "We constantly push boundaries to deliver cutting-edge learning experiences that prepare you for tomorrow's challenges."
+        },
+        "studentCentric": {
+          "title": "Student-Centric",
+          "description": "Every feature, every course, every decision is made with our learners' success as the primary focus."
+        },
+        "practical": {
+          "title": "Practical Learning",
+          "description": "Learn by building real projects. Our hands-on approach ensures you're job-ready from day one."
+        },
+        "community": {
+          "title": "Community Driven",
+          "description": "Join a thriving community of 50,000+ developers who support, mentor, and grow together."
+        }
+      }
+    },
+    "Timeline": {
+      "badge": "Our Journey",
+      "title1": "The Road",
+      "title2": "We're Building",
+      "description": "From a small idea to Bangladesh's leading tech education platform – and we're just getting started.",
+      "milestone": "Milestone",
+      "items": {
+        "beginning": {
+          "year": "2026",
+          "title": "The Beginning",
+          "description": "DokkhotaIT was founded with a vision to transform tech education in Bangladesh."
+        },
+        "cohort": {
+          "year": "2026",
+          "title": "First Cohort",
+          "description": "Launched our first batch of courses with 500 students across 5 programs."
+        },
+        "growth": {
+          "year": "2026",
+          "title": "Growing Strong",
+          "description": "Expanded to 50,000+ learners with partnerships from leading tech companies."
+        },
+        "future": {
+          "year": "Future",
+          "title": "Global Vision",
+          "description": "Expanding across South Asia to make quality tech education accessible to all."
+        }
+      }
+    },
+    "Team": {
+      "badge": "The Team",
+      "title1": "Meet the",
+      "title2": "Dreamers",
+      "description": "A passionate team of educators, engineers, and dreamers united by a common goal.",
+      "members": {
+        "shuvo": {
+          "name": "Shuvo Rahman",
+          "role": "Founder & CEO",
+          "bio": "Former Google engineer with a passion for democratizing tech education."
+        },
+        "fatima": {
+          "name": "Fatima Ahmed",
+          "role": "Head of Curriculum",
+          "bio": "10+ years of experience in instructional design and EdTech."
+        },
+        "tanvir": {
+          "name": "Tanvir Hassan",
+          "role": "CTO",
+          "bio": "Full-stack architect building the future of online learning."
+        },
+        "nusrat": {
+          "name": "Nusrat Jahan",
+          "role": "Head of Community",
+          "bio": "Building bridges between learners, mentors, and industry leaders."
+        }
+      }
+    },
+    "Community": {
+      "badge": "Join the Hive Mind",
+      "title1": "Not Just a Course.",
+      "title2": "A Living Network.",
+      "description": "Connect with 50,000+ developers, mentors, and hiring managers in a collaborative ecosystem that accelerates your growth.",
+      "ctaPrimary": "Join the Community",
+      "ctaSecondary": "Explore Discord"
+    }
+  },
+  "Courses": {
+    "badge": "Start Your Tech Career",
+    "title": "Explore Courses",
+    "description": "Find the perfect course to upgrade your skills.",
+    "noCourses": "No Courses Available",
+    "noCoursesDesc": "We are currently preparing new courses for you. Please check back later.",
+    "searchPlaceholder": "Search...",
+    "filters": {
+      "title": "Filters",
+      "categories": {
+        "all": "All Topics",
+        "web": "Web Development",
+        "data": "Data Science",
+        "mobile": "Mobile Development",
+        "cyber": "Cyber Security",
+        "cloud": "Cloud Computing",
+        "design": "Design"
+      },
+      "levels": {
+        "title": "Level",
+        "beginner": "Beginner",
+        "intermediate": "Intermediate",
+        "advanced": "Advanced"
+      },
+      "types": {
+        "title": "Type",
+        "live": "Live",
+        "recorded": "Recorded",
+        "career": "Career Path"
+      },
+      "prices": {
+        "title": "Price",
+        "paid": "Paid",
+        "free": "Free"
+      },
+      "reset": "Reset All Filters"
+    },
+    "empty": {
+      "title": "No matching courses found",
+      "description": "Adjust your filters or try a different search term to find what you're looking for.",
+      "button": "Clear all filters"
+    },
+    "breadcrumbs": {
+      "home": "Home",
+      "courses": "Courses"
+    }
+  },
+  "Instructors": {
+    "badge": "World Class Mentors",
+    "title1": "Meet the",
+    "title2": "Masters",
+    "title3": "Behind the Code",
+    "description": "Learn from industry veterans who have built scalable systems at top tech giants. We don't just teach code; we engineer careers.",
+    "categories": {
+      "all": "All",
+      "fullstack": "Full Stack",
+      "frontend": "Frontend",
+      "backend": "Backend",
+      "devops": "DevOps",
+      "mobile": "Mobile",
+      "aiml": "AI/ML"
+    },
+    "card": {
+      "courses": "Courses",
+      "students": "Students",
+      "profile": "Profile"
+    },
+    "empty": {
+      "title": "No instructors found",
+      "description": "Try adjusting your category filter to see more results.",
+      "button": "Clear Filters"
+    }
+  },
+  "CookieConsent": {
+    "message": "We use cookies to improve your experience on our site. By continuing to browse, you agree to our",
+    "privacyPolicy": "Privacy Policy",
+    "accept": "Accept",
+    "decline": "Decline"
+  },
+  "Privacy": {
+    "badge": "Your Privacy Matters",
+    "title": "Privacy Policy",
+    "description": "At DokkhotaIT, we are committed to protecting your privacy and ensuring the security of your personal information.",
+    "lastUpdated": "Last updated: January 27, 2026",
+    "sections": {
+      "collection": {
+        "title": "Information We Collect",
+        "content": "We collect information you provide directly to us, such as when you create an account, enroll in a course, make a purchase, or contact us for support. This may include:\n• **Personal Information**: Name, email address, phone number, and billing address\n• **Account Data**: Username, password, and profile information\n• **Payment Information**: Credit card details (processed securely through our payment providers)\n• **Course Data**: Your progress, quiz scores, certificates, and learning history\n• **Communication Data**: Messages, feedback, and support tickets"
+      },
+      "usage": {
+        "title": "How We Use Your Information",
+        "content": "We use the information we collect to:\n• Provide, maintain, and improve our services\n• Process transactions and send related information\n• Send you technical notices, updates, and support messages\n• Respond to your comments, questions, and customer service requests\n• Personalize your learning experience and recommend courses\n• Monitor and analyze trends, usage, and activities\n• Detect, investigate, and prevent fraudulent transactions and abuse"
+      },
+      "security": {
+        "title": "Data Security",
+        "content": "We implement appropriate technical and organizational measures to protect your personal information against unauthorized access, alteration, disclosure, or destruction. These measures include:\n• **Encryption**: All data transmitted between your browser and our servers is encrypted using SSL/TLS\n• **Secure Storage**: Personal data is stored on secure servers with restricted access\n• **Regular Audits**: We conduct regular security assessments and penetration testing\n• **Access Controls**: Only authorized personnel have access to personal information"
+      },
+      "rights": {
+        "title": "Your Rights",
+        "content": "You have the following rights regarding your personal information:\n• **Access**: Request a copy of the personal data we hold about you\n• **Correction**: Request correction of any inaccurate or incomplete data\n• **Deletion**: Request deletion of your personal data (subject to legal requirements)\n• **Portability**: Request transfer of your data to another service provider\n• **Withdrawal**: Withdraw consent for data processing at any time\n• **Objection**: Object to processing of your personal data for certain purposes"
+      },
+      "cookies": {
+        "title": "Cookies & Tracking",
+        "content": "We use cookies and similar tracking technologies to:\n• Remember your preferences and settings\n• Understand how you use our platform\n• Provide personalized content and recommendations\n• Analyze traffic and improve our services\nYou can control cookies through your browser settings. However, disabling cookies may limit your ability to use certain features of our platform."
+      },
+      "contact": {
+        "title": "Contact Us",
+        "content": "If you have any questions about this Privacy Policy or our data practices, please contact us:\n• **Email**: privacy@dokkhotait.com\n• **Address**: House 42, Road 11, Banani, Dhaka 1213, Bangladesh\n• **Phone**: +880 1700-000000\nWe will respond to your inquiry within 30 business days."
+      }
+    }
+  },
+  "Terms": {
+    "badge": "Legal Agreement",
+    "title": "Terms of Service",
+    "description": "Please read these terms carefully before using DokkhotaIT. By accessing our platform, you agree to be bound by these terms.",
+    "lastUpdated": "Last updated: January 27, 2026",
+    "sections": {
+      "account": {
+        "title": "Account Terms",
+        "content": "By creating an account on DokkhotaIT, you agree to the following:\n• You must be at least 16 years old to use our services\n• You are responsible for maintaining the security of your account credentials\n• You must provide accurate and complete information during registration\n• You may not share your account with others or transfer it to another person\n• You are responsible for all activities that occur under your account\n• We reserve the right to suspend or terminate accounts that violate these terms"
+      },
+      "course": {
+        "title": "Course Access & Usage",
+        "content": "When you purchase or enroll in a course:\n• You receive a personal, non-transferable license to access the course content\n• Course access duration depends on the specific course terms (lifetime or limited)\n• You may not share, redistribute, or resell course materials\n• Downloaded materials are for personal use only\n• We may update course content to keep it current and relevant\n• Certificates are issued upon successful completion of course requirements"
+      },
+      "payments": {
+        "title": "Payments & Refunds",
+        "content": "Our payment and refund policies:\n• All prices are displayed in BDT (Bangladeshi Taka) unless otherwise stated\n• Payment is required before accessing paid course content\n• We accept various payment methods including bKash, Nagad, and cards\n• **Refund Policy**: Full refund available within 7 days of purchase if less than 30% of the course is completed\n• Promotional prices and discounts cannot be applied retroactively\n• We reserve the right to change prices with reasonable notice"
+      },
+      "intellectual": {
+        "title": "Intellectual Property",
+        "content": "Regarding content and intellectual property:\n• All course content, materials, and platform design are owned by DokkhotaIT or our instructors\n• You may not copy, modify, distribute, or create derivative works from our content\n• Trademarks, logos, and brand elements are protected intellectual property\n• User-generated content (comments, reviews) remains your property, but you grant us license to display it\n• Reporting copyright infringement: contact legal@dokkhotait.com"
+      },
+      "conduct": {
+        "title": "Prohibited Conduct",
+        "content": "You agree not to:\n• Use the platform for any illegal purpose or in violation of any laws\n• Share account credentials or allow unauthorized access\n• Attempt to hack, reverse engineer, or compromise our systems\n• Upload malicious code, viruses, or harmful content\n• Harass, abuse, or harm other users or instructors\n• Use automated tools to scrape or download content\n• Misrepresent your identity or affiliation\n• Engage in any activity that disrupts our services"
+      },
+      "liability": {
+        "title": "Limitation of Liability",
+        "content": "Important legal limitations:\n• Our platform is provided \"as is\" without warranties of any kind\n• We do not guarantee specific outcomes from taking our courses\n• We are not liable for indirect, incidental, or consequential damages\n• Our total liability is limited to the amount you paid for the specific service\n• We are not responsible for third-party content or services linked from our platform\n• Force majeure events may affect service availability\n**Governing Law**: These terms are governed by the laws of Bangladesh. Any disputes shall be resolved in the courts of Dhaka."
+      }
+    },
+    "footer": {
+      "title": "Questions About These Terms?",
+      "description": "If you have any questions about these Terms of Service, please contact us.",
+      "button": "Contact Legal Team"
+    }
+  },
+  "Checkout": {
+    "badge": "Secure Checkout",
+    "title1": "Complete Your",
+    "title2": "Enrollment",
+    "description": "Securely enroll in {course} and start your learning journey today.",
+    "breadcrumbs": {
+      "home": "Home",
+      "courses": "Courses",
+      "checkout": "Checkout"
+    },
+    "details": {
+      "title": "Course Details",
+      "rating": "Rating",
+      "lessons": "Lessons",
+      "students": "Students"
+    },
+    "payment": {
+      "title": "Choose Payment Method",
+      "instant": "Instant",
+      "autoPortal": "Auto-portal enrollment",
+      "manualVerify": "Manual verification step"
+    },
+    "coupon": {
+      "title": "Apply Coupon Code",
+      "applied": "Applied",
+      "placeholder": "Code",
+      "button": "Apply",
+      "success": "Coupon discount activated!",
+      "error": "Invalid promo code"
+    },
+    "summary": {
+      "title": "Order Summary",
+      "originalPrice": "Original Price",
+      "afterDiscount": "After Discount",
+      "couponDiscount": "Coupon Discount",
+      "totalPayable": "Total Payable",
+      "terms": "I agree to the Terms of Service and Refund Policy",
+      "button": "Pay & Complete Enrollment",
+      "processing": "Processing...",
+      "security": "Fully Secure Checkout"
+    },
+    "manual": {
+      "title": "Manual Payment Verification",
+      "description": "Complete the payment and provide details below for verification.",
+      "totalAmount": "Total Amount",
+      "providerNumber": "{provider} Number",
+      "copy": "Copy",
+      "copied": "Number copied!",
+      "note": "* Please send the exact amount as \"Send Money\" or \"Payment\" depending on account type.",
+      "phoneLabel": "Your Phone Number",
+      "phonePlaceholder": "01XXXXXXXXX",
+      "phoneHint": "The number you sent the money from.",
+      "txnLabel": "Transaction ID",
+      "txnPlaceholder": "TXNID12345",
+      "txnHint": "Enter the unique transaction ID from your SMS.",
+      "cancel": "Cancel",
+      "submit": "Submit for Review",
+      "verifying": "Verifying..."
+    },
+    "errors": {
+      "selectMethod": "Select your payment method",
+      "acceptTerms": "Review the terms to continue",
+      "phoneRequired": "Your phone number is required",
+      "txnRequired": "Transaction ID is required",
+      "generic": "An unexpected error occurred"
+    }
+  },
+  "CheckoutSummary": {
+    "loading": {
+      "title": "Finalizing Payment...",
+      "description": "We're securely communicating with bKash to confirm your transaction details."
+    },
+    "success": {
+      "title": "Congratulations!",
+      "description": "Your journey begins now. Access to your course has been activated instantly.",
+      "badge": "Enrolled Successfully"
+    },
+    "pending": {
+      "title1": "Submission",
+      "title2": "Received",
+      "description": "We've received your payment details. Our team will verify it within 1-6 hours."
+    },
+    "cancelled": {
+      "title1": "Transaction",
+      "title2": "Cancelled",
+      "description": "The payment was not completed. You can try again whenever you're ready."
+    },
+    "error": {
+      "title1": "Payment",
+      "title2": "Error",
+      "description": "We encountered an issue with your payment gateway. Please contact support."
+    },
+    "details": {
+      "title": "Payment Details",
+      "verified": "Transaction Verified",
+      "totalPaid": "Total Paid",
+      "courseName": "Course Name",
+      "paymentId": "Payment ID",
+      "bkashTrx": "bKash TRX ID",
+      "status": "Payment Status",
+      "dateTime": "Date & Time",
+      "account": "Account",
+      "gatewayStatus": "Gateway Status"
+    },
+    "actions": {
+      "start": "Start Learning",
+      "dashboard": "Go to Dashboard",
+      "retry": "Retry Payment",
+      "home": "Back to Home",
+      "support": "Support",
+      "invoices": "Invoices"
+    },
+    "footer": {
+      "provider": "Certified Provider",
+      "verified": "Verified Order",
+      "secure": "Transaction Securely Encrypted"
+    }
+  },
+  "Auth": {
+    "login": {
+      "title": "Welcome Back",
+      "subtitle": "Continue your learning journey with DokkhotaIT",
+      "email": "Email Address",
+      "password": "Password",
+      "forgotPassword": "Forgot Password?",
+      "button": "Sign In",
+      "noAccount": "Don't have an account?",
+      "register": "Create Account",
+      "or": "Or continue with",
+      "success": "Welcome back!",
+      "error": "Invalid email or password"
+    },
+    "register": {
+      "title": "Start Learning",
+      "subtitle": "Join 50,000+ students mastering tech skills",
+      "name": "Full Name",
+      "email": "Email Address",
+      "password": "Password",
+      "confirmPassword": "Confirm Password",
+      "button": "Create Account",
+      "hasAccount": "Already have an account?",
+      "login": "Sign In",
+      "terms": "By creating an account, you agree to our Terms and Privacy Policy",
+      "success": "Account created successfully!",
+      "error": "Registration failed"
+    },
+    "forgotPassword": {
+      "title": "Reset Password",
+      "subtitle": "Enter your email to receive a recovery link",
+      "email": "Email Address",
+      "button": "Send Recovery Link",
+      "back": "Back to Login",
+      "success": "Recovery link sent to your email!",
+      "error": "Could not send recovery link"
+    },
+    "resetPassword": {
+      "title": "New Password",
+      "subtitle": "Set a secure password for your account",
+      "password": "New Password",
+      "confirmPassword": "Confirm Password",
+      "button": "Update Password",
+      "success": "Password updated successfully!",
+      "error": "Could not update password"
+    }
+  },
+  "CourseDetail": {
+    "toast": {
+      "linkCopied": "Link copied to clipboard!",
+      "linkCopyError": "Failed to copy link",
+      "couponSuccess": "Coupon applied successfully!",
+      "couponError": "Invalid coupon code",
+      "messageSuccess": "Message sent successfully!",
+      "messageError": "Failed to send message",
+      "reviewSuccess": "Review submitted successfully!",
+      "reviewError": "Failed to submit review",
+      "loginRequired": "Please login to enroll",
+      "enrollSuccess": "Enrolled successfully!"
+    },
+    "share": {
+      "text": "Check out this course: {title}",
+      "options": {
+        "twitter": "Twitter / X",
+        "facebook": "Facebook",
+        "linkedin": "LinkedIn",
+        "whatsapp": "WhatsApp"
+      }
+    }
+  }
+}

@@ -4,6 +4,7 @@ import { useState, useMemo } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "motion/react";
+import { useTranslations } from "next-intl";
 import { Course } from "@/types/lms";
 import {
     ShieldCheck,
@@ -79,6 +80,7 @@ const staggerItem = {
 };
 
 export default function CheckoutClient({ course, user, bkashEnabled, manualMethods }: CheckoutClientProps) {
+    const t = useTranslations("Checkout");
     const router = useRouter();
     const { success, error, info, loading } = useToast();
 
@@ -101,7 +103,7 @@ export default function CheckoutClient({ course, user, bkashEnabled, manualMetho
             gates.push({
                 id: 'bkash_auto',
                 name: 'bKash',
-                subtitle: 'Auto Portal',
+                subtitle: t("payment.autoPortal"),
                 icon: <Image src="/payment-icons/bKash.svg" alt="bKash" width={40} height={40} style={{ width: 40, height: 40 }} className="transition-transform duration-500" unoptimized />,
                 color: '#D12053',
             });
@@ -111,7 +113,7 @@ export default function CheckoutClient({ course, user, bkashEnabled, manualMetho
             gates.push({
                 id: 'card',
                 name: 'Stripe',
-                subtitle: 'Intl. Portal',
+                subtitle: t("payment.instant"),
                 icon: <div className="text-white font-black italic text-sm tracking-tighter">stripe</div>,
                 color: '#4F46E5',
             });
@@ -129,7 +131,7 @@ export default function CheckoutClient({ course, user, bkashEnabled, manualMetho
                 gates.push({
                     id: m.id,
                     name: m.name,
-                    subtitle: 'Manual Pay',
+                    subtitle: t("payment.manualVerify"),
                     icon: <Image src={`/payment-icons/${m.filename}`} alt={m.name} width={40} height={40} style={{ width: 40, height: 40 }} className="transition-transform duration-500" unoptimized />,
                     color: m.color,
                 });
@@ -137,7 +139,7 @@ export default function CheckoutClient({ course, user, bkashEnabled, manualMetho
         });
 
         return gates;
-    }, [bkashEnabled, manualMethods, course.stripe_enabled]);
+    }, [bkashEnabled, manualMethods, course.stripe_enabled, t]);
 
     const discountAmount = useMemo(() => {
         if (!appliedCoupon) return 0;
@@ -156,21 +158,21 @@ export default function CheckoutClient({ course, user, bkashEnabled, manualMetho
             const res = await validateCoupon(couponCode, course.id);
             if (res.valid) {
                 setAppliedCoupon(res);
-                success("Coupon discount activated!");
+                success(t("coupon.success"));
             } else {
-                error(res.error || "Invalid promo code");
+                error(res.error || t("coupon.error"));
                 setAppliedCoupon(null);
             }
         } catch (err) {
-            error("Validation error");
+            error(t("errors.generic"));
         } finally {
             setIsApplyingCoupon(false);
         }
     };
 
     const handleCheckout = async () => {
-        if (!selectedProvider) return error("Select your payment method");
-        if (!termsAccepted) return error("Review the terms to continue");
+        if (!selectedProvider) return error(t("errors.selectMethod"));
+        if (!termsAccepted) return error(t("errors.acceptTerms"));
 
         const isManual = ['bkash', 'nagad', 'rocket', 'upay'].includes(selectedProvider);
         if (isManual) {
@@ -181,10 +183,10 @@ export default function CheckoutClient({ course, user, bkashEnabled, manualMetho
         setIsSubmitting(true);
         try {
             if (selectedProvider === 'bkash_auto') {
-                loading("Initiating bKash payment...");
+                loading(t("summary.processing"));
                 const res = await initiateBkashPayment(course.id, appliedCoupon?.code);
                 if (!res.success || !res.data) {
-                    throw new Error(res.error || "Failed to start bKash payment");
+                    throw new Error(res.error || t("errors.generic"));
                 }
                 // Redirect user to bKash
                 window.location.href = res.data.bkashURL;
@@ -202,10 +204,10 @@ export default function CheckoutClient({ course, user, bkashEnabled, manualMetho
 
             if (!txRes.success) throw new Error(txRes.error);
 
-            success("Enrolling... Redirecting to courses.");
+            success(t("summary.processing"));
             router.push('/dashboard/my-courses');
         } catch (err: any) {
-            error(err.message || "An unexpected error occurred");
+            error(err.message || t("errors.generic"));
         } finally {
             setIsSubmitting(false);
         }
@@ -213,8 +215,8 @@ export default function CheckoutClient({ course, user, bkashEnabled, manualMetho
 
     const handleManualSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        if (!senderNumber.trim()) return error("Your phone number is required");
-        if (!transactionId.trim()) return error("Transaction ID is required");
+        if (!senderNumber.trim()) return error(t("errors.phoneRequired"));
+        if (!transactionId.trim()) return error(t("errors.txnRequired"));
 
         setIsSubmitting(true);
         try {
@@ -228,20 +230,20 @@ export default function CheckoutClient({ course, user, bkashEnabled, manualMetho
 
             if (!txRes.success) throw new Error(txRes.error);
 
-            success("Submission received! Verifying your payment.");
+            success(t("manual.verifying"));
             setShowManualModal(false);
             router.push(`/checkout/summary?transaction_id=${txRes.data?.transaction_id}`);
         } catch (err: any) {
-            error(err.message || "An unexpected error occurred");
+            error(err.message || t("errors.generic"));
         } finally {
             setIsSubmitting(false);
         }
     };
 
     const metrics = useMemo(() => [
-        { label: 'Lessons', value: course.total_lessons || 0, icon: BookOpen, visible: true },
-        { label: 'Students', value: course.total_students || 0, icon: Users, visible: true },
-    ].filter(m => m.visible), [course]);
+        { label: t("details.lessons"), value: course.total_lessons || 0, icon: BookOpen, visible: true },
+        { label: t("details.students"), value: course.total_students || 0, icon: Users, visible: true },
+    ].filter(m => m.visible), [course, t]);
 
     return (
         <div className="min-h-screen bg-background selection:bg-primary/20 relative overflow-hidden">
@@ -269,29 +271,29 @@ export default function CheckoutClient({ course, user, bkashEnabled, manualMetho
                 >
                     <Breadcrumbs
                         rootHref="/"
-                        rootLabel="Home"
+                        rootLabel={t("breadcrumbs.home")}
                         className="mb-6"
                         items={[
-                            { label: "Courses", href: "/courses", icon: BookOpen },
+                            { label: t("breadcrumbs.courses"), href: "/courses", icon: BookOpen },
                             { label: course.title, href: `/courses/${course.slug}`, icon: GraduationCap },
-                            { label: "Checkout", active: true, icon: ShieldCheck }
+                            { label: t("breadcrumbs.checkout"), active: true, icon: ShieldCheck }
                         ]}
                     />
 
                     <div className="inline-flex mb-4">
                         <Badge icon={ShieldCheck}>
-                            Secure Checkout
+                            {t("badge")}
                         </Badge>
                     </div>
 
                     <h1 className="text-4xl sm:text-5xl font-bold leading-tight tracking-tight mb-3">
-                        Complete Your{" "}
+                        {t("title1")}{" "}
                         <span className="bg-linear-to-r from-primary via-secondary to-accent bg-clip-text text-transparent">
-                            Enrollment
+                            {t("title2")}
                         </span>
                     </h1>
                     <p className="text-muted-foreground text-lg max-w-2xl">
-                        Securely enroll in <span className="font-semibold text-foreground">{course.title}</span> and start your learning journey today.
+                        {t("description", { course: course.title })}
                     </p>
                 </motion.div>
 
@@ -312,7 +314,7 @@ export default function CheckoutClient({ course, user, bkashEnabled, manualMetho
                                 <div className="w-7 h-7 rounded-xl bg-indigo-500/10 flex items-center justify-center border border-indigo-500/10">
                                     <BookOpen className="w-3.5 h-3.5 text-indigo-500" />
                                 </div>
-                                Course Details
+                                {t("details.title")}
                             </h3>
 
                             <div className="flex flex-col sm:flex-row gap-6 relative z-10">
@@ -383,7 +385,7 @@ export default function CheckoutClient({ course, user, bkashEnabled, manualMetho
                                                     ))}
                                                     <span className="text-xs font-bold text-foreground ml-1">{course.rating}</span>
                                                 </div>
-                                                <span className="text-[9px] font-bold text-muted-foreground uppercase tracking-widest">Rating</span>
+                                                <span className="text-[9px] font-bold text-muted-foreground uppercase tracking-widest">{t("details.rating")}</span>
                                             </div>
                                         )}
 
@@ -414,7 +416,7 @@ export default function CheckoutClient({ course, user, bkashEnabled, manualMetho
                                 <div className="w-7 h-7 rounded-xl bg-primary/10 flex items-center justify-center border border-primary/10">
                                     <CreditCard className="w-3.5 h-3.5 text-primary" />
                                 </div>
-                                Choose Payment Method
+                                {t("payment.title")}
                             </h3>
 
                             <div className={cn(
@@ -472,12 +474,12 @@ export default function CheckoutClient({ course, user, bkashEnabled, manualMetho
                                                 </p>
                                                 {gate.id === 'bkash_auto' && (
                                                     <span className="px-1.5 sm:px-2 py-0.5 rounded-full bg-emerald-500 text-white text-[8px] sm:text-[9px] font-black uppercase tracking-widest shrink-0">
-                                                        Instant
+                                                        {t("payment.instant")}
                                                     </span>
                                                 )}
                                             </div>
                                             <p className="text-[9px] sm:text-[10px] text-muted-foreground font-semibold leading-tight opacity-80 line-clamp-1">
-                                                {gate.id === 'bkash_auto' ? "Auto-portal enrollment" : "Manual verification step"}
+                                                {gate.subtitle}
                                             </p>
                                         </div>
 
@@ -525,7 +527,7 @@ export default function CheckoutClient({ course, user, bkashEnabled, manualMetho
                                 <div className="w-7 h-7 rounded-xl bg-secondary/10 flex items-center justify-center border border-secondary/10">
                                     <Tag className="w-3.5 h-3.5 text-secondary" />
                                 </div>
-                                Apply Coupon Code
+                                {t("coupon.title")}
                             </h3>
 
                             <div className="relative z-10">
@@ -538,7 +540,7 @@ export default function CheckoutClient({ course, user, bkashEnabled, manualMetho
                                             className="p-3 bg-emerald-500/5 border border-emerald-500/20 rounded-2xl flex items-center justify-between"
                                         >
                                             <div className="space-y-0.5">
-                                                <p className="text-[9px] font-bold text-emerald-500 uppercase tracking-wider">Applied</p>
+                                                <p className="text-[9px] font-bold text-emerald-500 uppercase tracking-wider">{t("coupon.applied")}</p>
                                                 <p className="text-sm font-bold text-foreground font-mono">{appliedCoupon.code}</p>
                                             </div>
                                             <button
@@ -554,7 +556,7 @@ export default function CheckoutClient({ course, user, bkashEnabled, manualMetho
                                                 type="text"
                                                 value={couponCode}
                                                 onChange={(e) => setCouponCode(e.target.value.toUpperCase())}
-                                                placeholder="Code"
+                                                placeholder={t("coupon.placeholder")}
                                                 className="flex-1 bg-background/60 border border-border/80 rounded-xl px-4 py-2.5 text-sm font-mono focus:outline-none focus:border-primary/50 transition-all placeholder:text-muted-foreground/50"
                                             />
                                             <button
@@ -562,7 +564,7 @@ export default function CheckoutClient({ course, user, bkashEnabled, manualMetho
                                                 disabled={isApplyingCoupon || !couponCode}
                                                 className="px-5 py-2.5 bg-primary text-primary-foreground font-bold text-xs rounded-xl hover:bg-primary/90 active:scale-95 transition-all disabled:opacity-50"
                                             >
-                                                {isApplyingCoupon ? <Loader2 className="w-4 h-4 animate-spin" /> : "Apply"}
+                                                {isApplyingCoupon ? <Loader2 className="w-4 h-4 animate-spin" /> : t("coupon.button")}
                                             </button>
                                         </div>
                                     )}
@@ -582,7 +584,7 @@ export default function CheckoutClient({ course, user, bkashEnabled, manualMetho
                                     <div className="w-7 h-7 rounded-xl bg-primary/10 flex items-center justify-center border border-primary/10">
                                         <Receipt className="w-3.5 h-3.5 text-primary" />
                                     </div>
-                                    <h3 className="text-sm font-bold text-foreground">Order Summary</h3>
+                                    <h3 className="text-sm font-bold text-foreground">{t("summary.title")}</h3>
                                 </div>
                             </div>
 
@@ -590,11 +592,11 @@ export default function CheckoutClient({ course, user, bkashEnabled, manualMetho
                                 {/* Price breakdown */}
                                 <div className="space-y-3">
                                     <div className="flex justify-between items-center text-sm">
-                                        <span className="text-muted-foreground">Original Price</span>
+                                        <span className="text-muted-foreground">{t("summary.originalPrice")}</span>
                                         <span className="line-through text-muted-foreground/60">৳{course.price.toLocaleString()}</span>
                                     </div>
                                     <div className="flex justify-between items-center text-sm">
-                                        <span className="text-muted-foreground">After Discount</span>
+                                        <span className="text-muted-foreground">{t("summary.afterDiscount")}</span>
                                         <span className="font-semibold text-foreground">৳{course.discount_price?.toLocaleString() || course.price.toLocaleString()}</span>
                                     </div>
 
@@ -606,7 +608,7 @@ export default function CheckoutClient({ course, user, bkashEnabled, manualMetho
                                         >
                                             <span className="flex items-center gap-1.5">
                                                 <Tag className="w-3 h-3" />
-                                                Coupon Discount
+                                                {t("summary.couponDiscount")}
                                             </span>
                                             <span>-৳{((course.discount_price || course.price) - finalPrice).toLocaleString()}</span>
                                         </motion.div>
@@ -616,7 +618,7 @@ export default function CheckoutClient({ course, user, bkashEnabled, manualMetho
                                 {/* Total */}
                                 <div className="pt-4 border-t border-border/60">
                                     <div className="flex justify-between items-end">
-                                        <span className="text-sm font-bold text-foreground">Total Payable</span>
+                                        <span className="text-sm font-bold text-foreground">{t("summary.totalPayable")}</span>
                                         <span className="text-4xl font-black bg-linear-to-r from-primary to-accent bg-clip-text text-transparent">
                                             ৳{finalPrice.toLocaleString()}
                                         </span>
@@ -630,7 +632,7 @@ export default function CheckoutClient({ course, user, bkashEnabled, manualMetho
                                             id="terms"
                                             checked={termsAccepted}
                                             onChange={(checked) => setTermsAccepted(checked)}
-                                            label="I agree to the Terms of Service and Refund Policy"
+                                            label={t("summary.terms")}
                                             className="group-hover/terms:text-foreground transition-colors"
                                         />
                                     </div>
@@ -642,7 +644,7 @@ export default function CheckoutClient({ course, user, bkashEnabled, manualMetho
                                         className="group/btn w-full flex items-center justify-center gap-3 pl-6 pr-3 py-3 bg-primary hover:bg-primary/90 rounded-full transition-all duration-300 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed disabled:active:scale-100"
                                     >
                                         <span className="text-sm font-bold text-primary-foreground">
-                                            {isSubmitting ? "Processing..." : "Pay & Complete Enrollment"}
+                                            {isSubmitting ? t("summary.processing") : t("summary.button")}
                                         </span>
                                         {isSubmitting ? (
                                             <Loader2 className="w-4 h-4 text-primary-foreground animate-spin" />
@@ -659,7 +661,7 @@ export default function CheckoutClient({ course, user, bkashEnabled, manualMetho
                                             <Lock className="w-2.5 h-2.5 text-emerald-500" />
                                         </div>
                                         <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">
-                                            Fully Secure Checkout
+                                            {t("summary.security")}
                                         </span>
                                     </div>
                                 </div>
@@ -676,10 +678,10 @@ export default function CheckoutClient({ course, user, bkashEnabled, manualMetho
                         <div className="w-8 h-8 rounded-xl bg-primary/10 flex items-center justify-center border border-primary/10">
                             <CreditCard className="w-4 h-4 text-primary" />
                         </div>
-                        Manual Payment Verification
+                        {t("manual.title")}
                     </DialogTitle>
                     <DialogDescription>
-                        Complete the payment and provide details below for verification.
+                        {t("manual.description")}
                     </DialogDescription>
                     <DialogClose onClose={() => setShowManualModal(false)} />
                 </DialogHeader>
@@ -689,11 +691,11 @@ export default function CheckoutClient({ course, user, bkashEnabled, manualMetho
                         {/* Summary Info */}
                         <div className="p-4 rounded-2xl bg-primary/5 border border-primary/10 space-y-3">
                             <div className="flex justify-between items-center text-sm">
-                                <span className="text-muted-foreground">Total Amount</span>
+                                <span className="text-muted-foreground">{t("manual.totalAmount")}</span>
                                 <span className="font-black text-primary text-lg">৳{finalPrice.toLocaleString()}</span>
                             </div>
                             <div className="flex justify-between items-center text-sm pt-2 border-t border-primary/10">
-                                <span className="text-muted-foreground">{selectedProvider?.toUpperCase()} Number</span>
+                                <span className="text-muted-foreground">{t("manual.providerNumber", { provider: selectedProvider?.toUpperCase() || '' })}</span>
                                 <div className="flex items-center gap-2">
                                     <span className="font-mono font-bold text-foreground">
                                         {((manualMethods as any)[selectedProvider || ''] || '').startsWith('0')
@@ -705,22 +707,22 @@ export default function CheckoutClient({ course, user, bkashEnabled, manualMetho
                                             const num = (manualMethods as any)[selectedProvider || ''] || '';
                                             const formatted = num.startsWith('0') ? num : `0${num}`;
                                             navigator.clipboard.writeText(formatted);
-                                            success("Number copied!");
+                                            success(t("manual.copied"));
                                         }}
                                         className="p-1 px-2 rounded-lg bg-primary/10 hover:bg-primary/20 text-primary text-[10px] uppercase font-bold transition-all"
                                     >
-                                        Copy
+                                        {t("manual.copy")}
                                     </button>
                                 </div>
                             </div>
                             <p className="text-[10px] text-muted-foreground italic text-center">
-                                * Please send the exact amount as "Send Money" or "Payment" depending on account type.
+                                {t("manual.note")}
                             </p>
                         </div>
 
                         <form id="manual-payment-form" onSubmit={handleManualSubmit} className="space-y-4">
                             <div className="space-y-2">
-                                <label className="text-sm font-bold text-foreground">Your Phone Number</label>
+                                <label className="text-sm font-bold text-foreground">{t("manual.phoneLabel")}</label>
                                 <div className="relative">
                                     <div className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">
                                         <Info className="w-4 h-4" />
@@ -728,7 +730,7 @@ export default function CheckoutClient({ course, user, bkashEnabled, manualMetho
                                     <input
                                         required
                                         type="tel"
-                                        placeholder="01XXXXXXXXX"
+                                        placeholder={t("manual.phonePlaceholder")}
                                         value={senderNumber}
                                         onChange={(e) => {
                                             const val = e.target.value.replace(/\D/g, '').slice(0, 11);
@@ -737,11 +739,11 @@ export default function CheckoutClient({ course, user, bkashEnabled, manualMetho
                                         className="w-full bg-muted/50 dark:bg-white/5 border border-border/60 dark:border-white/10 rounded-xl pl-10 pr-4 py-2.5 text-sm text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary/50 transition-all font-mono"
                                     />
                                 </div>
-                                <p className="text-[10px] text-muted-foreground">The number you sent the money from.</p>
+                                <p className="text-[10px] text-muted-foreground">{t("manual.phoneHint")}</p>
                             </div>
 
                             <div className="space-y-2">
-                                <label className="text-sm font-bold text-foreground">Transaction ID</label>
+                                <label className="text-sm font-bold text-foreground">{t("manual.txnLabel")}</label>
                                 <div className="relative">
                                     <div className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">
                                         <Zap className="w-4 h-4" />
@@ -749,13 +751,13 @@ export default function CheckoutClient({ course, user, bkashEnabled, manualMetho
                                     <input
                                         required
                                         type="text"
-                                        placeholder="TXNID12345"
+                                        placeholder={t("manual.txnPlaceholder")}
                                         value={transactionId}
                                         onChange={(e) => setTransactionId(e.target.value.toUpperCase())}
                                         className="w-full bg-muted/50 dark:bg-white/5 border border-border/60 dark:border-white/10 rounded-xl pl-10 pr-4 py-2.5 text-sm text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary/50 transition-all font-mono uppercase"
                                     />
                                 </div>
-                                <p className="text-[10px] text-muted-foreground">Enter the unique transaction ID from your SMS.</p>
+                                <p className="text-[10px] text-muted-foreground">{t("manual.txnHint")}</p>
                             </div>
                         </form>
                     </div>
@@ -767,7 +769,7 @@ export default function CheckoutClient({ course, user, bkashEnabled, manualMetho
                         onClick={() => setShowManualModal(false)}
                         className="px-4 py-2 text-sm font-bold text-muted-foreground hover:text-foreground transition-colors"
                     >
-                        Cancel
+                        {t("manual.cancel")}
                     </button>
                     <button
                         type="submit"
@@ -778,10 +780,10 @@ export default function CheckoutClient({ course, user, bkashEnabled, manualMetho
                         {isSubmitting ? (
                             <>
                                 <Loader2 className="w-4 h-4 animate-spin" />
-                                Verifying...
+                                {t("manual.verifying")}
                             </>
                         ) : (
-                            "Submit for Review"
+                            t("manual.submit")
                         )}
                     </button>
                 </DialogFooter>
@@ -798,23 +800,21 @@ export default function CheckoutClient({ course, user, bkashEnabled, manualMetho
                         <X className="w-5 h-5" />
                     </button>
                 </DialogHeader>
-                <DialogBody className="p-0 bg-black aspect-video flex items-center justify-center">
+
+                <DialogBody className="p-0 bg-black aspect-video flex items-center justify-center overflow-hidden">
                     {course.preview_video_url ? (
                         <iframe
-                            src={course.preview_video_url.includes('youtube.com/watch')
-                                ? course.preview_video_url.replace('watch?v=', 'embed/')
-                                : course.preview_video_url.includes('youtu.be/')
-                                    ? course.preview_video_url.replace('youtu.be/', 'youtube.com/embed/')
-                                    : course.preview_video_url
-                            }
+                            src={course.preview_video_url}
                             className="w-full h-full"
-                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                            allow="autoplay; fullscreen"
                             allowFullScreen
                         />
                     ) : (
-                        <div className="text-white/40 flex flex-col items-center gap-4">
-                            <Info className="w-12 h-12" />
-                            <p className="font-bold uppercase tracking-widest text-xs">No preview video available</p>
+                        <div className="text-white text-center space-y-4">
+                            <div className="w-16 h-16 rounded-full bg-white/10 flex items-center justify-center mx-auto">
+                                <Play className="w-8 h-8 text-white/40" />
+                            </div>
+                            <p className="text-sm font-medium text-white/60">No preview video available</p>
                         </div>
                     )}
                 </DialogBody>

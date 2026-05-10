@@ -12,7 +12,7 @@ import {
     LayoutDashboard,
 } from "lucide-react";
 import { useToast } from "@/components/ui/toast";
-import { signOut } from "@/app/auth/actions";
+import { signOut } from "@/lib/actions/auth";
 import { createClient } from "@/lib/supabase/client";
 import { AuthUser, logout } from "@/lib/store/features/auth/authSlice";
 import { useAppDispatch } from "@/lib/store/hooks";
@@ -83,7 +83,7 @@ export function UserDropdown({ user, onOpen }: UserDropdownProps) {
                     }
                     setIsOpen(!isOpen);
                 }}
-                className="flex cursor-pointer items-center gap-2 sm:gap-3 pl-1 pr-1 sm:pl-1 sm:pr-4 py-1 rounded-full border border-border/50 bg-muted/50 hover:bg-muted/80 transition-all duration-200 group"
+                className="flex cursor-pointer items-center p-1 rounded-full border border-border/50 bg-muted/50 hover:bg-muted/80 transition-all duration-200 group"
             >
                 <div className={cn(
                     "w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold ring-2 ring-transparent group-hover:ring-primary/20 transition-all overflow-hidden relative",
@@ -112,11 +112,6 @@ export function UserDropdown({ user, onOpen }: UserDropdownProps) {
                         getInitials(displayName)
                     )}
                 </div>
-                <div className="flex-col items-start text-xs hidden min-[775px]:flex">
-                    <span className="font-bold text-foreground max-w-25 truncate">{displayName}</span>
-                    <span className="text-muted-foreground/80 font-medium capitalize">{userRole}</span>
-                </div>
-                <ChevronDown className={`w-4 h-4 text-muted-foreground group-hover:text-foreground transition-all duration-200 hidden sm:block ${isOpen ? "rotate-180" : ""}`} />
             </button>
             <AnimatePresence>
                 {isOpen && (

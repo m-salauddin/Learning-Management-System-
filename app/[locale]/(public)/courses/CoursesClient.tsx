@@ -10,41 +10,52 @@ import { CourseCard } from "@/components/CourseCard";
 import { MappedCourse } from "@/types/mapped-course";
 import Breadcrumbs from "@/components/ui/Breadcrumbs";
 import { BookOpen, Layout } from "lucide-react";
-const CATEGORIES = ["All Topics", "Web Development", "Data Science", "Mobile Development", "Cyber Security", "Cloud Computing", "Design"];
-const LEVELS = ["Beginner", "Intermediate", "Advanced"];
-const TYPES = ["Live", "Recorded", "Career Path"];
-const PRICES = ["Paid", "Free"];
-const ITEMS_PER_PAGE = 9;
-const itemVariants: Variants = {
-    hidden: { opacity: 0, y: 20, scale: 0.95, filter: "blur(10px)" },
-    visible: {
-        opacity: 1,
+import { useTranslations } from "next-intl";
+const ITEMS_PER_PAGE = 6;
+
+const itemVariants = {
+    hidden: { opacity: 0, y: 20 },
+    visible: { 
+        opacity: 1, 
         y: 0,
-        scale: 1,
-        filter: "blur(0px)",
-        transition: {
-            type: "spring",
-            stiffness: 180,
-            damping: 20,
-            mass: 0.8,
-        }
+        transition: { duration: 0.5, ease: [0.22, 1, 0.36, 1] as const }
     },
-    exit: {
-        opacity: 0,
-        y: 20,
-        scale: 0.9,
-        filter: "blur(10px)",
-        transition: {
-            duration: 0.2,
-            ease: "easeIn"
-        }
+    exit: { 
+        opacity: 0, 
+        scale: 0.95,
+        transition: { duration: 0.2 }
     }
 };
+
 function CoursesContent({ initialCourses }: { initialCourses: MappedCourse[] }) {
+    const t = useTranslations("Courses");
+    const CATEGORIES = [
+        t("filters.categories.all"),
+        t("filters.categories.web"),
+        t("filters.categories.data"),
+        t("filters.categories.mobile"),
+        t("filters.categories.cyber"),
+        t("filters.categories.cloud"),
+        t("filters.categories.design")
+    ];
+    const LEVELS = [
+        t("filters.levels.beginner"),
+        t("filters.levels.intermediate"),
+        t("filters.levels.advanced")
+    ];
+    const TYPES = [
+        t("filters.types.live"),
+        t("filters.types.recorded"),
+        t("filters.types.career")
+    ];
+    const PRICES = [
+        t("filters.prices.paid"),
+        t("filters.prices.free")
+    ];
     const router = useRouter();
     const pathname = usePathname();
     const [searchInput, setSearchInput] = useState("");
-    const [selectedCategory, setSelectedCategory] = useState("All Topics");
+    const [selectedCategory, setSelectedCategory] = useState(CATEGORIES[0]);
     const [selectedLevels, setSelectedLevels] = useState<string[]>([]);
     const [selectedTypes, setSelectedTypes] = useState<string[]>([]);
     const [selectedPrices, setSelectedPrices] = useState<string[]>([]);
@@ -90,7 +101,7 @@ function CoursesContent({ initialCourses }: { initialCourses: MappedCourse[] }) 
     useEffect(() => {
         const params = new URLSearchParams(window.location.search);
         const q = params.get("q") || "";
-        const category = params.get("category") || "All Topics";
+        const category = params.get("category") || CATEGORIES[0];
         const levels = params.get("levels")?.split(",").filter(Boolean) || [];
         const types = params.get("types")?.split(",").filter(Boolean) || [];
         const prices = params.get("prices")?.split(",").filter(Boolean) || [];
@@ -113,7 +124,7 @@ function CoursesContent({ initialCourses }: { initialCourses: MappedCourse[] }) 
     ) => {
         const params = new URLSearchParams();
         if (term) params.set("q", term);
-        if (category && category !== "All Topics") params.set("category", category);
+        if (category && category !== CATEGORIES[0]) params.set("category", category);
         if (levels.length > 0) params.set("levels", levels.join(","));
         if (types.length > 0) params.set("types", types.join(","));
         if (prices.length > 0) params.set("prices", prices.join(","));
@@ -137,7 +148,7 @@ function CoursesContent({ initialCourses }: { initialCourses: MappedCourse[] }) 
     };
     const handleClearAll = () => {
         setSearchInput("");
-        setSelectedCategory("All Topics");
+        setSelectedCategory(CATEGORIES[0]);
         setSelectedLevels([]);
         setSelectedTypes([]);
         setSelectedPrices([]);
@@ -148,20 +159,34 @@ function CoursesContent({ initialCourses }: { initialCourses: MappedCourse[] }) 
             const matchesSearch = course.title.toLowerCase().includes(searchInput.toLowerCase()) ||
                 course.description.toLowerCase().includes(searchInput.toLowerCase()) ||
                 course.tags?.some(tag => tag.toLowerCase().includes(searchInput.toLowerCase()));
-            const matchesCategory = selectedCategory === "All Topics" || course.category === selectedCategory || (selectedCategory === "Web Development" && course.tags?.some(t => t.includes("Web")));
+            const matchesCategory = selectedCategory === CATEGORIES[0] || course.category === selectedCategory ||
+                (selectedCategory === t("filters.categories.web") && course.tags?.some(tag => tag.includes("Web")));
             const matchesLevel = selectedLevels.length === 0 || selectedLevels.includes(course.level);
-            const matchesType = selectedTypes.length === 0 || selectedTypes.some(t => t.toLowerCase() === course.type?.toLowerCase());
-            const matchesPrice = selectedPrices.length === 0 || selectedPrices.some(p => p.toLowerCase() === course.priceType?.toLowerCase());
+            const matchesType = selectedTypes.length === 0 || selectedTypes.some(type => {
+                const normalizedType = type.toLowerCase();
+                const courseType = course.type?.toLowerCase();
+                if (normalizedType === t("filters.types.live").toLowerCase() && courseType?.includes('live')) return true;
+                if (normalizedType === t("filters.types.recorded").toLowerCase() && courseType?.includes('recorded')) return true;
+                if (normalizedType === t("filters.types.career").toLowerCase() && courseType?.includes('career')) return true;
+                return normalizedType === courseType;
+            });
+            const matchesPrice = selectedPrices.length === 0 || selectedPrices.some(price => {
+                const normalizedPrice = price.toLowerCase();
+                const coursePriceType = course.priceType?.toLowerCase();
+                if (normalizedPrice === t("filters.prices.paid").toLowerCase() && coursePriceType === 'paid') return true;
+                if (normalizedPrice === t("filters.prices.free").toLowerCase() && coursePriceType === 'free') return true;
+                return normalizedPrice === coursePriceType;
+            });
             return matchesSearch && matchesCategory && matchesLevel && matchesType && matchesPrice;
         });
-    }, [searchInput, selectedCategory, selectedLevels, selectedTypes, selectedPrices, initialCourses]);
+    }, [searchInput, selectedCategory, selectedLevels, selectedTypes, selectedPrices, initialCourses, CATEGORIES, t]);
     const totalPages = Math.ceil(filteredCourses.length / ITEMS_PER_PAGE);
     const paginatedCourses = filteredCourses.slice(
         (currentPage - 1) * ITEMS_PER_PAGE,
         currentPage * ITEMS_PER_PAGE
     );
     const activeFilterCount = selectedLevels.length + selectedTypes.length + selectedPrices.length;
-    const hasActiveFilters = searchInput !== "" || selectedCategory !== "All Topics" || selectedLevels.length > 0 || selectedTypes.length > 0 || selectedPrices.length > 0;
+    const hasActiveFilters = searchInput !== "" || selectedCategory !== CATEGORIES[0] || selectedLevels.length > 0 || selectedTypes.length > 0 || selectedPrices.length > 0;
     const handlePageChange = (page: number) => {
         setCurrentPage(page);
         window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -181,15 +206,15 @@ function CoursesContent({ initialCourses }: { initialCourses: MappedCourse[] }) 
                 <div className="mb-8 space-y-6">
                     <motion.div initial="hidden" animate="visible" variants={fadeInUp}>
                         <Breadcrumbs
-                            rootLabel="Home"
-                            items={[{ label: 'Courses', icon: BookOpen }]}
+                            rootLabel={t("breadcrumbs.home")}
+                            items={[{ label: t("breadcrumbs.courses"), icon: BookOpen }]}
                             className="mb-6"
                         />
                         <h1 className="text-3xl sm:text-4xl font-bold tracking-tight mb-2">
-                            Explore Courses
+                            {t("title")}
                         </h1>
                         <p className="text-muted-foreground max-w-2xl">
-                            Find the perfect course to upgrade your skills.
+                            {t("description")}
                         </p>
                     </motion.div>
                     <motion.div
@@ -198,9 +223,9 @@ function CoursesContent({ initialCourses }: { initialCourses: MappedCourse[] }) 
                         className="sticky top-24 z-30 mb-8"
                     >
                         <div className="bg-card dark:bg-[#030712] border border-border p-2 rounded-2xl shadow-2xl shadow-black/5 dark:shadow-black/50 flex flex-col xl:flex-row gap-4 items-center max-w-full overflow-hidden">
-                            {}
+                            { }
                             <div className="w-full xl:w-auto flex-1 min-w-0 relative group/categories">
-                                {}
+                                { }
                                 {canScrollLeft && (
                                     <motion.button
                                         initial={{ opacity: 0, x: -10 }}
@@ -211,7 +236,7 @@ function CoursesContent({ initialCourses }: { initialCourses: MappedCourse[] }) 
                                         <ChevronLeft className="w-4 h-4" />
                                     </motion.button>
                                 )}
-                                {}
+                                { }
                                 {canScrollLeft && <div className="absolute left-0 top-0 bottom-0 w-12 bg-linear-to-r from-card dark:from-[#030712] to-transparent z-30 pointer-events-none" />}
                                 {canScrollRight && <div className="absolute right-0 top-0 bottom-0 w-12 bg-linear-to-l from-card dark:from-[#030712] to-transparent z-30 pointer-events-none" />}
                                 <div
@@ -242,7 +267,7 @@ function CoursesContent({ initialCourses }: { initialCourses: MappedCourse[] }) 
                                         </button>
                                     ))}
                                 </div>
-                                {}
+                                { }
                                 {canScrollRight && (
                                     <motion.button
                                         initial={{ opacity: 0, x: 10 }}
@@ -254,15 +279,15 @@ function CoursesContent({ initialCourses }: { initialCourses: MappedCourse[] }) 
                                     </motion.button>
                                 )}
                             </div>
-                            {}
+                            { }
                             <div className="hidden xl:block w-px h-8 bg-border mx-2" />
-                            {}
+                            { }
                             <div className="flex items-center gap-3 w-full xl:w-auto shrink-0">
                                 <div className="relative grow sm:grow-0">
                                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                                     <input
                                         type="text"
-                                        placeholder="Search..."
+                                        placeholder={t("searchPlaceholder")}
                                         value={searchInput}
                                         onChange={(e) => setSearchInput(e.target.value)}
                                         className="w-full sm:w-64 pl-10 pr-4 py-2.5 rounded-xl bg-black/5 dark:bg-white/5 border border-transparent focus:border-primary/50 focus:bg-background focus:ring-0 outline-none transition-all text-sm text-foreground placeholder:text-muted-foreground"
@@ -310,13 +335,13 @@ function CoursesContent({ initialCourses }: { initialCourses: MappedCourse[] }) 
                     >
                         {showMobileFilters && (
                             <div className="flex items-center justify-between mb-6 lg:hidden">
-                                <h3 className="text-xl font-bold">Filters</h3>
-                                <button onClick={() => setShowMobileFilters(false)}><X className="w-6 h-6" /></button>
+                                <h3 className="text-xl font-bold">{t("filters.title")}</h3>
+                                <button onClick={() => setShowMobileFilters(false)} className="cursor-pointer"><X className="w-6 h-6" /></button>
                             </div>
                         )}
                         <div className="space-y-8 pr-4">
                             <div>
-                                <h3 className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-3">Level</h3>
+                                <h3 className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-3">{t("filters.levels.title")}</h3>
                                 <div className="space-y-3">
                                     {LEVELS.map(level => (
                                         <div key={level} className="group">
@@ -335,7 +360,7 @@ function CoursesContent({ initialCourses }: { initialCourses: MappedCourse[] }) 
                                 </div>
                             </div>
                             <div>
-                                <h3 className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-3">Type</h3>
+                                <h3 className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-3">{t("filters.types.title")}</h3>
                                 <div className="space-y-3">
                                     {TYPES.map(type => (
                                         <div key={type} className="group">
@@ -354,7 +379,7 @@ function CoursesContent({ initialCourses }: { initialCourses: MappedCourse[] }) 
                                 </div>
                             </div>
                             <div>
-                                <h3 className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-3">Price</h3>
+                                <h3 className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-3">{t("filters.prices.title")}</h3>
                                 <div className="space-y-3">
                                     {PRICES.map(price => (
                                         <div key={price} className="group">
@@ -378,7 +403,7 @@ function CoursesContent({ initialCourses }: { initialCourses: MappedCourse[] }) 
                                     className="inline-flex cursor-pointer items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium bg-primary/10 text-primary hover:bg-primary hover:text-primary-foreground transition-all duration-300 group"
                                 >
                                     <X className="w-3 h-3 transition-transform duration-200 group-hover:scale-110" />
-                                    Reset All Filters
+                                    {t("filters.reset")}
                                 </button>
                             )}
                         </div>
@@ -446,15 +471,15 @@ function CoursesContent({ initialCourses }: { initialCourses: MappedCourse[] }) 
                                     <div className="w-16 h-16 rounded-full bg-muted/50 flex items-center justify-center mb-4">
                                         <FileQuestion className="w-8 h-8 text-muted-foreground" />
                                     </div>
-                                    <h3 className="text-xl font-bold mb-2">No matching courses found</h3>
+                                    <h3 className="text-xl font-bold mb-2">{t("empty.title")}</h3>
                                     <p className="text-muted-foreground max-w-sm mb-6">
-                                        Adjust your filters or try a different search term to find what you're looking for.
+                                        {t("empty.description")}
                                     </p>
                                     <button
                                         onClick={handleClearAll}
-                                        className="px-6 py-2.5 rounded-xl bg-primary text-primary-foreground font-medium hover:bg-primary/90 transition-colors"
+                                        className="px-6 py-2.5 rounded-xl bg-primary text-primary-foreground font-medium hover:bg-primary/90 transition-colors cursor-pointer"
                                     >
-                                        Clear all filters
+                                        {t("empty.button")}
                                     </button>
                                 </motion.div>
                             )}
@@ -465,6 +490,7 @@ function CoursesContent({ initialCourses }: { initialCourses: MappedCourse[] }) 
         </div >
     );
 }
+
 export default function CoursesClient({ initialCourses }: { initialCourses: MappedCourse[] }) {
     return (
         <Suspense fallback={<div className="min-h-screen bg-background flex items-center justify-center"><div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin"></div></div>}>

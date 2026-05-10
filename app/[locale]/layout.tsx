@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Space_Grotesk, JetBrains_Mono } from "next/font/google";
+import { Space_Grotesk, JetBrains_Mono, Hind_Siliguri } from "next/font/google";
 import { ThemeProvider } from "@/components/providers/theme-provider";
 import { ReduxProvider } from "@/components/providers/ReduxProvider";
 import { CookieConsent } from "@/components/CookieConsent";
@@ -7,17 +7,30 @@ import { ToastProvider } from "@/components/ui/toast";
 import { SocialLoginToast } from "@/components/auth/SocialLoginToast";
 import { AuthListener } from "@/components/auth/AuthListener";
 import { Suspense } from "react";
-import "./globals.css";
+import { NextIntlClientProvider } from 'next-intl';
+import { notFound } from 'next/navigation';
+import { routing } from '@/i18n/routing';
+import "../globals.css";
+
 const spaceGrotesk = Space_Grotesk({
   variable: "--font-space-grotesk",
   subsets: ["latin"],
   display: "swap",
 });
+
+const hindSiliguri = Hind_Siliguri({
+  variable: "--font-hind-siliguri",
+  subsets: ["bengali", "latin"],
+  weight: ["300", "400", "500", "600", "700"],
+  display: "swap",
+});
+
 const jetbrainsMono = JetBrains_Mono({
   variable: "--font-jetbrains-mono",
   subsets: ["latin"],
   display: "swap",
 });
+
 export const metadata: Metadata = {
   title: {
     default: "Dokkhota IT - Best IT Training Platform in Bangladesh",
@@ -81,65 +94,56 @@ export const metadata: Metadata = {
   },
   metadataBase: new URL("https://dokkhotait.com"),
 };
-export default function RootLayout({
+
+export default async function RootLayout({
   children,
-}: Readonly<{
+  params
+}: {
   children: React.ReactNode;
-}>) {
+  params: Promise<{ locale: string }>;
+}) {
+  const { locale } = await params;
+
+  // Ensure that the incoming `locale` is valid
+  if (!routing.locales.includes(locale as any)) {
+    notFound();
+  }
+
+  // Manually load messages since the plugin is disabled
+  let messages;
+  try {
+    messages = (await import(`@/messages/${locale}.json`)).default;
+  } catch (error) {
+    console.error("Failed to load messages:", error);
+    notFound();
+  }
+
   return (
-    <html lang="en" suppressHydrationWarning data-scroll-behavior="smooth">
+    <html lang={locale} suppressHydrationWarning data-scroll-behavior="smooth">
       <body
-        className={`${spaceGrotesk.variable} ${jetbrainsMono.variable} antialiased`}
+        className={`${spaceGrotesk.variable} ${hindSiliguri.variable} ${jetbrainsMono.variable} antialiased`}
         suppressHydrationWarning
       >
-        {/* Strip browser extension attributes (Bitdefender bis_skin_checked, etc.) before React hydration */}
-        <script
-          dangerouslySetInnerHTML={{
-            __html: `
-(function(){
-  var a=['bis_skin_checked','bis_size','bis_id','bis_register'];
-  function c(el){for(var i=0;i<a.length;i++)el.removeAttribute(a[i]);}
-  document.querySelectorAll('[bis_skin_checked],[bis_size],[bis_id],[bis_register]').forEach(c);
-  new MutationObserver(function(ms){
-    for(var i=0;i<ms.length;i++){
-      var m=ms[i];
-      if(m.type==='attributes'&&a.indexOf(m.attributeName)>-1){
-        m.target.removeAttribute(m.attributeName);
-      }
-      if(m.type==='childList'){
-        for(var j=0;j<m.addedNodes.length;j++){
-          var n=m.addedNodes[j];
-          if(n.nodeType===1){
-            c(n);
-            var d=n.querySelectorAll&&n.querySelectorAll('[bis_skin_checked],[bis_size]');
-            if(d)d.forEach(c);
-          }
-        }
-      }
-    }
-  }).observe(document.documentElement,{attributes:true,attributeFilter:a,subtree:true,childList:true});
-})();
-`,
-          }}
-        />
-        <ThemeProvider
-          attribute="class"
-          defaultTheme="dark"
-          enableSystem={true}
-          disableTransitionOnChange
-        >
-          <ReduxProvider>
-            <ToastProvider>
-              <AuthListener />
-              <Suspense fallback={<div />}>
-                <SocialLoginToast />
-              </Suspense>
-              {children}
-              <CookieConsent />
-            </ToastProvider>
-          </ReduxProvider>
-        </ThemeProvider>
+        <NextIntlClientProvider messages={messages} locale={locale}>
+          <ThemeProvider
+            attribute="class"
+            defaultTheme="dark"
+            enableSystem={true}
+            disableTransitionOnChange
+          >
+            <ReduxProvider>
+              <ToastProvider>
+                <AuthListener />
+                <Suspense fallback={<div />}>
+                  <SocialLoginToast />
+                </Suspense>
+                {children}
+                <CookieConsent />
+              </ToastProvider>
+            </ReduxProvider>
+          </ThemeProvider>
+        </NextIntlClientProvider>
       </body>
-    </html >
+    </html>
   );
 }

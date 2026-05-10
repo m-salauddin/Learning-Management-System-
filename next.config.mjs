@@ -1,5 +1,9 @@
-import type { NextConfig } from "next";
-const nextConfig: NextConfig = {
+import createNextIntlPlugin from 'next-intl/plugin';
+
+const withNextIntl = createNextIntlPlugin();
+
+/** @type {import('next').NextConfig} */
+const nextConfig = {
   images: {
     remotePatterns: [
       { protocol: "https", hostname: "images.unsplash.com" },
@@ -17,4 +21,9 @@ const nextConfig: NextConfig = {
   },
   serverExternalPackages: ["@supabase/ssr", "@supabase/supabase-js"],
 };
-export default nextConfig;
+
+export default withNextIntl(nextConfig);
+
+
+
+

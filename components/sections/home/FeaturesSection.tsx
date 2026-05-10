@@ -1,20 +1,30 @@
 "use client";
 import { motion } from "motion/react";
+import { useTranslations } from "next-intl";
 import { Sparkles, BookOpen, Check, Code2, Users, Trophy, Target, Award } from "lucide-react";
 import { staggerContainer, staggerItem } from "@/lib/motion";
 import { Badge } from "@/components/ui/Badge";
-const FEATURE_ITEMS = [
-    { icon: Code2, title: "Hands-On Projects", description: "Build real applications for your portfolio", color: "secondary" },
-    { icon: Users, title: "Community Support", description: "Join 50,000+ active learners", color: "accent" },
-    { icon: Trophy, title: "Job Placement", description: "95% placement rate within 6 months", color: "success" },
-    { icon: Target, title: "Skill Tracking", description: "GitHub-style learning streaks", color: "warning" },
-    { icon: Award, title: "Verified Certificates", description: "Earn industry-recognized credentials", color: "primary" },
-] as const;
-const COURSE_FEATURES = ["Video Lessons", "Live Sessions", "Projects", "Mentorship"] as const;
+
 export function FeaturesSection() {
+    const t = useTranslations("Features");
+
+    const FEATURE_ITEMS = [
+        { icon: Code2, title: t("handsOn"), description: t("handsOnDesc"), color: "secondary" },
+        { icon: Users, title: t("community"), description: t("communityDesc"), color: "accent" },
+        { icon: Trophy, title: t("placement"), description: t("placementDesc"), color: "success" },
+        { icon: Target, title: t("tracking"), description: t("trackingDesc"), color: "warning" },
+        { icon: Award, title: t("certificates"), description: t("certificatesDesc"), color: "primary" },
+    ] as const;
+
+    const COURSE_FEATURES = [
+        t("courseFeatures.videoLessons"),
+        t("courseFeatures.liveSessions"),
+        t("courseFeatures.projects"),
+        t("courseFeatures.mentorship")
+    ] as const;
+
     return (
         <section id="features" className="py-24 relative overflow-hidden">
-            {}
             <div suppressHydrationWarning className="absolute inset-0 bg-muted/30" />
             <div suppressHydrationWarning className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 <motion.div
@@ -24,20 +34,20 @@ export function FeaturesSection() {
                     className="text-center mb-16"
                 >
                     <Badge icon={Sparkles} className="mb-4">
-                        Why Choose Us
+                        {t("badge")}
                     </Badge>
                     <h2 className="text-3xl sm:text-5xl font-bold mb-4 tracking-tight">
-                        Everything you need to
+                        {t("title1")}
                         <br />
                         <span className="bg-linear-to-r from-primary to-accent bg-clip-text text-transparent">
-                            succeed in tech
+                            {t("title2")}
                         </span>
                     </h2>
                     <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
-                        From zero to hero with our comprehensive learning ecosystem
+                        {t("description")}
                     </p>
                 </motion.div>
-                {}
+
                 <motion.div
                     variants={staggerContainer}
                     initial="hidden"
@@ -45,15 +55,12 @@ export function FeaturesSection() {
                     viewport={{ once: true }}
                     className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"
                 >
-                    {}
                     <motion.div
                         variants={staggerItem}
                         className="lg:col-span-2 lg:row-span-2 group relative"
                     >
                         <div suppressHydrationWarning className="relative h-full flex flex-col p-8 bg-card/80 dark:bg-card/60 backdrop-blur-xl border border-border/50 dark:border-white/10 rounded-3xl overflow-hidden transition-all duration-500 group-hover:border-primary/30 group-hover:shadow-2xl group-hover:-translate-y-2">
-                            {}
                             <div className="absolute top-0 right-0 w-64 h-64 bg-primary/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2 group-hover:bg-primary/20 group-hover:scale-110 transition-all duration-700" />
-                            {}
                             <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none">
                                 <div className="absolute inset-0 bg-linear-to-r from-transparent via-white/5 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000" />
                             </div>
@@ -61,9 +68,9 @@ export function FeaturesSection() {
                                 <div className="w-16 h-16 rounded-2xl bg-primary/10 flex items-center justify-center mb-6 group-hover:scale-110 transition-all duration-300 border border-primary/10">
                                     <BookOpen className="w-8 h-8 text-primary" />
                                 </div>
-                                <h3 className="text-2xl font-bold mb-3 group-hover:text-primary transition-colors duration-300">Expert-Led Courses</h3>
+                                <h3 className="text-2xl font-bold mb-3 group-hover:text-primary transition-colors duration-300">{t("expertLed")}</h3>
                                 <p className="text-muted-foreground text-lg mb-8 max-w-md">
-                                    Learn from industry professionals with real-world experience at Google, Meta, Amazon, and local tech giants.
+                                    {t("expertLedDesc")}
                                 </p>
                                 <div className="grid grid-cols-2 gap-4 mt-auto">
                                     {COURSE_FEATURES.map((item) => (
@@ -78,7 +85,7 @@ export function FeaturesSection() {
                             </div>
                         </div>
                     </motion.div>
-                    {}
+
                     {FEATURE_ITEMS.map((feature, index) => (
                         <motion.div
                             key={index}
@@ -86,11 +93,9 @@ export function FeaturesSection() {
                             className="group relative h-full"
                         >
                             <div suppressHydrationWarning className="relative h-full flex flex-col p-6 bg-card/80 dark:bg-card/60 backdrop-blur-xl border border-border/50 dark:border-white/10 rounded-3xl overflow-hidden transition-all duration-500 group-hover:border-primary/30 group-hover:shadow-2xl group-hover:-translate-y-2">
-                                {}
                                 <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none">
                                     <div className="absolute inset-0 bg-linear-to-r from-transparent via-white/5 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000" />
                                 </div>
-                                {}
                                 <div
                                     className={`w-14 h-14 rounded-2xl bg-${feature.color}/10 flex items-center justify-center mb-5 group-hover:scale-110 transition-transform duration-300 text-${feature.color} border border-${feature.color}/10`}
                                 >

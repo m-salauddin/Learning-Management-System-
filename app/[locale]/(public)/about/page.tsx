@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import { getTranslations } from "next-intl/server";
 import {
     AboutHeroSection,
     AboutStatsSection,
@@ -8,10 +8,15 @@ import {
     AboutTeamSection,
     AboutCommunitySection,
 } from "@/components/sections/about";
-export const metadata: Metadata = {
-    title: "About Us - Dokkhota IT",
-    description: "Learn about Dokkhota IT's mission to empower the next generation of tech leaders in Bangladesh through world-class IT training and mentorship.",
-};
+
+export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }) {
+    const { locale } = await params;
+    const t = await getTranslations({ locale, namespace: "Metadata" });
+    return {
+        title: t("about.title"),
+        description: t("about.description"),
+    };
+}
 export default function AboutPage() {
     return (
         <main>

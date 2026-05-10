@@ -77,7 +77,7 @@ export function ThemeToggleCompact() {
         <button
             onClick={cycleTheme}
             className={cn(
-                "flex items-center justify-center w-10 h-10 rounded-xl border border-border/50 cursor-pointer",
+                "flex items-center justify-center w-10 h-10 rounded-full border border-border/50 cursor-pointer",
                 "bg-muted/50 hover:bg-muted/80 transition-colors text-muted-foreground hover:text-foreground",
                 "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
             )}

@@ -2,7 +2,8 @@
 @import "tw-animate-css";
 @custom-variant dark (&:is(.dark *));
 @theme inline {
-  --font-sans: var(--font-space-grotesk), system-ui, sans-serif;
+  --font-sans: var(--font-hind-siliguri), var(--font-space-grotesk), ui-sans-serif, system-ui, sans-serif;
+  --font-bengali: var(--font-hind-siliguri), sans-serif;
   --font-mono: var(--font-jetbrains-mono), monospace;
   --color-background: var(--background);
   --color-foreground: var(--foreground);
@@ -176,7 +177,11 @@
     scrollbar-gutter: stable;
   }
   body {
-    @apply bg-background text-foreground font-sans antialiased;
+    @apply bg-background text-foreground antialiased;
+    font-family: var(--font-space-grotesk), ui-sans-serif, system-ui, sans-serif;
+  }
+  [lang="bn"] body {
+    font-family: var(--font-hind-siliguri), var(--font-space-grotesk), sans-serif;
   }
   body.nav-open {
     overflow: hidden;

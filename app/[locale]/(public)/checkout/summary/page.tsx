@@ -3,6 +3,7 @@
 import { useEffect, useState, Suspense } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "motion/react";
+import { useTranslations } from "next-intl";
 import { 
     CheckCircle2, 
     XCircle, 
@@ -96,7 +97,7 @@ const staggerItem = {
 };
 
 function SummaryContent() {
-
+    const t = useTranslations("CheckoutSummary");
     const searchParams = useSearchParams();
     const router = useRouter();
     const paymentID = searchParams.get("paymentID");
@@ -135,7 +136,7 @@ function SummaryContent() {
             });
             setIsLoading(false);
         }
-    }, [paymentID, transactionID, statusParam]);
+    }, [paymentID, transactionID, statusParam, messageParam]);
 
     const handleVerify = async (id: string) => {
         try {
@@ -187,9 +188,9 @@ function SummaryContent() {
                         </div>
                     </div>
                 </div>
-                <h2 className="text-2xl font-bold mb-2">Finalizing Payment...</h2>
+                <h2 className="text-2xl font-bold mb-2">{t("loading.title")}</h2>
                 <p className="text-muted-foreground animate-pulse max-w-xs mx-auto">
-                    We're securely communicating with bKash to confirm your transaction details.
+                    {t("loading.description")}
                 </p>
             </div>
         );
@@ -218,16 +219,12 @@ function SummaryContent() {
                 />
             </div>
 
-
-
             <motion.div
                 variants={staggerContainer}
                 initial="hidden"
                 animate="visible"
                 className="w-full max-w-2xl relative z-10"
             >
-
-
                 <motion.div variants={staggerItem} className="text-center mb-5">
                     <div className="inline-flex relative mb-3">
                         <div className={cn(
@@ -250,29 +247,29 @@ function SummaryContent() {
 
                     <h1 className="text-4xl sm:text-5xl font-black mb-2 tracking-tighter leading-[1.1]">
                         {isSuccess ? (
-                            <span className="bg-linear-to-r from-primary via-secondary to-accent bg-clip-text text-transparent">Congratulations!</span>
+                            <span className="bg-linear-to-r from-primary via-secondary to-accent bg-clip-text text-transparent">{t("success.title")}</span>
                         ) : isPending ? (
                             <>
-                                <span className="text-slate-900 dark:text-white">Submission </span>
-                                <span className="bg-linear-to-r from-amber-400 via-orange-500 to-amber-600 bg-clip-text text-transparent">Received</span>
+                                <span className="text-slate-900 dark:text-white">{t("pending.title1")} </span>
+                                <span className="bg-linear-to-r from-amber-400 via-orange-500 to-amber-600 bg-clip-text text-transparent">{t("pending.title2")}</span>
                             </>
                         ) : isCancelled ? (
                             <>
-                                <span className="text-slate-900 dark:text-white">Transaction </span>
-                                <span className="bg-linear-to-r from-amber-400 via-orange-500 to-amber-600 bg-clip-text text-transparent">Cancelled</span>
+                                <span className="text-slate-900 dark:text-white">{t("cancelled.title1")} </span>
+                                <span className="bg-linear-to-r from-amber-400 via-orange-500 to-amber-600 bg-clip-text text-transparent">{t("cancelled.title2")}</span>
                             </>
                         ) : (
                             <>
-                                <span className="text-slate-900 dark:text-white">Payment </span>
-                                <span className="bg-linear-to-r from-rose-500 via-red-600 to-rose-700 bg-clip-text text-transparent">Error</span>
+                                <span className="text-slate-900 dark:text-white">{t("error.title1")} </span>
+                                <span className="bg-linear-to-r from-rose-500 via-red-600 to-rose-700 bg-clip-text text-transparent">{t("error.title2")}</span>
                             </>
                         )}
                     </h1>
                     <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 font-bold max-w-md mx-auto leading-relaxed">
-                        {isSuccess ? "Your journey begins now. Access to your course has been activated instantly." : 
-                         isPending ? "We've received your payment details. Our team will verify it within 1-6 hours." :
-                         isCancelled ? "The payment was not completed. You can try again whenever you're ready." : 
-                         result?.error || "We encountered an issue with your payment gateway. Please contact support."}
+                        {isSuccess ? t("success.description") : 
+                         isPending ? t("pending.description") :
+                         isCancelled ? t("cancelled.description") : 
+                         result?.error || t("error.description")}
                     </p>
                 </motion.div>
 
@@ -292,7 +289,7 @@ function SummaryContent() {
                                     <div className="flex-1">
                                         <div className="flex items-center gap-3 mb-2">
                                             <BadgeCheck className="w-4 h-4 text-emerald-400" />
-                                            <span className="text-[10px] font-black text-emerald-400 uppercase tracking-widest">Enrolled Successfully</span>
+                                            <span className="text-[10px] font-black text-emerald-400 uppercase tracking-widest">{t("success.badge")}</span>
                                         </div>
                                         <h3 className="text-xl sm:text-2xl font-black text-white tracking-tight leading-tight">
                                             {course.title}
@@ -325,15 +322,14 @@ function SummaryContent() {
                         </div>
                     )}
 
-                    
                     <div className="p-5 sm:p-6 space-y-1">
                         <div className="flex items-center justify-between mb-6">
                             <div>
-                                <h2 className="text-xl font-black text-slate-900 dark:text-white tracking-tight leading-none mb-1">Payment Details</h2>
-                                <p className="text-[9px] text-slate-500 dark:text-slate-400 font-black uppercase tracking-widest">Transaction Verified</p>
+                                <h2 className="text-xl font-black text-slate-900 dark:text-white tracking-tight leading-none mb-1">{t("details.title")}</h2>
+                                <p className="text-[9px] text-slate-500 dark:text-slate-400 font-black uppercase tracking-widest">{t("details.verified")}</p>
                             </div>
                             <div className="text-right">
-                                <p className="text-[9px] text-primary font-black uppercase tracking-[0.2em] mb-1">Total Paid</p>
+                                <p className="text-[9px] text-primary font-black uppercase tracking-[0.2em] mb-1">{t("details.totalPaid")}</p>
                                 <p className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white tracking-tighter drop-shadow-sm">
                                     ৳{result?.data?.transaction?.amount || result?.data?.bkashData?.amount || '0.00'}
                                 </p>
@@ -342,24 +338,24 @@ function SummaryContent() {
 
                         <div className="grid gap-0">
                             {course?.title && (
-                                <InfoRow label="Course Name" value={course.title} icon={BookOpen} />
+                                <InfoRow label={t("details.courseName")} value={course.title} icon={BookOpen} />
                             )}
                             
-                            {paymentID && <InfoRow label="Payment ID" value={paymentID} icon={Hash} copyable />}
+                            {paymentID && <InfoRow label={t("details.paymentId")} value={paymentID} icon={Hash} copyable />}
                             
                             {(transaction?.payment_intent_id || result?.data?.bkashData?.trxID) ? (
-                                <InfoRow label="bKash TRX ID" value={transaction?.payment_intent_id || result?.data?.bkashData?.trxID} icon={CreditCard} copyable />
+                                <InfoRow label={t("details.bkashTrx")} value={transaction?.payment_intent_id || result?.data?.bkashData?.trxID} icon={CreditCard} copyable />
                             ) : null}
 
-                            <InfoRow label="Payment Status" value={result?.status || (isCancelled ? 'Cancelled' : 'Failed')} highlight icon={BadgeCheck} />
+                            <InfoRow label={t("details.status")} value={result?.status || (isCancelled ? 'Cancelled' : 'Failed')} highlight icon={BadgeCheck} />
                             
                             <InfoRow 
-                                label="Date & Time" 
+                                label={t("details.dateTime")} 
                                 value={mounted && transaction?.created_at ? new Date(transaction.created_at).toLocaleString() : (mounted ? new Date().toLocaleString() : 'Loading...')} 
                                 icon={Calendar} 
                             />
                             
-                            {(isSuccess || isPending) && txUser?.email && <InfoRow label="Account" value={txUser.email} icon={User} />}
+                            {(isSuccess || isPending) && txUser?.email && <InfoRow label={t("details.account")} value={txUser.email} icon={User} />}
                         </div>
 
                         {!isSuccess && result?.data?.bkashData?.statusMessage && (
@@ -368,7 +364,7 @@ function SummaryContent() {
                                     <AlertCircle className="size-5 text-rose-500" />
                                 </div>
                                 <div>
-                                    <p className="text-[10px] font-black text-rose-500 uppercase tracking-widest mb-1.5 leading-none">Gateway Status</p>
+                                    <p className="text-[10px] font-black text-rose-500 uppercase tracking-widest mb-1.5 leading-none">{t("details.gatewayStatus")}</p>
                                     <p className="text-sm font-bold text-slate-900 dark:text-white leading-relaxed">{result.data.bkashData.statusMessage}</p>
                                 </div>
                             </div>
@@ -382,14 +378,14 @@ function SummaryContent() {
                                     onClick={() => router.push(isSuccess ? '/dashboard/my-courses' : '/dashboard')}
                                     className="min-w-[170px] h-10! rounded-xl! relative overflow-hidden group/cta px-5"
                                 >
-                                    <span className="text-xs font-black tracking-tight">{isSuccess ? "Start Learning" : "Go to Dashboard"}</span>
+                                    <span className="text-xs font-black tracking-tight">{isSuccess ? t("actions.start") : t("actions.dashboard")}</span>
                                 </PrimaryCTAButton>
                             ) : (
                                 <PrimaryCTAButton 
                                     onClick={() => router.back()}
                                     className="min-w-[170px] h-10! rounded-xl! bg-primary shadow-rose-500/20 px-5"
                                 >
-                                    <span className="text-base text-white">Retry Payment</span>
+                                    <span className="text-base text-white">{t("actions.retry")}</span>
                                 </PrimaryCTAButton>
                             )}
                             
@@ -399,7 +395,7 @@ function SummaryContent() {
                             >
                                 <div className="flex items-center justify-center gap-3">
                                         <Home className="size-4" />
-                                    <span className="text-base font-bold text-slate-700 dark:text-white/90 tracking-tight">Back to Home</span>
+                                    <span className="text-base font-bold text-slate-700 dark:text-white/90 tracking-tight">{t("actions.home")}</span>
                                 </div>
                             </SecondaryCTAButton>
                         </div>
@@ -409,19 +405,18 @@ function SummaryContent() {
                                 <div className="w-6 h-6 rounded-lg bg-slate-100 dark:bg-white/5 flex items-center justify-center group-hover:scale-110 group-hover:bg-primary/10 transition-all">
                                     <MessageCircle className="size-3" />
                                 </div>
-                                Support
+                                {t("actions.support")}
                             </a>
                             <div className="w-1.5 h-1.5 rounded-full bg-slate-300 dark:bg-white/10" />
                             <a href="#" className="group flex items-center gap-3 text-[10px] font-black uppercase tracking-widest text-slate-500 hover:text-primary transition-all">
                                 <div className="w-6 h-6 rounded-lg bg-slate-100 dark:bg-white/5 flex items-center justify-center group-hover:scale-110 group-hover:bg-primary/10 transition-all">
                                     <Receipt className="size-3" />
                                 </div>
-                                Invoices
+                                {t("actions.invoices")}
                             </a>
                         </div>
                     </div>
                 </motion.div>
-
 
                 <motion.div variants={staggerItem} className="mt-10 flex flex-col items-center gap-6">
                     <div className="flex justify-center items-center gap-12 transition-opacity">
@@ -433,14 +428,14 @@ function SummaryContent() {
                                     className="h-7 object-contain brightness-0 invert opacity-90" 
                                 />
                             </div>
-                            <span className="text-[10px] font-black uppercase tracking-widest text-slate-900 dark:text-white">Certified Provider</span>
+                            <span className="text-[10px] font-black uppercase tracking-widest text-slate-900 dark:text-white">{t("footer.provider")}</span>
                         </div>
                         
                         <div className="flex flex-col items-center gap-2.5 text-slate-900 dark:text-white">
                              <div className="h-8 flex items-center justify-center">
                                  <BadgeCheck className="size-7" strokeWidth={2} />
                              </div>
-                            <span className="text-[10px] font-black uppercase tracking-widest">Verified Order</span>
+                            <span className="text-[10px] font-black uppercase tracking-widest">{t("footer.verified")}</span>
                         </div>
                     </div>
 
@@ -449,12 +444,11 @@ function SummaryContent() {
                             <Lock className="w-2.5 h-2.5 text-emerald-500" />
                         </div>
                         <span className="text-[10px] font-bold text-slate-600 dark:text-emerald-400 uppercase tracking-widest">
-                            Transaction Securely Encrypted
+                            {t("footer.secure")}
                         </span>
                     </div>
                 </motion.div>
             </motion.div>
-
         </div>
     );
 }

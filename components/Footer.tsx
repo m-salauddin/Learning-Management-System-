@@ -1,43 +1,51 @@
+"use client";
 import { ChevronRight } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { SiFacebook, SiGithub, SiYoutube } from "react-icons/si";
 import { FaLinkedin } from "react-icons/fa6";
 import { Logo } from "@/components/ui/Logo";
-const FOOTER_SECTIONS = [
-    {
-        title: "Platform",
-        links: [
-            { text: "Courses", href: "/courses" },
-            { text: "Pricing", href: "#" },
-            { text: "Enterprise", href: "#" },
-            { text: "Blog", href: "#" }
-        ]
-    },
-    {
-        title: "Company",
-        links: [
-            { text: "About", href: "/about" },
-            { text: "Careers", href: "#" },
-            { text: "Press", href: "#" },
-            { text: "Contact", href: "/contact" }
-        ]
-    },
-    {
-        title: "Resources",
-        links: [
-            { text: "Documentation", href: "#" },
-            { text: "Help Center", href: "#" },
-            { text: "Community", href: "#" },
-            { text: "Partners", href: "#" }
-        ]
-    },
-] as const;
+
 const SOCIAL_ICONS = [SiFacebook, FaLinkedin, SiGithub, SiYoutube] as const;
-const LEGAL_LINKS = [
-    { text: "Privacy", href: "/privacy" },
-    { text: "Terms", href: "/terms" },
-    { text: "Cookies", href: "#" }
-] as const;
+
 export function Footer() {
+    const t = useTranslations("Footer");
+
+    const FOOTER_SECTIONS = [
+        {
+            title: t("sections.platform.title"),
+            links: [
+                { text: t("sections.platform.courses"), href: "/courses" },
+                { text: t("sections.platform.pricing"), href: "#" },
+                { text: t("sections.platform.enterprise"), href: "#" },
+                { text: t("sections.platform.blog"), href: "#" }
+            ]
+        },
+        {
+            title: t("sections.company.title"),
+            links: [
+                { text: t("sections.company.about"), href: "/about" },
+                { text: t("sections.company.careers"), href: "#" },
+                { text: t("sections.company.press"), href: "#" },
+                { text: t("sections.company.contact"), href: "/contact" }
+            ]
+        },
+        {
+            title: t("sections.resources.title"),
+            links: [
+                { text: t("sections.resources.documentation"), href: "#" },
+                { text: t("sections.resources.helpCenter"), href: "#" },
+                { text: t("sections.resources.community"), href: "#" },
+                { text: t("sections.resources.partners"), href: "#" }
+            ]
+        },
+    ];
+
+    const LEGAL_LINKS = [
+        { text: t("legal.privacy"), href: "/privacy" },
+        { text: t("legal.terms"), href: "/terms" },
+        { text: t("legal.cookies"), href: "#" }
+    ];
+
     return (
         <footer className="relative z-10 border-t border-slate-200 dark:border-white/5 bg-slate-50 dark:bg-[#020817] pt-24 pb-12 transition-colors duration-300 overflow-hidden">
             <div className="absolute top-0 left-0 right-0 h-px bg-linear-to-r from-transparent via-primary/30 to-transparent dark:via-primary/50" />
@@ -45,13 +53,12 @@ export function Footer() {
 
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-5 gap-12 lg:gap-8 mb-20">
-                    {}
                     <div className="col-span-2 lg:col-span-2">
                         <div className="mb-6">
                             <Logo />
                         </div>
                         <p className="text-slate-600 dark:text-slate-400 text-sm leading-relaxed mb-8 max-w-sm">
-                            Bangladesh's premier tech learning platform. Building the next generation of developers.
+                            {t("description")}
                         </p>
                         <div className="flex items-center gap-4">
                             {SOCIAL_ICONS.map((Icon, i) => (
@@ -66,7 +73,6 @@ export function Footer() {
                             ))}
                         </div>
                     </div>
-                    {}
                     {FOOTER_SECTIONS.map((section) => (
                         <div key={section.title} className="col-span-1">
                             <h4 className="font-bold text-slate-900 dark:text-slate-100 mb-6">{section.title}</h4>
@@ -88,10 +94,9 @@ export function Footer() {
                         </div>
                     ))}
                 </div>
-                {}
                 <div className="pt-8 border-t border-slate-200 dark:border-white/5 flex flex-col md:flex-row items-center justify-between gap-6">
                     <p className="text-slate-500 text-sm font-medium">
-                        © {new Date().getFullYear()} DokkhotaIT. All rights reserved.
+                        © {new Date().getFullYear()} DokkhotaIT. {t("rights")}
                     </p>
                     <div className="flex items-center gap-8 text-sm font-medium text-slate-500">
                         {LEGAL_LINKS.map((link) => (

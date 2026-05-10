@@ -1,4 +1,4 @@
-import { Metadata } from "next";
+import { getTranslations } from "next-intl/server";
 import {
   HeroSection,
   TechStackSection,
@@ -14,10 +14,15 @@ import {
 import { FloatingNav } from "@/components/FloatingNav";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { MappedCourse } from "@/types/mapped-course";
-export const metadata: Metadata = {
-  title: "Best IT Training & Skill Development Platform",
-  description: "Join Dokkhota IT to master Web Development, App Development, and AI. Rated #1 IT Training Center in Bangladesh with job placement support.",
-};
+
+export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }) {
+  const { locale } = await params;
+  const t = await getTranslations({ locale, namespace: "Metadata" });
+  return {
+    title: t("home.title"),
+    description: t("home.description"),
+  };
+}
 export default async function Home() {
   const supabase = await createSupabaseServerClient();
   const { data: coursesData, error: coursesError } = await supabase
@@ -84,6 +89,7 @@ export default async function Home() {
       batchNo: course.batch_no
     };
   });
+  const tMetadata = await getTranslations("Metadata");
   const jsonLd = {
     "@context": "https://schema.org",
     "@type": "Organization",
@@ -95,7 +101,7 @@ export default async function Home() {
       "https://twitter.com/dokkhotait",
       "https://linkedin.com/company/dokkhotait"
     ],
-    "description": "Dokkhota IT is the premier IT training platform in Bangladesh offering courses in Web Development, App Development, and AI."
+    "description": tMetadata("home.description")
   };
   return (
     <main className="min-h-screen">
