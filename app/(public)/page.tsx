@@ -14,9 +14,8 @@ import { FloatingNav } from "@/components/FloatingNav";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { MappedCourse } from "@/types/mapped-course";
 
-export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }) {
-  const { locale } = await params;
-  const t = await getTranslations({ locale, namespace: "Metadata" });
+export async function generateMetadata() {
+  const t = await getTranslations("Metadata");
   return {
     title: t("home.title"),
     description: t("home.description"),
