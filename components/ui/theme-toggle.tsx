@@ -68,8 +68,8 @@ export function ThemeToggleCompact() {
     }
     if (!mounted) {
         return (
-            <div className="flex items-center justify-center w-10 h-10 rounded-xl border border-border/50 bg-muted/50 animate-pulse">
-                <div className="w-5 h-5 rounded-full bg-muted-foreground/20" />
+            <div className="flex items-center justify-center w-8 h-8 rounded-lg border border-border/50 bg-muted/50 animate-pulse">
+                <div className="w-4 h-4 rounded-full bg-muted-foreground/20" />
             </div>
         )
     }
@@ -77,7 +77,7 @@ export function ThemeToggleCompact() {
         <button
             onClick={cycleTheme}
             className={cn(
-                "flex items-center justify-center w-10 h-10 rounded-full border border-border/50 cursor-pointer",
+                "flex items-center justify-center w-8 h-8 rounded-lg border border-border/50 cursor-pointer",
                 "bg-muted/50 hover:bg-muted/80 transition-colors text-muted-foreground hover:text-foreground",
                 "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
             )}
@@ -92,11 +92,11 @@ export function ThemeToggleCompact() {
                     transition={{ duration: 0.2 }}
                 >
                     {theme === "system" ? (
-                        <Monitor className="w-5 h-5" />
+                        <Monitor className="w-4 h-4" />
                     ) : theme === "dark" ? (
-                        <Moon className="w-5 h-5" />
+                        <Moon className="w-4 h-4" />
                     ) : (
-                        <Sun className="w-5 h-5" />
+                        <Sun className="w-4 h-4" />
                     )}
                 </motion.div>
             </AnimatePresence>

@@ -16,6 +16,7 @@ const nextConfig = {
       { protocol: "https", hostname: "i.pravatar.cc" },
       { protocol: "https", hostname: "api.dicebear.com" },
       { protocol: "https", hostname: "img.freepik.com" },
+      { protocol: "https", hostname: "ui-avatars.com" },
     ],
   },
   serverExternalPackages: ["@supabase/ssr", "@supabase/supabase-js"],

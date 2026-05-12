@@ -106,9 +106,9 @@ export default function MyCoursesPage() {
     const totalProgress =
         enrolledCourses.length > 0
             ? Math.round(
-                  enrolledCourses.reduce((acc, e) => acc + (e.progress_percentage || 0), 0) /
-                      enrolledCourses.length
-              )
+                enrolledCourses.reduce((acc, e) => acc + (e.progress_percentage || 0), 0) /
+                enrolledCourses.length
+            )
             : 0;
     const totalCompleted = enrolledCourses.reduce(
         (acc, e) => acc + (e.completed_lessons || 0),
@@ -120,81 +120,94 @@ export default function MyCoursesPage() {
     );
 
     return (
-        <div className="max-w-5xl mx-auto px-4 py-6 space-y-5 pb-20">
+        <div className="relative max-w-5xl mx-auto px-4 py-8 space-y-10 pb-24">
             {/* ── Page Header ── */}
-            <div className="flex items-start justify-between gap-4">
-                <div>
-                    <h1 className="text-[17px] font-semibold text-slate-900 dark:text-white tracking-tight">
+            <motion.div 
+                initial={{ opacity: 0, y: -10 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="flex flex-col md:flex-row md:items-end justify-between gap-6"
+            >
+                <div className="space-y-1">
+                    <h1 className="text-3xl font-black text-slate-900 dark:text-white tracking-tight">
                         My Courses
                     </h1>
-                    <p className="text-[12px] text-slate-500 dark:text-slate-400 mt-0.5">
-                        {enrolledCourses.length} enrolled course{enrolledCourses.length !== 1 ? "s" : ""}
+                    <p className="text-sm text-slate-500 dark:text-slate-400">
+                        Manage your learning progress and upcoming lessons
                     </p>
                 </div>
                 <Link
                     href="/courses"
-                    className="inline-flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-medium bg-primary text-primary-foreground rounded-md hover:bg-primary/90 transition-colors cursor-pointer"
+                    className="inline-flex items-center gap-2 px-4 py-2 text-xs font-black uppercase tracking-widest bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-all shadow-sm"
                 >
-                    Browse More
-                    <ChevronRight className="w-3 h-3" />
+                    Explore More
+                    <ChevronRight className="w-4 h-4" />
                 </Link>
-            </div>
+            </motion.div>
 
             {/* ── Summary Stats ── */}
             {!loading && enrolledCourses.length > 0 && (
-                <div className="grid grid-cols-3 gap-3">
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                     {[
                         {
                             label: "Enrolled",
                             value: enrolledCourses.length,
-                            suffix: "courses",
-                            color: "text-slate-900 dark:text-white",
+                            icon: BookOpen,
                         },
                         {
-                            label: "Completed",
-                            value: `${totalCompleted}/${totalLessons}`,
-                            suffix: "lessons",
-                            color: "text-emerald-600 dark:text-emerald-400",
+                            label: "Lessons Done",
+                            value: totalCompleted,
+                            icon: CheckCircle2,
+                        },
+                        {
+                            label: "Total Lessons",
+                            value: totalLessons,
+                            icon: GraduationCap,
                         },
                         {
                             label: "Avg. Progress",
                             value: `${totalProgress}%`,
-                            suffix: "overall",
-                            color: "text-primary",
+                            icon: TrendingUp,
                         },
-                    ].map((stat) => (
-                        <div
+                    ].map((stat, i) => (
+                        <motion.div
                             key={stat.label}
-                            className="bg-white dark:bg-slate-900/50 border border-slate-200 dark:border-white/6 rounded-lg px-3.5 py-3"
+                            initial={{ opacity: 0, y: 10 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ delay: i * 0.05 }}
+                            className="bg-white dark:bg-slate-900/40 border border-slate-100 dark:border-white/5 rounded-2xl p-4"
                         >
-                            <p className="text-[10px] font-medium text-slate-400 uppercase tracking-wide">
-                                {stat.label}
-                            </p>
-                            <p className={cn("text-lg font-semibold tabular-nums mt-0.5", stat.color)}>
+                            <div className="flex items-center gap-3 mb-2">
+                                <div className="p-1.5 rounded-lg bg-slate-50 dark:bg-white/5 text-slate-400">
+                                    <stat.icon className="w-4 h-4" />
+                                </div>
+                                <span className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest">
+                                    {stat.label}
+                                </span>
+                            </div>
+                            <p className="text-xl font-black text-slate-900 dark:text-white tabular-nums">
                                 {stat.value}
                             </p>
-                            <p className="text-[10px] text-slate-400">{stat.suffix}</p>
-                        </div>
+                        </motion.div>
                     ))}
                 </div>
             )}
 
             {/* ── Toolbar ── */}
-            <div className="flex flex-col sm:flex-row sm:items-center gap-2">
+            <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
                 {/* Search */}
-                <div className="relative flex-1 max-w-xs">
-                    <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400 pointer-events-none" />
+                <div className="relative flex-1 max-w-md">
+                    <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
                     <input
                         type="text"
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
-                        placeholder="Search courses…"
-                        className="w-full h-8 pl-8 pr-3 bg-white dark:bg-slate-900/50 border border-slate-200 dark:border-white/6 rounded-md text-[12px] text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none focus:ring-1 focus:ring-primary/40 focus:border-primary/40 transition-colors"
+                        placeholder="Search courses..."
+                        className="w-full h-10 pl-10 pr-4 bg-slate-50/50 dark:bg-white/5 border border-slate-100 dark:border-white/5 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/10 focus:border-primary/30 transition-all"
                     />
                 </div>
 
-                {/* Filter pill tabs */}
-                <div className="flex items-center gap-0.5 p-0.5 bg-slate-100 dark:bg-white/4 border border-slate-200 dark:border-white/6 rounded-md">
+                {/* Filter Tabs */}
+                <div className="flex items-center gap-1 p-1 bg-slate-50/50 dark:bg-white/5 border border-slate-100 dark:border-white/5 rounded-xl overflow-x-auto no-scrollbar">
                     {filterTabs.map((tab) => {
                         const isActive = filterStatus === tab.id;
                         return (
@@ -202,35 +215,13 @@ export default function MyCoursesPage() {
                                 key={tab.id}
                                 onClick={() => setFilterStatus(tab.id)}
                                 className={cn(
-                                    "relative flex items-center gap-1.5 px-2.5 py-1 rounded text-[11px] font-medium transition-all cursor-pointer",
+                                    "relative px-4 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer whitespace-nowrap",
                                     isActive
-                                        ? "text-slate-900 dark:text-white"
+                                        ? "bg-white dark:bg-slate-800 text-slate-900 dark:text-white shadow-sm"
                                         : "text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200"
                                 )}
                             >
-                                {isActive && (
-                                    <motion.div
-                                        layoutId="my-courses-tab-bg"
-                                        className="absolute inset-0 bg-white dark:bg-slate-800 rounded shadow-sm border border-slate-200/60 dark:border-white/8"
-                                        transition={{ type: "spring", bounce: 0.15, duration: 0.4 }}
-                                    />
-                                )}
-                                <span className="relative z-10 flex items-center gap-1.5">
-                                    {tab.icon}
-                                    {tab.label}
-                                    {counts[tab.id] > 0 && (
-                                        <span
-                                            className={cn(
-                                                "text-[9px] tabular-nums px-1 py-px rounded-sm leading-none",
-                                                isActive
-                                                    ? "bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300"
-                                                    : "text-slate-400"
-                                            )}
-                                        >
-                                            {counts[tab.id]}
-                                        </span>
-                                    )}
-                                </span>
+                                {tab.label}
                             </button>
                         );
                     })}
@@ -239,22 +230,19 @@ export default function MyCoursesPage() {
 
             {/* ── Content ── */}
             {loading ? (
-                <div className="flex items-center justify-center py-24">
-                    <div className="flex flex-col items-center gap-3">
-                        <Loader2 className="w-5 h-5 text-slate-400 animate-spin" />
-                        <p className="text-[11px] text-slate-400">Loading courses…</p>
-                    </div>
+                <div className="flex items-center justify-center py-32">
+                    <div className="w-6 h-6 border-2 border-primary/20 border-t-primary rounded-full animate-spin" />
                 </div>
             ) : filteredCourses.length > 0 ? (
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                <div className="grid grid-cols-1 gap-4">
                     <AnimatePresence mode="popLayout">
                         {filteredCourses.map((enrollment, i) => (
                             <motion.div
                                 key={enrollment.course.slug}
                                 initial={{ opacity: 0, y: 10 }}
                                 animate={{ opacity: 1, y: 0 }}
-                                exit={{ opacity: 0, scale: 0.97 }}
-                                transition={{ duration: 0.18, delay: i * 0.04 }}
+                                exit={{ opacity: 0, scale: 0.98 }}
+                                transition={{ duration: 0.2, delay: i * 0.03 }}
                                 layout
                             >
                                 <CourseProgressCard
@@ -273,49 +261,13 @@ export default function MyCoursesPage() {
                         ))}
                     </AnimatePresence>
                 </div>
-            ) : searchQuery || filterStatus !== "all" ? (
-                <div className="flex flex-col items-center justify-center py-16 space-y-3">
-                    <div className="w-9 h-9 rounded-lg bg-slate-100 dark:bg-slate-800 flex items-center justify-center">
-                        <Search className="w-4 h-4 text-slate-400" />
-                    </div>
-                    <div className="text-center">
-                        <p className="text-[13px] font-medium text-slate-600 dark:text-slate-300">
-                            No courses match
-                        </p>
-                        <p className="text-[11px] text-slate-400 mt-0.5">
-                            Try adjusting your search or filter
-                        </p>
-                    </div>
-                    <button
-                        onClick={() => {
-                            setSearchQuery("");
-                            setFilterStatus("all");
-                        }}
-                        className="text-[11px] text-primary font-medium hover:underline cursor-pointer"
-                    >
-                        Clear filters
-                    </button>
-                </div>
             ) : (
-                <div className="flex flex-col items-center justify-center py-20 space-y-4 border border-dashed border-slate-200 dark:border-white/8 rounded-lg">
-                    <div className="w-12 h-12 rounded-xl bg-slate-100 dark:bg-slate-800 flex items-center justify-center">
-                        <GraduationCap className="w-6 h-6 text-slate-400" />
+                <div className="flex flex-col items-center justify-center py-20 text-center">
+                    <div className="w-12 h-12 rounded-2xl bg-slate-50 dark:bg-white/5 flex items-center justify-center mb-4">
+                        <Search className="w-6 h-6 text-slate-300" />
                     </div>
-                    <div className="text-center space-y-1">
-                        <p className="text-[13px] font-medium text-slate-700 dark:text-slate-300">
-                            No courses yet
-                        </p>
-                        <p className="text-[11px] text-slate-400">
-                            Enroll in a course to start learning
-                        </p>
-                    </div>
-                    <Link
-                        href="/courses"
-                        className="inline-flex items-center gap-1.5 px-3.5 py-2 bg-primary text-primary-foreground text-[11px] font-medium rounded-md hover:bg-primary/90 transition-colors cursor-pointer"
-                    >
-                        Browse Courses
-                        <ChevronRight className="w-3.5 h-3.5" />
-                    </Link>
+                    <p className="text-sm font-bold text-slate-600 dark:text-slate-300">No courses found</p>
+                    <p className="text-xs text-slate-400 mt-1">Try adjusting your filters or search query</p>
                 </div>
             )}
         </div>

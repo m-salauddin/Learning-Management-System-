@@ -199,18 +199,18 @@ export function NotificationPanel() {
             <motion.button
                 onClick={() => setIsOpen(!isOpen)}
                 className={cn(
-                    "relative flex items-center justify-center w-10 h-10 rounded-xl border border-border/50 cursor-pointer",
+                    "relative flex items-center justify-center w-8 h-8 rounded-lg border border-border/50 cursor-pointer",
                     "bg-muted/50 hover:bg-muted/80 transition-colors text-muted-foreground hover:text-foreground",
                     "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
                     isOpen && "bg-muted/80 text-foreground"
                 )}
                 whileTap={{ scale: 0.95 }}
             >
-                <Bell className="w-5 h-5" />
+                <Bell className="w-4 h-4" />
                 <AnimatePresence>
                     {unreadCount > 0 && (
                         <motion.span
-                            className="absolute -top-1 -right-1 min-w-4.5 h-4.5 px-1 text-[10px] font-medium bg-red-500 text-white rounded-full flex items-center justify-center border-2 border-background"
+                            className="absolute -top-0.5 -right-0.5 min-w-4 h-4 px-0.5 text-[9px] font-bold bg-red-500 text-white rounded-full flex items-center justify-center border-[1.5px] border-background"
                             initial={{ scale: 0 }}
                             animate={{ scale: 1 }}
                             exit={{ scale: 0 }}

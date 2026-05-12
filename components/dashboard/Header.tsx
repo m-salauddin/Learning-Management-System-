@@ -75,43 +75,43 @@ export function Header({ onMobileMenuOpen, isSidebarCollapsed, onSidebarToggle }
         };
     });
     return (
-        <header className="h-20 px-6 flex items-center justify-between border-b border-border/80 bg-background/50 backdrop-blur-xl sticky top-0 z-30">
-            <div className="flex items-center gap-4">
+        <header className="h-14 px-4 flex items-center justify-between border-b border-border/80 bg-background/50 backdrop-blur-xl sticky top-0 z-30">
+            <div className="flex items-center gap-3">
                 <button
                     onClick={onMobileMenuOpen}
-                    className="lg:hidden w-10 h-10 flex items-center justify-center -ml-2 text-muted-foreground hover:text-primary rounded-xl bg-muted/40 border border-white/5 hover:bg-muted/60 transition-all cursor-pointer shadow-sm group"
+                    className="lg:hidden w-8 h-8 flex items-center justify-center -ml-1 text-muted-foreground hover:text-primary rounded-lg bg-muted/40 border border-white/5 hover:bg-muted/60 transition-all cursor-pointer group"
                 >
-                    <AlignLeft className="w-5 h-5 group-hover:scale-110 transition-transform" />
+                    <AlignLeft className="w-4 h-4 group-hover:scale-110 transition-transform" />
                 </button>
                 <motion.button
                     whileTap={{ scale: 0.95 }}
                     onClick={onSidebarToggle}
-                    className="hidden lg:flex w-10 h-10 items-center justify-center rounded-xl bg-muted/40 border border-white/5 text-muted-foreground hover:text-primary transition-all cursor-pointer shadow-sm group hover:bg-muted/60"
+                    className="hidden lg:flex w-8 h-8 items-center justify-center rounded-lg bg-muted/40 border border-white/5 text-muted-foreground hover:text-primary transition-all cursor-pointer group hover:bg-muted/60"
                 >
                     <motion.div
                         animate={{ rotate: isSidebarCollapsed ? 180 : 0 }}
                         transition={{ type: "spring", stiffness: 300, damping: 20 }}
                     >
-                        <PanelLeftClose className="w-5 h-5 group-hover:scale-110 transition-transform" />
+                        <PanelLeftClose className="w-4 h-4 group-hover:scale-110 transition-transform" />
                     </motion.div>
                 </motion.button>
-                <div className="bg-muted/30 backdrop-blur-md border border-white/5 px-4 py-1.5 rounded-xl flex items-center shadow-sm">
+                <div className="bg-muted/30 backdrop-blur-md border border-white/5 px-2.5 py-0.5 rounded-md flex items-center">
                     <Breadcrumbs
                         items={breadcrumbItems}
                         showHomeIcon={true}
                         rootLabel="Dashboard"
                         rootHref="/dashboard"
-                        className="text-lg font-semibold"
+                        className="text-sm font-medium"
                         rootIcon={LayoutDashboard}
                     />
                 </div>
             </div>
-            <div className="flex items-center gap-2 sm:gap-4">
+            <div className="flex items-center gap-1.5 sm:gap-2.5">
                 {isLoading ? (
                     <>
-                        <Skeleton className="w-10 h-10 rounded-xl" />
-                        <Skeleton className="w-10 h-10 rounded-xl" />
-                        <Skeleton className="w-10 h-10 rounded-xl" />
+                        <Skeleton className="w-8 h-8 rounded-lg" />
+                        <Skeleton className="w-8 h-8 rounded-lg" />
+                        <Skeleton className="w-8 h-8 rounded-lg" />
                         <AuthSkeleton />
                     </>
                 ) : (

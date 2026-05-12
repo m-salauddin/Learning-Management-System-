@@ -15,27 +15,33 @@ export function ContinueBanner({ nextLesson, courseSlug }: Props) {
             initial={{ opacity: 0, y: 6 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.1 }}
-            className="group relative overflow-hidden rounded-2xl bg-linear-to-r from-primary/6 via-primary/3 to-transparent border border-primary/10 dark:border-primary/8 p-4"
+            className="group relative overflow-hidden rounded-2xl bg-white dark:bg-[#0B0F1A]/30 backdrop-blur-sm border border-slate-200/60 dark:border-white/[0.05] p-4 sm:p-5"
         >
-            <div className="absolute inset-0 bg-linear-to-r from-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-            <div className="relative flex items-center gap-4">
-                <div className="w-10 h-10 rounded-xl bg-primary/10 dark:bg-primary/15 flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform">
-                    <Play className="w-4 h-4 text-primary translate-x-0.5" />
+            <div className="absolute inset-0 bg-linear-to-r from-primary/5 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+            
+            <div className="relative flex items-center gap-5">
+                <div className="w-12 h-12 rounded-[14px] bg-primary/10 dark:bg-primary/20 flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform duration-500 shadow-inner shadow-white/10">
+                    <Play className="w-5 h-5 text-primary fill-primary/20 translate-x-0.5" />
                 </div>
+                
                 <div className="flex-1 min-w-0">
-                    <p className="text-[10px] text-slate-400 dark:text-slate-500 font-medium uppercase tracking-wider">
-                        Continue Learning
-                    </p>
-                    <p className="text-[13px] font-semibold text-slate-900 dark:text-white truncate mt-0.5">
+                    <div className="flex items-center gap-2">
+                        <span className="text-[9px] font-black text-primary uppercase tracking-[0.2em]">
+                            Next Up
+                        </span>
+                        <div className="h-px w-8 bg-primary/20" />
+                    </div>
+                    <p className="text-[14px] font-black text-slate-900 dark:text-white truncate mt-1">
                         {nextLesson.lesson.title}
                     </p>
-                    <p className="text-[10px] text-slate-500 dark:text-slate-400 mt-0.5 truncate">
-                        from {nextLesson.module.title}
+                    <p className="text-[10px] text-slate-500 dark:text-slate-400 font-medium mt-0.5 opacity-80 uppercase tracking-wider">
+                        {nextLesson.module.title}
                     </p>
                 </div>
+
                 <Link
                     href={`/dashboard/my-courses/${courseSlug}/${nextLesson.lesson.id}`}
-                    className="shrink-0 inline-flex items-center gap-1.5 px-4 py-2 bg-primary text-primary-foreground text-[11px] font-bold rounded-xl hover:brightness-110 transition-all shadow-sm shadow-primary/20 cursor-pointer"
+                    className="shrink-0 inline-flex items-center gap-2 px-5 py-2.5 bg-primary text-primary-foreground text-[11px] font-black rounded-full hover:shadow-[0_0_20px_rgba(var(--primary),0.3)] transition-all duration-300 cursor-pointer uppercase tracking-widest"
                 >
                     Resume <ChevronRight className="w-3.5 h-3.5" />
                 </Link>
@@ -43,3 +49,4 @@ export function ContinueBanner({ nextLesson, courseSlug }: Props) {
         </motion.div>
     );
 }
+

@@ -83,10 +83,10 @@ export function UserDropdown({ user, onOpen }: UserDropdownProps) {
                     }
                     setIsOpen(!isOpen);
                 }}
-                className="flex cursor-pointer items-center p-1 rounded-full border border-border/50 bg-muted/50 hover:bg-muted/80 transition-all duration-200 group"
+                className="flex cursor-pointer items-center p-0.5 rounded-lg border border-border/50 bg-muted/50 hover:bg-muted/80 transition-all duration-200 group"
             >
                 <div className={cn(
-                    "w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold ring-2 ring-transparent group-hover:ring-primary/20 transition-all overflow-hidden relative",
+                    "w-7 h-7 rounded-md flex items-center justify-center text-[10px] font-bold ring-2 ring-transparent group-hover:ring-primary/20 transition-all overflow-hidden relative",
                     !user.avatarUrl && (user.avatarColor || "bg-primary/10 text-primary")
                 )}>
                     {user.avatarUrl && !imageError ? (
