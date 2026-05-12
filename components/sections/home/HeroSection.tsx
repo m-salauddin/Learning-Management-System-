@@ -68,9 +68,39 @@ function AnimatedStatCard({
     );
 }
 
-export function HeroSection() {
+export type HeroStat = {
+    label: string;
+    value: number;
+    suffix: string;
+};
+
+export function HeroSection({ avatars = [], stats = [], totalLearners = "50,000+" }: { avatars?: string[], stats?: HeroStat[], totalLearners?: string }) {
     const t = useTranslations("Hero");
     const tc = useTranslations("Common");
+
+    // Default stats if none provided
+    const defaultStats: HeroStat[] = [
+        { label: t("activeLearners"), value: 200, suffix: "+" },
+        { label: t("expertCourses"), value: 50, suffix: "+" },
+        { label: t("mentors"), value: 15, suffix: "+" },
+        { label: t("averageRating"), value: 4.9, suffix: "" }
+    ];
+
+    const displayStats = stats && stats.length > 0 ? stats : defaultStats;
+
+    const displayAvatars = React.useMemo(() => {
+        const fallbacks = [
+            "https://images.unsplash.com/photo-1534528741775-53994a69daeb?q=80&w=256&h=256&auto=format&fit=crop",
+            "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?q=80&w=256&h=256&auto=format&fit=crop",
+            "https://images.unsplash.com/photo-1494790108377-be9c29b29330?q=80&w=256&h=256&auto=format&fit=crop",
+            "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=256&h=256&auto=format&fit=crop",
+            "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?q=80&w=256&h=256&auto=format&fit=crop"
+        ];
+        
+        // Merge provided avatars with fallbacks to ensure we always have 5
+        const combined = [...avatars, ...fallbacks].slice(0, 5);
+        return combined;
+    }, [avatars]);
 
     return (
         <section id="hero" suppressHydrationWarning className="relative min-h-screen flex items-center overflow-visible pt-32 pb-20">
@@ -113,20 +143,14 @@ export function HeroSection() {
                         </div>
                         <div suppressHydrationWarning className="flex items-center gap-6 justify-center lg:justify-start">
                             <div suppressHydrationWarning className="flex -space-x-3">
-                                {[
-                                    "https://images.unsplash.com/photo-1534528741775-53994a69daeb?q=80&w=256&h=256&auto=format&fit=crop",
-                                    "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?q=80&w=256&h=256&auto=format&fit=crop",
-                                    "https://images.unsplash.com/photo-1494790108377-be9c29b29330?q=80&w=256&h=256&auto=format&fit=crop",
-                                    "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=256&h=256&auto=format&fit=crop",
-                                    "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?q=80&w=256&h=256&auto=format&fit=crop"
-                                ].map((url, i) => (
+                                {displayAvatars.map((url, i) => (
                                     <motion.div
                                         key={i}
                                         initial={{ opacity: 0, x: -10 }}
                                         animate={{ opacity: 1, x: 0 }}
                                         transition={{ delay: 0.5 + i * 0.1 }}
                                         suppressHydrationWarning
-                                        className="w-10 h-10 rounded-full border-2 border-background overflow-hidden shadow-sm hover:scale-110 transition-transform cursor-pointer relative z-10"
+                                        className="w-10 h-10 rounded-full border-2 border-background overflow-hidden shadow-sm hover:scale-110 transition-transform cursor-pointer relative z-10 bg-slate-100 dark:bg-slate-800"
                                     >
                                         <img 
                                             src={url} 
@@ -153,7 +177,7 @@ export function HeroSection() {
                                     }}
                                     className="w-10 h-10 rounded-full bg-slate-100 dark:bg-slate-900 border-2 border-background flex items-center justify-center text-[10px] font-bold text-primary shadow-sm relative z-20 cursor-default"
                                 >
-                                    +50K
+                                    {totalLearners}
                                 </motion.div>
                             </div>
                             <div suppressHydrationWarning className="text-left">
@@ -176,7 +200,7 @@ export function HeroSection() {
                                     transition={{ delay: 1.8 }}
                                     className="text-sm text-muted-foreground"
                                 >
-                                    <strong className="text-foreground">{t("learnersJoined", { count: "50,000+" })}</strong>
+                                    <strong className="text-foreground">{t("learnersJoined", { count: totalLearners })}</strong>
                                 </motion.p>
                             </div>
                         </div>
@@ -207,9 +231,9 @@ export function HeroSection() {
                                 <div className="bg-card/50 lg:bg-transparent border border-border/50 lg:border-0 rounded-2xl lg:rounded-none p-4 lg:border-r lg:border-b lg:border-border/50">
                                     <AnimatedStatCard
                                         icon={GraduationCap}
-                                        end={200}
-                                        suffix="+"
-                                        label={t("expertCourses")}
+                                        end={displayStats[0]?.value ?? 200}
+                                        suffix={displayStats[0]?.suffix ?? "+"}
+                                        label={displayStats[0]?.label ?? t("activeLearners")}
                                         color="text-primary"
                                         bgColor="bg-primary/10"
                                     />
@@ -217,9 +241,9 @@ export function HeroSection() {
                                 <div className="bg-card/50 lg:bg-transparent border border-border/50 lg:border-0 rounded-2xl lg:rounded-none p-4 lg:border-b lg:border-border/50">
                                     <AnimatedStatCard
                                         icon={Users}
-                                        end={50}
-                                        suffix="K+"
-                                        label={t("activeLearners")}
+                                        end={displayStats[1]?.value ?? 50}
+                                        suffix={displayStats[1]?.suffix ?? "+"}
+                                        label={displayStats[1]?.label ?? t("expertCourses")}
                                         color="text-secondary"
                                         bgColor="bg-secondary/10"
                                     />
@@ -227,9 +251,9 @@ export function HeroSection() {
                                 <div className="bg-card/50 lg:bg-transparent border border-border/50 lg:border-0 rounded-2xl lg:rounded-none p-4 lg:border-r lg:border-border/50">
                                     <AnimatedStatCard
                                         icon={Briefcase}
-                                        end={95}
-                                        suffix="%"
-                                        label={t("jobPlacement")}
+                                        end={displayStats[2]?.value ?? 15}
+                                        suffix={displayStats[2]?.suffix ?? "+"}
+                                        label={displayStats[2]?.label ?? t("mentors")}
                                         color="text-success"
                                         bgColor="bg-success/10"
                                     />
@@ -237,12 +261,12 @@ export function HeroSection() {
                                 <div className="bg-card/50 lg:bg-transparent border border-border/50 lg:border-0 rounded-2xl lg:rounded-none p-4">
                                     <AnimatedStatCard
                                         icon={Star}
-                                        end={4.9}
-                                        suffix=""
-                                        label={t("averageRating")}
+                                        end={displayStats[3]?.value ?? 4.9}
+                                        suffix={displayStats[3]?.suffix ?? ""}
+                                        label={displayStats[3]?.label ?? t("averageRating")}
                                         color="text-warning"
                                         bgColor="bg-warning/10"
-                                        decimals={1}
+                                        decimals={(displayStats[3]?.value ?? 4.9) % 1 !== 0 ? 1 : 0}
                                     />
                                 </div>
                             </div>

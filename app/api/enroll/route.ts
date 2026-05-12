@@ -36,6 +36,7 @@ export async function POST(request: NextRequest) {
         .upsert({
             user_id: user.id,
             course_id: course_id,
+            status: 'success',
             source: price === 0 ? 'free' : 'admin_override'
         }, { onConflict: 'user_id, course_id' });
     if (enrollError) {

@@ -143,7 +143,7 @@ export async function getCoursePageData(slug: string): Promise<ActionResult<Cour
             adminClient.from('course_outline_modules').select('*').eq('course_id', course.id).eq('is_published', true).order('position', { ascending: true }),
             adminClient.from('course_outline_topics').select('*').eq('course_id', course.id).eq('is_published', true).order('position', { ascending: true }),
             supabase.from('course_reviews').select('*, user:user_id (id, name, avatar_url)').eq('course_id', course.id).order('created_at', { ascending: false }).limit(20),
-            supabase.from('courses').select('id, title, slug, thumbnail_url, price, discount_price, rating, rating_count, total_students, level, course_type, tags, batch_no, updated_at, duration_hours, short_description, description').eq('published', true).neq('id', course.id).eq('category_id', course.category_id).limit(4),
+            supabase.from('courses').select('id, title, slug, thumbnail_url, price, discount_price, discount_expires_at, rating, rating_count, total_students, level, course_type, tags, batch_no, updated_at, duration_hours, short_description, description').eq('published', true).neq('id', course.id).eq('category_id', course.category_id).limit(4),
             user ? supabase.from('enrollments').select('id, progress_percentage').eq('user_id', user.id).eq('course_id', course.id).in('status', ['active', 'success']).maybeSingle() : Promise.resolve({ data: null }),
             supabase.from('course_batches').select('*').eq('course_id', course.id).eq('is_active', true).order('start_date', { ascending: true }).then(r => r, () => ({ data: null })),
             supabase.from('milestones').select(`

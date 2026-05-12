@@ -56,6 +56,9 @@ export function CoursePlayerClient({
     const [showSubmissionModal, setShowSubmissionModal] = useState(false);
     const [submissionStatus, setSubmissionStatus] = useState<any>(null);
 
+    // Helper to get actual DB ID (strip 'assignment-' prefix for UUID compatibility)
+    const dbId = currentLesson.id.replace(/^assignment-/, '');
+
     // ── Video loading ──
     useEffect(() => {
         setVideoUrl(null);
@@ -67,21 +70,21 @@ export function CoursePlayerClient({
         };
         (async () => {
             try {
-                const { data, error: e } = await (supabase.from('lesson_assets').select('video_path').eq('lesson_id', currentLesson.id).single() as any);
-                if (e || !data?.video_path) { setVideoUrl(getFallback(currentLesson.id)); return; }
+                const { data, error: e } = await (supabase.from('lesson_assets').select('video_path').eq('lesson_id', dbId).single() as any);
+                if (e || !data?.video_path) { setVideoUrl(getFallback(dbId)); return; }
                 const path = data.video_path as string;
                 if (path.startsWith('http')) { setVideoUrl(path); }
                 else {
                     try {
-                        const res = await fetch(`/api/lessons/${currentLesson.id}/video`);
-                        if (res.ok) { const d = await res.json(); setVideoUrl(d?.url || getFallback(currentLesson.id)); }
-                        else setVideoUrl(getFallback(currentLesson.id));
-                    } catch { setVideoUrl(getFallback(currentLesson.id)); }
+                        const res = await fetch(`/api/lessons/${dbId}/video`);
+                        if (res.ok) { const d = await res.json(); setVideoUrl(d?.url || getFallback(dbId)); }
+                        else setVideoUrl(getFallback(dbId));
+                    } catch { setVideoUrl(getFallback(dbId)); }
                 }
-            } catch { setVideoUrl(getFallback(currentLesson.id)); }
+            } catch { setVideoUrl(getFallback(dbId)); }
             finally { setLoadingVideo(false); }
         })();
-    }, [currentLesson.id, hasAccess]);
+    }, [dbId, hasAccess]);
 
     // ── Assignment submission check ──
     useEffect(() => {
@@ -89,11 +92,11 @@ export function CoursePlayerClient({
         setSubmissionLink("");
         if (currentLesson.lesson_type === 'assignment' && userId) {
             (async () => {
-                const { data } = await supabase.from('assignment_submissions').select('*').eq('lesson_id', currentLesson.id).eq('user_id', userId).maybeSingle();
+                const { data } = await supabase.from('assignment_submissions').select('*').eq('lesson_id', dbId).eq('user_id', userId).maybeSingle();
                 if (data) { setSubmissionStatus(data); setSubmissionLink(data.submission_link); }
             })();
         }
-    }, [currentLesson.id, userId]);
+    }, [dbId, userId, currentLesson.lesson_type]);
 
     const handleDownload = () => {
         const content = assignment?.markdown_content || asset?.markdown_content || currentLesson.description;
@@ -109,7 +112,7 @@ export function CoursePlayerClient({
         if (!submissionLink.trim()) { error("Please provide a valid URL."); return; }
         setIsSubmitting(true);
         try {
-            const { data, error: e } = await supabase.from('assignment_submissions').upsert({ user_id: userId, lesson_id: currentLesson.id, submission_link: submissionLink, status: 'pending' }, { onConflict: 'user_id,lesson_id' }).select().single();
+            const { data, error: e } = await supabase.from('assignment_submissions').upsert({ user_id: userId, lesson_id: dbId, submission_link: submissionLink, status: 'pending' }, { onConflict: 'user_id,lesson_id' }).select().single();
             if (e) throw e;
             setSubmissionStatus(data); setShowSubmissionModal(false); success("Submitted successfully!");
         } catch (err: any) { error(err.message || "Submission failed."); }
@@ -159,7 +162,7 @@ export function CoursePlayerClient({
                         {/* Notes + Sidebar grid */}
                         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                             <div className="lg:col-span-2">
-                                <LessonNotes lessonId={currentLesson.id} />
+                                <LessonNotes lessonId={dbId} />
                             </div>
                             <MissionSidebar currentLesson={currentLesson} asset={asset} />
                         </div>

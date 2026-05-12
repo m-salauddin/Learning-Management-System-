@@ -37,12 +37,18 @@ export async function createTransaction(
     }
     const { data: existingEnrollment } = await supabase
         .from('enrollments')
-        .select('id')
+        .select('id, status')
         .eq('user_id', user.id)
         .eq('course_id', input.course_id)
-        .single();
+        .maybeSingle();
+
     if (existingEnrollment) {
-        return { success: false, error: 'You are already enrolled in this course' };
+        const status = existingEnrollment.status?.toLowerCase();
+        // Only block if enrollment is actually active/pending.
+        // If it was cancelled or failed, let them try again.
+        if (['active', 'success', 'successful', 'completed', 'pending'].includes(status)) {
+            return { success: false, error: 'You are already enrolled in this course' };
+        }
     }
     const { data: course } = await supabase
         .from('courses')
@@ -63,11 +69,11 @@ export async function createTransaction(
         if (couponResult.valid && couponResult.discount_amount) {
             const basePrice = course.discount_price || course.price;
             let actualDiscountAmount = couponResult.discount_amount;
-            
+
             if (couponResult.discount_type === 'percentage') {
                 actualDiscountAmount = basePrice * ((couponResult.discount_value || 0) / 100);
             }
-            
+
             finalAmount = Math.max(0, basePrice - actualDiscountAmount);
             discountAmount = actualDiscountAmount;
             couponId = couponResult.coupon_id || null;
@@ -96,6 +102,25 @@ export async function createTransaction(
         await supabase.rpc('create_enrollment_after_payment', {
             p_transaction_id: transaction.id
         });
+
+        try {
+            const adminIds = await getAdminIds();
+            const { data: courseData } = await supabase.from('courses').select('title').eq('id', input.course_id).single();
+            const courseTitle = courseData?.title || 'a course';
+
+            for (const adminId of adminIds) {
+                await createNotification(
+                    adminId,
+                    'New Free Enrollment',
+                    `${user.user_metadata?.name || 'A student'} has enrolled in "${courseTitle}" (Free).`,
+                    'info',
+                    `/dashboard/admin/enrollments`
+                );
+            }
+        } catch (e) {
+            console.error('Failed to notify admins about free enrollment:', e);
+        }
+
         revalidatePath('/dashboard/my-courses');
         return {
             success: true,
@@ -127,7 +152,7 @@ export async function createTransaction(
         return { success: false, error: error.message };
     }
 
-    
+
     if (input.payment_provider === 'manual') {
         await supabase.rpc('create_pending_enrollment', {
             p_transaction_id: transaction.id
@@ -136,7 +161,7 @@ export async function createTransaction(
         // Notify Admins about manual payment
         const adminIds = await getAdminIds();
         const courseTitle = (await supabase.from('courses').select('title').eq('id', input.course_id).single()).data?.title || 'a course';
-        
+
         for (const adminId of adminIds) {
             await createNotification(
                 adminId,
@@ -221,6 +246,24 @@ export async function confirmPayment(
         'success',
         `/dashboard/my-courses`
     );
+
+    // Notify Admins about successful payment/enrollment
+    try {
+        const adminIds = await getAdminIds();
+        const { data: student } = await supabase.from('users').select('name').eq('id', transaction.user_id).single();
+
+        for (const adminId of adminIds) {
+            await createNotification(
+                adminId,
+                'New Enrollment Completed',
+                `${student?.name || 'A student'} has successfully enrolled in "${courseTitle}".`,
+                'success',
+                `/dashboard/admin/enrollments`
+            );
+        }
+    } catch (e) {
+        console.error('Failed to notify admins about enrollment completion:', e);
+    }
 
     revalidatePath('/dashboard/my-courses');
     return {

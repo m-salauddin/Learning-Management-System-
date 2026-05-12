@@ -716,6 +716,7 @@ export const StepFinalization = ({ formData, setFormData, errors }: StepFinaliza
                                                                                                                                 correct_answer: it.correct_answer || 0,
                                                                                                                                 content: it.content || ""
                                                                                                                             });
+                                                                                                                            if (it.type === 'assignment') setAssignmentTab('write');
                                                                                                                         }}
                                                                                                                         onDelete={() => deleteItem(idx)}
                                                                                                                     />

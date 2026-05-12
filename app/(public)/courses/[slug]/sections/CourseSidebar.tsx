@@ -21,6 +21,7 @@ interface CourseSidebarProps {
     handleEnroll: () => void;
     loading: boolean;
     isEnrolled: boolean;
+    isPending?: boolean;
     setShowShareModal: (show: boolean) => void;
     setShowVideoModal: (show: boolean) => void;
 }
@@ -40,6 +41,7 @@ export default function CourseSidebar({
     handleEnroll,
     loading,
     isEnrolled,
+    isPending,
     setShowShareModal,
     setShowVideoModal
 }: CourseSidebarProps) {
@@ -208,12 +210,13 @@ export default function CourseSidebar({
                             <PrimaryCTAButton
                                 onClick={handleEnroll}
                                 loading={loading}
+                                disabled={isPending}
                                 hideIcon
                                 className="w-full! h-12! rounded-2xl! relative overflow-hidden group/enroll px-4 sm:px-6"
                             >
                                 <div className="flex items-center justify-center gap-2 sm:gap-3">
                                     <span className="text-xs font-black uppercase tracking-widest">
-                                        {isEnrolled ? 'Visit' : 'Enroll'}
+                                        {isEnrolled ? 'Visit' : (isPending ? 'Pending' : 'Enroll')}
                                     </span>
                                     <div className="w-7 h-7 rounded-full bg-white dark:bg-[#020615] flex items-center justify-center group-hover/enroll:scale-105 transition-transform shadow-lg shadow-black/10">
                                         <ArrowRight className="w-4 h-4 text-primary -rotate-45 group-hover/enroll:rotate-0 transition-transform" />

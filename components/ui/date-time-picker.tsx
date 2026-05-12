@@ -1,7 +1,8 @@
 "use client";
 import * as React from "react";
 import { format, startOfToday } from "date-fns";
-import { Calendar as CalendarIcon, Clock } from "lucide-react";
+import { Calendar as CalendarIcon, ChevronLeft, ChevronRight, Clock } from "lucide-react";
+import { useDayPicker } from "react-day-picker";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/Button";
 import { Calendar } from "@/components/ui/calendar";
@@ -17,12 +18,45 @@ import {
     SelectTrigger,
     SelectValue,
 } from "@/components/ui/select";
+
+// Custom caption that puts arrows right beside month/year
+function CustomMonthCaption({ calendarMonth }: { calendarMonth: { date: Date }; displayIndex: number }) {
+    const { goToMonth, previousMonth, nextMonth } = useDayPicker();
+    const d = calendarMonth.date;
+
+    return (
+        <div className="flex items-center justify-center gap-1 h-9 mb-1">
+            <button
+                type="button"
+                disabled={!previousMonth}
+                onClick={() => previousMonth && goToMonth(previousMonth)}
+                className="h-8 w-8 p-0 opacity-60 hover:opacity-100 hover:!bg-blue-600/10 disabled:opacity-25 transition-all rounded-lg flex items-center justify-center"
+            >
+                <ChevronLeft className="size-4" />
+            </button>
+            <div className="flex items-center gap-1.5 px-1 select-none">
+                <span className="text-sm font-bold text-foreground">{format(d, "MMMM")}</span>
+                <span className="text-sm font-normal text-muted-foreground">{format(d, "yyyy")}</span>
+            </div>
+            <button
+                type="button"
+                disabled={!nextMonth}
+                onClick={() => nextMonth && goToMonth(nextMonth)}
+                className="h-8 w-8 p-0 opacity-60 hover:opacity-100 hover:!bg-blue-600/10 disabled:opacity-25 transition-all rounded-lg flex items-center justify-center"
+            >
+                <ChevronRight className="size-4" />
+            </button>
+        </div>
+    );
+}
+
 interface DateTimePickerProps {
     date?: Date;
     setDate: (date: Date | undefined) => void;
     className?: string;
     placeholder?: string;
 }
+
 export function DateTimePicker({
     date,
     setDate,
@@ -30,11 +64,14 @@ export function DateTimePicker({
     placeholder = "Pick a date",
 }: DateTimePickerProps) {
     const [selectedDate, setSelectedDate] = React.useState<Date | undefined>(date);
+    const [open, setOpen] = React.useState(false);
+
     React.useEffect(() => {
         if (date) {
             setSelectedDate(date);
         }
     }, [date]);
+
     const handleDateSelect = (newDate: Date | undefined) => {
         if (!newDate) return;
         const updatedDate = new Date(newDate);
@@ -45,6 +82,7 @@ export function DateTimePicker({
         setSelectedDate(updatedDate);
         setDate(updatedDate);
     };
+
     const handleTimeChange = (type: "hours" | "minutes" | "ampm", value: string) => {
         const updatedDate = new Date(selectedDate || new Date());
         if (type === "hours") {
@@ -64,92 +102,98 @@ export function DateTimePicker({
         setSelectedDate(updatedDate);
         setDate(updatedDate);
     };
+
     const get12Hour = (date: Date | undefined) => {
         if (!date) return "12";
         const h = date.getHours() % 12;
         return (h === 0 ? 12 : h).toString();
     };
+
     const getAMPM = (date: Date | undefined) => {
         if (!date) return "AM";
         return date.getHours() >= 12 ? "PM" : "AM";
     };
-    const [open, setOpen] = React.useState(false);
-    
+
     return (
         <Popover open={open} onOpenChange={setOpen}>
             <PopoverTrigger asChild>
                 <button
                     type="button"
                     className={cn(
-                        "group flex h-12 w-full items-center justify-between gap-2 rounded-xl bg-input-dark px-4 text-sm font-medium transition-all duration-200 border border-input-dark-border outline-none",
-                        "hover:bg-input-dark-hover hover:border-input-dark-border",
-                        "focus:shadow-[0_0_0_2px_var(--input-dark-glow)] focus:border-input-dark-border",
-                        "data-[state=open]:shadow-[0_0_0_2px_var(--input-dark-glow)] data-[state=open]:border-input-dark-border",
-                        !date && "text-input-dark-text",
+                        "group flex h-12 w-full items-center justify-between gap-2 rounded-xl bg-background px-4 text-sm font-medium transition-all duration-200 border border-border outline-none",
+                        "hover:bg-muted/50 hover:border-blue-600/30",
+                        "focus:ring-2 focus:ring-blue-600/20 focus:border-blue-600/50",
+                        "data-[state=open]:ring-2 data-[state=open]:ring-blue-600/20 data-[state=open]:border-blue-600/50",
+                        !date && "text-muted-foreground",
                         className
                     )}
                 >
                     <span className="truncate">
                         {date ? format(date, "MM/dd/yyyy hh:mm aa") : placeholder}
                     </span>
-                    <CalendarIcon className="size-4 shrink-0 text-input-dark-text opacity-70 transition-colors group-hover:text-blue-500 group-data-[state=open]:text-blue-500 group-data-[state=open]:opacity-100" />
+                    <CalendarIcon className="size-4 shrink-0 text-muted-foreground opacity-70 transition-colors group-hover:text-blue-600 group-data-[state=open]:text-blue-600 group-data-[state=open]:opacity-100" />
                 </button>
             </PopoverTrigger>
-            <PopoverContent 
-                className="w-auto p-0 bg-slate-950/95 backdrop-blur-2xl border-white/10 shadow-2xl rounded-2xl overflow-hidden" 
+            <PopoverContent
+                className="w-[var(--radix-popover-trigger-width)] sm:w-auto p-0 bg-popover text-popover-foreground border-border shadow-2xl rounded-2xl overflow-hidden backdrop-blur-xl"
                 align="start"
-                style={{ 
-                    
-                    '--primary': '#3b82f6', 
-                    '--color-primary': '#3b82f6',
-                    '--primary-foreground': '#ffffff',
-                    '--color-primary-foreground': '#ffffff',
-                    '--accent': 'rgba(59, 130, 246, 0.1)',
-                    '--color-accent': 'rgba(59, 130, 246, 0.1)',
-                    '--accent-foreground': '#ffffff',
-                    '--color-accent-foreground': '#ffffff',
-                    '--ring': '#3b82f6',
-                    '--color-ring': '#3b82f6'
-                } as React.CSSProperties}
+                sideOffset={8}
             >
-                <div className="flex flex-col md:flex-row divide-y md:divide-y-0 md:divide-x divide-white/10">
-                    <div className="p-3">
+                <div className="flex flex-col sm:flex-row divide-y sm:divide-y-0 sm:divide-x divide-border">
+                    <div className="p-3 w-full sm:w-auto">
                         <Calendar
                             mode="single"
                             selected={selectedDate}
                             onSelect={handleDateSelect}
                             disabled={{ before: startOfToday() }}
                             initialFocus
+                            className="w-full sm:w-auto"
                             classNames={{
-                                today: "bg-blue-500/10 text-blue-400 border border-blue-500/20 rounded-lg",
-                                selected: "bg-blue-500 text-white !rounded-lg !shadow-lg",
+                                root: "w-full sm:w-fit",
+                                months: "w-full sm:w-auto",
+                                month: "w-full sm:w-auto space-y-4 max-sm:flex max-sm:flex-col",
+                                nav: "hidden",
+                                table: "w-full border-collapse max-sm:flex max-sm:flex-col",
+                                tbody: "w-full max-sm:flex max-sm:flex-col",
+                                head: "w-full max-sm:flex max-sm:flex-col",
+                                head_row: "flex w-full justify-between items-center",
+                                row: "flex w-full mt-2 justify-between items-center",
+                                today: "bg-blue-600/10 text-blue-600 border border-blue-600/20 rounded-lg",
+                                selected: "bg-blue-600 text-white !rounded-lg !shadow-lg",
+                                cell: "flex-1 text-center p-0 flex justify-center items-center",
                                 day: cn(
-                                    "flex aspect-square h-8 w-8 items-center justify-center p-0 font-normal transition-all rounded-lg",
-                                    "hover:bg-blue-500/30 hover:text-white",
-                                    "!focus-visible:ring-2 !focus-visible:ring-blue-500/50 !focus-visible:ring-offset-2",
-                                    "aria-selected:!bg-blue-500 aria-selected:!text-white aria-selected:!opacity-100",
+                                    "flex aspect-square h-11 w-full max-w-[44px] sm:h-8 sm:w-8 items-center justify-center p-0 font-normal transition-all rounded-lg",
+                                    "hover:!bg-blue-600/50 hover:!text-white",
+                                    "data-[selected-single=true]:!bg-blue-600 data-[selected-single=true]:!text-white",
+                                    "!focus-visible:ring-2 !focus-visible:ring-blue-600/50 !focus-visible:ring-offset-2",
+                                    "aria-selected:!bg-blue-600 aria-selected:!text-white aria-selected:!opacity-100",
                                     "aria-selected:!rounded-lg"
-                                )
+                                ),
+                                head_cell: "flex-1 text-center text-muted-foreground font-normal text-[0.8rem]",
+                                weekday: "flex-1 text-center rounded-md text-[0.8rem] font-normal text-muted-foreground select-none",
+                            }}
+                            components={{
+                                MonthCaption: CustomMonthCaption,
                             }}
                         />
                     </div>
-                    <div className="p-4 flex flex-col gap-4 bg-white/3 min-w-[140px]">
-                        <div className="flex items-center gap-2 text-xs font-bold text-white/40 uppercase tracking-widest px-1">
+                    <div className="p-4 flex flex-col gap-4 bg-muted/20 sm:min-w-[140px] w-full">
+                        <div className="flex items-center gap-2 text-xs font-bold text-muted-foreground/60 uppercase tracking-widest px-1">
                             <Clock className="w-3 h-3" />
                             Time
                         </div>
                         <div className="flex flex-col gap-3">
                             <div className="grid grid-cols-2 gap-2">
                                 <div className="space-y-1.5">
-                                    <label className="text-[10px] font-bold text-white/20 ml-1">Hour</label>
+                                    <label className="text-[10px] font-bold text-muted-foreground/40 ml-1">Hour</label>
                                     <Select
                                         value={get12Hour(selectedDate)}
                                         onValueChange={(v) => handleTimeChange("hours", v)}
                                     >
-                                        <SelectTrigger className="h-9 bg-white/5 border-white/10 focus:ring-blue-500/20 rounded-lg text-xs px-2">
+                                        <SelectTrigger className="h-9 bg-background border-border focus:ring-blue-600/20 rounded-lg text-xs px-2">
                                             <SelectValue />
                                         </SelectTrigger>
-                                        <SelectContent className="bg-slate-900 border-white/10 max-h-[200px]">
+                                        <SelectContent className="bg-popover border-border max-h-[200px]">
                                             {[12, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11].map((h) => (
                                                 <SelectItem key={h} value={h.toString()}>
                                                     {h.toString().padStart(2, "0")}
@@ -159,15 +203,15 @@ export function DateTimePicker({
                                     </Select>
                                 </div>
                                 <div className="space-y-1.5">
-                                    <label className="text-[10px] font-bold text-white/20 ml-1">Min</label>
+                                    <label className="text-[10px] font-bold text-muted-foreground/40 ml-1">Min</label>
                                     <Select
                                         value={selectedDate?.getMinutes().toString() || "0"}
                                         onValueChange={(v) => handleTimeChange("minutes", v)}
                                     >
-                                        <SelectTrigger className="h-9 bg-white/5 border-white/10 focus:ring-blue-500/20 rounded-lg text-xs px-2">
+                                        <SelectTrigger className="h-9 bg-background border-border focus:ring-blue-600/20 rounded-lg text-xs px-2">
                                             <SelectValue />
                                         </SelectTrigger>
-                                        <SelectContent className="bg-slate-900 border-white/10 max-h-[200px]">
+                                        <SelectContent className="bg-popover border-border max-h-[200px]">
                                             {Array.from({ length: 60 }).map((_, i) => (
                                                 <SelectItem key={i} value={i.toString()}>
                                                     {i.toString().padStart(2, "0")}
@@ -178,8 +222,8 @@ export function DateTimePicker({
                                 </div>
                             </div>
                             <div className="space-y-1.5">
-                                <label className="text-[10px] font-bold text-white/20 ml-1">Period</label>
-                                <div className="flex p-1 rounded-lg bg-white/5 border border-white/10 gap-1">
+                                <label className="text-[10px] font-bold text-muted-foreground/40 ml-1">Period</label>
+                                <div className="flex p-1 rounded-lg bg-background border border-border gap-1">
                                     {["AM", "PM"].map((p) => (
                                         <button
                                             key={p}
@@ -188,8 +232,8 @@ export function DateTimePicker({
                                             className={cn(
                                                 "flex-1 py-1 rounded-md text-[10px] font-bold transition-all",
                                                 getAMPM(selectedDate) === p
-                                                    ? "bg-blue-500 text-white shadow-lg"
-                                                    : "text-white/40 hover:text-white hover:bg-white/5"
+                                                    ? "bg-blue-600 text-white shadow-lg"
+                                                    : "text-muted-foreground/60 hover:text-foreground hover:bg-muted"
                                             )}
                                         >
                                             {p}
@@ -198,15 +242,15 @@ export function DateTimePicker({
                                 </div>
                             </div>
                         </div>
-                        <div className="mt-auto pt-4 border-t border-white/5 space-y-3">
-                            <div className="text-[10px] font-bold text-blue-400 text-center uppercase tracking-tighter">
+                        <div className="mt-auto pt-4 border-t border-border space-y-3">
+                            <div className="text-[10px] font-bold text-blue-600 text-center uppercase tracking-tighter">
                                 {selectedDate ? format(selectedDate, "hh:mm aa") : "--:-- --"}
                             </div>
-                            <Button 
-                                type="button" 
-                                size="sm" 
+                            <Button
+                                type="button"
+                                size="sm"
                                 onClick={() => setOpen(false)}
-                                className="w-full bg-blue-500 hover:bg-blue-600 text-white font-bold text-[11px] h-8 rounded-lg shadow-lg shadow-blue-500/20 active:scale-95 transition-all"
+                                className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold text-[11px] h-8 rounded-lg shadow-lg shadow-blue-600/20 active:scale-95 transition-all"
                             >
                                 Apply
                             </Button>

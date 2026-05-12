@@ -17,6 +17,7 @@ interface CourseHeroProps {
     handleEnroll: () => void;
     loading: boolean;
     isEnrolled: boolean;
+    isPending?: boolean;
     setShowVideoModal: (show: boolean) => void;
 }
 
@@ -28,6 +29,7 @@ export default function CourseHero({
     handleEnroll,
     loading,
     isEnrolled,
+    isPending,
     setShowVideoModal
 }: CourseHeroProps) {
 
@@ -161,9 +163,10 @@ export default function CourseHero({
                 <PrimaryCTAButton
                     onClick={handleEnroll}
                     loading={loading}
+                    disabled={isPending}
                     className="h-10! sm:h-12!"
                 >
-                    {isEnrolled ? 'Go to Course' : 'Enroll Now'}
+                    {isEnrolled ? 'Go to Course' : (isPending ? 'Payment Pending' : 'Enroll Now')}
                 </PrimaryCTAButton>
             </div>
         </motion.div>

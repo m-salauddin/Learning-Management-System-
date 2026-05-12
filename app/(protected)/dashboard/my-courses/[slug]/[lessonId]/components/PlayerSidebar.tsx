@@ -56,11 +56,18 @@ export function PlayerSidebar({
 
     // Per-milestone progress
     const getMilestoneProgress = (ms: any) => {
-        // Count only items that appear in the navigation (exclude quiz-type lessons, include assessment virtual)
         const items: { id: string }[] = [];
         (ms.modules || []).forEach((mod: any) => {
-            (mod.lessons || []).filter((l: any) => l.lesson_type !== 'quiz').forEach((l: any) => items.push({ id: l.id }));
+            // Lessons
+            (mod.lessons || []).filter((l: any) => 
+                l.lesson_type !== 'quiz' && l.lesson_type !== 'assignment'
+            ).forEach((l: any) => items.push({ id: l.id }));
+            
+            // Quizzes (Grouped into one assessment item)
             if ((mod.quizzes || []).length > 0) items.push({ id: `assessments-${mod.id}` });
+            
+            // Assignments
+            (mod.assignments || []).forEach((a: any) => items.push({ id: a.id }));
         });
         const done = items.filter((l) => lessonProgress[l.id]).length;
         return { done, total: items.length, pct: items.length ? Math.round((done / items.length) * 100) : 0 };
@@ -253,11 +260,13 @@ export function PlayerSidebar({
                                                     }).map((module: any, modIdx: number) => {
                                                         const isExpanded = expandedModules.includes(module.id) || !!searchQuery;
                                                         const isCurrentModule = module.id === currentLesson.module_id;
-                                                        // Build module items matching navigation: non-quiz lessons + assessment virtual
+                                                        
+                                                        // Build module items matching navigation
                                                         const moduleItems: { id: string }[] = [];
-                                                        (module.lessons || []).filter((l: any) => l.lesson_type !== 'quiz').forEach((l: any) => moduleItems.push({ id: l.id }));
+                                                        (module.lessons || []).filter((l: any) => l.lesson_type !== 'quiz' && l.lesson_type !== 'assignment').forEach((l: any) => moduleItems.push({ id: l.id }));
                                                         if ((module.quizzes || []).length > 0) moduleItems.push({ id: `assessments-${module.id}` });
-                                                        const moduleLessons = module.lessons || [];
+                                                        (module.assignments || []).forEach((a: any) => moduleItems.push({ id: a.id }));
+
                                                         const completedCount = moduleItems.filter((l) => lessonProgress[l.id]).length;
                                                         const modComplete = completedCount === moduleItems.length && moduleItems.length > 0;
 
@@ -309,7 +318,7 @@ export function PlayerSidebar({
                                                                             className="overflow-hidden"
                                                                         >
                                                                             <div className="pl-4 pr-1 py-1 space-y-0.5 ml-3 border-l-2 border-slate-100 dark:border-white/4">
-                                                                                {renderLessonItems(module, moduleLessons, searchQuery, course, currentLesson, lessonsWithStatus, hasAccess, lessonProgress, onError)}
+                                                                                {renderLessonItems(module, searchQuery, course, currentLesson, lessonsWithStatus, hasAccess, lessonProgress, onError)}
                                                                             </div>
                                                                         </motion.div>
                                                                     )}
@@ -331,31 +340,44 @@ export function PlayerSidebar({
 }
 
 function renderLessonItems(
-    module: any, lessons: any[], searchQuery: string, course: any,
+    module: any, searchQuery: string, course: any,
     currentLesson: any, lessonsWithStatus: any[], hasAccess: boolean,
     lessonProgress: Record<string, boolean>, onError: (msg: string) => void
 ) {
+    const lessons = module.lessons || [];
+    const quizzes = module.quizzes || [];
+    const assignments = module.assignments || [];
+
     const filteredLessons = lessons.filter((less: any) => {
         if (!searchQuery) return true;
         return less.title.toLowerCase().includes(searchQuery.toLowerCase());
     });
 
-    const quizzes = filteredLessons.filter((l: any) => l.lesson_type === 'quiz');
-    const coreLessons = filteredLessons.filter((l: any) => l.lesson_type !== 'quiz' && l.lesson_type !== 'assignment');
-    const assignments = filteredLessons.filter((l: any) => l.lesson_type === 'assignment');
+    const filteredQuizzes = quizzes.filter((q: any) => {
+        if (!searchQuery) return true;
+        return q.title.toLowerCase().includes(searchQuery.toLowerCase());
+    });
+
+    const filteredAssignments = assignments.filter((a: any) => {
+        if (!searchQuery) return true;
+        return a.title.toLowerCase().includes(searchQuery.toLowerCase());
+    });
 
     const processedItems: any[] = [];
-    // 1. Core lessons (video, text, etc.)
-    coreLessons.forEach((lesson: any) => {
+    
+    // 1. Core lessons
+    filteredLessons.filter((l: any) => l.lesson_type !== 'quiz' && l.lesson_type !== 'assignment').forEach((lesson: any) => {
         processedItems.push({ type: 'single', item: lesson });
     });
-    // 2. Assessment group (quizzes) — above assignments
-    if (quizzes.length > 0) {
-        processedItems.push({ type: 'assessment_group', items: quizzes });
+
+    // 2. Assessment group (quizzes)
+    if (filteredQuizzes.length > 0) {
+        processedItems.push({ type: 'assessment_group', items: filteredQuizzes });
     }
-    // 3. Assignments — below quizzes
-    assignments.forEach((lesson: any) => {
-        processedItems.push({ type: 'single', item: lesson });
+
+    // 3. Assignments
+    filteredAssignments.forEach((assignment: any) => {
+        processedItems.push({ type: 'single', item: assignment, isAssignment: true });
     });
 
     return processedItems.map((group, groupIdx) => {
@@ -408,10 +430,10 @@ function renderLessonItems(
         let LessonIcon = Play, iconColor = "text-slate-500";
         if (isCompleted) { LessonIcon = CheckCircle2; iconColor = "text-emerald-500"; }
         else if (isLocked) { LessonIcon = Lock; iconColor = "text-slate-300 dark:text-slate-600"; }
-        else if (lesson.lesson_type === 'assignment') { LessonIcon = Edit3; iconColor = "text-blue-500"; }
+        else if (group.isAssignment || lesson.lesson_type === 'assignment') { LessonIcon = Edit3; iconColor = "text-blue-500"; }
 
         return (
-            <Link key={lesson.id} href={isLocked ? "#" : `/dashboard/my-courses/${course.slug}/${lesson.id}`}
+            <Link key={lesson.id} href={isLocked ? "#" : `/dashboard/my-courses/${course.slug}/assignment-${lesson.id}`}
                 onClick={(e) => { if (isLocked) { e.preventDefault(); onError("Complete previous lessons first."); } }}
                 className={cn("flex items-center gap-2.5 p-2 rounded-lg transition-all group/lesson relative",
                     isActive ? "bg-primary/6 border border-primary/15" : isLocked ? "opacity-40 border border-transparent" : "hover:bg-slate-50 dark:hover:bg-white/2 border border-transparent"

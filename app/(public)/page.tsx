@@ -13,6 +13,9 @@ import {
 import { FloatingNav } from "@/components/FloatingNav";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { MappedCourse } from "@/types/mapped-course";
+import type { SiteSetting } from "@/lib/actions/site-settings";
+
+export const revalidate = 0;
 
 export async function generateMetadata() {
   const t = await getTranslations("Metadata");
@@ -33,6 +36,8 @@ export default async function Home() {
       short_description,
       thumbnail_url,
       price,
+      discount_price,
+      discount_expires_at,
       duration_hours,
       total_students,
       rating,
@@ -52,12 +57,15 @@ export default async function Home() {
     .eq('status', 'published')
     .order('serial_number', { ascending: true })
     .limit(6);
+
   if (coursesError) {
     console.error("Error fetching homepage courses:", coursesError);
   }
+
   const mappedCourses: MappedCourse[] = (coursesData || []).map((course: any) => {
     const instructorProfile = Array.isArray(course.instructor) ? course.instructor[0] : course.instructor;
     const instructorData = Array.isArray(instructorProfile?.users) ? instructorProfile.users[0] : instructorProfile?.users;
+
     return {
       id: course.id,
       slug: course.slug,
@@ -65,7 +73,11 @@ export default async function Home() {
       description: course.description || "",
       shortDescription: course.short_description || course.description || "",
       image: course.thumbnail_url || "/placeholder-course.jpg",
-      price: course.price > 0 ? `৳${course.price}` : "Free",
+      price: course.price > 0 ? `৳${course.price.toLocaleString()}` : "Free",
+      discountPrice: course.discount_price && course.discount_price > 0
+        ? `৳${course.discount_price.toLocaleString()}`
+        : undefined,
+      discountExpiresAt: course.discount_expires_at || undefined,
       duration: course.duration_hours ? `${Math.floor(Number(course.duration_hours))}h` : "N/A",
       students: `${course.total_students || 0}+`,
       rating: Number(course.rating) || 0,
@@ -79,7 +91,7 @@ export default async function Home() {
       tags: course.tags || [],
       level: course.level || "Beginner",
       language: course.language || "English",
-      lastUpdated: "2024-05-05", // Standardized date for hydration consistency
+      lastUpdated: "2024-05-05",
       whatYouLearn: [],
       curriculum: [],
       type: "Recorded",
@@ -101,6 +113,14 @@ export default async function Home() {
     ],
     "description": tMetadata("home.description")
   };
+  // Fetch site settings
+  const { getSiteSettings } = await import("@/lib/actions/site-settings");
+  const [heroStats, totalLearners, learnerAvatars] = await Promise.all([
+    getSiteSettings<SiteSetting[]>('hero_stats'),
+    getSiteSettings<string>('hero_total_learners'),
+    getSiteSettings<string[]>('hero_avatars')
+  ]);
+
   return (
     <main className="min-h-screen">
       <script
@@ -108,7 +128,11 @@ export default async function Home() {
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
       <FloatingNav />
-      <HeroSection />
+      <HeroSection
+        avatars={learnerAvatars || undefined}
+        stats={heroStats || undefined}
+        totalLearners={totalLearners || undefined}
+      />
       <TechStackSection />
       <FeaturesSection />
       <CoursesSection courses={mappedCourses} />

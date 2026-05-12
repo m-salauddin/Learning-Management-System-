@@ -72,6 +72,7 @@ export default function CourseDetailClient({ course, pageData }: CourseDetailCli
             discountPrice: c.discount_price && c.discount_price > 0
                 ? `৳${c.discount_price.toLocaleString()}`
                 : undefined,
+            discountExpiresAt: c.discount_expires_at || undefined,
             duration: `${c.duration_hours || 0}h`,
             students: `${c.total_students || 0}+`,
             rating: c.rating || 0,
@@ -94,6 +95,8 @@ export default function CourseDetailClient({ course, pageData }: CourseDetailCli
         })) as MappedCourse[];
     }, [relatedCourses]);
     const isLive = !!(course.type?.toLowerCase().includes('live') || pageData?.batches?.some(b => b.is_active));
+    const [isPending, setIsPending] = useState(false);
+
     useEffect(() => {
         const checkEnrollment = async () => {
             const { data: { user } } = await supabase.auth.getUser();
@@ -106,12 +109,22 @@ export default function CourseDetailClient({ course, pageData }: CourseDetailCli
                 .eq('course_id', course.id);
 
             if (data && data.length > 0) {
+                // Check for active enrollment
                 const activeEnrollment = data.find((e: any) => 
                     !e.status || 
                     ['active', 'completed', 'success', 'successful'].includes(e.status.toLowerCase())
                 );
                 if (activeEnrollment) {
                     setIsEnrolled(true);
+                    return;
+                }
+
+                // Check for pending enrollment
+                const pendingEnrollment = data.find((e: any) => 
+                    e.status && e.status.toLowerCase() === 'pending'
+                );
+                if (pendingEnrollment) {
+                    setIsPending(true);
                 }
             }
         };
@@ -321,6 +334,7 @@ export default function CourseDetailClient({ course, pageData }: CourseDetailCli
                             handleEnroll={handleEnroll}
                             loading={loading}
                             isEnrolled={isEnrolled}
+                            isPending={isPending}
                             setShowVideoModal={setShowVideoModal}
                         />
                         {}
@@ -330,6 +344,7 @@ export default function CourseDetailClient({ course, pageData }: CourseDetailCli
                             <CoursePrerequisites
                                 requirements={course.requirements || []}
                                 targetAudience={course.targetAudience || []}
+                                whatYouLearn={course.whatYouLearn || []}
                             />
                             <CourseDescription description={course.longDescription || ""} />
                             <CourseCurriculum
@@ -384,6 +399,7 @@ export default function CourseDetailClient({ course, pageData }: CourseDetailCli
                         handleEnroll={handleEnroll}
                         loading={loading}
                         isEnrolled={isEnrolled}
+                        isPending={isPending}
                         setShowShareModal={setShowShareModal}
                         setShowVideoModal={setShowVideoModal}
                     />

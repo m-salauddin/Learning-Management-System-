@@ -170,13 +170,13 @@ export async function getResumeLesson(courseId: string): Promise<ApiResponse<{
         .single();
     if (!enrollment?.last_lesson_id) {
         const { data: firstLesson } = await supabase
-            .from('lessons')
+            .from('module_lessons')
             .select(`
                 id, title,
                 module:modules(title, course_id)
             `)
             .eq('module.course_id', courseId)
-            .order('module.position', { ascending: true })
+            .order('module.position', { foreignTable: 'modules', ascending: true })
             .order('position', { ascending: true })
             .limit(1)
             .single();
@@ -194,7 +194,7 @@ export async function getResumeLesson(courseId: string): Promise<ApiResponse<{
         };
     }
     const { data: lesson } = await supabase
-        .from('lessons')
+        .from('module_lessons')
         .select(`
             id, title,
             module:modules(title)
@@ -495,5 +495,36 @@ export async function cancelEnrollment(enrollmentId: string): Promise<ApiRespons
     revalidatePath('/dashboard/enrollments');
     revalidatePath('/dashboard/my-courses');
 
+    return { success: true };
+}
+
+export async function deleteEnrollment(enrollmentId: string): Promise<ApiResponse<null>> {
+    const supabase = await createClient();
+    const { data: { user }, error: authError } = await supabase.auth.getUser();
+    if (authError || !user) {
+        return { success: false, error: 'Unauthorized' };
+    }
+
+    const { data: profile } = await supabase
+        .from('users')
+        .select('role')
+        .eq('id', user.id)
+        .single();
+
+    if (profile?.role !== 'admin') {
+        return { success: false, error: 'Unauthorized: Admin access required' };
+    }
+
+    const { error: deleteError } = await supabase
+        .from('enrollments')
+        .delete()
+        .eq('id', enrollmentId);
+
+    if (deleteError) {
+        console.error('Delete Enrollment Error:', deleteError);
+        return { success: false, error: deleteError.message };
+    }
+
+    revalidatePath('/dashboard/enrollments');
     return { success: true };
 }
