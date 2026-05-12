@@ -286,6 +286,7 @@ export async function getCoursePageData(slug: string): Promise<ActionResult<Cour
                 .from('enrollments')
                 .select('user_id, progress_percentage, user:users(id, name, avatar_url)')
                 .eq('course_id', course.id)
+                .in('status', ['active', 'success'])
                 .order('progress_percentage', { ascending: false })
                 .limit(10);
 

@@ -1,7 +1,8 @@
 "use client";
 import { useState, useEffect, useRef } from "react";
-import { Link, usePathname } from "@/i18n/routing";
-import { useTranslations } from "next-intl";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { useTranslations, useLocale } from "next-intl";
 import { motion, AnimatePresence } from "motion/react";
 import { ArrowRight, Search, Menu, X } from "lucide-react";
 import { SearchCommand } from "@/components/ui/SearchCommand";
@@ -47,6 +48,7 @@ const AuthSkeleton = () => (
 );
 export function Navbar() {
     const t = useTranslations("Navbar");
+    const locale = useLocale();
     const pathname = usePathname();
     const [mounted, setMounted] = useState(false);
     const [isSearchOpen, setIsSearchOpen] = useState(false);
@@ -79,10 +81,16 @@ export function Navbar() {
                 setActiveRect({ left: 0, width: 0 });
             }
         };
-        updateRect();
+
+        // Small delay to ensure DOM has reflowed after locale/path change
+        const timeoutId = setTimeout(updateRect, 50);
+        
         window.addEventListener('resize', updateRect);
-        return () => window.removeEventListener('resize', updateRect);
-    }, [pathname]);
+        return () => {
+            window.removeEventListener('resize', updateRect);
+            clearTimeout(timeoutId);
+        };
+    }, [pathname, locale]);
     useEffect(() => {
         const handleKeyDown = (e: KeyboardEvent) => {
             if (e.key === "k" && (e.metaKey || e.ctrlKey)) {

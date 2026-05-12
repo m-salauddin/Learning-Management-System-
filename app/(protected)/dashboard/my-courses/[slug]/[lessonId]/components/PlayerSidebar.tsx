@@ -141,7 +141,7 @@ export function PlayerSidebar({
                 </div>
 
                 {/* ─── Milestone Listing ─── */}
-                <div className="flex-1 overflow-y-auto custom-scrollbar p-3 space-y-3">
+                <div className="flex-1 overflow-y-auto scrollbar-hide p-3 space-y-3">
                     {milestones
                         .filter((ms: any) => {
                             if (!searchQuery) return true;
@@ -341,18 +341,21 @@ function renderLessonItems(
     });
 
     const quizzes = filteredLessons.filter((l: any) => l.lesson_type === 'quiz');
-    const processedItems: any[] = [];
-    let quizGroupAdded = false;
+    const coreLessons = filteredLessons.filter((l: any) => l.lesson_type !== 'quiz' && l.lesson_type !== 'assignment');
+    const assignments = filteredLessons.filter((l: any) => l.lesson_type === 'assignment');
 
-    filteredLessons.forEach((lesson: any) => {
-        if (lesson.lesson_type === 'quiz') {
-            if (!quizGroupAdded && quizzes.length > 0) {
-                processedItems.push({ type: 'assessment_group', items: quizzes });
-                quizGroupAdded = true;
-            }
-        } else {
-            processedItems.push({ type: 'single', item: lesson });
-        }
+    const processedItems: any[] = [];
+    // 1. Core lessons (video, text, etc.)
+    coreLessons.forEach((lesson: any) => {
+        processedItems.push({ type: 'single', item: lesson });
+    });
+    // 2. Assessment group (quizzes) — above assignments
+    if (quizzes.length > 0) {
+        processedItems.push({ type: 'assessment_group', items: quizzes });
+    }
+    // 3. Assignments — below quizzes
+    assignments.forEach((lesson: any) => {
+        processedItems.push({ type: 'single', item: lesson });
     });
 
     return processedItems.map((group, groupIdx) => {

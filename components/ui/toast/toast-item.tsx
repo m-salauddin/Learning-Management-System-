@@ -48,7 +48,7 @@ export const ToastItem = ({ title, description, variant, onDismiss, paused }: To
         return () => {
             if (timerRef.current) clearTimeout(timerRef.current);
         };
-    
+
     }, [paused, variant]);
     const handleCopy = async () => {
         const textToCopy = description ? `${title}\n${description}` : title;
@@ -117,9 +117,9 @@ export const ToastItem = ({ title, description, variant, onDismiss, paused }: To
                     </p>
                 )}
             </div>
-            {}
+            { }
             <div className="absolute top-4 right-4 flex items-center gap-1.5">
-                {}
+                { }
                 {variant === "error" && (
                     <>
                         <button

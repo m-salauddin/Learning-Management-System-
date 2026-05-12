@@ -207,9 +207,9 @@ export function TerminalSection() {
                     <div className="relative rounded-xl overflow-hidden border border-indigo-200 dark:border-white/10 shadow-2xl shadow-indigo-200/50 dark:shadow-black/60 bg-white dark:bg-[#0F172A]">
                         <div className="bg-indigo-50/50 dark:bg-transparent dark:bg-linear-to-b dark:from-[#0F172A] dark:to-[#1E293B] px-4 py-3 flex items-center justify-between border-b border-indigo-100 dark:border-white/10">
                             <div className="flex items-center gap-2">
-                                <div className="w-3 h-3 rounded-full bg-[#EF4444] hover:bg-[#EF4444]/80 transition-colors cursor-pointer shadow-lg shadow-[#EF4444]/40" />
-                                <div className="w-3 h-3 rounded-full bg-[#FF4D00] hover:bg-[#FF4D00]/80 transition-colors cursor-pointer shadow-lg shadow-[#FF4D00]/40" />
-                                <div className="w-3 h-3 rounded-full bg-[#34D399] hover:bg-[#34D399]/80 transition-colors cursor-pointer shadow-lg shadow-[#34D399]/40" />
+                                <div className="w-3 h-3 rounded-full bg-[#FF5F56] hover:bg-[#FF5F56]/90 transition-colors cursor-pointer shadow-sm shadow-[#FF5F56]/20" />
+                                <div className="w-3 h-3 rounded-full bg-[#FFBD2E] hover:bg-[#FFBD2E]/90 transition-colors cursor-pointer shadow-sm shadow-[#FFBD2E]/20" />
+                                <div className="w-3 h-3 rounded-full bg-[#27C93F] hover:bg-[#27C93F]/90 transition-colors cursor-pointer shadow-sm shadow-[#27C93F]/20" />
                             </div>
                             <div className="absolute left-1/2 -translate-x-1/2 flex items-center gap-2">
                                 <div className="p-1 rounded bg-linear-to-br from-[#FCB900]/20 to-[#22D3EE]/20">

@@ -279,7 +279,7 @@ lib/
 └── supabase/
     ├── client.ts
     ├── server.ts
-    └── middleware.ts
+    └── proxy.ts
 
 types/
 ├── course-page.ts                     # NEW - Course page types
@@ -533,6 +533,6 @@ Browser → Enter coupon code → setCouponCode(code)
 - [ ] **Signed URLs expire in 5 minutes**
 - [ ] **Server-only video signing** (never expose video paths to client)
 - [ ] **Enrolled check** before allowing reviews
-- [ ] **Lead form rate limiting** (optional, via Edge Function or middleware)
+- [ ] **Lead form rate limiting** (optional, via Edge Function or proxy)
 - [ ] **Admin role validation** in all admin routes
 - [ ] **Teacher can only access own courses** (instructor_id = auth.uid())

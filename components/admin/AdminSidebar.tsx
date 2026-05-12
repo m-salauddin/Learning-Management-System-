@@ -29,18 +29,18 @@ export function AdminSidebar() {
     const pathname = usePathname();
 
     return (
-        <aside className="hidden lg:flex flex-col w-[260px] h-screen sticky top-0 border-r border-border/40 bg-background/50 backdrop-blur-3xl z-40">
-            <div className="h-20 flex items-center px-6 transition-all duration-300">
-                <div className="flex items-center gap-3">
+        <aside className="hidden lg:flex flex-col w-[232px] h-screen sticky top-0 border-r border-border/80 bg-background/60 backdrop-blur-2xl z-40">
+            <div className="h-14 flex items-center px-4 transition-all duration-300 border-b border-border/80">
+                <div className="flex items-center gap-2.5">
                     <Logo size="md" />
-                    <span className="px-2 py-0.5 rounded-full bg-primary/10 text-primary text-[9px] font-black border border-primary/20 uppercase tracking-widest shadow-sm">
+                    <span className="px-2 py-0.5 rounded-full bg-primary/10 text-primary text-[9px] font-black border border-primary/20 uppercase tracking-widest">
                         Admin
                     </span>
                 </div>
             </div>
 
-            <nav className="flex-1 px-4 space-y-1.5 mt-4 custom-scrollbar overflow-y-auto">
-                <h3 className="px-3 text-[10px] font-bold uppercase tracking-[0.1em] text-muted-foreground/50 mb-3">
+            <nav className="flex-1 px-3 mt-4 scrollbar-hide overflow-y-auto pb-6">
+                <h3 className="px-2.5 text-[10px] font-semibold uppercase tracking-[0.08em] text-muted-foreground/50 mb-2">
                     Management
                 </h3>
                 
@@ -55,42 +55,31 @@ export function AdminSidebar() {
                                 key={item.href}
                                 href={item.href}
                                 className={cn(
-                                    "flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] font-medium transition-all duration-200 group relative",
+                                    "flex items-center gap-2.5 px-2.5 py-[7px] rounded-lg text-[12.5px] font-medium transition-all duration-200 group relative",
                                     isActive
-                                        ? "text-primary bg-primary/10 shadow-[inset_0_1px_1px_rgba(var(--primary),0.1)]"
-                                        : "text-muted-foreground hover:text-foreground hover:bg-muted/40"
+                                        ? "text-primary bg-primary/8 font-semibold"
+                                        : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
                                 )}
                             >
-                                <item.icon className={cn(
-                                    "w-[18px] h-[18px] shrink-0 transition-all duration-300",
-                                    isActive ? "text-primary scale-110" : "text-muted-foreground/70 group-hover:text-foreground"
-                                )} />
-                                
-                                <span className="relative z-10 whitespace-nowrap tracking-tight">{item.label}</span>
-
                                 {isActive && (
                                     <motion.div
-                                        layoutId="active-indicator-admin"
-                                        className="absolute right-2 w-1.5 h-1.5 rounded-full bg-primary shadow-[0_0_8px_rgba(var(--primary),0.6)]"
-                                        transition={{ type: "spring", stiffness: 300, damping: 30 }}
+                                        layoutId="admin-sidebar-active"
+                                        className="absolute left-0 top-1/2 -translate-y-1/2 w-[3px] h-4 rounded-r-full bg-primary"
+                                        transition={{ type: "spring", stiffness: 350, damping: 30 }}
                                     />
                                 )}
+
+                                <item.icon className={cn(
+                                    "w-4 h-4 shrink-0 transition-colors duration-200",
+                                    isActive ? "text-primary" : "text-muted-foreground/60 group-hover:text-foreground"
+                                )} strokeWidth={isActive ? 2.2 : 1.8} />
+                                
+                                <span className="whitespace-nowrap tracking-[-0.01em]">{item.label}</span>
                             </Link>
                         )
                     })}
                 </div>
             </nav>
-
-            <div className="p-4 border-t border-border/40">
-                <div className="bg-linear-to-br from-primary/10 to-transparent p-4 rounded-2xl border border-primary/10 relative overflow-hidden group hover:border-primary/20 transition-all shadow-sm">
-                    <div className="absolute top-0 right-0 w-16 h-16 bg-primary/10 blur-2xl rounded-full -mr-8 -mt-8 pointer-events-none group-hover:bg-primary/20 transition-all" />
-                    <h4 className="text-[13px] font-bold text-primary mb-0.5 relative z-10 flex items-center gap-2">
-                        <Shield className="w-3.5 h-3.5" />
-                        Admin Mode
-                    </h4>
-                    <p className="text-[11px] text-muted-foreground relative z-10">System-wide control enabled.</p>
-                </div>
-            </div>
         </aside>
     );
 }

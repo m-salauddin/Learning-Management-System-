@@ -1,16 +1,8 @@
-import type { Metadata } from "next";
 import { Space_Grotesk, JetBrains_Mono, Hind_Siliguri } from "next/font/google";
-import { ThemeProvider } from "@/components/providers/theme-provider";
-import { ReduxProvider } from "@/components/providers/ReduxProvider";
-import { CookieConsent } from "@/components/CookieConsent";
-import { ToastProvider } from "@/components/ui/toast";
-import { SocialLoginToast } from "@/components/auth/SocialLoginToast";
-import { AuthListener } from "@/components/auth/AuthListener";
-import { Suspense } from "react";
-import { NextIntlClientProvider } from 'next-intl';
-import { notFound } from 'next/navigation';
-import { routing } from '@/i18n/routing';
-import "../globals.css";
+import { getLocale, getMessages, getTimeZone } from 'next-intl/server';
+import { Providers } from "./providers";
+import type { Metadata } from "next";
+import "./globals.css";
 
 const spaceGrotesk = Space_Grotesk({
   variable: "--font-space-grotesk",
@@ -97,52 +89,24 @@ export const metadata: Metadata = {
 
 export default async function RootLayout({
   children,
-  params
 }: {
   children: React.ReactNode;
-  params: Promise<{ locale: string }>;
 }) {
-  const { locale } = await params;
-
-  // Ensure that the incoming `locale` is valid
-  if (!routing.locales.includes(locale as any)) {
-    notFound();
-  }
-
-  // Manually load messages since the plugin is disabled
-  let messages;
-  try {
-    messages = (await import(`@/messages/${locale}.json`)).default;
-  } catch (error) {
-    console.error("Failed to load messages:", error);
-    notFound();
-  }
+  const locale = await getLocale();
+  const messages = await getMessages();
+  const timeZone = await getTimeZone();
 
   return (
-    <html lang={locale} className={`${spaceGrotesk.variable} ${hindSiliguri.variable} ${jetbrainsMono.variable}`} suppressHydrationWarning data-scroll-behavior="smooth">
-      <body
-        className="antialiased"
-        suppressHydrationWarning
-      >
-        <NextIntlClientProvider messages={messages} locale={locale}>
-          <ThemeProvider
-            attribute="class"
-            defaultTheme="dark"
-            enableSystem={true}
-            disableTransitionOnChange
-          >
-            <ReduxProvider>
-              <ToastProvider>
-                <AuthListener />
-                <Suspense fallback={<div />}>
-                  <SocialLoginToast />
-                </Suspense>
-                {children}
-                <CookieConsent />
-              </ToastProvider>
-            </ReduxProvider>
-          </ThemeProvider>
-        </NextIntlClientProvider>
+    <html 
+      lang={locale} 
+      className={`${spaceGrotesk.variable} ${hindSiliguri.variable} ${jetbrainsMono.variable}`}
+      suppressHydrationWarning
+      data-scroll-behavior="smooth"
+    >
+      <body className="antialiased" suppressHydrationWarning>
+        <Providers locale={locale} messages={messages} timeZone={timeZone}>
+          {children}
+        </Providers>
       </body>
     </html>
   );

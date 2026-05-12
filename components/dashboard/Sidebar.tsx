@@ -17,6 +17,9 @@ import {
     Layers,
     User,
     GraduationCap,
+    Settings,
+    HelpCircle,
+    LogOut,
 } from "lucide-react";
 import { Logo } from "@/components/ui/Logo";
 import { cn } from "@/lib/utils";
@@ -94,17 +97,11 @@ const NAV_GROUPS: Record<UserRole, SidebarGroup[]> = {
     ],
     admin: [
         {
-            title: "System",
+            title: "Management",
             icon: ShieldCheck,
             items: [
                 { icon: LayoutDashboard, label: "Overview", href: "/dashboard" },
                 { icon: User, label: "Profile", href: "/dashboard/profile" },
-            ]
-        },
-        {
-            title: "People",
-            icon: Users,
-            items: [
                 { icon: Users, label: "Users", href: "/dashboard/users" },
                 { icon: GraduationCap, label: "Enrollments", href: "/dashboard/enrollments" },
             ]
@@ -115,12 +112,6 @@ const NAV_GROUPS: Record<UserRole, SidebarGroup[]> = {
             items: [
                 { icon: BookOpen, label: "Courses", href: "/dashboard/courses" },
                 { icon: Layers, label: "Categories", href: "/dashboard/categories" },
-            ]
-        },
-        {
-            title: "Growth",
-            icon: Tags,
-            items: [
                 { icon: Tags, label: "Discounts", href: "/dashboard/discounts" },
                 { icon: Ticket, label: "Coupons", href: "/dashboard/coupons" },
             ]
@@ -133,6 +124,12 @@ const NAV_GROUPS: Record<UserRole, SidebarGroup[]> = {
             ]
         }
     ],
+};
+
+const SYSTEM_INFO = {
+    version: "v1.2.4-stable",
+    status: "Online",
+    usage: 84, // 84% storage
 };
 
 interface SidebarProps {
@@ -148,27 +145,21 @@ export function Sidebar({ role, isCollapsed = false }: SidebarProps) {
     return (
         <motion.aside
             initial={false}
-            animate={{ width: isCollapsed ? 76 : 240 }}
+            animate={{ width: isCollapsed ? 64 : 232 }}
             transition={{ duration: 0.3, ease: [0.23, 1, 0.32, 1] }}
-            className="hidden lg:flex flex-col h-screen sticky top-0 border-r border-border/40 bg-background/50 backdrop-blur-3xl z-40"
+            className="hidden lg:flex flex-col h-screen sticky top-0 border-r border-border/80 bg-background/60 backdrop-blur-2xl z-40"
         >
-            <div className={cn(
-                "h-20 flex items-center shrink-0 transition-all duration-300 px-6",
-                isCollapsed ? "justify-center" : "justify-start"
-            )}>
+            <div className="h-14 flex items-center shrink-0 transition-all duration-300 px-4 border-b border-border/80">
                 <Link href="/" className="shrink-0">
                     <Logo size="md" showText={!isCollapsed} />
                 </Link>
             </div>
 
-            <nav className={cn(
-                "flex-1 space-y-6 mt-4 custom-scrollbar pb-8 overflow-x-hidden overflow-y-auto px-4",
-                isCollapsed && "px-2"
-            )}>
+            <nav className="flex-1 space-y-5 mt-4 scrollbar-hide pb-6 overflow-x-hidden overflow-y-auto px-3">
                 {groups.map((group) => (
-                    <div key={group.title} className="space-y-1.5">
+                    <div key={group.title}>
                         {!isCollapsed && (
-                            <h3 className="px-3 text-[10px] font-bold uppercase tracking-[0.1em] text-muted-foreground/50 mb-2">
+                            <h3 className="px-2.5 text-[10px] font-semibold uppercase tracking-[0.08em] text-muted-foreground/50 mb-2">
                                 {group.title}
                             </h3>
                         )}
@@ -181,35 +172,37 @@ export function Sidebar({ role, isCollapsed = false }: SidebarProps) {
                                         key={item.href}
                                         href={item.href}
                                         className={cn(
-                                            "flex items-center gap-3 rounded-xl text-[13px] font-medium group relative transition-all duration-200",
-                                            isCollapsed ? "p-2.5 justify-center" : "px-3 py-2",
+                                            "flex items-center gap-2.5 rounded-lg text-[12.5px] font-medium group relative transition-all duration-200 px-3 py-[7px]",
                                             isActive
-                                                ? "text-primary bg-primary/10 shadow-[inset_0_1px_1px_rgba(var(--primary),0.1)]"
-                                                : "text-muted-foreground hover:text-foreground hover:bg-muted/40"
+                                                ? "text-primary bg-primary/8 font-semibold"
+                                                : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
                                         )}
                                     >
-                                        <item.icon className={cn(
-                                            "shrink-0 transition-all duration-300",
-                                            isCollapsed ? "w-5 h-5" : "w-[18px] h-[18px]",
-                                            isActive ? "text-primary scale-110" : "text-muted-foreground/70 group-hover:text-foreground"
-                                        )} />
-
-                                        {!isCollapsed && (
-                                            <span className="whitespace-nowrap tracking-tight">
-                                                {item.label}
-                                            </span>
-                                        )}
-
-                                        {isActive && !isCollapsed && (
+                                        {isActive && (
                                             <motion.div
-                                                layoutId="active-indicator"
-                                                className="absolute right-2 w-1.5 h-1.5 rounded-full bg-primary shadow-[0_0_8px_rgba(var(--primary),0.6)]"
-                                                transition={{ type: "spring", stiffness: 300, damping: 30 }}
+                                                layoutId="sidebar-active"
+                                                className="absolute left-0 top-1/2 -translate-y-1/2 w-[3px] h-5 rounded-r-full bg-primary"
+                                                transition={{ type: "spring", stiffness: 350, damping: 30 }}
                                             />
                                         )}
 
+                                        <item.icon className={cn(
+                                            "shrink-0 w-[16px] h-[16px] transition-colors duration-200",
+                                            isActive ? "text-primary" : "text-muted-foreground/60 group-hover:text-foreground"
+                                        )} strokeWidth={isActive ? 2.2 : 1.8} />
+
+                                        {!isCollapsed && (
+                                            <motion.span
+                                                initial={{ opacity: 0, x: -10 }}
+                                                animate={{ opacity: 1, x: 0 }}
+                                                className="whitespace-nowrap tracking-[-0.01em]"
+                                            >
+                                                {item.label}
+                                            </motion.span>
+                                        )}
+
                                         {isCollapsed && (
-                                            <div className="absolute left-full ml-4 px-3 py-1.5 bg-popover border border-border rounded-lg text-xs font-medium text-popover-foreground opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all whitespace-nowrap z-50 pointer-events-none translate-x-[-10px] group-hover:translate-x-0 shadow-xl">
+                                            <div className="absolute left-full ml-3 px-2.5 py-1.5 bg-popover border border-border/60 rounded-md text-[11px] font-medium text-popover-foreground opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all whitespace-nowrap z-50 pointer-events-none translate-x-[-8px] group-hover:translate-x-0 shadow-lg">
                                                 {item.label}
                                             </div>
                                         )}
@@ -221,53 +214,63 @@ export function Sidebar({ role, isCollapsed = false }: SidebarProps) {
                 ))}
             </nav>
 
-            <div className="p-4 border-t border-border/40 shrink-0">
-                <AnimatePresence mode="wait">
-                    {!isCollapsed ? (
-                        <motion.div
-                            key="full-footer"
-                            initial={{ opacity: 0, y: 10 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            exit={{ opacity: 0, y: 10 }}
-                            className="bg-linear-to-br from-primary/10 to-transparent p-4 rounded-2xl border border-primary/10 relative overflow-hidden group/card shadow-sm"
-                        >
-                            <div className="absolute top-0 right-0 w-16 h-16 bg-primary/10 blur-2xl rounded-full -mr-8 -mt-8 pointer-events-none" />
-                            <h4 className="text-[13px] font-bold text-primary mb-0.5 relative z-10">
-                                {role === 'admin' ? 'System Monitor' : 'Premium Access'}
-                            </h4>
-                            <p className="text-[11px] text-muted-foreground mb-3 relative z-10">
-                                {role === 'admin' ? 'All services operational' : 'Unlock advanced features'}
-                            </p>
-                            <button className={cn(
-                                "w-full py-2 text-[11px] font-bold rounded-lg transition-all cursor-pointer relative z-10",
-                                role === 'admin'
-                                    ? "bg-emerald-500/10 text-emerald-600 hover:bg-emerald-500/20 border border-emerald-500/20"
-                                    : "bg-primary text-primary-foreground hover:bg-primary/90 shadow-lg shadow-primary/25"
-                            )}>
-                                {role === 'admin' ? 'View Logs' : 'Upgrade Now'}
-                            </button>
-                        </motion.div>
-                    ) : (
-                        <motion.div
-                            key="collapsed-footer"
-                            initial={{ opacity: 0, scale: 0.8 }}
-                            animate={{ opacity: 1, scale: 1 }}
-                            exit={{ opacity: 0, scale: 0.8 }}
-                            className="flex justify-center"
-                        >
-                            <div className={cn(
-                                "w-11 h-11 rounded-xl flex items-center justify-center border transition-all duration-300",
-                                role === 'admin'
-                                    ? "bg-emerald-500/10 border-emerald-500/20 text-emerald-600 shadow-sm"
-                                    : "bg-primary/10 border-primary/20 text-primary shadow-sm"
-                            )}>
-                                {role === 'admin' ? <ShieldCheck className="w-5 h-5" /> : <Award className="w-5 h-5" />}
+            {/* System Info Section */}
+            <div className="shrink-0 border-t border-border/80 px-3 py-3">
+                {!isCollapsed ? (
+                    <div className="bg-primary/5 rounded-xl p-3 border border-primary/10 space-y-3">
+                        <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-2">
+                                <div className="w-2 h-2 rounded-full bg-primary animate-pulse shadow-[0_0_8px_rgba(var(--primary),0.5)]" />
+                                <span className="text-[11px] font-semibold text-foreground/80">{SYSTEM_INFO.status}</span>
                             </div>
-                        </motion.div>
-                    )}
-                </AnimatePresence>
+                            <span className="text-[10px] font-medium text-muted-foreground bg-primary/10 px-1.5 py-0.5 rounded-md">
+                                {SYSTEM_INFO.version}
+                            </span>
+                        </div>
+                        
+                        <div className="space-y-1.5">
+                            <div className="flex items-center justify-between text-[10px] font-medium">
+                                <span className="text-muted-foreground">Storage Usage</span>
+                                <span className="text-foreground/70">{SYSTEM_INFO.usage}%</span>
+                            </div>
+                            <div className="h-1 w-full bg-background/50 rounded-full overflow-hidden border border-white/5">
+                                <motion.div 
+                                    initial={{ width: 0 }}
+                                    animate={{ width: `${SYSTEM_INFO.usage}%` }}
+                                    className="h-full bg-primary" 
+                                />
+                            </div>
+                        </div>
+                    </div>
+                ) : (
+                    <div className="group relative flex items-center justify-center py-2">
+                        <div className="w-9 h-9 rounded-lg bg-primary/5 border border-primary/10 flex items-center justify-center text-muted-foreground hover:text-primary transition-colors cursor-help">
+                            <div className="relative">
+                                <ShieldCheck className="w-4 h-4" />
+                                <div className="absolute -top-0.5 -right-0.5 w-2 h-2 rounded-full bg-primary border border-background" />
+                            </div>
+                        </div>
+                        
+                        {/* Collapsed Tooltip */}
+                        <div className="absolute left-full ml-3 px-3 py-2 bg-popover border border-border/60 rounded-xl shadow-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-50 pointer-events-none translate-x-[-8px] group-hover:translate-x-0 w-48">
+                            <div className="space-y-2">
+                                <div className="flex items-center justify-between border-b border-border/30 pb-1.5 mb-1.5">
+                                    <span className="text-[11px] font-bold">System Status</span>
+                                    <span className="text-[10px] text-primary font-bold uppercase tracking-wider">{SYSTEM_INFO.status}</span>
+                                </div>
+                                <div className="flex justify-between text-[10px]">
+                                    <span className="text-muted-foreground">Version</span>
+                                    <span className="font-medium">{SYSTEM_INFO.version}</span>
+                                </div>
+                                <div className="flex justify-between text-[10px]">
+                                    <span className="text-muted-foreground">Storage</span>
+                                    <span className="font-medium">{SYSTEM_INFO.usage}% full</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                )}
             </div>
         </motion.aside>
     );
 }
-

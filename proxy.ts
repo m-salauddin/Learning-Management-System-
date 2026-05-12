@@ -1,8 +1,12 @@
-import createMiddleware from 'next-intl/middleware';
-import { routing } from './i18n/routing';
+import { type NextRequest } from 'next/server';
+import { updateSession } from './lib/supabase/proxy';
 
-export default createMiddleware(routing);
+export default async function proxy(request: NextRequest) {
+    return await updateSession(request);
+}
 
 export const config = {
-  matcher: ['/', '/(bn|en)/:path*']
+    matcher: [
+        '/((?!api|_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)',
+    ],
 };

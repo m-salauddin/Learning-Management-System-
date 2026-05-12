@@ -3,7 +3,7 @@ import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { useTranslations } from "next-intl";
 import { Cookie } from "lucide-react";
-import { Link } from "@/i18n/routing";
+import Link from "next/link";
 
 export function CookieConsent() {
     const t = useTranslations("CookieConsent");

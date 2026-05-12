@@ -40,9 +40,17 @@ function TestimonialCard({ testimonial, index }: { testimonial: Testimonial; ind
                         "{testimonial.quote}"
                     </p>
                     <div className="flex items-center gap-4 border-t border-border/50 dark:border-white/10 pt-6">
-                        <div className={`w-12 h-12 rounded-full bg-linear-to-br ${testimonial.gradient} p-[2px] group-hover:shadow-lg group-hover:shadow-primary/20 transition-shadow duration-300`}>
-                            <div className="w-full h-full rounded-full bg-card flex items-center justify-center text-sm font-bold">
-                                {testimonial.avatar}
+                        <div className={`w-12 h-12 rounded-full bg-linear-to-br ${testimonial.gradient} p-[2px] group-hover:shadow-lg group-hover:shadow-primary/20 transition-all duration-300`}>
+                            <div className="w-full h-full rounded-full bg-card overflow-hidden flex items-center justify-center text-sm font-bold">
+                                {testimonial.avatar.startsWith('http') ? (
+                                    <img 
+                                        src={testimonial.avatar} 
+                                        alt={testimonial.name} 
+                                        className="w-full h-full object-cover"
+                                    />
+                                ) : (
+                                    testimonial.avatar
+                                )}
                             </div>
                         </div>
                         <div>

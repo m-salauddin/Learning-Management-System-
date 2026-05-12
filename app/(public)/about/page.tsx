@@ -9,9 +9,8 @@ import {
     AboutCommunitySection,
 } from "@/components/sections/about";
 
-export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }) {
-    const { locale } = await params;
-    const t = await getTranslations({ locale, namespace: "Metadata" });
+export async function generateMetadata() {
+    const t = await getTranslations("Metadata");
     return {
         title: t("about.title"),
         description: t("about.description"),
@@ -19,7 +18,7 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: s
 }
 export default function AboutPage() {
     return (
-        <main>
+        <main className="relative">
             <AboutHeroSection />
             <AboutStatsSection />
             <AboutMissionSection />
