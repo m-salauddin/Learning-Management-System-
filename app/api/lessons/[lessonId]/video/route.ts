@@ -15,7 +15,7 @@ export async function GET(
     }
     // Verify access
     const { data: lesson, error: lessonError } = await supabase
-        .from('lessons')
+        .from('module_lessons')
         .select(`
             id,
             is_free_preview,

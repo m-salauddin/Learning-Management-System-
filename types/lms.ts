@@ -438,7 +438,7 @@ export interface CreateCourseInput {
     projects?: { title: string; description: string; image_url?: string; tech_stack?: string }[];
     resources?: { title: string; type: string; url: string }[];
     milestones?: CurriculumMilestone[];
-    modules?: { title: string; lessons: { title: string; video_url: string }[] }[];
+    modules?: { title: string; lessons: { title: string; video_url?: string; type?: CurriculumItemType; description?: string; content?: string; options?: string[]; correct_answer?: number }[] }[];
     coupons?: any[];
     community_facebook_url?: string;
     community_whatsapp_url?: string;

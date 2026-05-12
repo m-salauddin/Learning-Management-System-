@@ -81,7 +81,7 @@ export default function EditCoursePage() {
         }
     });
 
-    const DRAFT_KEY = `dokkhoit_course_edit_v1_${courseId}`;
+    const DRAFT_KEY = `dokkhoit_course_edit_v2_${courseId}`;
     const [dbFormData, setDbFormData] = useState<CreateCourseInput | null>(null);
     const isReadyRef = useRef(false);
     const hasRestoredRef = useRef(false);
@@ -152,6 +152,7 @@ export default function EditCoursePage() {
                 setTeachers(tchsRes.data);
             }
             if (courseRes.success && courseRes.data) {
+                console.log('[EditCourse] Course loaded successfully:', courseId);
                 const course = courseRes.data as any;
                 const details = course.course_details?.[0] || {};
                 const projects = course.course_projects || [];
@@ -197,26 +198,89 @@ export default function EditCoursePage() {
                         type: r.resource_type || "",
                         url: r.external_url || ""
                     })),
-                    milestones: course.milestones?.map((ms: any) => ({
-                        title: ms.title || "",
-                        description: ms.description || "",
-                        modules: (ms.modules || []).map((m: any) => ({
-                            title: m.title || "",
-                            items: (m.lessons || []).map((l: any) => ({
-                                title: l.title || "",
-                                description: l.description || "",
-                                type: l.lesson_type || "lesson",
-                                video_url: l.lesson_assets?.[0]?.video_path || ""
-                            }))
-                        }))
-                    })) || [],
-                    modules: course.modules?.filter((m: any) => !m.milestone_id).map((m: any) => ({
-                        title: m.title || "",
-                        lessons: (m.lessons || []).map((l: any) => ({
-                            title: l.title || "",
-                            video_url: l.lesson_assets?.[0]?.video_path || ""
-                        }))
-                    })) || [],
+                    milestones: (() => {
+                        const mapModuleToUI = (m: any) => {
+                            // 1. Video/text lessons from module_lessons table
+                            const videoLessons = (m.lessons || [])
+                                .filter((l: any) => !l.lesson_type || l.lesson_type === 'video' || l.lesson_type === 'text')
+                                .map((l: any) => {
+                                    const assets = l.lesson_assets;
+                                    const asset = Array.isArray(assets) ? assets[0] : assets;
+                                    return {
+                                        title: l.title || "",
+                                        type: 'lesson' as const,
+                                        video_url: asset?.video_path || "",
+                                        content: asset?.markdown_content || "",
+                                        options: [] as string[],
+                                        correct_answer: 0,
+                                        _pos: l.position ?? 999
+                                    };
+                                });
+
+                            // 2. Quizzes from module_quizzes table
+                            const quizzes = (m.quizzes || []).map((q: any) => {
+                                const firstQ = q.questions?.[0] || {};
+                                return {
+                                    title: firstQ.question || q.title || "",
+                                    type: 'quiz' as const,
+                                    video_url: "",
+                                    content: "",
+                                    options: firstQ.options || [],
+                                    correct_answer: firstQ.options?.indexOf(firstQ.correct) ?? 0,
+                                    _pos: q.position ?? 999
+                                };
+                            });
+
+                            // 3. Assignments from module_assignments table
+                            const assignments = (m.assignments || []).map((a: any) => ({
+                                title: a.title || "",
+                                type: 'assignment' as const,
+                                video_url: "",
+                                content: a.markdown_content || a.instructions || "",
+                                options: [] as string[],
+                                correct_answer: 0,
+                                _pos: a.position ?? 999
+                            }));
+
+                            // Combine, sort by position, then strip the _pos field
+                            const sorted = [...videoLessons, ...quizzes, ...assignments]
+                                .sort((a, b) => a._pos - b._pos);
+
+                            const items = sorted.map(item => ({
+                                title: item.title,
+                                type: item.type,
+                                video_url: item.video_url,
+                                content: item.content,
+                                options: item.options,
+                                correct_answer: item.correct_answer
+                            }));
+
+                            return { title: m.title || "", items };
+                        };
+
+                        // 1. Map milestone modules
+                        const milestoneMapped = (course.milestones || []).map((ms: any) => ({
+                            title: ms.title || "",
+                            description: ms.description || "",
+                            modules: (ms.modules || []).map(mapModuleToUI)
+                        }));
+
+                        // 2. Merge standalone modules into milestones
+                        const standaloneModules = (course.standalone_modules || [])
+                            .filter((m: any) => !m.milestone_id);
+
+                        if (standaloneModules.length > 0) {
+                            const standaloneAsMilestones = standaloneModules.map((m: any) => ({
+                                title: m.title || "Module",
+                                description: "",
+                                modules: [mapModuleToUI(m)]
+                            }));
+                            return [...milestoneMapped, ...standaloneAsMilestones];
+                        }
+
+                        return milestoneMapped;
+                    })(),
+                    modules: [],
                     community_facebook_url: course.community_facebook_url || "",
                     community_whatsapp_url: course.community_whatsapp_url || "",
                     bkash_automatic_enabled: course.bkash_automatic_enabled || false,
@@ -228,9 +292,11 @@ export default function EditCoursePage() {
                     }
                 };
 
+
+
                 setFormData(fetchedFormData);
                 setDbFormData(fetchedFormData);
-                
+
                 if (fetchedFormData.thumbnail_url) {
                     setThumbnailPreview(fetchedFormData.thumbnail_url);
                 }
@@ -240,36 +306,33 @@ export default function EditCoursePage() {
                 if (savedDraft) {
                     try {
                         const parsed = JSON.parse(savedDraft);
-                        const { _savedStep, ...draftFields } = parsed;
-                        
+                        const { _savedStep, milestones: _draftMilestones, modules: _draftModules, ...draftFields } = parsed;
+
+                        // Only compare non-curriculum fields for draft restoration
+                        // Milestones/modules always come fresh from DB to avoid stale data
                         const dbComp = {
                             title: fetchedFormData.title,
                             thumbnail_url: fetchedFormData.thumbnail_url,
                             price: Number(fetchedFormData.price),
                             description: fetchedFormData.description,
-                            milestones: fetchedFormData.milestones,
-                            modules: fetchedFormData.modules,
                         };
                         const draftComp = {
                             title: draftFields.title || "",
                             thumbnail_url: draftFields.thumbnail_url || "",
                             price: Number(draftFields.price || 0),
                             description: draftFields.description || "",
-                            milestones: draftFields.milestones || [],
-                            modules: draftFields.modules || [],
                         };
 
                         if (JSON.stringify(dbComp) !== JSON.stringify(draftComp)) {
-                            setFormData(prev => ({ ...prev, ...draftFields }));
-                            
-                            // Always sync thumbnail preview if we have one in draft
+                            // Restore draft but KEEP milestones from fresh DB data
+                            setFormData(prev => ({ ...prev, ...draftFields, milestones: fetchedFormData.milestones, modules: fetchedFormData.modules }));
+
                             if (draftFields.thumbnail_url) {
                                 setThumbnailPreview(draftFields.thumbnail_url);
                             }
-                            
+
                             if (_savedStep) setCurrentStep(Number(_savedStep));
-                            
-                            // Prevent double toast in StrictMode
+
                             if (!hasRestoredRef.current) {
                                 toast.success("Unsaved Changes Restored", "We've restored your last session's edits for this course.");
                                 hasRestoredRef.current = true;
@@ -287,15 +350,16 @@ export default function EditCoursePage() {
                 if (!draftApplied && fetchedFormData.thumbnail_url) {
                     setThumbnailPreview(fetchedFormData.thumbnail_url);
                 }
-                
+
                 isReadyRef.current = true;
             } else {
-                toast.error("Course not found");
+                console.error('[EditCourse] Failed to load course:', courseRes.error);
+                toast.error(courseRes.error || "Course not found");
                 router.push("/dashboard/courses");
             }
-        } catch (error) {
-            console.error("Error fetching data:", error);
-            toast.error("Error", "Failed to load course data. Please refresh the page.");
+        } catch (error: any) {
+            console.error("[EditCourse] Error fetching data:", error);
+            toast.error("Error", error?.message || "Failed to load course data. Please refresh the page.");
         } finally {
             setIsLoading(false);
         }
@@ -325,11 +389,11 @@ export default function EditCoursePage() {
                 .getPublicUrl(filePath);
 
             setFormData(prev => ({ ...prev, thumbnail_url: publicUrl }));
-            
+
             const reader = new FileReader();
             reader.onloadend = () => setThumbnailPreview(reader.result as string);
             reader.readAsDataURL(file);
-            
+
             toast.success("Thumbnail uploaded successfully");
         } catch (error: any) {
             console.error("Thumbnail upload error:", error);
@@ -436,7 +500,7 @@ export default function EditCoursePage() {
     return (
         <div className="max-w-6xl mx-auto py-8 px-4 sm:px-6">
             <div className="space-y-8">
-                {}
+                { }
                 <div className="mb-8">
                     <div className="flex items-center gap-3 mb-4">
                         <Link
@@ -498,7 +562,7 @@ export default function EditCoursePage() {
                             )}
                         </AnimatePresence>
                     </div>
-                    {}
+                    { }
                     <div className="xl:col-span-4 h-full">
                         <CoursePreview
                             formData={formData}

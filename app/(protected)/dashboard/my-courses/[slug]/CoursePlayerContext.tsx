@@ -67,12 +67,16 @@ export function CoursePlayerProvider({ course, userId, enrollmentId, hasAccess, 
         const modules = course.modules || [];
         const structural = milestones.length > 0 ? milestones : [{ id: 'default', title: "Curriculum", modules }];
         const result: any[] = [];
+
         structural.forEach((ms: any) => {
             (ms.modules || []).forEach((mod: any) => {
-                const lessons = (mod.lessons || []).filter((l: any) => l.lesson_type !== 'quiz');
-                lessons.filter((l: any) => l.lesson_type !== 'assignment').forEach((lesson: any) => result.push(lesson));
-                const hasQuizzes = (mod.quizzes || []).length > 0;
-                if (hasQuizzes) {
+                const lessons = (mod.lessons || []).filter((l: any) =>
+                    l.lesson_type !== 'quiz' && l.lesson_type !== 'assignment'
+                );
+                lessons.forEach((lesson: any) => result.push(lesson));
+
+                const quizzes = mod.quizzes || [];
+                if (quizzes.length > 0) {
                     result.push({
                         id: `assessments-${mod.id}`,
                         module_id: mod.id,
@@ -80,9 +84,18 @@ export function CoursePlayerProvider({ course, userId, enrollmentId, hasAccess, 
                         lesson_type: 'assessment_center',
                         is_free_preview: false,
                         _virtual: true,
+                        items: quizzes
                     });
                 }
-                lessons.filter((l: any) => l.lesson_type === 'assignment').forEach((lesson: any) => result.push(lesson));
+
+                const assignments = mod.assignments || [];
+                assignments.forEach((assignment: any) => {
+                    result.push({
+                        ...assignment,
+                        id: `assignment-${assignment.id}`,
+                        lesson_type: 'assignment',
+                    });
+                });
             });
         });
         return result;
@@ -120,6 +133,14 @@ export function CoursePlayerProvider({ course, userId, enrollmentId, hasAccess, 
             const { data: quizSubs } = await supabase.from('quiz_submissions').select('lesson_id').eq('user_id', userId);
             if (quizSubs) quizSubs.forEach((qs: any) => {
                 if (qs.lesson_id && !p[qs.lesson_id]) p[qs.lesson_id] = true;
+            });
+
+            const { data: assignmentSubs } = await supabase.from('assignment_submissions').select('lesson_id').eq('user_id', userId);
+            if (assignmentSubs) assignmentSubs.forEach((as: any) => {
+                if (as.lesson_id) {
+                    const key = `assignment-${as.lesson_id}`;
+                    if (!p[key]) p[key] = true;
+                }
             });
 
             setLessonProgress(p);

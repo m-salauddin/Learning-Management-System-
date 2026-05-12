@@ -31,14 +31,21 @@ export default function CourseDescription({ description }: CourseDescriptionProp
         <div id="description" className="mt-12 sm:mt-16 scroll-mt-24">
             <style dangerouslySetInnerHTML={{ __html: `
                 .${scopeClass} ul { list-style: none !important; padding-left: 0 !important; margin: 0.75rem 0 !important; }
-                .${scopeClass} ul > li { position: relative !important; padding-left: 1.5rem !important; margin: 0.25rem 0 !important; list-style: none !important; color: inherit !important; }
+                .${scopeClass} ul > li { 
+                    position: relative !important; 
+                    padding-left: 1.75rem !important; 
+                    margin: 0.5rem 0 !important; 
+                    list-style: none !important; 
+                    color: inherit !important;
+                    line-height: 1.6 !important;
+                }
                 .${scopeClass} ul > li::before {
                     content: '' !important;
                     position: absolute !important;
                     left: 0 !important;
-                    top: 4px !important;
-                    width: 1rem !important;
-                    height: 1rem !important;
+                    top: 0.25rem !important;
+                    width: 1.1rem !important;
+                    height: 1.1rem !important;
                     background-color: #6366f1 !important;
                     mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M22 11.08V12a10 10 0 1 1-5.93-9.14'%2F%3E%3Cpath d='m9 11 3 3L22 4'%2F%3E%3C%2Fsvg%3E") !important;
                     -webkit-mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M22 11.08V12a10 10 0 1 1-5.93-9.14'%2F%3E%3Cpath d='m9 11 3 3L22 4'%2F%3E%3C%2Fsvg%3E") !important;
@@ -46,6 +53,14 @@ export default function CourseDescription({ description }: CourseDescriptionProp
                     -webkit-mask-size: contain !important;
                     mask-repeat: no-repeat !important;
                     -webkit-mask-repeat: no-repeat !important;
+                }
+                /* Hide any input checkboxes found in the list */
+                .${scopeClass} ul > li input[type="checkbox"] {
+                    display: none !important;
+                }
+                /* Ensure label or wrapper doesn't mess up layout */
+                .${scopeClass} ul > li label {
+                    display: contents !important;
                 }
                 .${scopeClass} ol { list-style: decimal !important; padding-left: 1.5rem !important; margin: 0.75rem 0 !important; }
                 .${scopeClass} ol > li { margin: 0.15rem 0 !important; padding-left: 0.5rem !important; color: inherit !important; }
@@ -65,7 +80,7 @@ export default function CourseDescription({ description }: CourseDescriptionProp
                 .${scopeClass} a:hover { text-decoration-color: rgba(99, 102, 241, 0.8) !important; }
                 .${scopeClass} p { margin: 1.25rem 0 !important; }
                 .${scopeClass} li p { margin: 0 !important; }
-                .${scopeClass} strong { color: var(--foreground) !important; font-weight: 700 !important; }
+                .${scopeClass} strong { color: inherit !important; font-weight: 700 !important; }
             `}} />
 
             {/* Section header */}

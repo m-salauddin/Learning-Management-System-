@@ -105,7 +105,7 @@ export async function getCourseBySlug(slug: string): Promise<ApiResponse<CourseW
                 *,
                 modules(
                     *,
-                    lessons(
+                    lessons:module_lessons(
                         *,
                         lesson_assets(*)
                     )
@@ -122,8 +122,9 @@ export async function getCourseBySlug(slug: string): Promise<ApiResponse<CourseW
             course_details(*)
         `)
         .eq('slug', slug)
-        .order('position', { foreignTable: 'modules', ascending: true })
-        .order('position', { foreignTable: 'modules.lessons', ascending: true })
+        .order('position', { foreignTable: 'milestones', ascending: true })
+        .order('position', { foreignTable: 'milestones.modules', ascending: true })
+        .order('position', { foreignTable: 'milestones.modules.lessons', ascending: true })
         .order('order_index', { foreignTable: 'course_projects', ascending: true })
         .order('order_index', { foreignTable: 'course_faq', ascending: true })
         .order('order_index', { foreignTable: 'course_resources', ascending: true })
@@ -160,22 +161,26 @@ export async function getCourseById(id: string): Promise<ApiResponse<CourseWithM
                 user:users(id, name, email, avatar_url)
             ),
             category:categories(id, name, slug),
-            modules(
-                *,
-                lessons(
-                    *,
-                    lesson_assets(*)
-                )
-            ),
             milestones(
                 *,
                 modules(
                     *,
-                    lessons(
+                    lessons:module_lessons(
                         *,
                         lesson_assets(*)
-                    )
+                    ),
+                    quizzes:module_quizzes(*),
+                    assignments:module_assignments(*)
                 )
+            ),
+            standalone_modules:modules!modules_course_id_fkey(
+                *,
+                lessons:module_lessons(
+                    *,
+                    lesson_assets(*)
+                ),
+                quizzes:module_quizzes(*),
+                assignments:module_assignments(*)
             ),
             course_instructors(
                 instructor_id,
@@ -188,6 +193,8 @@ export async function getCourseById(id: string): Promise<ApiResponse<CourseWithM
             course_details(*)
         `)
         .eq('id', id)
+        .order('position', { foreignTable: 'standalone_modules', ascending: true })
+        .order('position', { foreignTable: 'standalone_modules.lessons', ascending: true })
         .order('position', { foreignTable: 'milestones', ascending: true })
         .order('position', { foreignTable: 'milestones.modules', ascending: true })
         .order('position', { foreignTable: 'milestones.modules.lessons', ascending: true })
@@ -196,8 +203,11 @@ export async function getCourseById(id: string): Promise<ApiResponse<CourseWithM
         .order('order_index', { foreignTable: 'course_resources', ascending: true })
         .single();
     if (error) {
+        console.error('[getCourseById] Supabase error:', error.message, error.details, error.hint);
         return { success: false, error: error.message };
     }
+
+
     const instructor_ids = (course as any).course_instructors
         ?.filter((ci: any) => ci.role === 'main')
         .map((ci: any) => ci.instructor_id) || [];
@@ -418,7 +428,8 @@ export async function createCourse(input: CreateCourseInput): Promise<ApiRespons
         }));
         await supabase.from('course_resources').insert(resourceData);
     }
-    if (milestones?.length) {
+    // 1. Handle Milestones and their nested Modules/Lessons
+    if (milestones && milestones.length > 0) {
         for (const [msIndex, msInput] of milestones.entries()) {
             const { data: milestone, error: msError } = await supabase
                 .from('milestones')
@@ -447,27 +458,51 @@ export async function createCourse(input: CreateCourseInput): Promise<ApiRespons
 
                     if (module && !mError && mInput.items?.length) {
                         for (const [iIndex, iInput] of mInput.items.entries()) {
-                            const { data: lesson, error: lError } = await supabase
-                                .from('lessons')
-                                .insert({
-                                    module_id: module.id,
-                                    title: iInput.title,
-                                    description: iInput.description || "",
-                                    lesson_type: iInput.type,
-                                    position: iIndex,
-                                    is_published: true
-                                })
-                                .select()
-                                .single();
-
-                            if (lesson && !lError && (iInput.video_url || iInput.content || iInput.options)) {
-                                await supabase
-                                    .from('lesson_assets')
+                            if (iInput.type === 'lesson') {
+                                const { data: lesson, error: lError } = await supabase
+                                    .from('module_lessons')
                                     .insert({
-                                        lesson_id: lesson.id,
-                                        video_path: iInput.video_url || "",
+                                        module_id: module.id,
+                                        title: iInput.title,
+                                        description: iInput.description || "",
+                                        lesson_type: 'video',
+                                        position: iIndex,
+                                        is_published: true
+                                    })
+                                    .select()
+                                    .single();
+
+                                if (lesson && !lError && (iInput.video_url || iInput.content)) {
+                                    await supabase
+                                        .from('lesson_assets')
+                                        .insert({
+                                            lesson_id: lesson.id,
+                                            video_path: iInput.video_url || "",
+                                            markdown_content: iInput.content || ""
+                                        });
+                                }
+                            } else if (iInput.type === 'quiz') {
+                                await supabase
+                                    .from('module_quizzes')
+                                    .insert({
+                                        module_id: module.id,
+                                        title: iInput.title,
+                                        position: iIndex,
+                                        questions: [{
+                                            question: iInput.title,
+                                            options: iInput.options || [],
+                                            correct: iInput.options?.[iInput.correct_answer || 0] || ""
+                                        }]
+                                    });
+                            } else if (iInput.type === 'assignment') {
+                                await supabase
+                                    .from('module_assignments')
+                                    .insert({
+                                        module_id: module.id,
+                                        title: iInput.title,
                                         markdown_content: iInput.content || "",
-                                        resources: iInput.options ? { quiz_data: { options: iInput.options, correct_answer: iInput.correct_answer } } : []
+                                        instructions: iInput.description || "",
+                                        position: iIndex
                                     });
                             }
                         }
@@ -475,8 +510,10 @@ export async function createCourse(input: CreateCourseInput): Promise<ApiRespons
                 }
             }
         }
-    } else if (modules?.length) {
-        
+    }
+
+    // 2. Handle Standalone Modules and their Lessons
+    if (modules && modules.length > 0) {
         for (const [mIndex, moduleInput] of modules.entries()) {
             const { data: module, error: moduleError } = await supabase
                 .from('modules')
@@ -489,25 +526,54 @@ export async function createCourse(input: CreateCourseInput): Promise<ApiRespons
                 })
                 .select()
                 .single();
-            if (module && !moduleError && moduleInput.lessons?.length) {
-                for (const [lIndex, lessonInput] of moduleInput.lessons.entries()) {
-                    const { data: lesson, error: lessonError } = await supabase
-                        .from('lessons')
-                        .insert({
-                            module_id: module.id,
-                            title: lessonInput.title,
-                            lesson_type: 'video',
-                            position: lIndex,
-                            is_published: true
-                        })
-                        .select()
-                        .single();
-                    if (lesson && !lessonError) {
-                        await supabase
-                            .from('lesson_assets')
+
+            if (module && !moduleError && (moduleInput as any).items) {
+                for (const [iIndex, iInput] of (moduleInput as any).items.entries()) {
+                    if (iInput.type === 'lesson') {
+                        const { data: lesson, error: lError } = await supabase
+                            .from('module_lessons')
                             .insert({
-                                lesson_id: lesson.id,
-                                video_path: lessonInput.video_url,
+                                module_id: module.id,
+                                title: iInput.title,
+                                description: iInput.description || "",
+                                lesson_type: 'video',
+                                position: iIndex,
+                                is_published: true
+                            })
+                            .select()
+                            .single();
+
+                        if (lesson && !lError && (iInput.video_url || iInput.content)) {
+                            await supabase
+                                .from('lesson_assets')
+                                .insert({
+                                    lesson_id: lesson.id,
+                                    video_path: iInput.video_url || "",
+                                    markdown_content: iInput.content || ""
+                                });
+                        }
+                    } else if (iInput.type === 'quiz') {
+                        await supabase
+                            .from('module_quizzes')
+                            .insert({
+                                module_id: module.id,
+                                title: iInput.title,
+                                position: iIndex,
+                                questions: [{
+                                    question: iInput.title,
+                                    options: iInput.options || [],
+                                    correct: iInput.options?.[iInput.correct_answer || 0] || ""
+                                }]
+                            });
+                    } else if (iInput.type === 'assignment') {
+                        await supabase
+                            .from('module_assignments')
+                            .insert({
+                                module_id: module.id,
+                                title: iInput.title,
+                                markdown_content: iInput.content || "",
+                                instructions: iInput.description || "",
+                                position: iIndex
                             });
                     }
                 }
@@ -515,7 +581,7 @@ export async function createCourse(input: CreateCourseInput): Promise<ApiRespons
         }
     }
 
-    
+    // Calculate and update total lessons count
     let totalLessonsCount = 0;
     if (milestones?.length) {
         milestones.forEach(ms => {
@@ -523,9 +589,10 @@ export async function createCourse(input: CreateCourseInput): Promise<ApiRespons
                 totalLessonsCount += mod.items?.length || 0;
             });
         });
-    } else if (modules?.length) {
+    }
+    if (modules?.length) {
         modules.forEach(mod => {
-            totalLessonsCount += (mod as any).lessons?.length || 0;
+            totalLessonsCount += (mod as any).items?.length || (mod as any).lessons?.length || 0;
         });
     }
 
@@ -678,12 +745,12 @@ export async function updateCourse(input: UpdateCourseInput): Promise<ApiRespons
             await supabase.from('course_projects').insert(projectData);
         }
     }
-    if (milestones !== undefined) {
-        
+    if (milestones !== undefined || modules !== undefined) {
+        // Clear existing curriculum to prevent duplication/orphans
         await supabase.from('milestones').delete().eq('course_id', id);
-        
         await supabase.from('modules').delete().eq('course_id', id);
 
+        // 1. Handle Milestones and their nested Modules/Lessons
         if (milestones && milestones.length > 0) {
             for (const [msIndex, msInput] of milestones.entries()) {
                 const { data: milestone } = await supabase
@@ -713,27 +780,51 @@ export async function updateCourse(input: UpdateCourseInput): Promise<ApiRespons
 
                         if (moduleRow && mInput.items) {
                             for (const [iIndex, iInput] of mInput.items.entries()) {
-                                const { data: lessonRow } = await supabase
-                                    .from('lessons')
-                                    .insert({
-                                        module_id: moduleRow.id,
-                                        title: iInput.title,
-                                        description: iInput.description || "",
-                                        lesson_type: iInput.type,
-                                        position: iIndex,
-                                        is_published: true
-                                    })
-                                    .select()
-                                    .single();
-
-                                if (lessonRow && (iInput.video_url || iInput.content || iInput.options)) {
-                                    await supabase
-                                        .from('lesson_assets')
+                                if (iInput.type === 'lesson') {
+                                    const { data: lessonRow } = await supabase
+                                        .from('module_lessons')
                                         .insert({
-                                            lesson_id: lessonRow.id,
-                                            video_path: iInput.video_url || "",
+                                            module_id: moduleRow.id,
+                                            title: iInput.title,
+                                            description: iInput.description || "",
+                                            lesson_type: 'video',
+                                            position: iIndex,
+                                            is_published: true
+                                        })
+                                        .select()
+                                        .single();
+
+                                    if (lessonRow && (iInput.video_url || iInput.content)) {
+                                        await supabase
+                                            .from('lesson_assets')
+                                            .insert({
+                                                lesson_id: lessonRow.id,
+                                                video_path: iInput.video_url || "",
+                                                markdown_content: iInput.content || ""
+                                            });
+                                    }
+                                } else if (iInput.type === 'quiz') {
+                                    await supabase
+                                        .from('module_quizzes')
+                                        .insert({
+                                            module_id: moduleRow.id,
+                                            title: iInput.title,
+                                            position: iIndex,
+                                            questions: [{
+                                                question: iInput.title, // Use title as question for now
+                                                options: iInput.options || [],
+                                                correct: iInput.options?.[iInput.correct_answer || 0] || ""
+                                            }]
+                                        });
+                                } else if (iInput.type === 'assignment') {
+                                    await supabase
+                                        .from('module_assignments')
+                                        .insert({
+                                            module_id: moduleRow.id,
+                                            title: iInput.title,
                                             markdown_content: iInput.content || "",
-                                            resources: iInput.options ? { quiz_data: { options: iInput.options, correct_answer: iInput.correct_answer } } : []
+                                            instructions: iInput.description || "",
+                                            position: iIndex
                                         });
                                 }
                             }
@@ -742,13 +833,8 @@ export async function updateCourse(input: UpdateCourseInput): Promise<ApiRespons
                 }
             }
         }
-    } else if (modules !== undefined) {
-        const { data: existingModules } = await supabase.from('modules').select('id').eq('course_id', id);
-        if (existingModules?.length) {
-            const mIds = existingModules.map(m => m.id);
-            await supabase.from('lessons').delete().in('module_id', mIds);
-            await supabase.from('modules').delete().eq('course_id', id);
-        }
+
+        // 2. Handle Standalone Modules and their Lessons
         if (modules && modules.length > 0) {
             for (const [mIndex, moduleInput] of modules.entries()) {
                 const { data: moduleRow, error: moduleError } = await supabase
@@ -762,25 +848,54 @@ export async function updateCourse(input: UpdateCourseInput): Promise<ApiRespons
                     })
                     .select()
                     .single();
-                if (moduleRow && !moduleError && moduleInput.lessons?.length) {
-                    for (const [lIndex, lessonInput] of moduleInput.lessons.entries()) {
-                        const { data: lessonRow, error: lessonError } = await supabase
-                            .from('lessons')
-                            .insert({
-                                module_id: moduleRow.id,
-                                title: lessonInput.title,
-                                lesson_type: 'video',
-                                position: lIndex,
-                                is_published: true
-                            })
-                            .select()
-                            .single();
-                        if (lessonRow && !lessonError) {
-                            await supabase
-                                .from('lesson_assets')
+
+                if (moduleRow && !moduleError && (moduleInput as any).items) {
+                    for (const [iIndex, iInput] of (moduleInput as any).items.entries()) {
+                        if (iInput.type === 'lesson') {
+                            const { data: lessonRow } = await supabase
+                                .from('module_lessons')
                                 .insert({
-                                    lesson_id: lessonRow.id,
-                                    video_path: lessonInput.video_url,
+                                    module_id: moduleRow.id,
+                                    title: iInput.title,
+                                    description: iInput.description || "",
+                                    lesson_type: 'video',
+                                    position: iIndex,
+                                    is_published: true
+                                })
+                                .select()
+                                .single();
+
+                            if (lessonRow && (iInput.video_url || iInput.content)) {
+                                await supabase
+                                    .from('lesson_assets')
+                                    .insert({
+                                        lesson_id: lessonRow.id,
+                                        video_path: iInput.video_url || "",
+                                        markdown_content: iInput.content || ""
+                                    });
+                            }
+                        } else if (iInput.type === 'quiz') {
+                            await supabase
+                                .from('module_quizzes')
+                                .insert({
+                                    module_id: moduleRow.id,
+                                    title: iInput.title,
+                                    position: iIndex,
+                                    questions: [{
+                                        question: iInput.title,
+                                        options: iInput.options || [],
+                                        correct: iInput.options?.[iInput.correct_answer || 0] || ""
+                                    }]
+                                });
+                        } else if (iInput.type === 'assignment') {
+                            await supabase
+                                .from('module_assignments')
+                                .insert({
+                                    module_id: moduleRow.id,
+                                    title: iInput.title,
+                                    markdown_content: iInput.content || "",
+                                    instructions: iInput.description || "",
+                                    position: iIndex
                                 });
                         }
                     }
@@ -812,7 +927,7 @@ export async function updateCourse(input: UpdateCourseInput): Promise<ApiRespons
     if (moduleList && moduleList.length > 0) {
         const modIds = moduleList.map(m => m.id);
         const { count } = await supabase
-            .from('lessons')
+            .from('module_lessons')
             .select('*', { count: 'exact', head: true })
             .in('module_id', modIds);
 
@@ -906,7 +1021,8 @@ export async function getTeachers(): Promise<ApiResponse<{ id: string; name: str
             email,
             avatar_url,
             instructor_profiles (
-                courses (count)
+                id,
+                courses:course_instructors(count)
             )
         `)
         .eq('role', 'teacher')

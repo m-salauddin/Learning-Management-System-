@@ -30,16 +30,19 @@ export default async function CheckoutPage({ params }: CheckoutPageProps) {
 
     const courseData = result.data;
 
-    // Check if user is already enrolled
+    // Check if user is already enrolled (active, success, or pending)
     const { data: enrollment } = await supabase
         .from('enrollments')
-        .select('id')
+        .select('id, status')
         .eq('user_id', user.id)
         .eq('course_id', courseData.course.id)
         .maybeSingle();
 
     if (enrollment) {
-        redirect(`/dashboard/courses/${courseData.course.slug}`);
+        const status = enrollment.status?.toLowerCase();
+        if (['active', 'success', 'successful', 'completed', 'pending'].includes(status)) {
+            redirect(`/dashboard/my-courses/${courseData.course.slug}`);
+        }
     }
 
     return (

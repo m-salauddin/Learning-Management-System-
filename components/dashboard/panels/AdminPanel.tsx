@@ -4,7 +4,7 @@ import {
     ShieldCheck, Tags, Ticket, Users, ArrowRight, BookOpen, 
     TrendingUp, DollarSign, Activity, GraduationCap,
     Clock, Globe, Zap, Target, Award, RefreshCw, Filter,
-    Download, ChevronRight, Sparkles
+    Download, ChevronRight, Sparkles, Settings
 } from "lucide-react";
 import { createClient } from '@/lib/supabase/client';
 import { RevenueChart } from "@/components/dashboard/charts/RevenueChart";
@@ -275,6 +275,7 @@ export default function AdminPanel() {
                         {[
                             { title: "User Management", icon: Users, href: "/dashboard/users", color: "orange" },
                             { title: "Manage Courses", icon: BookOpen, href: "/dashboard/courses", color: "purple" },
+                            { title: "Site Settings", icon: Settings, href: "/dashboard/settings", color: "rose" },
                             { title: "Discounts", icon: Tags, href: "/dashboard/discounts", color: "blue" },
                             { title: "Coupons", icon: Ticket, href: "/dashboard/coupons", color: "emerald" },
                         ].map((item) => (

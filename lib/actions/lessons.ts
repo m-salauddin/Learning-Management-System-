@@ -107,7 +107,7 @@ export async function createLesson(input: CreateLessonInput): Promise<ApiRespons
         return { success: false, error: 'Unauthorized' };
     }
     const { data: maxPos } = await supabase
-        .from('lessons')
+        .from('module_lessons')
         .select('position')
         .eq('module_id', input.module_id)
         .order('position', { ascending: false })
@@ -115,7 +115,7 @@ export async function createLesson(input: CreateLessonInput): Promise<ApiRespons
         .single();
     const position = input.position ?? (maxPos?.position ?? -1) + 1;
     const { data, error } = await supabase
-        .from('lessons')
+        .from('module_lessons')
         .insert({
             ...input,
             position
@@ -137,7 +137,7 @@ export async function updateLesson(
 ): Promise<ApiResponse<Lesson>> {
     const supabase = await createClient();
     const { data, error } = await supabase
-        .from('lessons')
+        .from('module_lessons')
         .update(updates)
         .eq('id', lessonId)
         .select()
@@ -151,7 +151,7 @@ export async function updateLesson(
 export async function deleteLesson(lessonId: string): Promise<ApiResponse<null>> {
     const supabase = await createClient();
     const { error } = await supabase
-        .from('lessons')
+        .from('module_lessons')
         .delete()
         .eq('id', lessonId);
     if (error) {
@@ -167,7 +167,7 @@ export async function reorderLessons(
     const supabase = await createClient();
     for (const { id, position } of lessonOrders) {
         const { error } = await supabase
-            .from('lessons')
+            .from('module_lessons')
             .update({ position })
             .eq('id', id)
             .eq('module_id', moduleId);
@@ -202,7 +202,7 @@ export async function getLessonWithAsset(lessonId: string): Promise<ApiResponse<
         return { success: false, error: 'Unauthorized' };
     }
     const { data: lesson, error: lessonError } = await supabase
-        .from('lessons')
+        .from('module_lessons')
         .select('*')
         .eq('id', lessonId)
         .single();

@@ -234,7 +234,7 @@ export default function MyCoursesPage() {
                     <div className="w-6 h-6 border-2 border-primary/20 border-t-primary rounded-full animate-spin" />
                 </div>
             ) : filteredCourses.length > 0 ? (
-                <div className="grid grid-cols-1 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                     <AnimatePresence mode="popLayout">
                         {filteredCourses.map((enrollment, i) => (
                             <motion.div

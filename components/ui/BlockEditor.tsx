@@ -98,7 +98,7 @@ export const BlockEditor = ({
 }: BlockEditorProps) => {
     const editorId = useId().replace(/:/g, '-');
     const scopeClass = `be-${editorId}`;
-    
+
     const themeMap = {
         blue: { primary: '#3b82f6', ring: 'rgba(59, 130, 246, 0.2)' },
         amber: { primary: '#f59e0b', ring: 'rgba(245, 158, 11, 0.2)' },
@@ -147,15 +147,15 @@ export const BlockEditor = ({
             attributes: {
                 class: cn(
                     scopeClass,
-                    "focus:outline-none min-h-[300px] px-8 py-8 text-base text-slate-900 dark:text-white/90 leading-snug transition-all",
+                    "focus:outline-none min-h-[300px] px-3 py-1 text-base text-slate-900 dark:text-white/90 leading-snug transition-all",
                     "selection:bg-primary/30 prose dark:prose-invert max-w-none",
                     "[&_ol]:list-decimal [&_ol]:pl-6 [&_ol]:my-4 [&_ol_li]:my-1.5",
                     "[&_blockquote]:border-l-2 [&_blockquote]:border-primary/50 [&_blockquote]:pl-6 [&_blockquote]:italic [&_blockquote]:my-6 [&_blockquote]:bg-linear-to-r [&_blockquote]:from-primary/5 [&_blockquote]:to-transparent [&_blockquote]:py-3 [&_blockquote]:rounded-r-xl",
                     "[&_a]:text-primary [&_a]:underline [&_a]:underline-offset-4 [&_a]:font-bold",
-                    "[&_p]:my-3",
-                    "[&_h1]:text-2xl [&_h1]:font-black [&_h1]:mt-8 [&_h1]:mb-4",
-                    "[&_h2]:text-xl [&_h2]:font-bold [&_h2]:mt-6 [&_h2]:mb-3",
-                    "[&_h3]:text-lg [&_h3]:font-bold [&_h3]:mt-4 [&_h3]:mb-2",
+                    "[&_p]:my-2",
+                    "[&_h1]:text-2xl [&_h1]:font-black [&_h1]:mt-2 [&_h1]:mb-4",
+                    "[&_h2]:text-xl [&_h2]:font-bold [&_h2]:mt-4 [&_h2]:mb-3",
+                    "[&_h3]:text-lg [&_h3]:font-bold [&_h3]:mt-3 [&_h3]:mb-2",
                     "[&_li[data-type='taskItem']>div]:flex-1 [&_li[data-type='taskItem']>div>p]:m-0",
                     className
                 ),
@@ -194,21 +194,22 @@ export const BlockEditor = ({
     }, [editor]);
     if (!editor) return null;
     return (
-        <div 
+        <div
             className={cn(
                 "group relative rounded-xl border transition-all duration-300 bg-input-dark backdrop-blur-md overflow-hidden",
                 error ? "border-red-500/50 ring-2 ring-red-500/20" : "border-input-dark-border focus-within:border-(--primary)/50 focus-within:ring-2 focus-within:ring-(--primary)/20",
                 className
             )}
-            style={{ 
+            style={{
                 '--primary': currentTheme.primary,
                 '--color-primary': currentTheme.primary,
                 '--ring': currentTheme.ring,
                 '--color-ring': currentTheme.ring
             } as React.CSSProperties}
         >
-            {}
-            <style dangerouslySetInnerHTML={{ __html: `
+            { }
+            <style dangerouslySetInnerHTML={{
+                __html: `
                 .${scopeClass} ul { list-style: none !important; padding-left: 0 !important; margin: 1rem 0 !important; }
                 .${scopeClass} ul > li { position: relative !important; padding-left: 2rem !important; margin: 0.5rem 0 !important; list-style: none !important; }
                 .${scopeClass} ul > li::before {
