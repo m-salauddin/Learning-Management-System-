@@ -40,24 +40,28 @@ export default function TeacherPanel({ stats, myCourses }: TeacherPanelProps) {
                     value={totalCourses}
                     icon={BookOpen}
                     description="Live and draft"
+                    variant="blue"
                 />
                 <StatsCard
                     title="Total Students"
                     value={totalStudents}
                     icon={Users}
                     description="Enrolled learners"
+                    variant="emerald"
                 />
                 <StatsCard
                     title="Total Earnings"
                     value={`৳${totalEarnings.toLocaleString()}`}
                     icon={DollarSign}
                     description="Life-time revenue"
+                    variant="amber"
                 />
                 <StatsCard
                     title="Avg. Rating"
                     value={avgRating}
                     icon={TrendingUp}
                     description="Student feedback"
+                    variant="violet"
                 />
             </DashboardGrid>
 

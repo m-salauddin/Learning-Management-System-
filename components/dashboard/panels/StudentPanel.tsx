@@ -43,24 +43,28 @@ export default function StudentPanel({ user, profile, stats, enrollments }: Stud
                     value={inProgressCount}
                     icon={BookOpen}
                     description="Courses active"
+                    variant="blue"
                 />
                 <StatsCard
                     title="Completed"
                     value={completedCount}
                     icon={CheckCircle}
                     description="Successfully finished"
+                    variant="emerald"
                 />
                 <StatsCard
                     title="Hours Spent"
                     value={`${hoursSpent}h`}
                     icon={Clock}
                     description="Learning time"
+                    variant="amber"
                 />
                 <StatsCard
                     title="Avg. Progress"
                     value={`${avgScore}%`}
                     icon={Trophy}
                     description="Course completion"
+                    variant="violet"
                 />
             </DashboardGrid>
 

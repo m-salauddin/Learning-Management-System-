@@ -323,12 +323,14 @@ export default function UserManagementPage() {
                             title="Total Entities"
                             value={stats.total}
                             icon={Users}
+                            variant="blue"
                             className="border-blue-500/20"
                         />
                         <StatsCard
                             title="Active Matrix"
                             value={stats.active}
                             icon={CheckCircle2}
+                            variant="emerald"
                             className="border-emerald-500/20"
                         />
                         <StatsCard
@@ -336,6 +338,7 @@ export default function UserManagementPage() {
                             value={stats.newThisMonth}
                             icon={TrendingUp}
                             description="New this month"
+                            variant="violet"
                             className="border-violet-500/20"
                         />
                         <StatsCard
@@ -343,6 +346,7 @@ export default function UserManagementPage() {
                             value={`${stats.growthPercentage}%`}
                             icon={stats.growthPercentage >= 0 ? TrendingUp : TrendingDown}
                             description={stats.growthPercentage >= 0 ? "Increasing" : "Decreasing"}
+                            variant={stats.growthPercentage >= 0 ? "emerald" : "rose"}
                             className={stats.growthPercentage >= 0 ? "border-emerald-500/20" : "border-rose-500/20"}
                         />
                     </>

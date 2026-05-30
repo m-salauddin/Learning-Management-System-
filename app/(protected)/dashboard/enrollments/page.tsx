@@ -520,18 +520,21 @@ export default function EnrollmentsPage() {
                         title="Total Enrollments"
                         value={totalEnrollments}
                         description="Total recorded"
+                        variant="blue"
                     />
                     <StatsCard
                         icon={Activity}
                         title="Active"
                         value={stats.active}
                         description="Clearance granted"
+                        variant="emerald"
                     />
                     <StatsCard
                         icon={Clock}
                         title="Pending"
                         value={stats.pending}
                         description="Manual verification"
+                        variant="amber"
                     />
                     {isAdmin && (
                         <StatsCard
@@ -539,6 +542,7 @@ export default function EnrollmentsPage() {
                             title="Completion Rate"
                             value={`${stats.rate}%`}
                             description="Course modules finished"
+                            variant="violet"
                         />
                     )}
                 </DashboardGrid>
@@ -640,7 +644,7 @@ export default function EnrollmentsPage() {
                                         className="bg-transparent"
                                     />
                                 ) : filteredEnrollments.length === 0 ? (
-                                    <div className="py-20">
+                                    <div className="py-20 min-w-[900px] flex items-center justify-center">
                                         {searchTerm ? (
                                             <EmptyFilterState searchTerm={searchTerm} onReset={() => setSearchTerm("")} />
                                         ) : (
@@ -674,7 +678,7 @@ export default function EnrollmentsPage() {
                         </DashboardTableWrapper>
 
                         { }
-                        {totalEnrollments > pageSize && (
+                        {totalEnrollments > pageSize && filteredEnrollments.length > 0 && !searchTerm && (
                             <div className="px-6 py-4 border-t border-border bg-muted/10">
                                 <Pagination
                                     currentPage={currentPage}

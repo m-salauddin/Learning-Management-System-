@@ -189,24 +189,28 @@ export default function CategoryManagementPage() {
                             title="Total Categories"
                             value={categories.length}
                             icon={Layers}
+                            variant="blue"
                             className="border-blue-500/20"
                         />
                         <StatsCard
                             title="Total Courses"
                             value={totalCourses}
                             icon={Code}
+                            variant="emerald"
                             className="border-emerald-500/20"
                         />
                         <StatsCard
                             title="Avg. per Category"
                             value={avgCourses}
                             icon={TrendingUp}
+                            variant="violet"
                             className="border-violet-500/20"
                         />
                         <StatsCard
                             title="Active Icons"
                             value={new Set(categories.map(c => c.icon)).size}
                             icon={Palette}
+                            variant="amber"
                             className="border-amber-500/20"
                         />
                     </>

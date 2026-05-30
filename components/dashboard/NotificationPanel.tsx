@@ -1,5 +1,5 @@
 "use client";
-import { useState, useRef, useEffect, useCallback } from "react";
+import { useState, useRef, useEffect, useCallback, useMemo } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { Bell, Check, Clock, Info, Shield, BookOpen, X, CreditCard, UserPlus, AlertTriangle } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -60,21 +60,42 @@ export function NotificationPanel() {
     const [activeTab, setActiveTab] = useState<'all' | 'unread'>('all');
     const [isLoading, setIsLoading] = useState(true);
     const wrapperRef = useRef<HTMLDivElement>(null);
-    const supabase = createClient();
+    const supabase = useMemo(() => createClient(), []);
 
-    const fetchNotifications = useCallback(async () => {
-        setIsLoading(true);
-        const result = await getNotifications();
-        if (result.success && result.data) {
-            setNotifications(result.data);
+    const fetchNotifications = useCallback(async (showLoader = true) => {
+        if (showLoader) {
+            setIsLoading(true);
         }
-        setIsLoading(false);
+        try {
+            const result = await getNotifications();
+            if (result.success && result.data) {
+                setNotifications(result.data);
+            } else {
+                console.error("Failed to fetch notifications:", result?.error);
+            }
+        } catch (error) {
+            console.error("Error fetching notifications:", error);
+        } finally {
+            setIsLoading(false);
+        }
     }, []);
 
+    const isOpenRef = useRef(isOpen);
     useEffect(() => {
-        fetchNotifications();
+        isOpenRef.current = isOpen;
+    }, [isOpen]);
 
-        // Set up Realtime subscription
+    useEffect(() => {
+        fetchNotifications(true);
+    }, [fetchNotifications]);
+
+    useEffect(() => {
+        if (isOpen) {
+            fetchNotifications(notifications.length === 0);
+        }
+    }, [isOpen, fetchNotifications, notifications.length]);
+
+    useEffect(() => {
         const channel = supabase
             .channel('notifications_changes')
             .on(
@@ -88,8 +109,7 @@ export function NotificationPanel() {
                     if (payload.eventType === 'INSERT') {
                         const newNotification = payload.new as Notification;
                         setNotifications(prev => [newNotification, ...prev]);
-                        // Show a toast for new notifications if the panel is closed
-                        if (!isOpen) {
+                        if (!isOpenRef.current) {
                             toast.info(newNotification.title, {
                                 description: newNotification.message,
                                 action: {
@@ -116,7 +136,7 @@ export function NotificationPanel() {
         return () => {
             supabase.removeChannel(channel);
         };
-    }, [fetchNotifications, supabase, isOpen]);
+    }, [supabase]);
 
     useEffect(() => {
         const handleClickOutside = (event: MouseEvent) => {

@@ -519,21 +519,29 @@ export default function CourseManagementPage() {
                             title="Total Courses"
                             value={stats.total}
                             icon={BookOpen}
+                            variant="blue"
+                            className="border-blue-500/20"
                         />
                         <StatsCard
                             title="Published"
                             value={stats.published}
                             icon={CheckCircle2}
+                            variant="emerald"
+                            className="border-emerald-500/20"
                         />
                         <StatsCard
                             title="Total Students"
                             value={stats.totalStudents}
                             icon={TrendingUp}
+                            variant="violet"
+                            className="border-violet-500/20"
                         />
                         <StatsCard
                             title="Revenue (Est.)"
                             value={`৳${(stats.totalRevenue || 0).toLocaleString()}`}
                             icon={DollarSign}
+                            variant="amber"
+                            className="border-amber-500/20"
                         />
                     </>
                 )}

@@ -29,13 +29,15 @@ export default function ModeratorPanel({ stats }: ModeratorPanelProps) {
                     value={pendingReports}
                     icon={Flag}
                     description="Awaiting review"
-                    className="border-red-500/20"
+                    variant="rose"
+                    className="border-rose-500/20"
                 />
                 <StatsCard
                     title="Reviews to Check"
                     value={reviewsToCheck}
                     icon={MessageSquare}
                     description="User feedback"
+                    variant="amber"
                     className="border-amber-500/20"
                 />
                 <StatsCard
@@ -43,13 +45,15 @@ export default function ModeratorPanel({ stats }: ModeratorPanelProps) {
                     value={flaggedContent}
                     icon={AlertTriangle}
                     description="Automated flags"
-                    className="border-orange-500/20"
+                    variant="indigo"
+                    className="border-indigo-500/20"
                 />
                 <StatsCard
                     title="Resolved Today"
                     value={resolvedToday}
                     icon={CheckCircle}
                     description="Actions taken"
+                    variant="emerald"
                     className="border-emerald-500/20"
                 />
             </DashboardGrid>

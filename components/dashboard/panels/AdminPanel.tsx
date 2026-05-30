@@ -144,6 +144,7 @@ export default function AdminPanel() {
                     trendUp={true}
                     icon={Users}
                     description="Active accounts"
+                    variant="blue"
                 />
                 <StatsCard
                     title="Total Courses"
@@ -152,6 +153,7 @@ export default function AdminPanel() {
                     trendUp={true}
                     icon={BookOpen}
                     description="Published courses"
+                    variant="indigo"
                 />
                 <StatsCard
                     title="Total Revenue"
@@ -160,6 +162,7 @@ export default function AdminPanel() {
                     trendUp={true}
                     icon={DollarSign}
                     description="This month"
+                    variant="amber"
                 />
                 <StatsCard
                     title="Active Students"
@@ -168,6 +171,7 @@ export default function AdminPanel() {
                     trendUp={true}
                     icon={GraduationCap}
                     description="Currently learning"
+                    variant="emerald"
                 />
             </DashboardGrid>
 
