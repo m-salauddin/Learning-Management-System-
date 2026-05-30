@@ -50,11 +50,11 @@ function InfoRow({ label, value, icon: Icon, highlight = false, copyable = false
                         <Icon className="w-4 h-4 text-primary" />
                     </div>
                 )}
-                <span className="text-[10px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest">{label}</span>
+                <span className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-widest">{label}</span>
             </div>
             <div className="flex items-center gap-3">
                 <span className={cn(
-                    "text-xs sm:text-sm font-black tracking-wide transition-colors",
+                    "text-sm sm:text-base font-semibold tracking-wide transition-colors",
                     highlight ? "text-primary px-3 py-1 bg-primary/10 rounded-lg" : "text-slate-900 dark:text-white"
                 )}>
                     {value}
@@ -205,6 +205,221 @@ function SummaryContent() {
     const txUser = getUser();
     const transaction = getTransaction();
 
+    const handleDownloadReceipt = () => {
+        if (!isSuccess) return;
+
+        // 1. Create a high-res canvas
+        const canvas = document.createElement('canvas');
+        canvas.width = 1200;
+        canvas.height = 1500;
+        const ctx = canvas.getContext('2d');
+        if (!ctx) return;
+
+        // Work in 600x750 scaled coordinate space for razor-sharp text
+        ctx.scale(2, 2);
+
+        // Background
+        ctx.fillStyle = '#f8fafc';
+        ctx.fillRect(0, 0, 600, 750);
+
+        // White card panel
+        ctx.fillStyle = '#ffffff';
+        ctx.beginPath();
+        if (ctx.roundRect) {
+            ctx.roundRect(30, 30, 540, 690, 24);
+        } else {
+            ctx.rect(30, 30, 540, 690);
+        }
+        ctx.fill();
+
+        // Premium multi-stop gradient border stroke
+        const grad = ctx.createLinearGradient(30, 30, 570, 720);
+        grad.addColorStop(0, '#f43f5e'); // primary/rose-500
+        grad.addColorStop(0.5, '#6366f1'); // violet-500
+        grad.addColorStop(1, '#3b82f6'); // blue-500
+        ctx.strokeStyle = grad;
+        ctx.lineWidth = 3;
+        ctx.stroke();
+
+        // 1. Header logo
+        ctx.font = 'bold 24px system-ui, -apple-system, BlinkMacSystemFont, sans-serif';
+        ctx.fillStyle = '#0f172a';
+        ctx.fillText('DOKKHO IT', 60, 80);
+
+        ctx.font = '500 11px system-ui, -apple-system, BlinkMacSystemFont, sans-serif';
+        ctx.fillStyle = '#64748b';
+        ctx.fillText('LEARN FROM THE BEST', 60, 98);
+
+        // Invoice title
+        ctx.textAlign = 'right';
+        ctx.font = 'bold 16px system-ui, -apple-system, BlinkMacSystemFont, sans-serif';
+        ctx.fillStyle = '#6366f1';
+        ctx.fillText('OFFICIAL RECEIPT', 540, 80);
+
+        // Date
+        const dateStr = transaction?.created_at 
+            ? new Date(transaction.created_at).toLocaleString() 
+            : new Date().toLocaleString();
+        ctx.font = '500 11px system-ui, sans-serif';
+        ctx.fillStyle = '#94a3b8';
+        ctx.fillText(`Date: ${dateStr}`, 540, 98);
+
+        // Divider
+        ctx.strokeStyle = '#e2e8f0';
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.moveTo(60, 120);
+        ctx.lineTo(540, 120);
+        ctx.stroke();
+
+        // 2. Status badge
+        ctx.textAlign = 'left';
+        ctx.fillStyle = 'rgba(16, 185, 129, 0.1)';
+        ctx.beginPath();
+        if (ctx.roundRect) {
+            ctx.roundRect(60, 140, 180, 36, 12);
+        } else {
+            ctx.rect(60, 140, 180, 36);
+        }
+        ctx.fill();
+        ctx.strokeStyle = 'rgba(16, 185, 129, 0.2)';
+        ctx.stroke();
+
+        ctx.font = 'bold 12px system-ui, sans-serif';
+        ctx.fillStyle = '#059669';
+        ctx.fillText('✓  PAYMENT VERIFIED', 80, 162);
+
+        // Amount Box
+        ctx.fillStyle = '#f8fafc';
+        ctx.beginPath();
+        if (ctx.roundRect) {
+            ctx.roundRect(330, 140, 210, 80, 16);
+        } else {
+            ctx.rect(330, 140, 210, 80);
+        }
+        ctx.fill();
+        ctx.strokeStyle = '#e2e8f0';
+        ctx.stroke();
+
+        ctx.textAlign = 'center';
+        ctx.font = 'bold 10px system-ui, sans-serif';
+        ctx.fillStyle = '#64748b';
+        ctx.fillText('TOTAL AMOUNT PAID', 435, 165);
+
+        ctx.font = 'bold 24px system-ui, sans-serif';
+        ctx.fillStyle = '#0f172a';
+        const amountVal = `৳${result?.data?.transaction?.amount || result?.data?.bkashData?.amount || '0.00'}`;
+        ctx.fillText(amountVal, 435, 198);
+
+        // Customer Details block
+        ctx.textAlign = 'left';
+        ctx.font = 'bold 11px system-ui, sans-serif';
+        ctx.fillStyle = '#94a3b8';
+        ctx.fillText('ISSUED TO:', 60, 210);
+
+        ctx.font = 'bold 14px system-ui, sans-serif';
+        ctx.fillStyle = '#0f172a';
+        ctx.fillText(txUser?.name || 'Valued Learner', 60, 230);
+
+        ctx.font = '500 12px system-ui, sans-serif';
+        ctx.fillStyle = '#475569';
+        ctx.fillText(txUser?.email || '', 60, 248);
+
+        // Modern Transaction Table
+        ctx.fillStyle = '#fafbfe';
+        ctx.beginPath();
+        if (ctx.roundRect) {
+            ctx.roundRect(60, 280, 480, 280, 16);
+        } else {
+            ctx.rect(60, 280, 480, 280);
+        }
+        ctx.fill();
+        ctx.strokeStyle = '#e2e8f0';
+        ctx.stroke();
+
+        // Table Header
+        ctx.font = 'bold 13px system-ui, sans-serif';
+        ctx.fillStyle = '#0f172a';
+        ctx.fillText('Item Description', 80, 312);
+        
+        ctx.textAlign = 'right';
+        ctx.fillText('Details', 520, 312);
+
+        // Header line
+        ctx.strokeStyle = '#cbd5e1';
+        ctx.beginPath();
+        ctx.moveTo(80, 325);
+        ctx.lineTo(520, 325);
+        ctx.stroke();
+
+        // Details mapping
+        const rows = [
+            { label: 'Course Title', value: course?.title || 'N/A' },
+            { label: 'Course Base Price', value: course?.price ? `৳${course.price.toLocaleString()}` : 'N/A' },
+            { label: 'Total Paid', value: amountVal },
+            { label: 'Payment Method', value: paymentID ? 'bKash (Instant)' : 'Online Payment' },
+            { label: 'Transaction ID (TrxID)', value: transaction?.payment_intent_id || result?.data?.bkashData?.trxID || transactionID || 'N/A' },
+            { label: 'Payment ID', value: paymentID || 'N/A' },
+        ];
+
+        let yPos = 355;
+        rows.forEach((row) => {
+            ctx.textAlign = 'left';
+            ctx.font = '500 12px system-ui, sans-serif';
+            ctx.fillStyle = '#64748b';
+            ctx.fillText(row.label, 80, yPos);
+
+            ctx.textAlign = 'right';
+            ctx.font = 'bold 12px system-ui, sans-serif';
+            ctx.fillStyle = '#0f172a';
+
+            // Wrap course name if it's too long
+            if (row.label === 'Course Title' && row.value.length > 30) {
+                const line = row.value.substring(0, 27) + '...';
+                ctx.fillText(line, 520, yPos);
+            } else {
+                ctx.fillText(row.value, 520, yPos);
+            }
+
+            // Sub-divider line
+            ctx.strokeStyle = '#f1f5f9';
+            ctx.beginPath();
+            ctx.moveTo(80, yPos + 12);
+            ctx.lineTo(520, yPos + 12);
+            ctx.stroke();
+
+            yPos += 36;
+        });
+
+        // 3. Seal and footer
+        ctx.textAlign = 'center';
+        ctx.font = '500 12px system-ui, sans-serif';
+        ctx.fillStyle = '#64748b';
+        ctx.fillText('This is a verified electronic receipt issued by Dokkho IT.', 300, 595);
+
+        ctx.font = 'bold 13px system-ui, sans-serif';
+        ctx.fillStyle = '#6366f1';
+        ctx.fillText('Thank you for choosing Dokkho IT! 🚀', 300, 620);
+
+        ctx.strokeStyle = '#e2e8f0';
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.moveTo(80, 650);
+        ctx.lineTo(520, 650);
+        ctx.stroke();
+
+        ctx.font = 'bold 10px system-ui, sans-serif';
+        ctx.fillStyle = '#94a3b8';
+        ctx.fillText('SECURE PAYMENT SYSTEM  |  DOKKHOIT.COM', 300, 675);
+
+        // 4. Download Trigger
+        const dataUrl = canvas.toDataURL('image/png');
+        const trigger = document.createElement('a');
+        trigger.download = `DokkhoIT_Receipt_${transaction?.payment_intent_id || result?.data?.bkashData?.trxID || 'Transaction'}.png`;
+        trigger.href = dataUrl;
+        trigger.click();
+    };
+
     return (
         <div className="min-h-screen bg-background relative flex flex-col items-center pt-40 pb-16 px-6 overflow-hidden selection:bg-primary/20">
             <div className="fixed inset-0 pointer-events-none overflow-hidden">
@@ -245,7 +460,7 @@ function SummaryContent() {
                         )} />
                     </div>
 
-                    <h1 className="text-4xl sm:text-5xl font-black mb-2 tracking-tighter leading-[1.1]">
+                    <h1 className="text-4xl sm:text-5xl font-semibold mb-2 tracking-tighter leading-[1.1]">
                         {isSuccess ? (
                             <span className="bg-linear-to-r from-primary via-secondary to-accent bg-clip-text text-transparent">{t("success.title")}</span>
                         ) : isPending ? (
@@ -265,7 +480,7 @@ function SummaryContent() {
                             </>
                         )}
                     </h1>
-                    <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 font-bold max-w-md mx-auto leading-relaxed">
+                    <p className="text-sm sm:text-base text-slate-500 dark:text-slate-400 font-semibold max-w-md mx-auto leading-relaxed">
                         {isSuccess ? t("success.description") : 
                          isPending ? t("pending.description") :
                          isCancelled ? t("cancelled.description") : 
@@ -289,9 +504,9 @@ function SummaryContent() {
                                     <div className="flex-1">
                                         <div className="flex items-center gap-3 mb-2">
                                             <BadgeCheck className="w-4 h-4 text-emerald-400" />
-                                            <span className="text-[10px] font-black text-emerald-400 uppercase tracking-widest">{t("success.badge")}</span>
+                                            <span className="text-xs font-semibold text-emerald-400 uppercase tracking-widest">{t("success.badge")}</span>
                                         </div>
-                                        <h3 className="text-xl sm:text-2xl font-black text-white tracking-tight leading-tight">
+                                        <h3 className="text-xl sm:text-2xl font-semibold text-white tracking-tight leading-tight">
                                             {course.title}
                                         </h3>
                                     </div>
@@ -302,8 +517,8 @@ function SummaryContent() {
                                                 <BookOpen className="w-3.5 h-3.5 text-blue-500" />
                                             </div>
                                             <div className="flex flex-col items-center leading-none">
-                                                <span className="text-xs font-black text-white">{course.total_lessons ?? 0}</span>
-                                                <span className="text-[8px] font-black text-white/50 uppercase tracking-tighter">Lessons</span>
+                                                <span className="text-xs font-semibold text-white">{course.total_lessons ?? 0}</span>
+                                                <span className="text-[10px] font-semibold text-white/50 uppercase tracking-tighter">Lessons</span>
                                             </div>
                                         </div>
 
@@ -312,8 +527,8 @@ function SummaryContent() {
                                                 <Users className="w-3.5 h-3.5 text-blue-500" />
                                             </div>
                                             <div className="flex flex-col items-center leading-none text-white">
-                                                <span className="text-xs font-black text-white">{course.total_students ?? 0}</span>
-                                                <span className="text-[8px] font-black text-white/50 uppercase tracking-tighter">Students</span>
+                                                <span className="text-xs font-semibold text-white">{course.total_students ?? 0}</span>
+                                                <span className="text-[10px] font-semibold text-white/50 uppercase tracking-tighter">Students</span>
                                             </div>
                                         </div>
                                     </div>
@@ -325,12 +540,12 @@ function SummaryContent() {
                     <div className="p-5 sm:p-6 space-y-1">
                         <div className="flex items-center justify-between mb-6">
                             <div>
-                                <h2 className="text-xl font-black text-slate-900 dark:text-white tracking-tight leading-none mb-1">{t("details.title")}</h2>
-                                <p className="text-[9px] text-slate-500 dark:text-slate-400 font-black uppercase tracking-widest">{t("details.verified")}</p>
+                                <h2 className="text-xl sm:text-2xl font-semibold text-slate-900 dark:text-white tracking-tight leading-none mb-1">{t("details.title")}</h2>
+                                <p className="text-xs text-slate-500 dark:text-slate-400 font-semibold uppercase tracking-widest">{t("details.verified")}</p>
                             </div>
                             <div className="text-right">
-                                <p className="text-[9px] text-primary font-black uppercase tracking-[0.2em] mb-1">{t("details.totalPaid")}</p>
-                                <p className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white tracking-tighter drop-shadow-sm">
+                                <p className="text-xs text-primary font-semibold uppercase tracking-[0.15em] mb-1">{t("details.totalPaid")}</p>
+                                <p className="text-2xl sm:text-3xl font-semibold text-slate-900 dark:text-white tracking-tighter drop-shadow-sm">
                                     ৳{result?.data?.transaction?.amount || result?.data?.bkashData?.amount || '0.00'}
                                 </p>
                             </div>
@@ -364,8 +579,8 @@ function SummaryContent() {
                                     <AlertCircle className="size-5 text-rose-500" />
                                 </div>
                                 <div>
-                                    <p className="text-[10px] font-black text-rose-500 uppercase tracking-widest mb-1.5 leading-none">{t("details.gatewayStatus")}</p>
-                                    <p className="text-sm font-bold text-slate-900 dark:text-white leading-relaxed">{result.data.bkashData.statusMessage}</p>
+                                    <p className="text-xs font-semibold text-rose-500 uppercase tracking-widest mb-1.5 leading-none">{t("details.gatewayStatus")}</p>
+                                    <p className="text-sm font-semibold text-slate-900 dark:text-white leading-relaxed">{result.data.bkashData.statusMessage}</p>
                                 </div>
                             </div>
                         )}
@@ -378,15 +593,27 @@ function SummaryContent() {
                                     onClick={() => router.push(isSuccess ? '/dashboard/my-courses' : '/dashboard')}
                                     className="min-w-[170px] h-10! rounded-xl! relative overflow-hidden group/cta px-5"
                                 >
-                                    <span className="text-xs font-black tracking-tight">{isSuccess ? t("actions.start") : t("actions.dashboard")}</span>
+                                    <span className="text-sm font-semibold tracking-tight">{isSuccess ? t("actions.start") : t("actions.dashboard")}</span>
                                 </PrimaryCTAButton>
                             ) : (
                                 <PrimaryCTAButton 
                                     onClick={() => router.back()}
                                     className="min-w-[170px] h-10! rounded-xl! bg-primary shadow-rose-500/20 px-5"
                                 >
-                                    <span className="text-base text-white">{t("actions.retry")}</span>
+                                    <span className="text-base text-white font-semibold">{t("actions.retry")}</span>
                                 </PrimaryCTAButton>
+                            )}
+
+                            {isSuccess && (
+                                <SecondaryCTAButton 
+                                    onClick={handleDownloadReceipt}
+                                    className="min-w-[170px] h-10! rounded-xl! bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-500/20 dark:border-emerald-500/30 px-5 text-emerald-600 dark:text-emerald-400 group/receipt"
+                                >
+                                    <div className="flex items-center justify-center gap-2">
+                                        <Receipt className="size-4 group-hover/receipt:scale-110 transition-transform" />
+                                        <span className="text-sm font-semibold tracking-tight">{t("actions.downloadReceipt")}</span>
+                                    </div>
+                                </SecondaryCTAButton>
                             )}
                             
                             <SecondaryCTAButton 
@@ -394,26 +621,30 @@ function SummaryContent() {
                                 className="min-w-[170px] h-10! rounded-xl! bg-white dark:bg-white/5 border border-slate-300 dark:border-white/10 px-5"
                             >
                                 <div className="flex items-center justify-center gap-3">
-                                        <Home className="size-4" />
-                                    <span className="text-base font-bold text-slate-700 dark:text-white/90 tracking-tight">{t("actions.home")}</span>
+                                    <Home className="size-4" />
+                                    <span className="text-base font-semibold text-slate-700 dark:text-white/90 tracking-tight">{t("actions.home")}</span>
                                 </div>
                             </SecondaryCTAButton>
                         </div>
 
                         <div className="mt-8 flex items-center justify-center gap-8 border-t border-slate-300 dark:border-white/5 pt-6">
-                            <a href="#" className="group flex items-center gap-3 text-[10px] font-black uppercase tracking-widest text-slate-500 hover:text-primary transition-all">
+                            <a href="#" className="group flex items-center gap-3 text-xs font-semibold uppercase tracking-widest text-slate-500 hover:text-primary transition-all">
                                 <div className="w-6 h-6 rounded-lg bg-slate-100 dark:bg-white/5 flex items-center justify-center group-hover:scale-110 group-hover:bg-primary/10 transition-all">
                                     <MessageCircle className="size-3" />
                                 </div>
                                 {t("actions.support")}
                             </a>
                             <div className="w-1.5 h-1.5 rounded-full bg-slate-300 dark:bg-white/10" />
-                            <a href="#" className="group flex items-center gap-3 text-[10px] font-black uppercase tracking-widest text-slate-500 hover:text-primary transition-all">
+                            <button 
+                                onClick={handleDownloadReceipt}
+                                disabled={!isSuccess}
+                                className="group flex items-center gap-3 text-xs font-semibold uppercase tracking-widest text-slate-500 hover:text-primary transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:text-slate-500"
+                            >
                                 <div className="w-6 h-6 rounded-lg bg-slate-100 dark:bg-white/5 flex items-center justify-center group-hover:scale-110 group-hover:bg-primary/10 transition-all">
                                     <Receipt className="size-3" />
                                 </div>
                                 {t("actions.invoices")}
-                            </a>
+                            </button>
                         </div>
                     </div>
                 </motion.div>
@@ -428,14 +659,14 @@ function SummaryContent() {
                                     className="h-7 object-contain brightness-0 invert opacity-90" 
                                 />
                             </div>
-                            <span className="text-[10px] font-black uppercase tracking-widest text-slate-900 dark:text-white">{t("footer.provider")}</span>
+                            <span className="text-xs font-semibold uppercase tracking-widest text-slate-900 dark:text-white">{t("footer.provider")}</span>
                         </div>
                         
                         <div className="flex flex-col items-center gap-2.5 text-slate-900 dark:text-white">
                              <div className="h-8 flex items-center justify-center">
                                  <BadgeCheck className="size-7" strokeWidth={2} />
                              </div>
-                            <span className="text-[10px] font-black uppercase tracking-widest">{t("footer.verified")}</span>
+                            <span className="text-xs font-semibold uppercase tracking-widest">{t("footer.verified")}</span>
                         </div>
                     </div>
 
@@ -443,7 +674,7 @@ function SummaryContent() {
                         <div className="w-5 h-5 rounded-full bg-emerald-500/10 flex items-center justify-center border border-emerald-500/20">
                             <Lock className="w-2.5 h-2.5 text-emerald-500" />
                         </div>
-                        <span className="text-[10px] font-bold text-slate-600 dark:text-emerald-400 uppercase tracking-widest">
+                        <span className="text-xs font-semibold text-slate-600 dark:text-emerald-400 uppercase tracking-widest">
                             {t("footer.secure")}
                         </span>
                     </div>

@@ -43,20 +43,20 @@ export function CoursePerformanceChart() {
                             if (active && payload && payload.length) {
                                 const data = payload[0].payload
                                 return (
-                                    <div className="rounded-xl border border-border/50 bg-background/95 backdrop-blur-xl p-4 shadow-xl">
-                                        <p className="font-semibold text-foreground mb-2">{data.name}</p>
+                                    <div className="rounded-xl border border-slate-100 dark:border-white/10 bg-white dark:bg-slate-900 backdrop-blur-xl p-4 shadow-xl">
+                                        <p className="font-semibold text-slate-900 dark:text-white mb-2">{data.name}</p>
                                         <div className="space-y-1 text-sm">
                                             <div className="flex justify-between gap-4">
-                                                <span className="text-muted-foreground">Students:</span>
-                                                <span className="font-bold">{data.students.toLocaleString()}</span>
+                                                <span className="text-slate-500 dark:text-slate-400">Students:</span>
+                                                <span className="font-bold text-slate-900 dark:text-white">{data.students.toLocaleString()}</span>
                                             </div>
                                             <div className="flex justify-between gap-4">
-                                                <span className="text-muted-foreground">Rating:</span>
-                                                <span className="font-bold">⭐ {data.rating}</span>
+                                                <span className="text-slate-500 dark:text-slate-400">Rating:</span>
+                                                <span className="font-bold text-slate-900 dark:text-white">⭐ {data.rating}</span>
                                             </div>
                                             <div className="flex justify-between gap-4">
-                                                <span className="text-muted-foreground">Completion:</span>
-                                                <span className="font-bold">{data.completion}%</span>
+                                                <span className="text-slate-500 dark:text-slate-400">Completion:</span>
+                                                <span className="font-bold text-slate-900 dark:text-white">{data.completion}%</span>
                                             </div>
                                         </div>
                                     </div>

@@ -720,7 +720,8 @@
       "retry": "Retry Payment",
       "home": "Back to Home",
       "support": "Support",
-      "invoices": "Invoices"
+      "invoices": "Invoices",
+      "downloadReceipt": "Download Receipt"
     },
     "footer": {
       "provider": "Certified Provider",
