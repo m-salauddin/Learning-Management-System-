@@ -555,6 +555,7 @@ export default function ProfilePage() {
                                         <img
                                             src={previewUrl || userProfile.avatar_url || ""}
                                             alt={userProfile.name || ""}
+                                            referrerPolicy="no-referrer"
                                             className="w-full h-full object-cover"
                                         />
                                     ) : (
@@ -645,6 +646,7 @@ export default function ProfilePage() {
                                                         <img
                                                             src={previewUrl || userProfile.avatar_url || ""}
                                                             alt={userProfile.name || ""}
+                                                            referrerPolicy="no-referrer"
                                                             className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
                                                         />
                                                     ) : (

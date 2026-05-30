@@ -23,6 +23,10 @@ import { PageHeader } from "@/components/dashboard/ui/PageHeader";
 import { DashboardCard } from "@/components/dashboard/ui/DashboardCard";
 import { DashboardGrid } from "@/components/dashboard/ui/DashboardGrid";
 import { StatsCard } from "@/components/dashboard/StatsCard";
+import { getAdminDashboardTrends, getTopPerformingCourses, getRecentActivity } from "@/lib/actions/admin-dashboard";
+import { DynamicTrendsChart } from "@/components/dashboard/charts/DynamicTrendsChart";
+import { DynamicPieChart } from "@/components/dashboard/charts/DynamicPieChart";
+import { DynamicLineChart } from "@/components/dashboard/charts/DynamicLineChart";
 
 interface AdminStats {
     total_users: number;
@@ -40,6 +44,14 @@ export default function AdminPanel() {
         active_enrollments: 0,
         total_enrollments: 0
     });
+    const [trendData, setTrendData] = useState<{
+        userGrowth: { month: string; value: number }[];
+        enrollmentGrowth: { month: string; value: number }[];
+        revenueGrowth: { month: string; value: number }[];
+        categoryDistribution: { name: string; value: number }[];
+    } | null>(null);
+    const [topCourses, setTopCourses] = useState<any[]>([]);
+    const [recentActivity, setRecentActivity] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
     const [selectedPeriod, setSelectedPeriod] = useState<"7d" | "30d" | "90d" | "1y">("30d");
 
@@ -47,14 +59,32 @@ export default function AdminPanel() {
         const fetchData = async () => {
             try {
                 const supabase = createClient();
-                const { data, error } = await supabase.rpc('get_admin_dashboard_stats');
-                if (error) {
-                    console.error('Error fetching admin stats:', error);
+                const [statsRes, trendsRes, topCoursesRes, recentActivityRes] = await Promise.all([
+                    supabase.rpc('get_admin_dashboard_stats'),
+                    getAdminDashboardTrends(),
+                    getTopPerformingCourses(),
+                    getRecentActivity()
+                ]);
+
+                if (statsRes.error) {
+                    console.error('Error fetching admin stats:', statsRes.error);
                     const { count: userCount } = await supabase.from('users').select('*', { count: 'exact', head: true });
                     const { count: courseCount } = await supabase.from('courses').select('*', { count: 'exact', head: true });
                     setStats(prev => ({ ...prev, total_users: userCount || 0, total_courses: courseCount || 0 }));
-                } else if (data) {
-                    setStats(data as unknown as AdminStats);
+                } else if (statsRes.data) {
+                    setStats(statsRes.data as unknown as AdminStats);
+                }
+
+                if (trendsRes.success && trendsRes.data) {
+                    setTrendData(trendsRes.data as any);
+                }
+
+                if (topCoursesRes.success && topCoursesRes.data) {
+                    setTopCourses(topCoursesRes.data);
+                }
+
+                if (recentActivityRes.success && recentActivityRes.data) {
+                    setRecentActivity(recentActivityRes.data);
                 }
             } catch (err) {
                 console.error('Unexpected error:', err);
@@ -141,121 +171,60 @@ export default function AdminPanel() {
                 />
             </DashboardGrid>
 
-            {}
-            <DashboardGrid cols={4}>
-                <div className="p-5 rounded-2xl bg-linear-to-br from-violet-500/10 to-purple-500/5 border border-violet-500/20">
-                    <div className="flex items-center gap-2 mb-2">
-                        <Target className="w-4 h-4 text-violet-500" />
-                        <span className="text-xs font-bold text-slate-500 uppercase tracking-widest">Completion Rate</span>
-                    </div>
-                    <p className="text-2xl font-black">{completionRate}%</p>
-                </div>
-                <div className="p-5 rounded-2xl bg-linear-to-br from-amber-500/10 to-orange-500/5 border border-amber-500/20">
-                    <div className="flex items-center gap-2 mb-2">
-                        <Award className="w-4 h-4 text-amber-500" />
-                        <span className="text-xs font-bold text-slate-500 uppercase tracking-widest">Avg. Rating</span>
-                    </div>
-                    <p className="text-2xl font-black text-amber-600 dark:text-amber-400">⭐ {avgRating}</p>
-                </div>
-                <div className="p-5 rounded-2xl bg-linear-to-br from-cyan-500/10 to-blue-500/5 border border-cyan-500/20">
-                    <div className="flex items-center gap-2 mb-2">
-                        <Globe className="w-4 h-4 text-cyan-500" />
-                        <span className="text-xs font-bold text-slate-500 uppercase tracking-widest">Countries</span>
-                    </div>
-                    <p className="text-2xl font-black">12</p>
-                </div>
-                <div className="p-5 rounded-2xl bg-linear-to-br from-pink-500/10 to-rose-500/5 border border-pink-500/20">
-                    <div className="flex items-center gap-2 mb-2">
-                        <Zap className="w-4 h-4 text-pink-500" />
-                        <span className="text-xs font-bold text-slate-500 uppercase tracking-widest">Certificates</span>
-                    </div>
-                    <p className="text-2xl font-black">892</p>
-                </div>
-            </DashboardGrid>
-
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                 <DashboardCard 
                     title="Revenue Overview" 
                     icon={DollarSign}
-                    className="lg:col-span-2"
+                    className="lg:col-span-3"
                     action={
                         <button className="text-xs font-bold text-primary hover:underline flex items-center gap-1 uppercase tracking-widest">
                             Details <ChevronRight className="w-3 h-3" />
                         </button>
                     }
                 >
-                    <RevenueChart />
-                </DashboardCard>
-                <DashboardCard title="User Distribution" icon={Users}>
-                    <UserDistributionChart />
+                    {trendData ? (
+                        <DynamicTrendsChart data={trendData.revenueGrowth} color="#3b82f6" title="Revenue" prefix="৳" />
+                    ) : (
+                        <div className="h-[300px] flex items-center justify-center text-muted-foreground">Loading revenue data...</div>
+                    )}
                 </DashboardCard>
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                <DashboardCard 
-                    title="Enrollment Trends" 
-                    icon={TrendingUp}
-                    action={
-                        <span className="text-[10px] px-2 py-1 rounded-full bg-emerald-500/10 text-emerald-500 font-black uppercase tracking-widest">
-                            +23% this month
-                        </span>
-                    }
-                >
-                    <EnrollmentTrendChart />
+                <DashboardCard title="Enrollment Growth" icon={TrendingUp}>
+                    {trendData ? (
+                        <DynamicTrendsChart data={trendData.enrollmentGrowth} color="#10b981" title="Enrollments" />
+                    ) : (
+                        <div className="h-[200px] flex items-center justify-center text-muted-foreground">Loading trend...</div>
+                    )}
                 </DashboardCard>
-                <DashboardCard title="Top Performing Courses" icon={BookOpen}>
-                    <CoursePerformanceChart />
+
+                <DashboardCard title="User Acquisition" icon={Users}>
+                    {trendData ? (
+                        <DynamicLineChart data={trendData.userGrowth} color="#8b5cf6" />
+                    ) : (
+                        <div className="h-[200px] flex items-center justify-center text-muted-foreground">Loading trend...</div>
+                    )}
                 </DashboardCard>
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                <DashboardCard 
-                    title="Platform Activity" 
-                    icon={Activity}
-                    className="lg:col-span-2"
-                    description="Last 12 weeks"
-                >
-                    <ActivityHeatmap />
-                </DashboardCard>
-                <DashboardCard title="Platform Health" icon={Sparkles}>
-                    <PlatformHealthChart />
-                </DashboardCard>
-            </div>
-
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                <DashboardCard title="Revenue Sources" icon={DollarSign}>
-                    <RevenueBreakdownChart />
+                <DashboardCard title="Category Distribution" icon={ShieldCheck}>
+                    <DynamicPieChart data={trendData?.categoryDistribution || []} />
                 </DashboardCard>
                 <DashboardCard 
-                    title="Pending Actions" 
-                    icon={Clock}
+                    title="Course Analytics" 
+                    icon={BookOpen}
                     className="lg:col-span-2"
                     action={
-                        <span className="text-[10px] px-2 py-1 rounded-full bg-amber-500/10 text-amber-500 font-black uppercase tracking-widest">
-                            4 items
-                        </span>
-                    }
-                >
-                    <PendingActionsWidget />
-                </DashboardCard>
-            </div>
-
-            <DashboardCard 
-                title="Top Performing Courses" 
-                icon={BookOpen}
-                action={
-                    <div className="flex items-center gap-2">
-                        <button className="p-2 rounded-xl bg-muted/40 border border-border/50 hover:bg-muted/60 transition-colors">
-                            <Filter className="w-4 h-4 text-muted-foreground" />
-                        </button>
                         <Link href="/dashboard/courses" className="text-xs font-bold text-primary hover:underline flex items-center gap-1 uppercase tracking-widest">
                             View All <ChevronRight className="w-3 h-3" />
                         </Link>
-                    </div>
-                }
-            >
-                <TopCoursesTable isLoading={loading} />
-            </DashboardCard>
+                    }
+                >
+                    <TopCoursesTable isLoading={loading} courses={topCourses} />
+                </DashboardCard>
+            </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                 <DashboardCard 
@@ -268,7 +237,7 @@ export default function AdminPanel() {
                         </button>
                     }
                 >
-                    <RecentActivityFeed />
+                    <RecentActivityFeed activities={recentActivity} />
                 </DashboardCard>
                 <DashboardCard title="Quick Access" icon={Zap}>
                     <div className="space-y-3">

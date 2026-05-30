@@ -293,7 +293,7 @@ export async function getAllEnrollments(params: {
                     user:users(id, name, email, avatar_url)
                 )
             ),
-            user:users(id, name, email, avatar_url),
+            user:users(id, name, email, avatar_url, phone),
             transaction:transactions(*)
         `, { count: 'exact' });
     if (courseId && courseId !== 'all') {
@@ -321,7 +321,7 @@ export async function getAllEnrollments(params: {
                             user:users(id, name, email, avatar_url)
                         )
                     ),
-                    user:users(id, name, email, avatar_url),
+                    user:users(id, name, email, avatar_url, phone),
                     transaction:transactions!inner(*)
                 `, { count: 'exact' })
                 .eq('transaction.payment_provider', paymentMethod);

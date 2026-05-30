@@ -27,6 +27,7 @@ interface EnrolledCourse {
     completed_lessons: number;
     progress_percentage: number;
     last_lesson_id: string | null;
+    status: string;
 }
 
 type FilterStatus = "all" | "ongoing" | "upcoming" | "finished";
@@ -51,6 +52,7 @@ export default function MyCoursesPage() {
                 .from("enrollments")
                 .select(
                     `
+                    status,
                     completed_lessons,
                     progress_percentage,
                     last_lesson_id,
@@ -64,7 +66,7 @@ export default function MyCoursesPage() {
                 `
                 )
                 .eq("user_id", user.id)
-                .in("status", ["active", "success"]);
+                .in("status", ["active", "success", "pending"]);
             if (data) {
                 setEnrolledCourses(data as unknown as EnrolledCourse[]);
             }
@@ -79,9 +81,15 @@ export default function MyCoursesPage() {
             .includes(searchQuery.toLowerCase());
         const progress = enrollment.progress_percentage || 0;
         let matchesStatus = true;
-        if (filterStatus === "ongoing") matchesStatus = progress > 0 && progress < 100;
-        if (filterStatus === "upcoming") matchesStatus = progress === 0;
-        if (filterStatus === "finished") matchesStatus = progress === 100;
+        if (filterStatus === "ongoing") {
+            matchesStatus = enrollment.status !== "pending" && progress > 0 && progress < 100;
+        }
+        if (filterStatus === "upcoming") {
+            matchesStatus = enrollment.status === "pending" || progress === 0;
+        }
+        if (filterStatus === "finished") {
+            matchesStatus = enrollment.status !== "pending" && progress === 100;
+        }
         return matchesSearch && matchesStatus;
     });
 
@@ -89,10 +97,10 @@ export default function MyCoursesPage() {
         all: enrolledCourses.length,
         ongoing: enrolledCourses.filter((e) => {
             const p = e.progress_percentage || 0;
-            return p > 0 && p < 100;
+            return e.status !== "pending" && p > 0 && p < 100;
         }).length,
-        upcoming: enrolledCourses.filter((e) => (e.progress_percentage || 0) === 0).length,
-        finished: enrolledCourses.filter((e) => (e.progress_percentage || 0) === 100).length,
+        upcoming: enrolledCourses.filter((e) => e.status === "pending" || (e.progress_percentage || 0) === 0).length,
+        finished: enrolledCourses.filter((e) => e.status !== "pending" && (e.progress_percentage || 0) === 100).length,
     };
 
     const filterTabs: { id: FilterStatus; label: string; icon: React.ReactNode }[] = [
@@ -102,12 +110,13 @@ export default function MyCoursesPage() {
         { id: "finished", label: "Completed", icon: <CheckCircle2 className="w-3 h-3" /> },
     ] as const;
 
-    // Summary stats
+    // Summary stats (exclude pending from average progress to keep metrics accurate)
+    const activeCourses = enrolledCourses.filter(e => e.status !== "pending");
     const totalProgress =
-        enrolledCourses.length > 0
+        activeCourses.length > 0
             ? Math.round(
-                enrolledCourses.reduce((acc, e) => acc + (e.progress_percentage || 0), 0) /
-                enrolledCourses.length
+                activeCourses.reduce((acc, e) => acc + (e.progress_percentage || 0), 0) /
+                activeCourses.length
             )
             : 0;
     const totalCompleted = enrolledCourses.reduce(
@@ -256,6 +265,7 @@ export default function MyCoursesPage() {
                                     totalLessons={enrollment.course.total_lessons || 0}
                                     completedLessons={enrollment.completed_lessons || 0}
                                     lastLessonId={enrollment.last_lesson_id}
+                                    isPending={enrollment.status === "pending"}
                                 />
                             </motion.div>
                         ))}

@@ -264,21 +264,20 @@ export default function CourseDetailClient({ course, pageData }: CourseDetailCli
         }
     };
     const handleEnroll = async () => {
+        setLoading(true);
         if (isEnrolled) {
             router.push(`/dashboard/my-courses/${course.slug}`);
             return;
         }
 
-        setLoading(true);
-        const { data: { user } } = await supabase.auth.getUser();
-        if (!user) {
-            error(t("toast.loginRequired"));
-            router.push(`/login?next=/courses/${course.slug}`);
-            setLoading(false);
-            return;
-        }
-        if (course.priceType === "Free") {
-            try {
+        try {
+            const { data: { user } } = await supabase.auth.getUser();
+            if (!user) {
+                error(t("toast.loginRequired"));
+                router.push(`/login?next=/courses/${course.slug}`);
+                return;
+            }
+            if (course.priceType === "Free") {
                 const res = await fetch('/api/enroll', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -291,13 +290,13 @@ export default function CourseDetailClient({ course, pageData }: CourseDetailCli
                 success(t("toast.enrollSuccess"));
                 router.refresh();
                 router.push(`/dashboard`);
-            } catch (err: any) {
-                error(err.message);
+            } else {
+                router.push(`/checkout/${course.slug}`);
             }
-        } else {
-            router.push(`/checkout/${course.slug}`);
+        } catch (err: any) {
+            error(err.message);
+            setLoading(false);
         }
-        setLoading(false);
     };
     const toggleModule = (index: number) => {
         setExpandedModules(prev =>

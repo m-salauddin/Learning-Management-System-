@@ -114,7 +114,7 @@ export default function CheckoutClient({ course, user, bkashEnabled, manualMetho
                 id: 'card',
                 name: 'Stripe',
                 subtitle: t("payment.instant"),
-                icon: <div className="text-white font-black italic text-sm tracking-tighter">stripe</div>,
+                icon: <div className="text-white font-semibold italic text-sm tracking-tighter">stripe</div>,
                 color: '#4F46E5',
             });
         }
@@ -459,7 +459,7 @@ export default function CheckoutClient({ course, user, bkashEnabled, manualMetho
                                                 {gate.icon ? (
                                                     gate.icon
                                                 ) : (
-                                                    <span className="text-xl sm:text-2xl font-black text-white">
+                                                    <span className="text-xl sm:text-2xl font-semibold text-white">
                                                         {gate.name.slice(0, 1)}
                                                     </span>
                                                 )}
@@ -473,12 +473,12 @@ export default function CheckoutClient({ course, user, bkashEnabled, manualMetho
                                                     {gate.name}
                                                 </p>
                                                 {gate.id === 'bkash_auto' && (
-                                                    <span className="px-1.5 sm:px-2 py-0.5 rounded-full bg-emerald-500 text-white text-[8px] sm:text-[9px] font-black uppercase tracking-widest shrink-0">
+                                                    <span className="px-1.5 sm:px-2 py-0.5 rounded-full bg-emerald-500 text-white text-xs font-semibold uppercase tracking-widest shrink-0">
                                                         {t("payment.instant")}
                                                     </span>
                                                 )}
                                             </div>
-                                            <p className="text-[9px] sm:text-[10px] text-muted-foreground font-semibold leading-tight opacity-80 line-clamp-1">
+                                            <p className="text-xs text-muted-foreground font-semibold leading-tight opacity-80 line-clamp-1">
                                                 {gate.subtitle}
                                             </p>
                                         </div>
@@ -619,7 +619,7 @@ export default function CheckoutClient({ course, user, bkashEnabled, manualMetho
                                 <div className="pt-4 border-t border-border/60">
                                     <div className="flex justify-between items-end">
                                         <span className="text-sm font-bold text-foreground">{t("summary.totalPayable")}</span>
-                                        <span className="text-4xl font-black bg-linear-to-r from-primary to-accent bg-clip-text text-transparent">
+                                        <span className="text-4xl font-semibold bg-linear-to-r from-primary to-accent bg-clip-text text-transparent">
                                             ৳{finalPrice.toLocaleString()}
                                         </span>
                                     </div>
@@ -660,7 +660,7 @@ export default function CheckoutClient({ course, user, bkashEnabled, manualMetho
                                         <div className="w-5 h-5 rounded-full bg-emerald-500/10 flex items-center justify-center border border-emerald-500/20">
                                             <Lock className="w-2.5 h-2.5 text-emerald-500" />
                                         </div>
-                                        <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">
+                                        <span className="text-xs font-semibold text-muted-foreground uppercase tracking-widest">
                                             {t("summary.security")}
                                         </span>
                                     </div>
@@ -692,7 +692,7 @@ export default function CheckoutClient({ course, user, bkashEnabled, manualMetho
                         <div className="p-4 rounded-2xl bg-primary/5 border border-primary/10 space-y-3">
                             <div className="flex justify-between items-center text-sm">
                                 <span className="text-muted-foreground">{t("manual.totalAmount")}</span>
-                                <span className="font-black text-primary text-lg">৳{finalPrice.toLocaleString()}</span>
+                                <span className="font-semibold text-primary text-lg">৳{finalPrice.toLocaleString()}</span>
                             </div>
                             <div className="flex justify-between items-center text-sm pt-2 border-t border-primary/10">
                                 <span className="text-muted-foreground">{t("manual.providerNumber", { provider: selectedProvider?.toUpperCase() || '' })}</span>
@@ -709,13 +709,13 @@ export default function CheckoutClient({ course, user, bkashEnabled, manualMetho
                                             navigator.clipboard.writeText(formatted);
                                             success(t("manual.copied"));
                                         }}
-                                        className="p-1 px-2 rounded-lg bg-primary/10 hover:bg-primary/20 text-primary text-[10px] uppercase font-bold transition-all"
+                                        className="p-1 px-2 rounded-lg bg-primary/10 hover:bg-primary/20 text-primary text-xs uppercase font-semibold transition-all"
                                     >
                                         {t("manual.copy")}
                                     </button>
                                 </div>
                             </div>
-                            <p className="text-[10px] text-muted-foreground italic text-center">
+                            <p className="text-xs text-muted-foreground italic text-center">
                                 {t("manual.note")}
                             </p>
                         </div>
@@ -739,7 +739,7 @@ export default function CheckoutClient({ course, user, bkashEnabled, manualMetho
                                         className="w-full bg-muted/50 dark:bg-white/5 border border-border/60 dark:border-white/10 rounded-xl pl-10 pr-4 py-2.5 text-sm text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary/50 transition-all font-mono"
                                     />
                                 </div>
-                                <p className="text-[10px] text-muted-foreground">{t("manual.phoneHint")}</p>
+                                <p className="text-xs text-muted-foreground">{t("manual.phoneHint")}</p>
                             </div>
 
                             <div className="space-y-2">
@@ -757,7 +757,7 @@ export default function CheckoutClient({ course, user, bkashEnabled, manualMetho
                                         className="w-full bg-muted/50 dark:bg-white/5 border border-border/60 dark:border-white/10 rounded-xl pl-10 pr-4 py-2.5 text-sm text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary/50 transition-all font-mono uppercase"
                                     />
                                 </div>
-                                <p className="text-[10px] text-muted-foreground">{t("manual.txnHint")}</p>
+                                <p className="text-xs text-muted-foreground">{t("manual.txnHint")}</p>
                             </div>
                         </form>
                     </div>
@@ -775,7 +775,7 @@ export default function CheckoutClient({ course, user, bkashEnabled, manualMetho
                         type="submit"
                         form="manual-payment-form"
                         disabled={isSubmitting}
-                        className="flex-1 sm:flex-none px-8 py-2.5 bg-primary text-primary-foreground font-black text-sm rounded-xl hover:bg-primary/90 active:scale-95 transition-all disabled:opacity-50 flex items-center justify-center gap-2"
+                        className="flex-1 sm:flex-none px-8 py-2.5 bg-primary text-primary-foreground font-semibold text-sm rounded-xl hover:bg-primary/90 active:scale-95 transition-all disabled:opacity-50 flex items-center justify-center gap-2"
                     >
                         {isSubmitting ? (
                             <>

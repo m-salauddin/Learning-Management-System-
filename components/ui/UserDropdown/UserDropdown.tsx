@@ -100,6 +100,7 @@ export function UserDropdown({ user, onOpen }: UserDropdownProps) {
                                 alt={displayName}
                                 fill
                                 sizes="32px"
+                                referrerPolicy="no-referrer"
                                 className={`object-cover transition-opacity duration-300 ${imageLoaded ? 'opacity-100' : 'opacity-0'}`}
                                 onLoad={() => setImageLoaded(true)}
                                 onError={() => {

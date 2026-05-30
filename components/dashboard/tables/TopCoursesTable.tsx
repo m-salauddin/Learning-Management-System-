@@ -2,7 +2,7 @@
 import { Badge } from "@/components/ui/Badge"
 import { Button } from "@/components/ui/Button"
 import { cn } from "@/lib/utils"
-import { Star, Users, TrendingUp, TrendingDown, Eye, Pencil, Trash2 } from "lucide-react"
+import { Star, Users, TrendingUp, TrendingDown, Eye, Pencil, Trash2, Globe, Terminal, Atom, Palette, Rocket } from "lucide-react"
 const courses = [
     {
         id: 1,
@@ -14,7 +14,7 @@ const courses = [
         trend: "up",
         trendValue: 12,
         status: "published",
-        thumbnail: "🌐"
+        thumbnail: Globe
     },
     {
         id: 2,
@@ -26,7 +26,7 @@ const courses = [
         trend: "up",
         trendValue: 8,
         status: "published",
-        thumbnail: "🐍"
+        thumbnail: Terminal
     },
     {
         id: 3,
@@ -38,7 +38,7 @@ const courses = [
         trend: "down",
         trendValue: 3,
         status: "published",
-        thumbnail: "⚛️"
+        thumbnail: Atom
     },
     {
         id: 4,
@@ -50,7 +50,7 @@ const courses = [
         trend: "up",
         trendValue: 15,
         status: "published",
-        thumbnail: "🎨"
+        thumbnail: Palette
     },
     {
         id: 5,
@@ -62,12 +62,18 @@ const courses = [
         trend: "up",
         trendValue: 5,
         status: "draft",
-        thumbnail: "🚀"
+        thumbnail: Rocket
     },
 ]
 import { LoadingState } from "@/components/dashboard/shared/TableStates"
 
-export function TopCoursesTable({ isLoading = false }: { isLoading?: boolean }) {
+export function TopCoursesTable({ 
+    isLoading = false, 
+    courses = [] 
+}: { 
+    isLoading?: boolean;
+    courses?: any[];
+}) {
     const gridClass = "grid-cols-[2fr_1fr_120px_100px_120px_100px_120px]";
     
     return (
@@ -92,109 +98,109 @@ export function TopCoursesTable({ isLoading = false }: { isLoading?: boolean }) 
                             rows={5}
                             className="bg-transparent"
                         />
+                    ) : courses.length === 0 ? (
+                        <div className="py-12 text-center text-muted-foreground">
+                            <p className="text-sm font-medium">No courses found</p>
+                        </div>
                     ) : (
-                        courses.map((course) => (
-                            <div
-                                key={course.id}
-                                className={cn("grid px-6 py-4 items-center transition-colors hover:bg-muted/10 group bg-card/5", gridClass)}
-                            >
-                            {}
-                            <div className="px-4">
-                                <div className="flex items-center gap-3">
-                                    <div className="w-10 h-10 rounded-lg bg-muted flex items-center justify-center text-lg shrink-0">
-                                        {course.thumbnail}
+                        courses.map((course) => {
+                            const Icon = course.thumbnail || Globe;
+                            return (
+                                <div
+                                    key={course.id}
+                                    className={cn("grid px-6 py-4 items-center transition-colors hover:bg-muted/10 group bg-card/5", gridClass)}
+                                >
+                                    <div className="px-4">
+                                        <div className="flex items-center gap-3">
+                                            <div className="w-10 h-10 rounded-lg bg-muted flex items-center justify-center shrink-0">
+                                                <Icon className="w-5 h-5 text-muted-foreground/70" />
+                                            </div>
+                                            <div className="min-w-0 space-y-1">
+                                                <p className="font-bold text-sm tracking-tight text-foreground truncate max-w-52">
+                                                    {course.title}
+                                                </p>
+                                                <Badge
+                                                    variant="outline"
+                                                    className={cn(
+                                                        "text-[9px] px-1.5 py-0 font-black uppercase tracking-widest",
+                                                        course.status === "published"
+                                                            ? "bg-emerald-500/10 text-emerald-500 border-emerald-500/30"
+                                                            : "bg-amber-500/10 text-amber-500 border-amber-500/30"
+                                                    )}
+                                                >
+                                                    {course.status}
+                                                </Badge>
+                                            </div>
+                                        </div>
                                     </div>
-                                    <div className="min-w-0 space-y-1">
-                                        <p className="font-bold text-sm tracking-tight text-foreground truncate max-w-52">
-                                            {course.title}
-                                        </p>
+                                    <div className="px-4 hidden md:block">
+                                        <span className="text-sm font-medium text-muted-foreground">
+                                            {course.instructor || 'Admin'}
+                                        </span>
+                                    </div>
+                                    <div className="px-4 text-center">
+                                        <div className="inline-flex items-center gap-1.5">
+                                            <Users className="w-4 h-4 text-muted-foreground/60" />
+                                            <span className="text-sm font-bold tracking-tight">{course.students?.toLocaleString() || 0}</span>
+                                        </div>
+                                    </div>
+                                    <div className="px-4 text-center hidden sm:block">
+                                        <div className="inline-flex items-center gap-1">
+                                            <Star className="w-4 h-4 text-amber-500 fill-amber-500" />
+                                            <span className="text-sm font-black text-foreground">{course.rating || '0.0'}</span>
+                                        </div>
+                                    </div>
+                                    <div className="px-4 text-right">
+                                        <span className="text-sm font-black tracking-tighter text-foreground">
+                                            ৳{course.revenue?.toLocaleString() || 0}
+                                        </span>
+                                    </div>
+                                    <div className="px-4 text-center hidden lg:block">
                                         <Badge
                                             variant="outline"
                                             className={cn(
-                                                "text-[9px] px-1.5 py-0 font-black uppercase tracking-widest",
-                                                course.status === "published"
+                                                "gap-1 text-[10px] font-black",
+                                                course.trend === "up"
                                                     ? "bg-emerald-500/10 text-emerald-500 border-emerald-500/30"
-                                                    : "bg-amber-500/10 text-amber-500 border-amber-500/30"
+                                                    : "bg-destructive/10 text-destructive border-destructive/30"
                                             )}
                                         >
-                                            {course.status}
+                                            {course.trend === "up" ? (
+                                                <TrendingUp className="w-3 h-3" />
+                                            ) : (
+                                                <TrendingDown className="w-3 h-3" />
+                                            )}
+                                            {course.trendValue || 0}%
                                         </Badge>
                                     </div>
+                                    <div className="px-4 text-center">
+                                        <div className="flex items-center justify-center gap-1">
+                                            <Button
+                                                variant="ghost"
+                                                size="icon"
+                                                className="h-8 w-8 rounded-lg hover:bg-primary/10 hover:text-primary transition-all shadow-none"
+                                            >
+                                                <Eye className="w-4 h-4" />
+                                            </Button>
+                                            <Button
+                                                variant="ghost"
+                                                size="icon"
+                                                className="h-8 w-8 rounded-lg hover:bg-primary/10 hover:text-primary transition-all shadow-none"
+                                            >
+                                                <Pencil className="w-4 h-4" />
+                                            </Button>
+                                            <Button
+                                                variant="ghost"
+                                                size="icon"
+                                                className="h-8 w-8 rounded-lg hover:bg-destructive/10 hover:text-destructive transition-all shadow-none"
+                                            >
+                                                <Trash2 className="w-4 h-4" />
+                                            </Button>
+                                        </div>
+                                    </div>
                                 </div>
-                            </div>
-                            {}
-                            <div className="px-4 hidden md:block">
-                                <span className="text-sm font-medium text-muted-foreground">
-                                    {course.instructor}
-                                </span>
-                            </div>
-                            {}
-                            <div className="px-4 text-center">
-                                <div className="inline-flex items-center gap-1.5">
-                                    <Users className="w-4 h-4 text-muted-foreground/60" />
-                                    <span className="text-sm font-bold tracking-tight">{course.students.toLocaleString()}</span>
-                                </div>
-                            </div>
-                            {}
-                            <div className="px-4 text-center hidden sm:block">
-                                <div className="inline-flex items-center gap-1">
-                                    <Star className="w-4 h-4 text-amber-500 fill-amber-500" />
-                                    <span className="text-sm font-black text-foreground">{course.rating}</span>
-                                </div>
-                            </div>
-                            {}
-                            <div className="px-4 text-right">
-                                <span className="text-sm font-black tracking-tighter text-foreground">
-                                    ৳{course.revenue.toLocaleString()}
-                                </span>
-                            </div>
-                            {}
-                            <div className="px-4 text-center hidden lg:block">
-                                <Badge
-                                    variant="outline"
-                                    className={cn(
-                                        "gap-1 text-[10px] font-black",
-                                        course.trend === "up"
-                                            ? "bg-emerald-500/10 text-emerald-500 border-emerald-500/30"
-                                            : "bg-destructive/10 text-destructive border-destructive/30"
-                                    )}
-                                >
-                                    {course.trend === "up" ? (
-                                        <TrendingUp className="w-3 h-3" />
-                                    ) : (
-                                        <TrendingDown className="w-3 h-3" />
-                                    )}
-                                    {course.trendValue}%
-                                </Badge>
-                            </div>
-                            {}
-                            <div className="px-4 text-center">
-                                <div className="flex items-center justify-center gap-1">
-                                    <Button
-                                        variant="ghost"
-                                        size="icon"
-                                        className="h-8 w-8 rounded-lg hover:bg-primary/10 hover:text-primary transition-all shadow-none"
-                                    >
-                                        <Eye className="w-4 h-4" />
-                                    </Button>
-                                    <Button
-                                        variant="ghost"
-                                        size="icon"
-                                        className="h-8 w-8 rounded-lg hover:bg-primary/10 hover:text-primary transition-all shadow-none"
-                                    >
-                                        <Pencil className="w-4 h-4" />
-                                    </Button>
-                                    <Button
-                                        variant="ghost"
-                                        size="icon"
-                                        className="h-8 w-8 rounded-lg hover:bg-destructive/10 hover:text-destructive transition-all shadow-none"
-                                    >
-                                        <Trash2 className="w-4 h-4" />
-                                    </Button>
-                                </div>
-                            </div>
-                        </div>
-                        ))
+                            );
+                        })
                     )}
                 </div>
             </div>

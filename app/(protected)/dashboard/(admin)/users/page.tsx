@@ -53,6 +53,48 @@ import {
     DashboardTableCell
 } from "@/components/dashboard/ui/DashboardTable";
 
+const SafeUserAvatar = ({ src, name, seed, className, roundedClass = "rounded-2xl" }: { src: string | null; name: string; seed: string; className?: string; roundedClass?: string }) => {
+    const [imageError, setImageError] = useState(false);
+
+    useEffect(() => {
+        setImageError(false);
+    }, [src]);
+
+    const getAvatarColor = (s: string) => {
+        const AVATAR_COLORS = [
+            "bg-blue-500/15 text-blue-500 border-blue-500/20",
+            "bg-emerald-500/15 text-emerald-500 border-emerald-500/20",
+            "bg-rose-500/15 text-rose-500 border-rose-500/20",
+            "bg-amber-500/15 text-amber-500 border-amber-500/20",
+            "bg-violet-500/15 text-violet-500 border-violet-500/20"
+        ];
+        let hash = 0;
+        for (let i = 0; i < s.length; i++) hash = s.charCodeAt(i) + ((hash << 5) - hash);
+        return AVATAR_COLORS[Math.abs(hash) % AVATAR_COLORS.length];
+    };
+
+    return (
+        <div className={cn(
+            "flex items-center justify-center font-black border-2 shadow-inner transition-transform duration-500 overflow-hidden relative shrink-0",
+            className,
+            roundedClass,
+            src && !imageError ? "border-primary/20 bg-primary/5" : getAvatarColor(seed)
+        )}>
+            {src && !imageError ? (
+                <img 
+                    src={src} 
+                    alt="" 
+                    referrerPolicy="no-referrer"
+                    className={cn("w-full h-full object-cover", roundedClass)} 
+                    onError={() => setImageError(true)}
+                />
+            ) : (
+                (name?.[0] || 'U').toUpperCase()
+            )}
+        </div>
+    );
+};
+
 export default function UserManagementPage() {
     const toast = useToast();
     const router = useRouter();
@@ -372,9 +414,13 @@ export default function UserManagementPage() {
                                         <AnimatedCheckbox id={`select-${user.id}`} checked={selectedUsers.has(user.id)} onChange={() => toggleSelectUser(user.id)} />
                                     </div>
                                     <div className="px-4 flex items-center gap-4 min-w-0">
-                                        <div className={cn("w-12 h-12 rounded-2xl flex items-center justify-center font-black text-lg border-2 shadow-inner group-hover:scale-105 transition-transform duration-500", user.avatar_url ? "border-primary/20 bg-primary/5" : getAvatarColor(user.id))}>
-                                            {user.avatar_url ? <img src={user.avatar_url} alt="" className="w-full h-full object-cover rounded-2xl" /> : (user.name?.[0] || 'U').toUpperCase()}
-                                        </div>
+                                        <SafeUserAvatar
+                                            src={user.avatar_url}
+                                            name={user.name || "Anonymous Entity"}
+                                            seed={user.id}
+                                            className="w-12 h-12 text-lg group-hover:scale-105"
+                                            roundedClass="rounded-2xl"
+                                        />
                                         <div className="min-w-0">
                                             <p className="font-black text-sm tracking-tight capitalize">{user.name || 'Anonymous Entity'}</p>
                                             <p className="text-[10px] font-bold text-muted-foreground/60 tracking-tight font-mono truncate">{user.email}</p>
@@ -512,9 +558,13 @@ export default function UserManagementPage() {
                 {viewUserModal && (
                     <DialogBody className="space-y-6">
                         <div className="flex gap-6 items-center bg-muted/20 p-6 rounded-[2rem] border border-border/20">
-                            <div className={cn("w-20 h-20 rounded-3xl flex items-center justify-center font-black text-3xl border-2 shadow-2xl", viewUserModal.avatar_url ? "border-primary/20 bg-primary/5" : getAvatarColor(viewUserModal.id))}>
-                                {viewUserModal.avatar_url ? <img src={viewUserModal.avatar_url} alt="" className="w-full h-full object-cover rounded-3xl" /> : (viewUserModal.name?.[0] || 'U').toUpperCase()}
-                            </div>
+                            <SafeUserAvatar
+                                src={viewUserModal.avatar_url}
+                                name={viewUserModal.name || "Anonymous Entity"}
+                                seed={viewUserModal.id}
+                                className="w-20 h-20 text-3xl shadow-2xl"
+                                roundedClass="rounded-3xl"
+                            />
                             <div className="space-y-1">
                                 <h3 className="text-2xl font-black tracking-tight">{viewUserModal.name}</h3>
                                 <p className="text-xs font-bold text-muted-foreground flex items-center gap-2"><Mail className="w-3.5 h-3.5" /> {viewUserModal.email}</p>
