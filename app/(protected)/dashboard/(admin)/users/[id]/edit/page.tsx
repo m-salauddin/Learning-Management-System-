@@ -28,7 +28,14 @@ export default function EditUserPage() {
     const [isUpdating, setIsUpdating] = useState(false);
     const [isChangingPassword, setIsChangingPassword] = useState(false);
     const [user, setUser] = useState<ExtendedUser | null>(null);
+    const [imageError, setImageError] = useState(false);
     const [newPassword, setNewPassword] = useState("");
+
+    useEffect(() => {
+        if (user?.avatar_url) {
+            setImageError(false);
+        }
+    }, [user?.avatar_url]);
     const [formData, setFormData] = useState({
         name: "",
         email: "",
@@ -346,8 +353,14 @@ export default function EditUserPage() {
                         <div className="text-center space-y-4">
                             <div className="relative inline-block">
                                 <div className="relative w-24 h-24 rounded-full bg-linear-to-br from-primary/20 to-primary/5 flex items-center justify-center text-primary font-bold text-3xl border-2 border-primary/10 overflow-hidden shadow-2xl mx-auto">
-                                    {user?.avatar_url ? (
-                                        <img src={user.avatar_url} alt={user.name} className="w-full h-full object-cover" />
+                                    {user?.avatar_url && !imageError ? (
+                                        <img 
+                                            src={user.avatar_url} 
+                                            alt={user.name} 
+                                            referrerPolicy="no-referrer"
+                                            className="w-full h-full object-cover" 
+                                            onError={() => setImageError(true)}
+                                        />
                                     ) : (
                                         (user?.name?.[0] || 'U').toUpperCase()
                                     )}

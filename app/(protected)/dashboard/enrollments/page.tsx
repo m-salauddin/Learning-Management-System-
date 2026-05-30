@@ -43,6 +43,52 @@ import {
 } from "@/components/dashboard/ui/DashboardTable";
 import { useAppSelector } from "@/lib/store/hooks";
 
+const SafeAvatar = ({ src, name, size = "md" }: { src: string | null; name: string; size?: "sm" | "md" | "lg" }) => {
+    const [imageError, setImageError] = useState(false);
+    
+    useEffect(() => {
+        setImageError(false);
+    }, [src]);
+
+    const getInitials = (nameStr: string) => {
+        if (!nameStr) return "U";
+        return nameStr
+            .split(" ")
+            .filter(Boolean)
+            .map((n) => n[0])
+            .join("")
+            .toUpperCase()
+            .substring(0, 2);
+    };
+
+    const sizeClasses = {
+        sm: "w-7 h-7 text-[10px]",
+        md: "w-9 h-9 text-xs",
+        lg: "w-10 h-10 text-sm",
+    };
+
+    return (
+        <div className={cn(
+            "rounded-full flex items-center justify-center font-bold relative overflow-hidden border border-primary/20 shrink-0",
+            sizeClasses[size],
+            src && !imageError ? "bg-transparent" : "bg-primary/10 text-primary"
+        )}>
+            {src && !imageError ? (
+                <Image
+                    src={src}
+                    alt=""
+                    fill
+                    className="object-cover"
+                    unoptimized
+                    referrerPolicy="no-referrer"
+                    onError={() => setImageError(true)}
+                />
+            ) : (
+                getInitials(name)
+            )}
+        </div>
+    );
+};
 
 const EnrollmentRow = memo(({
     enrollment,
@@ -113,19 +159,11 @@ const EnrollmentRow = memo(({
                 <div className="flex flex-col min-w-0 pr-4">
                     <div className="flex items-center gap-3 justify-start">
                         <div className="relative shrink-0 w-9 h-9">
-                            <div className="w-full h-full rounded-full bg-primary/10 flex items-center justify-center border border-primary/20 overflow-hidden relative">
-                                {enrollment.user?.avatar_url ? (
-                                    <Image
-                                        src={enrollment.user.avatar_url}
-                                        alt={enrollment.user.name || ""}
-                                        fill
-                                        className="object-cover"
-                                        unoptimized
-                                    />
-                                ) : (
-                                    <User className="w-4 h-4 text-primary" />
-                                )}
-                            </div>
+                            <SafeAvatar
+                                src={enrollment.user?.avatar_url}
+                                name={enrollment.user?.name || "Anonymous User"}
+                                size="md"
+                            />
                             {enrollment.status === 'success' || enrollment.status === 'active' ? (
                                 <div className="absolute bottom-0 right-0 w-2.5 h-2.5 rounded-full bg-emerald-500 border-2 border-background z-10 ring-1 ring-emerald-500/20" />
                             ) : null}
@@ -689,13 +727,11 @@ export default function EnrollmentsPage() {
                                 <div className="p-4 rounded-2xl bg-muted/20 border border-border/50 hover:bg-muted/30 transition-colors">
                                     <p className="text-[10px] font-black uppercase tracking-widest text-primary/60 mb-3">Student</p>
                                     <div className="flex items-center gap-3">
-                                        <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center border border-primary/20 overflow-hidden relative shrink-0">
-                                            {selectedEnrollment.user?.avatar_url ? (
-                                                <Image src={selectedEnrollment.user.avatar_url} alt="" fill className="object-cover" unoptimized />
-                                            ) : (
-                                                <User className="w-4 h-4 text-primary" />
-                                            )}
-                                        </div>
+                                        <SafeAvatar
+                                            src={selectedEnrollment.user?.avatar_url}
+                                            name={selectedEnrollment.user?.name || "Anonymous User"}
+                                            size="lg"
+                                        />
                                         <div className="min-w-0 flex-1">
                                             <p className="font-bold text-sm leading-tight truncate">{selectedEnrollment.user?.name}</p>
                                             <p className="text-[11px] text-muted-foreground truncate">{selectedEnrollment.user?.email}</p>
@@ -714,7 +750,7 @@ export default function EnrollmentsPage() {
                             </div>
 
                             {/* Dense Metrics Row */}
-                            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 p-4 rounded-2xl bg-primary/[0.03] border border-primary/10">
+                            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 p-4 rounded-2xl bg-primary/3 border border-primary/10">
                                 <div className="space-y-1">
                                     <p className="text-[9px] font-black text-muted-foreground uppercase tracking-widest">Status</p>
                                     <div className="pt-0.5">
