@@ -242,12 +242,14 @@ const EnrollmentRow = memo(({
                             label: "Contact",
                             icon: Mail,
                             onClick: () => onContact(enrollment.user?.email),
+                            separator: true
                         }] : []),
                         ...(isAdmin && enrollment.status !== 'cancelled' ? [{
                             label: "Cancel",
                             icon: XCircle,
                             onClick: () => onRevoke(enrollment.id),
-                            variant: 'danger' as const
+                            variant: 'danger' as const,
+                            separator: true
                         }] : []),
                         ...(isAdmin ? [{
                             label: "Delete",
@@ -291,6 +293,10 @@ export default function EnrollmentsPage() {
     const [isDetailOpen, setIsDetailOpen] = useState(false);
     const [selectedEnrollment, setSelectedEnrollment] = useState<any>(null);
     const [isConfirmOpen, setIsConfirmOpen] = useState(false);
+
+    const paymentMethod = selectedEnrollment?.transaction?.payment_method;
+    const phoneMatch = paymentMethod?.match(/\(([^)]+)\)/);
+    const finalPhoneNumber = phoneMatch ? phoneMatch[1] : (selectedEnrollment?.user?.phone || null);
     const [confirmConfig, setConfirmConfig] = useState<{
         title: string;
         description: string;
@@ -797,19 +803,34 @@ export default function EnrollmentsPage() {
                                     </div>
 
                                     <div className="md:col-span-3 p-4 rounded-2xl border border-border/50 bg-muted/10 grid grid-cols-1 gap-3">
-                                        <div className="flex flex-col">
-                                            <div className="flex items-center gap-1.5 text-muted-foreground mb-1.5">
-                                                <LinkIcon className="w-3 h-3" />
-                                                <span className="text-[9px] font-black uppercase">Transaction Reference</span>
+                                        <div className="flex flex-col justify-center">
+                                            <div className="flex items-center gap-1.5 text-muted-foreground mb-2">
+                                                <LinkIcon className="w-3.5 h-3.5 text-primary" />
+                                                <span className="text-[10px] font-black uppercase tracking-wider text-primary/80">Transaction Details</span>
                                             </div>
-                                            <div className="flex flex-col gap-1">
-                                                <p className="text-[9px] font-bold font-mono text-muted-foreground truncate bg-background/50 px-2 py-0.5 rounded border border-border/30">
-                                                    ID: {selectedEnrollment.transaction?.id || 'SYSTEM_ENROLLMENT'}
-                                                </p>
+                                            <div className="flex flex-col gap-2">
+                                                {finalPhoneNumber ? (
+                                                    <div className="flex items-center justify-between bg-background/55 px-3 py-2 rounded-xl border border-border/40">
+                                                        <span className="text-[10px] font-bold text-muted-foreground uppercase">Phone Number</span>
+                                                        <span className="text-sm font-extrabold text-foreground tracking-wide font-mono">
+                                                            {finalPhoneNumber}
+                                                        </span>
+                                                    </div>
+                                                ) : (
+                                                    <div className="flex items-center justify-between bg-background/55 px-3 py-2 rounded-xl border border-border/40">
+                                                        <span className="text-[10px] font-bold text-muted-foreground uppercase">Phone Number</span>
+                                                        <span className="text-xs font-bold text-muted-foreground/60 italic">
+                                                            Not Provided
+                                                        </span>
+                                                    </div>
+                                                )}
                                                 {selectedEnrollment.transaction?.payment_intent_id && (
-                                                    <p className="text-[9px] font-bold font-mono text-muted-foreground truncate bg-background/50 px-2 py-0.5 rounded border border-border/30">
-                                                        TXN: {selectedEnrollment.transaction.payment_intent_id}
-                                                    </p>
+                                                    <div className="flex items-center justify-between bg-background/55 px-3 py-2 rounded-xl border border-border/40">
+                                                        <span className="text-[10px] font-bold text-muted-foreground uppercase">Txn ID / Ref</span>
+                                                        <span className="text-xs font-black text-foreground font-mono truncate select-all max-w-[200px]" title={selectedEnrollment.transaction.payment_intent_id}>
+                                                            {selectedEnrollment.transaction.payment_intent_id}
+                                                        </span>
+                                                    </div>
                                                 )}
                                             </div>
                                         </div>
